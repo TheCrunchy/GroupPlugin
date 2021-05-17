@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace AlliancesPlugin
 {
-    public class Class1
+    public class Config
     {
+        public long PriceNewAlliance = 500000000;
+        public string StoragePath = "default";
     }
 }
