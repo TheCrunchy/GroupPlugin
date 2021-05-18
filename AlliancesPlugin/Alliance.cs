@@ -56,6 +56,20 @@ namespace AlliancesPlugin
                 sb.AppendLine(titles.Value + " " + MyMultiplayer.Static.GetMemberName(titles.Key));
             }
             sb.AppendLine("");
+            sb.AppendLine("Hostile Factions and Hostile Alliances");
+            foreach (long id in EnemyFactions)
+            {
+                IMyFaction fac = MySession.Static.Factions.TryGetFactionById(id);
+                if (fac != null)
+                {
+                    sb.AppendLine(fac.Tag);
+                }
+                foreach (String s in enemies)
+                {
+                    sb.AppendLine(s);
+                }
+            }
+            sb.AppendLine("");
             sb.AppendLine("Member Factions");
             foreach (long id in AllianceMembers)
             {
