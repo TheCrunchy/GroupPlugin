@@ -34,6 +34,8 @@ namespace AlliancesPlugin
         public string OutputAlliance()
         {
             StringBuilder sb = new StringBuilder();
+            sb.AppendLine(description);
+            sb.AppendLine("");
             sb.AppendLine(LeaderTitle);
 
             sb.AppendLine(MyMultiplayer.Static.GetMemberName(SupremeLeader));

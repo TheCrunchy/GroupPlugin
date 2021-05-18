@@ -81,14 +81,17 @@ namespace AlliancesPlugin
         public static void saveConfig()
         {
             FileUtils utils = new FileUtils();
+         
             utils.WriteToXmlFile<Config>(path + "\\Alliances.xml", config);
-
+             
             return;
         }
         public static void SaveAllianceData(Alliance alliance)
         {
             FileUtils jsonStuff = new FileUtils();
-            jsonStuff.WriteToJsonFile<Alliance>(path, alliance);
+     
+            jsonStuff.WriteToJsonFile<Alliance>(path + "//" + alliance.name.Replace(" ", "_") + ".json", alliance);
+            
         }
         public static Alliance LoadAllianceData(String name)
         {
@@ -197,8 +200,10 @@ namespace AlliancesPlugin
                 FileUtils jsonStuff = new FileUtils();
                 try
                 {
+                    AllAlliances.Clear();
                     foreach (String s in Directory.GetFiles(path))
                     {
+                 
                         Alliance alliance = jsonStuff.ReadFromJsonFile<Alliance>(s);
                         if (AllAlliances.ContainsKey(alliance.name))
                         {
