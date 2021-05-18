@@ -92,6 +92,7 @@
     <Compile Include="EconUtils.cs" />
     <Compile Include="FacUtils.cs" />
     <Compile Include="FileUtils.cs" />
+    <Compile Include="KothCommands.cs" />
     <Compile Include="KothConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
