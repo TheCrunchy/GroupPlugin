@@ -12,6 +12,7 @@ namespace AlliancesPlugin
 {
     public class Alliance
     {
+        public Guid AllianceId = System.Guid.NewGuid();
         public String name;
         public String description;
         public ulong SupremeLeader;
@@ -31,10 +32,14 @@ namespace AlliancesPlugin
         public List<ulong> admirals = new List<ulong>();
         public List<ulong> officers = new List<ulong>();
 
+        public long bankBalance = 0;
+
         public string OutputAlliance()
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine(description);
+            sb.AppendLine("");
+            sb.AppendLine("Bank Balance : " + bankBalance);
             sb.AppendLine("");
             sb.AppendLine(LeaderTitle);
 

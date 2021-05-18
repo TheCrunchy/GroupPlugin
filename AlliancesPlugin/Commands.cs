@@ -69,7 +69,7 @@ namespace AlliancesPlugin
                             AlliancePlugin.SaveAllianceData(alliance);
                             alliance.ForceFriendlies();
                             AlliancePlugin.FactionsInAlliances.Add(fac.FactionId, alliance.name);
-                            AlliancePlugin.AllAlliances[alliance.name] = alliance;
+                            
                         }
                         else
                         {
@@ -105,7 +105,7 @@ namespace AlliancesPlugin
                 {
                     alliance.description = Context.RawArgs;
                     AlliancePlugin.SaveAllianceData(alliance);
-                    AlliancePlugin.AllAlliances[alliance.name] = alliance;
+             
                 }
             }
         }
@@ -133,7 +133,7 @@ namespace AlliancesPlugin
                 {
                     alliance.SendInvite(fac2.FactionId);
                     AlliancePlugin.SaveAllianceData(alliance);
-                    AlliancePlugin.AllAlliances[alliance.name] = alliance;
+              
                     Context.Respond("Invite sent, they can join using !alliance join " + alliance.name);
                 }
                 else
@@ -217,7 +217,7 @@ namespace AlliancesPlugin
                 }
                 alliance.AllianceMembers.Remove(fac.FactionId);
                 AlliancePlugin.SaveAllianceData(alliance);
-                AlliancePlugin.AllAlliances[alliance.name] = alliance;
+            
             }
             else
             {
@@ -260,7 +260,7 @@ namespace AlliancesPlugin
                         {
                             alliance.AllianceMembers.Remove(fac2.FactionId);
                             AlliancePlugin.SaveAllianceData(alliance);
-                            AlliancePlugin.AllAlliances[alliance.name] = alliance;
+                          
                             foreach (long id in alliance.AllianceMembers)
                             {
                                 IMyFaction member = MySession.Static.Factions.TryGetFactionById(id);
@@ -323,7 +323,7 @@ namespace AlliancesPlugin
                             {
                                 alliance.EnemyFactions.Remove(fac2.FactionId);
                                 AlliancePlugin.SaveAllianceData(alliance);
-                                AlliancePlugin.AllAlliances[alliance.name] = alliance;
+                    
 
                             }
                             Context.Respond("Removed from enemy list.");
@@ -335,7 +335,7 @@ namespace AlliancesPlugin
                                 {
                                     alliance.enemies.Remove(tag);
                                     AlliancePlugin.SaveAllianceData(alliance);
-                                    AlliancePlugin.AllAlliances[alliance.name] = alliance;
+                                
 
                                 }
                             }
@@ -384,7 +384,7 @@ namespace AlliancesPlugin
                             {
                                 alliance.EnemyFactions.Add(fac2.FactionId);
                                 AlliancePlugin.SaveAllianceData(alliance);
-                                AlliancePlugin.AllAlliances[alliance.name] = alliance;
+                     
                                 alliance.ForceEnemies();
                             }
                             Context.Respond("War declared");
@@ -396,7 +396,7 @@ namespace AlliancesPlugin
                                 {
                                     alliance.enemies.Add(tag);
                                     AlliancePlugin.SaveAllianceData(alliance);
-                                    AlliancePlugin.AllAlliances[alliance.name] = alliance;
+                       
                                     alliance.ForceEnemies();
                                 }
                             }
@@ -439,7 +439,7 @@ namespace AlliancesPlugin
                 {
                     alliance.RevokeInvite(fac2.FactionId);
                     AlliancePlugin.SaveAllianceData(alliance);
-                    AlliancePlugin.AllAlliances[alliance.name] = alliance;
+         
                     Context.Respond("Invite revoked.");
                 }
                 else
@@ -479,19 +479,19 @@ namespace AlliancesPlugin
                         case "leader":
                             alliance.LeaderTitle = newName;
                             AlliancePlugin.SaveAllianceData(alliance);
-                            AlliancePlugin.AllAlliances[alliance.name] = alliance;
+              
                             Context.Respond("Updated");
                             return;
                         case "admiral":
                             alliance.AdmiralTitle = newName;
                             AlliancePlugin.SaveAllianceData(alliance);
-                            AlliancePlugin.AllAlliances[alliance.name] = alliance;
+                         
                             Context.Respond("Updated");
                             return;
                         case "officer":
                             alliance.OfficerTitle = newName;
                             AlliancePlugin.SaveAllianceData(alliance);
-                            AlliancePlugin.AllAlliances[alliance.name] = alliance;
+                       
                             Context.Respond("Updated");
                             return;
                         default:
@@ -558,6 +558,37 @@ namespace AlliancesPlugin
             }
         }
 
+        [Command("name", "change the alliance name")]
+        [Permission(MyPromoteLevel.None)]
+        public void SetAllianceName(string name)
+        {
+            name = Context.RawArgs;
+            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
+            if (fac == null)
+            {
+                Context.Respond("Only factions can be in alliances.");
+                return;
+            }
+            Regex regex = new Regex("^[0-9a-zA-Z ]{3,25}$");
+            Match match = Regex.Match(name, "^[0-9a-zA-Z ]{3,25}$", RegexOptions.IgnoreCase);
+            if (!match.Success || string.IsNullOrEmpty(name))
+            {
+                Context.Respond("New Title does not validate, try again.");
+                return;
+            }
+
+            Alliance alliance = AlliancePlugin.GetAlliance(fac);
+
+            if (alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
+            {
+                alliance.name = name;
+                AlliancePlugin.SaveAllianceData(alliance);
+ 
+                Context.Respond("Name updated");
+                return;
+            }
+            
+        }
 
         [Command("grant title", "change a title")]
         [Permission(MyPromoteLevel.None)]
@@ -606,7 +637,7 @@ namespace AlliancesPlugin
                                 alliance.admirals.Add(MySession.Static.Players.TryGetSteamId(id.IdentityId));
                             }
                             AlliancePlugin.SaveAllianceData(alliance);
-                            AlliancePlugin.AllAlliances[alliance.name] = alliance;
+                   
                             Context.Respond("Updated");
                         }
                         else
@@ -622,7 +653,7 @@ namespace AlliancesPlugin
                                 alliance.officers.Add(MySession.Static.Players.TryGetSteamId(id.IdentityId));
                             }
                             AlliancePlugin.SaveAllianceData(alliance);
-                            AlliancePlugin.AllAlliances[alliance.name] = alliance;
+                         
                         }
                         else
                         {
@@ -634,7 +665,7 @@ namespace AlliancesPlugin
                         {
                             alliance.SetTitle(MySession.Static.Players.TryGetSteamId(id.IdentityId), Title);
                             AlliancePlugin.SaveAllianceData(alliance);
-                            AlliancePlugin.AllAlliances[alliance.name] = alliance;
+                         
                         }
                         else
                         {
@@ -659,7 +690,7 @@ namespace AlliancesPlugin
                 Context.Respond("Name does not validate, try again.");
                 return;
             }
-            if (File.Exists(AlliancePlugin.path + "//" + name + ".json") || AlliancePlugin.AllAlliances.ContainsKey(name))
+            if (AlliancePlugin.AllAlliances.ContainsKey(name))
             {
                 Context.Respond("Alliance with that name already exists.");
                 return;
