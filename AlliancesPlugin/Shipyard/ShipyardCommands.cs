@@ -150,7 +150,7 @@ namespace AlliancesPlugin
                     return;
                 }
                 SendMessage("[Shipyard]", "Shipyard slots: " + queue.upgradeSlots, Color.Cyan, (long)Context.Player.SteamUserId);
-
+                SendMessage("[Shipyard]", "Shipyard speed: blockCount * base speed * " + queue.upgradeSpeed, Color.Cyan, (long)Context.Player.SteamUserId);
                 for (int i = 1; i <= queue.upgradeSlots; i++)
                 {
                     if (queue.getQueue().ContainsKey(i))
@@ -208,10 +208,128 @@ namespace AlliancesPlugin
 
                 if (!upgrade)
                 {
-                    SendMessage("[Shipyard]", "To upgrade use !shipyard upgrade true", Color.Cyan, (long)Context.Player.SteamUserId);
+                    UpgradeCost cost = new UpgradeCost();
+                    String[] line;
+                    SendMessage("[Shipyard]", "To upgrade use !shipyard upgrade speed/slots true", Color.Cyan, (long)Context.Player.SteamUserId);
+                    StringBuilder sb = new StringBuilder();
                     //SendMessage("[Next Slot]", String.Format("{0:n0}", AlliancePlugin.shipyardConfig.SlotUpgradeBasePrice), Color.White, (long)Context.Player.SteamUserId);
+                    switch (type.ToLower())
+                    {
+                        case "speed":
+                            if (queue.upgradeSpeed <= AlliancePlugin.shipyardConfig.MaxSpeedReduction)
+                            {
+                                Context.Respond("Cannot upgrade any further");
+                                return;
+                            }
+                            int upgradeNum = Convert.ToInt16(AlliancePlugin.shipyardConfig.StartingSpeedMultiply - queue.upgradeSpeed);
+                            if (!File.Exists(AlliancePlugin.path + "//SpeedUpgrade-" + upgradeNum++ + ".txt"))
+                            {
 
-                    return;
+                                break;
+                            }
+                            line = File.ReadAllLines(AlliancePlugin.path + "//SpeedUpgrade-" + upgradeNum++ + ".txt");
+                            Context.Respond(upgradeNum + "");
+                            for (int i = 1; i < line.Length; i++)
+                            {
+
+                                String[] split = line[i].Split(',');
+                                foreach (String s in split)
+                                {
+                                    s.Replace(" ", "");
+                                    if (split[0].ToLower().Contains("money"))
+                                    {
+                                        cost.MoneyRequired += int.Parse(split[2]);
+                                    }
+                                    else
+                                    {
+                                        if (MyDefinitionId.TryParse(split[0] + split[1], out MyDefinitionId id))
+                                        {
+                                            if (cost.itemsRequired.ContainsKey(id))
+                                            {
+                                                cost.itemsRequired[id] += int.Parse(split[3]);
+                                            }
+                                            else
+                                            {
+                                                cost.itemsRequired.Add(id, int.Parse(split[3]));
+                                            }
+
+                                        }
+                                    }
+
+
+                                }
+                            }
+                            if (cost.MoneyRequired > 0)
+                            {
+                                SendMessage("[Shipyard]", "SC Cost for next speed upgrade " + String.Format("{0:n0}", cost.MoneyRequired), Color.Cyan, (long)Context.Player.SteamUserId);
+                            }
+
+                            sb.AppendLine("Items required.");
+                            foreach (KeyValuePair<MyDefinitionId, int> id in cost.itemsRequired)
+                            {
+                                sb.AppendLine(id.Key.ToString() + " - " + id.Value);
+                            }
+                            Context.Respond(sb.ToString());
+
+
+                            break;
+                        case "slots":
+                            if (queue.upgradeSlots >= AlliancePlugin.shipyardConfig.MaxShipyardSlots)
+                            {
+                                Context.Respond("Cannot upgrade any further");
+                                return;
+                            }
+
+                            if (!File.Exists(AlliancePlugin.path + "//SlotUpgrade-" + queue.upgradeSlots++ + ".txt"))
+                            {
+
+                                break;
+                            }
+                            line = File.ReadAllLines(AlliancePlugin.path + "//SlotUpgrade-" + queue.upgradeSlots++ + ".txt");
+                            Context.Respond(queue.upgradeSlots++ + "");
+                            for (int i = 1; i < line.Length; i++)
+                            {
+
+                                String[] split = line[i].Split(',');
+                                foreach (String s in split)
+                                {
+                                    s.Replace(" ", "");
+                                    if (split[0].ToLower().Contains("money"))
+                                    {
+                                        cost.MoneyRequired += int.Parse(split[2]);
+                                    }
+                                    else
+                                    {
+                                        if (MyDefinitionId.TryParse(split[0] + split[1], out MyDefinitionId id))
+                                        {
+                                            if (cost.itemsRequired.ContainsKey(id))
+                                            {
+                                                cost.itemsRequired[id] += int.Parse(split[3]);
+                                            }
+                                            else
+                                            {
+                                                cost.itemsRequired.Add(id, int.Parse(split[3]));
+                                            }
+
+                                        }
+                                    }
+
+
+                                }
+                            }
+                            if (cost.MoneyRequired > 0)
+                            {
+                                SendMessage("[Shipyard]", "SC Cost for next speed upgrade " + String.Format("{0:n0}", cost.MoneyRequired), Color.Cyan, (long)Context.Player.SteamUserId);
+                            }
+                            sb = new StringBuilder();
+                            sb.AppendLine("Items required.");
+                            foreach (KeyValuePair<MyDefinitionId, int> id in cost.itemsRequired)
+                            {
+                                sb.AppendLine(id.Key.ToString() + " - " + id.Value);
+                            }
+                            Context.Respond(sb.ToString());
+                            break;
+                    }
                 }
                 else
                 {
@@ -397,7 +515,7 @@ namespace AlliancesPlugin
                                 {
                                     queue.upgradeSlots++;
                                     alliance.SavePrintQueue(queue);
-                          
+
                                 }
                             }
                             break;
