@@ -33,6 +33,7 @@ namespace AlliancesPlugin
         TorchSessionState TorchState;
         private TorchSessionManager sessionManager;
         public static Config config;
+        public static ShipyardConfig shipyardConfig;
         public static string path;
         public static  Logger Log = LogManager.GetLogger("Alliances");
         public DateTime NextUpdate = DateTime.Now;
@@ -43,7 +44,7 @@ namespace AlliancesPlugin
 
 
 
-
+        public static FileUtils utils = new FileUtils();
         public static Dictionary<string, DenialPoint> denials = new Dictionary<string, DenialPoint>();
 
         public override void Init(ITorchBase torch)
@@ -100,10 +101,27 @@ namespace AlliancesPlugin
             {
                 folder2 = config.StoragePath + "//KOTH";
             }
-
-        
             Directory.CreateDirectory(folder2);
+            if (config.StoragePath.Equals("default"))
+            {
+                folder2 = Path.Combine(StoragePath + "//Alliances//AllianceData");
+            }
+            else
+            {
+                folder2 = config.StoragePath + "//AllianceData";
+            }
 
+            Directory.CreateDirectory(folder2);
+            if (config.StoragePath.Equals("default"))
+            {
+                folder2 = Path.Combine(StoragePath + "//Alliances//ShipyardData");
+            }
+            else
+            {
+                folder2 = config.StoragePath + "//Alliance//ShipyardData";
+            }
+
+            Directory.CreateDirectory(folder2);
             return folder;
         }
         public static Config LoadConfig()
@@ -127,7 +145,7 @@ namespace AlliancesPlugin
         {
             FileUtils jsonStuff = new FileUtils();
      
-            jsonStuff.WriteToJsonFile<Alliance>(path + "//" + alliance.AllianceId + ".json", alliance);
+            jsonStuff.WriteToJsonFile<Alliance>(path + "//AllianceData//" + alliance.AllianceId + ".json", alliance);
             AlliancePlugin.AllAlliances[alliance.name] = alliance;
         }
         public static Alliance LoadAllianceData(Guid id)
@@ -135,7 +153,7 @@ namespace AlliancesPlugin
             FileUtils jsonStuff = new FileUtils();
             try
             {
-                Alliance alliance2 = jsonStuff.ReadFromJsonFile<Alliance>(path + "//" + id + ".json");
+                Alliance alliance2 = jsonStuff.ReadFromJsonFile<Alliance>(path + "//AllianceData//" + id + ".json");
                 return alliance2;
             }
             catch
@@ -214,10 +232,27 @@ namespace AlliancesPlugin
                 SetupFriendMethod();
 
                 LoadAllAlliances();
-                FileUtils utils = new FileUtils();
+               
                 if (!File.Exists(path + "//KOTH//example.xml"))
                 {
                     utils.WriteToXmlFile<KothConfig>(path + "//KOTH//example.xml", new KothConfig(), false);
+                }
+                if (!File.Exists(path + "//ShipyardConfig.xml"))
+                {
+                    utils.WriteToXmlFile<ShipyardConfig>(path + "//ShipyardConfig.xml", new ShipyardConfig(), false);
+                    if (!File.Exists(path + "//ShipyardBlocks.csv"))
+                    {
+                      
+                        StringBuilder output = new StringBuilder();
+                        output.AppendLine("TypeId, SubtypeId, BaseSpeedSeconds");
+                        output.AppendLine("MyObjectBuilder_Projector,LargeProjector,1");
+                        output.AppendLine("MyObjectBuilder_Projector,SmallProjector,0.2");
+                        File.WriteAllText(path + "//ShipyardBlocks.csv", output.ToString());
+                    }
+                }
+                else
+                {
+                    ReloadShipyard();
                 }
                 foreach (String s in Directory.GetFiles(path + "//KOTH//"))
                 {
@@ -228,6 +263,30 @@ namespace AlliancesPlugin
                     KOTHs.Add(koth);
                 }
             }
+        }
+
+        public static void ReloadShipyard()
+        {
+            shipyardConfig = utils.ReadFromXmlFile<ShipyardConfig>(path + "//ShipyardConfig.xml");
+            String[] line = File.ReadAllLines(path + "//ShipyardBlocks.csv");
+
+            for (int i = 1; i < line.Length; i++)
+            {
+
+                String[] split = line[i].Split(',');
+                foreach (String s in split)
+                {
+                        s.Replace(" ", "");
+
+                    ShipyardBlockConfig block = new ShipyardBlockConfig();
+                    block.TypeId = split[0];
+                    block.SubtypeId = split[1];
+                    float.TryParse(split[2], out float value);
+                    block.SecondsPerBlock = value;
+                    shipyardConfig.AddToBlockConfig(block);
+                }
+            }
+
         }
         public int ticks;
         public static MyIdentity TryGetIdentity(string playerNameOrSteamId)
@@ -257,7 +316,7 @@ namespace AlliancesPlugin
                 try
                 {
                     AllAlliances.Clear();
-                    foreach (String s in Directory.GetFiles(path))
+                    foreach (String s in Directory.GetFiles(path + "//AllianceData//"))
                     {
                  
                         Alliance alliance = jsonStuff.ReadFromJsonFile<Alliance>(s);
@@ -335,9 +394,7 @@ namespace AlliancesPlugin
                         Boolean locked = false;
 
                         Log.Info("Yeah we capping");
-                        //check grids first
-                        List<MyCubeGrid> acmeGrids = new List<MyCubeGrid>();
-                        List<MyCubeGrid> NotAcmeGrids = new List<MyCubeGrid>();
+                   
 
 
                         int entitiesInCapPoint = 0;

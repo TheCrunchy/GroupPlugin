@@ -15,7 +15,7 @@ using Torch.Mod.Messages;
 using VRage.Game;
 using VRage.Game.ModAPI;
 
-namespace AlliancesPlugin
+namespace AlliancesPlugin.Alliances
 {
     [Category("alliance")]
     public class Commands : CommandModule

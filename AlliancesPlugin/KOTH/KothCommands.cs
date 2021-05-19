@@ -7,7 +7,7 @@ using Torch.Commands;
 using Torch.Commands.Permissions;
 using VRage.Game.ModAPI;
 
-namespace AlliancesPlugin
+namespace AlliancesPlugin.Koth
 {
     [Category("koth")]
     public class KothCommands : CommandModule

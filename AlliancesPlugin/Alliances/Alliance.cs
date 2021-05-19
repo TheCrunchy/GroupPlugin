@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using VRage.Game.ModAPI;
 
-namespace AlliancesPlugin
+namespace AlliancesPlugin.Alliances
 {
     public class Alliance
     {
@@ -34,12 +34,14 @@ namespace AlliancesPlugin
 
         public long bankBalance = 0;
 
+
+
         public string OutputAlliance()
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine(description);
             sb.AppendLine("");
-            sb.AppendLine("Bank Balance : " + bankBalance);
+            sb.AppendLine("Bank Balance : " + String.Format("{0:n0}", bankBalance) + " SC.");
             sb.AppendLine("");
             sb.AppendLine(LeaderTitle);
 
