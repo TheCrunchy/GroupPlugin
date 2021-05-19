@@ -264,7 +264,7 @@ namespace AlliancesPlugin
                     output.AppendLine("TypeId,SubtypeId,Amount");
                     output.AppendLine("MyObjectBuilder_Ingot,Uranium,5000");
                     output.AppendLine("Money,.,500000000");
-                    File.WriteAllText(path + "//SpeedUpgrade-1.txt", output.ToString());
+                    File.WriteAllText(path + "//UnlockCost.txt", output.ToString());
 
                 }
                 if (!File.Exists(path + "//SlotUpgrade-1.txt"))
