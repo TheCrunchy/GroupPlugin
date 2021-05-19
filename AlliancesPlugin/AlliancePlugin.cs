@@ -274,7 +274,7 @@ namespace AlliancesPlugin
                     output.AppendLine("TypeId,SubtypeId,Amount");
                     output.AppendLine("MyObjectBuilder_Ingot,Uranium,5000");
                     output.AppendLine("Money,.,500000000");
-                    File.WriteAllText(path + "//Slotpgrade-1.txt", output.ToString());
+                    File.WriteAllText(path + "//SlotUpgrade-1.txt", output.ToString());
 
                 }
                 if (!Directory.Exists(path + "//ShipyardBlocks//"))

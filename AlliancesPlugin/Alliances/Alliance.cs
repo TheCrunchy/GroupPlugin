@@ -50,10 +50,7 @@ namespace AlliancesPlugin
             if (!Directory.Exists(AlliancePlugin.path + "//ShipyardData//" + AllianceId)){
                 Directory.CreateDirectory(AlliancePlugin.path + "//ShipyardData//" + AllianceId);
             }
-            if (!File.Exists(AlliancePlugin.path + "//ShipyardData//" + AllianceId + "//queue.json"))
-            {
-                File.Create(AlliancePlugin.path + "//ShipyardData//" + AllianceId + "//queue.json");
-            }
+
             utils.WriteToJsonFile<PrintQueue>(AlliancePlugin.path + "//ShipyardData//" + AllianceId + "//queue.json", queue);
             return;
         }

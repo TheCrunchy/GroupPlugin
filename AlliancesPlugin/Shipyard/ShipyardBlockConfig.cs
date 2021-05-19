@@ -17,7 +17,7 @@ namespace AlliancesPlugin
         public float SecondsPerBlock = 1f;
         public int SCPerBlock = 5000;
         public string FuelTypeId = "MyObjectBuilder_Ingot";
-        public string FuelSubTypeId = "MyObjectBuilder_Uranium";
+        public string FuelSubTypeId = "Uranium";
         public float SecondsPerInterval = 10;
         public int FuelPerInterval = 1;
     }

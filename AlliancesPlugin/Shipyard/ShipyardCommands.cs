@@ -60,7 +60,7 @@ namespace AlliancesPlugin
 
         static Dictionary<long, string> confirmationSave = new Dictionary<long, string>();
         static Dictionary<long, string> confirmationBuild = new Dictionary<long, string>();
-        [Command("shipyard reload", "Reload the config")]
+        [Command("reload", "Reload the config")]
         [Permission(MyPromoteLevel.Admin)]
         public void ReloadConfig()
         {
@@ -201,27 +201,29 @@ namespace AlliancesPlugin
                 foreach (String s in split)
                 {
                     s.Replace(" ", "");
-                    if (split[0].ToLower().Contains("money"))
+                }
+                if (split[0].ToLower().Contains("money"))
+                {
+                    cost.MoneyRequired += int.Parse(split[2]);
+                }
+                else
+                {
+                    if (MyDefinitionId.TryParse(split[0], split[1], out MyDefinitionId id))
                     {
-                        cost.MoneyRequired += int.Parse(split[2]);
+                        if (cost.itemsRequired.ContainsKey(id))
+                        {
+                            cost.itemsRequired[id] += int.Parse(split[2]);
+                        }
+                        else
+                        {
+                            cost.itemsRequired.Add(id, int.Parse(split[2]));
+                        }
+
                     }
                     else
                     {
-                        if (MyDefinitionId.TryParse(split[0] + split[1], out MyDefinitionId id))
-                        {
-                            if (cost.itemsRequired.ContainsKey(id))
-                            {
-                                cost.itemsRequired[id] += int.Parse(split[3]);
-                            }
-                            else
-                            {
-                                cost.itemsRequired.Add(id, int.Parse(split[3]));
-                            }
-
-                        }
+                        Context.Respond("Couldnt read it");
                     }
-
-
                 }
             }
             return cost;
@@ -297,13 +299,14 @@ namespace AlliancesPlugin
                         //Do stuff with taking components from grid storage
                         //GridCosts localGridCosts = GetComponentsAndCost(projectedGrid);
                         //gridCosts.setComponents(localGridCosts.getComponents());
+
                         UpgradeCost cost = new UpgradeCost();
                         List<VRage.Game.ModAPI.IMyInventory> invents = new List<VRage.Game.ModAPI.IMyInventory>();
                         foreach (MyCubeGrid grid in grids)
                         {
                             invents.AddList(GetInventories(grid));
                         }
-                        String[] line;
+
 
                         cost = LoadUpgradeCost(AlliancePlugin.path + "//UnlockCost.txt", alliance, queue);
                         if (cost != null)
@@ -320,7 +323,8 @@ namespace AlliancesPlugin
                                         queue.upgradeSlots = 1;
                                         alliance.SavePrintQueue(queue);
                                         AlliancePlugin.SaveAllianceData(alliance);
-                                        SendMessage("[Shipyard]", "Upgrading speed decrease. You were charged: " + String.Format("{0:n0}", cost.MoneyRequired), Color.Green, (long)Context.Player.SteamUserId);
+                                        SendMessage("[Shipyard]", "Unlocking the shipyard. You were charged: " + String.Format("{0:n0}", cost.MoneyRequired) + " and components taken", Color.Green, (long)Context.Player.SteamUserId);
+
                                     }
                                 }
                                 else
@@ -405,7 +409,7 @@ namespace AlliancesPlugin
                             }
                             int upgradeNum = Convert.ToInt16(AlliancePlugin.shipyardConfig.StartingSpeedMultiply - queue.upgradeSpeed);
 
-                            cost = LoadUpgradeCost(AlliancePlugin.path + "//SpeedUpgrade-" + upgradeNum + ".txt", alliance, queue);
+                            cost = LoadUpgradeCost(AlliancePlugin.path + "//SpeedUpgrade-" + upgradeNum++ + ".txt", alliance, queue);
                             if (cost != null)
                             {
                                 if (cost.MoneyRequired > 0)
@@ -515,7 +519,7 @@ namespace AlliancesPlugin
                             }
                             int upgradeNum = Convert.ToInt16(AlliancePlugin.shipyardConfig.StartingSpeedMultiply - queue.upgradeSpeed);
 
-                            cost = LoadUpgradeCost(AlliancePlugin.path + "//SpeedUpgrade-" + upgradeNum + ".txt", alliance, queue);
+                            cost = LoadUpgradeCost(AlliancePlugin.path + "//SpeedUpgrade-" + upgradeNum++ + ".txt", alliance, queue);
                             if (cost != null)
                             {
 
@@ -913,7 +917,7 @@ namespace AlliancesPlugin
         }
 
         private static Dictionary<long, long> confirmations = new Dictionary<long, long>();
-        [Command("shipyard start", "start to print a projection")]
+        [Command("start", "start to print a projection")]
         [Permission(MyPromoteLevel.None)]
         public void start(string name)
         {
@@ -1031,7 +1035,6 @@ namespace AlliancesPlugin
                                 projectedGrid.GetBlocks(blocks);
 
 
-                                size = projectedGrid.GridSizeEnum;
                                 gridCosts.setGridName(name + "_" + string.Format("{0:yyyy-MM-dd_HH-mm-ss-fff}", DateTime.Now));
                                 GridCosts localGridCosts = GetComponentsAndCost(projectedGrid);
                                 gridCosts.setComponents(localGridCosts.getComponents());
@@ -1044,7 +1047,6 @@ namespace AlliancesPlugin
                                 }
                                 gridCosts.setPCU(blockCount);
                                 gridCosts.BlockCount += blockCount;
-                                gridCosts.setFacID(FacUtils.GetPlayersFaction(player.IdentityId).FactionId.ToString());
                                 if (gridsToSave.Count == 0)
                                 {
                                     gridsToSave.Add(projectedGrid as MyCubeGrid);
@@ -1143,12 +1145,13 @@ namespace AlliancesPlugin
 
                 seconds = gridCosts.BlockCount * printerConfig.SecondsPerBlock * queue.upgradeSpeed;
                 DateTime end = DateTime.Now.AddSeconds(seconds);
+                int fuel = 0;
                 if (printerConfig.FuelPerInterval > 0)
                 {
-                    MyDefinitionId.TryParse(printerConfig.FuelTypeId + printerConfig.SubtypeId, out MyDefinitionId id);
+                    MyDefinitionId.TryParse(printerConfig.FuelTypeId, printerConfig.FuelSubTypeId, out MyDefinitionId id);
                     if (printerConfig.SecondsPerInterval > 0)
                     {
-                        int fuel = Convert.ToInt32((seconds / printerConfig.SecondsPerInterval) * printerConfig.FuelPerInterval);
+                        fuel = Convert.ToInt32((seconds / printerConfig.SecondsPerInterval) * printerConfig.FuelPerInterval);
                         gridCosts.addToComp(id, fuel);
                     }
                 }
@@ -1163,6 +1166,7 @@ namespace AlliancesPlugin
                             SendMessage("[Shipyard]", "Taking the cost to print : " + String.Format("{0:n0}", price) + " SC", Color.Green, (long)Context.Player.SteamUserId);
                         }
                     }
+                    SendMessage("[Shipyard]", "The printer used " + fuel + " " + printerConfig.FuelSubTypeId.ToString().Replace("MyObjectBuilder_", "") + " " + printerConfig.FuelTypeId.ToString().Replace("MyObjectBuilder_", "") + " to feed the machines.", Color.Green, (long)Context.Player.SteamUserId);
                     SendMessage("[Shipyard]", "It will be complete in: " + String.Format("{0} Hours {1} Minutes {2} Seconds", diff.Hours, diff.Minutes, diff.Seconds) + " SC", Color.Green, (long)Context.Player.SteamUserId);
                     queue.addToQueue(gridCosts.getGridName(), (long)Context.Player.SteamUserId, Context.Player.IdentityId, Context.Player.DisplayName, DateTime.Now, end, Context.Player.GetPosition().X, Context.Player.GetPosition().Y, Context.Player.GetPosition().Z);
                     //  Task<GameSaveResult> task =
@@ -1194,7 +1198,19 @@ namespace AlliancesPlugin
 
                 confirmations.Add(Context.Player.IdentityId, timeToAdd);
                 Context.Respond("Run command again within 20 seconds to confirm, it will cost " + String.Format("{0:n0} ", price) + " SC");
-
+               double seconds = gridCosts.BlockCount * printerConfig.SecondsPerBlock * queue.upgradeSpeed;
+                DateTime end = DateTime.Now.AddSeconds(seconds);
+                int fuel = 0;
+                if (printerConfig.FuelPerInterval > 0)
+                {
+                    MyDefinitionId.TryParse(printerConfig.FuelTypeId, printerConfig.FuelSubTypeId, out MyDefinitionId id);
+                    if (printerConfig.SecondsPerInterval > 0)
+                    {
+                        fuel = Convert.ToInt32((seconds / printerConfig.SecondsPerInterval) * printerConfig.FuelPerInterval);
+                        gridCosts.addToComp(id, fuel);
+                    }
+                }
+                Context.Respond("It will also cost " + fuel + " " + printerConfig.FuelSubTypeId.ToString().Replace("MyObjectBuilder_", "") + " " + printerConfig.FuelTypeId.ToString().Replace("MyObjectBuilder_", ""));
             }
 
         }
