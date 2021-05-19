@@ -16,11 +16,15 @@ namespace AlliancesPlugin
         public long IdToPay = 0;
         public Dictionary<String, int> componentsString = new Dictionary<String, int>();
         public int BlockCount = 0;
-        public void addToComp()
+        public void addToComp(MyDefinitionId id, int amount)
         {
-            foreach (KeyValuePair<MyDefinitionId, int> key in components)
+           if (components.ContainsKey(id))
             {
-                componentsString.Add(key.Key.ToString(), key.Value);
+                components[id] += amount;
+            }
+            else
+            {
+                components.Add(id, amount);
             }
         }
         public void loadFromString()

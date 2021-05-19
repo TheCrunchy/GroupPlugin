@@ -8,6 +8,11 @@ namespace AlliancesPlugin
 {
     public class ShipyardBlockConfig
     {
+        public void SetShipyardBlockConfig(String input)
+        {
+            SubtypeId = input;
+        }
+        public Boolean enabled = true;
         public string SubtypeId;
         public float SecondsPerBlock = 1f;
         public int SCPerBlock = 5000;

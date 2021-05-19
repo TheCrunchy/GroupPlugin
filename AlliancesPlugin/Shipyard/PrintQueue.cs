@@ -8,7 +8,7 @@ namespace AlliancesPlugin
 {
     public class PrintQueue
     {
-        public long factionID;
+        public Guid allianceId;
         public int upgradeSlots = 0;
         public float upgradeSpeed = AlliancePlugin.shipyardConfig.StartingSpeedMultiply;
         public List<string> claimedGrids = new List<string>();

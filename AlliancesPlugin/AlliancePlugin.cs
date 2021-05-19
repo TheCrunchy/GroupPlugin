@@ -121,7 +121,7 @@ namespace AlliancesPlugin
                 folder2 = config.StoragePath + "//Alliance//ShipyardData";
             }
 
-            Directory.CreateDirectory(folder2);
+            Directory.CreateDirectory(folder);
             return folder;
         }
         public static Config LoadConfig()
@@ -252,7 +252,17 @@ namespace AlliancesPlugin
 
                     StringBuilder output = new StringBuilder();
                     output.AppendLine("TypeId,SubtypeId,Amount");
-                    output.AppendLine("MyObjectBuilder_Ingot,Uranium");
+                    output.AppendLine("MyObjectBuilder_Ingot,Uranium,5000");
+                    output.AppendLine("Money,.,500000000");
+                    File.WriteAllText(path + "//SpeedUpgrade-1.txt", output.ToString());
+
+                }
+                if (!File.Exists(path + "//UnlockCost.txt"))
+                {
+
+                    StringBuilder output = new StringBuilder();
+                    output.AppendLine("TypeId,SubtypeId,Amount");
+                    output.AppendLine("MyObjectBuilder_Ingot,Uranium,5000");
                     output.AppendLine("Money,.,500000000");
                     File.WriteAllText(path + "//SpeedUpgrade-1.txt", output.ToString());
 
@@ -262,9 +272,27 @@ namespace AlliancesPlugin
 
                     StringBuilder output = new StringBuilder();
                     output.AppendLine("TypeId,SubtypeId,Amount");
-                    output.AppendLine("MyObjectBuilder_Ingot,Uranium");
+                    output.AppendLine("MyObjectBuilder_Ingot,Uranium,5000");
                     output.AppendLine("Money,.,500000000");
                     File.WriteAllText(path + "//Slotpgrade-1.txt", output.ToString());
+
+                }
+                if (!Directory.Exists(path + "//ShipyardBlocks//"))
+                {
+                    Directory.CreateDirectory(path + "//ShipyardBlocks//");
+                }
+                if (!File.Exists(path + "//ShipyardBlocks//LargeProjector.xml"))
+                {
+                    ShipyardBlockConfig config33 = new ShipyardBlockConfig();
+                    config33.SetShipyardBlockConfig("LargeProjector");
+                    utils.WriteToXmlFile<ShipyardBlockConfig>(path + "//ShipyardBlocks//LargeProjector.xml", config33 , false);
+
+                }
+                if (!File.Exists(path + "//ShipyardBlocks//SmallProjector.xml"))
+                {
+                    ShipyardBlockConfig config33 = new ShipyardBlockConfig();
+                    config33.SetShipyardBlockConfig("SmallProjector");
+                    utils.WriteToXmlFile<ShipyardBlockConfig>(path + "//ShipyardBlocks//SmallProjector.xml", config33, false);
 
                 }
                 if (!File.Exists(path + "//ShipyardConfig.xml"))
@@ -290,28 +318,19 @@ namespace AlliancesPlugin
 
         public static void ReloadShipyard()
         {
-            shipyardConfig = utils.ReadFromXmlFile<ShipyardConfig>(path + "//ShipyardConfig.xml");
-            String[] line = File.ReadAllLines(path + "//ShipyardBlocks.txt");
+            if (!File.Exists(path + "//ShipyardConfig.xml"))
+            {
+                Log.Info("File doesnt exist");
 
-            for (int i = 1; i < line.Length; i++)
+            }
+            shipyardConfig = utils.ReadFromXmlFile<ShipyardConfig>(path + "//ShipyardConfig.xml");
+            foreach (String s in Directory.GetFiles(path + "//ShipyardBlocks//"))
             {
 
-                String[] split = line[i].Split(',');
-                foreach (String s in split)
-                {
-                    s.Replace(" ", "");
 
-                    ShipyardBlockConfig block = new ShipyardBlockConfig();
-                    block.SubtypeId = split[0];
-                    float.TryParse(split[1], out float value);
-                    block.SecondsPerBlock = value;
-                    block.SCPerBlock = int.Parse(split[2]);
-                    block.FuelTypeId = split[3];
-                    block.FuelSubTypeId = split[4];
-                    block.SecondsPerInterval = float.Parse(split[5]);
-                    block.FuelPerInterval = int.Parse(split[6]);
-                    shipyardConfig.AddToBlockConfig(block);
-                }
+                ShipyardBlockConfig conf = utils.ReadFromXmlFile<ShipyardBlockConfig>(s);
+
+                shipyardConfig.AddToBlockConfig(conf);
             }
 
         }

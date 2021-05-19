@@ -172,6 +172,7 @@ namespace AlliancesPlugin
             if (alliance == null)
             {
                 Context.Respond("Could not find that alliance.");
+                return;
             }
             if (!console)
             {
@@ -196,7 +197,11 @@ namespace AlliancesPlugin
             if (fac.IsFounder(Context.Player.IdentityId))
             {
                 Alliance alliance = AlliancePlugin.GetAlliance(fac);
-
+                if (alliance == null)
+                {
+                    Context.Respond("Could not find that alliance.");
+                    return;
+                }
                 foreach (MyFactionMember m in fac.Members.Values)
                 {
                     if (alliance.SupremeLeader.Equals(MySession.Static.Players.TryGetSteamId(m.PlayerId)))

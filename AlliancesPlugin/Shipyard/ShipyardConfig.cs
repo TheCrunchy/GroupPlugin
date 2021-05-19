@@ -8,6 +8,7 @@ namespace AlliancesPlugin
 {
     public class ShipyardConfig
     {
+        public Boolean enabled = true;
         public Boolean NearStartPointToClaim = true;
         public int MaxShipyardSlots = 1;
         public float SecondsPerBlockBase = 0.2f;
