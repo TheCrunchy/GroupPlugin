@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AlliancesPlugin.Shipyard
+namespace AlliancesPlugin
 {
     public class ShipyardConfig
     {
+        public Boolean NearStartPointToClaim = true;
         public int MaxShipyardSlots = 1;
         public float SecondsPerBlockBase = 0.2f;
         public float StartingSpeedMultiply = 8f;
@@ -34,6 +35,17 @@ namespace AlliancesPlugin.Shipyard
         public List<ShipyardBlockConfig> GetBlocksConfig()
         {
             return blocks;
+        }
+        public ShipyardBlockConfig GetPrinterConfig(string subtype)
+        {
+            foreach (ShipyardBlockConfig conf in this.blocks)
+            {
+                if (conf.SubtypeId.Equals(subtype))
+                {
+                    return conf;
+                }
+            }
+            return null;
         }
     }
 }

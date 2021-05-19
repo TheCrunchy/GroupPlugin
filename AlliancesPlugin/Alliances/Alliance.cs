@@ -3,12 +3,13 @@ using Sandbox.Game.Multiplayer;
 using Sandbox.Game.World;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using VRage.Game.ModAPI;
 
-namespace AlliancesPlugin.Alliances
+namespace AlliancesPlugin
 {
     public class Alliance
     {
@@ -33,9 +34,29 @@ namespace AlliancesPlugin.Alliances
         public List<ulong> officers = new List<ulong>();
 
         public long bankBalance = 0;
-
-
-
+        public Boolean hasUnlockedShipyard = false;
+        public PrintQueue LoadPrintQueue()
+        {
+            if (hasUnlockedShipyard)
+            {
+                FileUtils utils = new FileUtils();
+                return utils.ReadFromJsonFile<PrintQueue>(AlliancePlugin.path + "//ShipyardData//" + AllianceId + "//queue.json");
+            }
+            return null;
+        }
+        public void SavePrintQueue(PrintQueue queue)
+        {
+            FileUtils utils = new FileUtils();
+            if (!Directory.Exists(AlliancePlugin.path + "//ShipyardData//" + AllianceId)){
+                Directory.CreateDirectory(AlliancePlugin.path + "//ShipyardData//" + AllianceId);
+            }
+            if (!File.Exists(AlliancePlugin.path + "//ShipyardData//" + AllianceId + "//queue.json"))
+            {
+                File.Create(AlliancePlugin.path + "//ShipyardData//" + AllianceId + "//queue.json");
+            }
+            utils.WriteToJsonFile<PrintQueue>(AlliancePlugin.path + "//ShipyardData//" + AllianceId + "//queue.json", queue);
+            return;
+        }
         public string OutputAlliance()
         {
             StringBuilder sb = new StringBuilder();

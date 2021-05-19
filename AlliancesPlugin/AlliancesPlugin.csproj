@@ -84,21 +84,30 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Alliance.cs" />
+    <Compile Include="Alliances\Alliance.cs" />
     <Compile Include="AlliancePlugin.cs" />
-    <Compile Include="Commands.cs" />
-    <Compile Include="Config.cs" />
-    <Compile Include="DenialPoint.cs" />
+    <Compile Include="Alliances\AllianceCommands.cs" />
+    <Compile Include="Alliances\Config.cs" />
+    <Compile Include="GridFinder.cs" />
+    <Compile Include="KOTH\DenialPoint.cs" />
     <Compile Include="EconUtils.cs" />
     <Compile Include="FacUtils.cs" />
     <Compile Include="FileUtils.cs" />
-    <Compile Include="KothCommands.cs" />
-    <Compile Include="KothConfig.cs" />
+    <Compile Include="KOTH\KothCommands.cs" />
+    <Compile Include="KOTH\KothConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ShipyardConfig.cs" />
+    <Compile Include="Shipyard\GridCosts.cs" />
+    <Compile Include="Shipyard\GridManager.cs" />
+    <Compile Include="Shipyard\PrintQueue.cs" />
+    <Compile Include="Shipyard\PrintQueueItem.cs" />
+    <Compile Include="Shipyard\ShipyardBlockConfig.cs" />
+    <Compile Include="Shipyard\ShipyardCommands.cs" />
+    <Compile Include="Shipyard\ShipyardConfig.cs" />
+    <Compile Include="Shipyard\UpgradeCost.cs" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Connected Services\" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

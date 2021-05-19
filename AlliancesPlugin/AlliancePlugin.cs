@@ -35,7 +35,7 @@ namespace AlliancesPlugin
         public static Config config;
         public static ShipyardConfig shipyardConfig;
         public static string path;
-        public static  Logger Log = LogManager.GetLogger("Alliances");
+        public static Logger Log = LogManager.GetLogger("Alliances");
         public DateTime NextUpdate = DateTime.Now;
 
         public static List<KothConfig> KOTHs = new List<KothConfig>();
@@ -58,9 +58,9 @@ namespace AlliancesPlugin
             }
             SetupConfig();
             path = CreatePath();
-     
 
-     
+
+
         }
 
         public void SetupConfig()
@@ -128,23 +128,23 @@ namespace AlliancesPlugin
         {
             FileUtils utils = new FileUtils();
             config = utils.ReadFromXmlFile<Config>(path + "\\Alliances.xml");
-          
-        
+
+
 
             return config;
         }
         public static void saveConfig()
         {
             FileUtils utils = new FileUtils();
-         
+
             utils.WriteToXmlFile<Config>(path + "\\Alliances.xml", config);
-             
+
             return;
         }
         public static void SaveAllianceData(Alliance alliance)
         {
             FileUtils jsonStuff = new FileUtils();
-     
+
             jsonStuff.WriteToJsonFile<Alliance>(path + "//AllianceData//" + alliance.AllianceId + ".json", alliance);
             AlliancePlugin.AllAlliances[alliance.name] = alliance;
         }
@@ -169,9 +169,9 @@ namespace AlliancesPlugin
             {
                 temp = LoadAllianceData(AllAlliances[name].AllianceId);
             }
-          
+
             //i null check in the command anyway
-            
+
             return temp;
         }
         public static Alliance GetAllianceNoLoading(string name)
@@ -193,7 +193,7 @@ namespace AlliancesPlugin
             //fuck it lets just return something that might be null
             if (FactionsInAlliances.ContainsKey(fac.FactionId))
             {
-              return AllAlliances[FactionsInAlliances[fac.FactionId]];
+                return AllAlliances[FactionsInAlliances[fac.FactionId]];
             }
             return null;
         }
@@ -205,11 +205,11 @@ namespace AlliancesPlugin
                 return GetAlliance(FactionsInAlliances[fac.FactionId]);
             }
 
-          foreach (KeyValuePair<String,Alliance> alliance in AllAlliances)
+            foreach (KeyValuePair<String, Alliance> alliance in AllAlliances)
             {
                 if (alliance.Value.AllianceMembers.Contains(fac.FactionId))
                 {
-                    
+
                     return GetAlliance(alliance.Value.name);
                 }
             }
@@ -232,28 +232,51 @@ namespace AlliancesPlugin
                 SetupFriendMethod();
 
                 LoadAllAlliances();
-               
+
                 if (!File.Exists(path + "//KOTH//example.xml"))
                 {
                     utils.WriteToXmlFile<KothConfig>(path + "//KOTH//example.xml", new KothConfig(), false);
                 }
+                if (!File.Exists(path + "//ShipyardBlocks.txt"))
+                {
+
+                    StringBuilder output = new StringBuilder();
+                    output.AppendLine("TypeId,SubtypeId,BaseSpeedSeconds,MoneyPerBlock,FuelTypeId,FuelSubTypeId,SecondsPerInterval,FuelPerInterval");
+                    output.AppendLine("MyObjectBuilder_Projector,LargeProjector,1,5000,MyObjectBuilder_Ingot,Uranium,10,2");
+                    output.AppendLine("MyObjectBuilder_Projector,SmallProjector,0.2,1000,MyObjectBuilder_Ingot,Uranium,10,1");
+                    File.WriteAllText(path + "//ShipyardBlocks.txt", output.ToString());
+
+                }
+                if (!File.Exists(path + "//SpeedUpgrade-1.txt"))
+                {
+
+                    StringBuilder output = new StringBuilder();
+                    output.AppendLine("TypeId,SubtypeId,Amount");
+                    output.AppendLine("MyObjectBuilder_Ingot,Uranium");
+                    output.AppendLine("Money,.,500000000");
+                    File.WriteAllText(path + "//SpeedUpgrade-1.txt", output.ToString());
+
+                }
+                if (!File.Exists(path + "//SlotUpgrade-1.txt"))
+                {
+
+                    StringBuilder output = new StringBuilder();
+                    output.AppendLine("TypeId,SubtypeId,Amount");
+                    output.AppendLine("MyObjectBuilder_Ingot,Uranium");
+                    output.AppendLine("Money,.,500000000");
+                    File.WriteAllText(path + "//Slotpgrade-1.txt", output.ToString());
+
+                }
                 if (!File.Exists(path + "//ShipyardConfig.xml"))
                 {
                     utils.WriteToXmlFile<ShipyardConfig>(path + "//ShipyardConfig.xml", new ShipyardConfig(), false);
-                    if (!File.Exists(path + "//ShipyardBlocks.csv"))
-                    {
-                      
-                        StringBuilder output = new StringBuilder();
-                        output.AppendLine("TypeId, SubtypeId, BaseSpeedSeconds");
-                        output.AppendLine("MyObjectBuilder_Projector,LargeProjector,1");
-                        output.AppendLine("MyObjectBuilder_Projector,SmallProjector,0.2");
-                        File.WriteAllText(path + "//ShipyardBlocks.csv", output.ToString());
-                    }
+
                 }
                 else
                 {
                     ReloadShipyard();
                 }
+
                 foreach (String s in Directory.GetFiles(path + "//KOTH//"))
                 {
 
@@ -268,7 +291,7 @@ namespace AlliancesPlugin
         public static void ReloadShipyard()
         {
             shipyardConfig = utils.ReadFromXmlFile<ShipyardConfig>(path + "//ShipyardConfig.xml");
-            String[] line = File.ReadAllLines(path + "//ShipyardBlocks.csv");
+            String[] line = File.ReadAllLines(path + "//ShipyardBlocks.txt");
 
             for (int i = 1; i < line.Length; i++)
             {
@@ -276,13 +299,17 @@ namespace AlliancesPlugin
                 String[] split = line[i].Split(',');
                 foreach (String s in split)
                 {
-                        s.Replace(" ", "");
+                    s.Replace(" ", "");
 
                     ShipyardBlockConfig block = new ShipyardBlockConfig();
-                    block.TypeId = split[0];
-                    block.SubtypeId = split[1];
-                    float.TryParse(split[2], out float value);
+                    block.SubtypeId = split[0];
+                    float.TryParse(split[1], out float value);
                     block.SecondsPerBlock = value;
+                    block.SCPerBlock = int.Parse(split[2]);
+                    block.FuelTypeId = split[3];
+                    block.FuelSubTypeId = split[4];
+                    block.SecondsPerInterval = float.Parse(split[5]);
+                    block.FuelPerInterval = int.Parse(split[6]);
                     shipyardConfig.AddToBlockConfig(block);
                 }
             }
@@ -318,7 +345,7 @@ namespace AlliancesPlugin
                     AllAlliances.Clear();
                     foreach (String s in Directory.GetFiles(path + "//AllianceData//"))
                     {
-                 
+
                         Alliance alliance = jsonStuff.ReadFromJsonFile<Alliance>(s);
                         if (AllAlliances.ContainsKey(alliance.name))
                         {
@@ -338,7 +365,7 @@ namespace AlliancesPlugin
                                 FactionsInAlliances.Add(id, alliance.name);
                             }
                         }
-                  
+
                     }
                 }
                 catch (Exception ex)
@@ -394,7 +421,7 @@ namespace AlliancesPlugin
                         Boolean locked = false;
 
                         Log.Info("Yeah we capping");
-                   
+
 
 
                         int entitiesInCapPoint = 0;
@@ -757,6 +784,24 @@ namespace AlliancesPlugin
             scriptedChatMsg1.Target = Sync.Players.TryGetIdentityId(steamID);
             ScriptedChatMsg scriptedChatMsg2 = scriptedChatMsg1;
             MyMultiplayerBase.SendScriptedChatMessage(ref scriptedChatMsg2);
+        }
+        public static MyIdentity GetIdentityByNameOrId(string playerNameOrSteamId)
+        {
+            foreach (var identity in MySession.Static.Players.GetAllIdentities())
+            {
+                if (identity.DisplayName == playerNameOrSteamId)
+                    return identity;
+                if (ulong.TryParse(playerNameOrSteamId, out ulong steamId))
+                {
+                    ulong id = MySession.Static.Players.TryGetSteamId(identity.IdentityId);
+                    if (id == steamId)
+                        return identity;
+                    if (identity.IdentityId == (long)steamId)
+                        return identity;
+                }
+
+            }
+            return null;
         }
     }
 }
