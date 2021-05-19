@@ -202,6 +202,10 @@ namespace AlliancesPlugin
                 {
                     s.Replace(" ", "");
                 }
+                if (split.Count() == 3)
+                {
+                    cost.NewLevel = double.Parse(split[3]);
+                }
                 if (split[0].ToLower().Contains("money"))
                 {
                     cost.MoneyRequired += int.Parse(split[2]);
@@ -530,7 +534,7 @@ namespace AlliancesPlugin
                                         if (ConsumeComponents(invents, cost.itemsRequired))
                                         {
                                             EconUtils.takeMoney(Context.Player.IdentityId, cost.MoneyRequired);
-                                            queue.upgradeSpeed -= 1;
+                                            queue.upgradeSpeed = (float) cost.NewLevel;
                                             alliance.SavePrintQueue(queue);
                                             SendMessage("[Shipyard]", "Upgrading speed decrease. You were charged: " + String.Format("{0:n0}", cost.MoneyRequired), Color.Green, (long)Context.Player.SteamUserId);
                                         }
@@ -544,7 +548,7 @@ namespace AlliancesPlugin
                                 {
                                     if (ConsumeComponents(invents, cost.itemsRequired))
                                     {
-                                        queue.upgradeSpeed -= 1;
+                                        queue.upgradeSpeed = (float)cost.NewLevel;
                                         alliance.SavePrintQueue(queue);
                                     }
                                 }
@@ -579,7 +583,7 @@ namespace AlliancesPlugin
                                         if (ConsumeComponents(invents, cost.itemsRequired))
                                         {
                                             EconUtils.takeMoney(Context.Player.IdentityId, cost.MoneyRequired);
-                                            queue.upgradeSpeed -= 1;
+                                            queue.upgradeSlots = (int) cost.NewLevel;
                                             alliance.SavePrintQueue(queue);
                                             SendMessage("[Shipyard]", "Upgrading speed decrease. You were charged: " + String.Format("{0:n0}", cost.MoneyRequired), Color.Green, (long)Context.Player.SteamUserId);
                                         }
@@ -593,7 +597,7 @@ namespace AlliancesPlugin
                                 {
                                     if (ConsumeComponents(invents, cost.itemsRequired))
                                     {
-                                        queue.upgradeSpeed -= 1;
+                                        queue.upgradeSlots = (int)cost.NewLevel;
                                         alliance.SavePrintQueue(queue);
                                     }
                                 }

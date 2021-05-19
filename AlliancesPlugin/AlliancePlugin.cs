@@ -251,8 +251,8 @@ namespace AlliancesPlugin
                 {
 
                     StringBuilder output = new StringBuilder();
-                    output.AppendLine("TypeId,SubtypeId,Amount");
-                    output.AppendLine("MyObjectBuilder_Ingot,Uranium,5000");
+                    output.AppendLine("TypeId,SubtypeId,Amount,NewSpeed");
+                    output.AppendLine("MyObjectBuilder_Ingot,Uranium,5000,7");
                     output.AppendLine("Money,.,500000000");
                     File.WriteAllText(path + "//SpeedUpgrade-1.txt", output.ToString());
 
@@ -271,8 +271,8 @@ namespace AlliancesPlugin
                 {
 
                     StringBuilder output = new StringBuilder();
-                    output.AppendLine("TypeId,SubtypeId,Amount");
-                    output.AppendLine("MyObjectBuilder_Ingot,Uranium,5000");
+                    output.AppendLine("TypeId,SubtypeId,Amount,NewSlots");
+                    output.AppendLine("MyObjectBuilder_Ingot,Uranium,5000,2");
                     output.AppendLine("Money,.,500000000");
                     File.WriteAllText(path + "//SlotUpgrade-1.txt", output.ToString());
 

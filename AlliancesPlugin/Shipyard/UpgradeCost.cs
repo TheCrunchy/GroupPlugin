@@ -11,5 +11,6 @@ namespace AlliancesPlugin
     {
         public Dictionary<MyDefinitionId, int> itemsRequired = new Dictionary<MyDefinitionId, int>();
         public long MoneyRequired = 0;
+        public double NewLevel = 1;
     }
 }
