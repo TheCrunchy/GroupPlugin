@@ -513,6 +513,88 @@ namespace AlliancesPlugin
             }
         }
         public static Dictionary<long, DateTime> confirmations = new Dictionary<long, DateTime>();
+        [Command("dividend", "pay dividends to members online within the last 10 days, or the optional input")]
+        [Permission(MyPromoteLevel.None)]
+        public void Dividend(string inputAmount, int cutoffDays = 10)
+        {
+            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
+            if (fac == null)
+            {
+                Context.Respond("Only factions can be in alliances.");
+                return;
+            }
+
+            Int64 amount;
+            inputAmount = inputAmount.Replace(",", "");
+            inputAmount = inputAmount.Replace(".", "");
+            inputAmount = inputAmount.Replace(" ", "");
+            try
+            {
+                amount = Int64.Parse(inputAmount);
+            }
+            catch (Exception)
+            {
+                Context.Respond("Error parsing amount", Color.Red, "Bank Man");
+                return;
+            }
+            if (amount < 0 || amount == 0)
+            {
+                Context.Respond("Must be a positive amount", Color.Red, "Bank Man");
+                return;
+            }
+            Alliance alliance = AlliancePlugin.GetAlliance(fac);
+
+
+            var cutoff = DateTime.Now - TimeSpan.FromDays(cutoffDays);
+            if (alliance != null)
+            {
+
+                if (alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
+                {
+                    if (alliance.bankBalance >= amount)
+                    {
+                        List<long> idsToPay = new List<long>();
+                        foreach (long id in alliance.AllianceMembers)
+                        {
+                            IMyFaction faction = MySession.Static.Factions.TryGetFactionById(id);
+                            if (faction != null)
+                            {
+                                foreach (KeyValuePair<long, MyFactionMember> mem in faction.Members)
+                                {
+                                    MyIdentity idenid = MySession.Static.Players.TryGetIdentity(mem.Value.PlayerId);
+                                    DateTime referenceTime = idenid.LastLoginTime;
+                                    if (idenid.LastLogoutTime > referenceTime)
+                                        referenceTime = idenid.LastLogoutTime;
+                                    if (referenceTime >= cutoff)
+                                    {
+                                        idsToPay.Add(mem.Value.PlayerId);
+
+                                    }
+
+                                }
+                            }
+                        }
+                        alliance.PayDividend(amount, idsToPay, Context.Player.SteamUserId);
+                    }
+                    else
+                    {
+                        Context.Respond("Alliance bank cannot afford that.");
+                        return;
+                    }
+                }
+                else
+                {
+                    Context.Respond("Only the " + alliance.LeaderTitle + " can pay dividends");
+                }
+            }
+            else
+            {
+                Context.Respond("You are not a member of an alliance.");
+            }
+
+        }
+
+
         [Command("disband", "disband the alliance")]
         [Permission(MyPromoteLevel.None)]
         public void Disband()
@@ -777,7 +859,7 @@ namespace AlliancesPlugin
                     return;
                 }
                 EconUtils.addMoney(id.IdentityId, amount);
-                alliance.PayPlayer(amount, steamid,MySession.Static.Players.TryGetSteamId(id.IdentityId));
+                alliance.PayPlayer(amount, steamid, MySession.Static.Players.TryGetSteamId(id.IdentityId));
             }
             else
             {
@@ -827,14 +909,15 @@ namespace AlliancesPlugin
                 Context.Respond("You must be in an alliance to use the bank.");
                 return;
             }
-            
+
             if (alliance.bankAccess.Contains(Context.Player.SteamUserId) || alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
             {
                 if (alliance.bankBalance >= amount)
                 {
                     DoAlliancePay(type, nameortag, amount, alliance, Context.Player.SteamUserId);
-                   
-                }else
+
+                }
+                else
                 {
                     Context.Respond("The alliance bank does not contain enough money.", Color.Red, "Bank Man");
                 }

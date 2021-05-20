@@ -1182,13 +1182,17 @@ namespace AlliancesPlugin
                             if (AlliancePlugin.shipyardConfig.GetPrinterConfig(projector.BlockDefinition.SubtypeId) != null)
                             {
                                 printerConfig = AlliancePlugin.shipyardConfig.GetPrinterConfig(projector.BlockDefinition.SubtypeId);
-
+                                if (!printerConfig.enabled)
+                                {
+                                    continue;
+                                }
                                 if (projector.BlockDefinition.SubtypeName.ToLower().Contains("console"))
                                 {
                                     Context.Respond("Cannot use a console block as the printer");
                                     return;
 
                                 }
+                               
                                 store = grid;
                                 VRage.Game.ModAPI.IMyCubeGrid projectedGrid = projector.ProjectedGrid;
                                 if (projectedGrid == null)

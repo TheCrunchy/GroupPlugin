@@ -71,6 +71,27 @@ namespace AlliancesPlugin
             log.log.Add(item);
             utils.WriteToJsonFile<BankLog>(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId + "//log.json", log);
         }
+
+        public void PayDividend(Int64 amount, List<long> ids, ulong steamid)
+        {
+            FileUtils utils = new FileUtils();
+            Int64 amountToPay = amount / ids.Count();
+            BankLog log = GetLog();
+            foreach (long id in ids)
+            {
+                BankLogItem item = new BankLogItem();
+                bankBalance -= amountToPay;
+                item.SteamId = steamid;
+                item.Amount = amount;
+                item.Action = "dividend payment";
+                item.PlayerPaid = MySession.Static.Players.TryGetSteamId(id);
+                item.TimeClaimed = DateTime.Now;
+                item.BankAmount = bankBalance;
+                log.log.Add(item);
+            }
+            utils.WriteToJsonFile<BankLog>(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId + "//log.json", log);
+        }
+
         public void PayFaction(Int64 amount, ulong steamid, long factionid)
         {
             bankBalance -= amount;

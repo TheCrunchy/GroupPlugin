@@ -1,0 +1,31 @@
+!alliance invite tag- invite a faction the alliance
+!alliance revoke tag - revoke a factions invitation
+!alliance join name - join an alliance if invited
+!alliance enemy faction/alliance tag/name - add to enemy list
+!alliance peace faction/alliance tag/name - remove from enemy list
+!alliance create name - create an alliance
+!alliance set title leader/admiral/officer - change the name of those titles
+!alliance grant title admiral/officer/other/banker - grant those titles to players in the alliance
+!alliance revoke title admiral/officer/other/banker - remove those titles to players in the alliance
+!alliance kick tag - kicks the target if they have permission and the target faction doesnt have any members with a rank
+!alliance leave - leaves the alliance
+!alliance info name - outputs alliance info, if no input, outputs your own alliance
+!alliance description input - changes the description
+!alliance log input- show the log for moneys with optional time format input eg "MM-dd-yyyy"
+!alliance deposit amount - deposit money, anyone can do it
+!alliance pay player/faction amount - only bankers and supreme leader can do this
+!alliance withdraw amount - only bankers and supreme leader can do this
+
+!shipyard restore tag filename targetplayer - Example !shipyard restore fre "Fighter2021-05-1216-32-48-094" Crunch
+!shipyard purge - deletes the files of claimed grids
+!shipyard reload - reloads the config, this doesnt setup and start saving to the different folder if you change it though, do a restart for that.
+!shipyard info - lists the queue and the current times to wait
+!shipyard log input - outputs the log with optional time format input
+!shipyard claim number - Claims the grid in that slot if it is finished, faction leaders have override to claim any grids in their queue.
+!shipyard start Name Slow/Quick/Fast - Example !shipyard start "Crunch Fighter" Fast
+!shipyard unlock - unlock the shipyard
+!shipyard upgrade speed/slots - output the costs for the next upgrade
+!shipyard upgrade speed/slots true - do the next upgrade
+!koth unlock name
+!koth output - output the loaded koths
+!koth reload - reload config
