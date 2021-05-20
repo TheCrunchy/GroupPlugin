@@ -14,6 +14,7 @@ using Torch.Mod;
 using Torch.Mod.Messages;
 using VRage.Game;
 using VRage.Game.ModAPI;
+using VRageMath;
 
 namespace AlliancesPlugin
 {
@@ -69,7 +70,7 @@ namespace AlliancesPlugin
                             AlliancePlugin.SaveAllianceData(alliance);
                             alliance.ForceFriendlies();
                             AlliancePlugin.FactionsInAlliances.Add(fac.FactionId, alliance.name);
-                            
+
                         }
                         else
                         {
@@ -105,7 +106,7 @@ namespace AlliancesPlugin
                 {
                     alliance.description = Context.RawArgs;
                     AlliancePlugin.SaveAllianceData(alliance);
-             
+
                 }
             }
         }
@@ -133,7 +134,7 @@ namespace AlliancesPlugin
                 {
                     alliance.SendInvite(fac2.FactionId);
                     AlliancePlugin.SaveAllianceData(alliance);
-              
+
                     Context.Respond("Invite sent, they can join using !alliance join " + alliance.name);
                 }
                 else
@@ -222,7 +223,7 @@ namespace AlliancesPlugin
                 }
                 alliance.AllianceMembers.Remove(fac.FactionId);
                 AlliancePlugin.SaveAllianceData(alliance);
-            
+
             }
             else
             {
@@ -265,7 +266,7 @@ namespace AlliancesPlugin
                         {
                             alliance.AllianceMembers.Remove(fac2.FactionId);
                             AlliancePlugin.SaveAllianceData(alliance);
-                          
+
                             foreach (long id in alliance.AllianceMembers)
                             {
                                 IMyFaction member = MySession.Static.Factions.TryGetFactionById(id);
@@ -328,7 +329,7 @@ namespace AlliancesPlugin
                             {
                                 alliance.EnemyFactions.Remove(fac2.FactionId);
                                 AlliancePlugin.SaveAllianceData(alliance);
-                    
+
 
                             }
                             Context.Respond("Removed from enemy list.");
@@ -340,7 +341,7 @@ namespace AlliancesPlugin
                                 {
                                     alliance.enemies.Remove(tag);
                                     AlliancePlugin.SaveAllianceData(alliance);
-                                
+
 
                                 }
                             }
@@ -389,7 +390,7 @@ namespace AlliancesPlugin
                             {
                                 alliance.EnemyFactions.Add(fac2.FactionId);
                                 AlliancePlugin.SaveAllianceData(alliance);
-                     
+
                                 alliance.ForceEnemies();
                             }
                             Context.Respond("War declared");
@@ -401,7 +402,7 @@ namespace AlliancesPlugin
                                 {
                                     alliance.enemies.Add(tag);
                                     AlliancePlugin.SaveAllianceData(alliance);
-                       
+
                                     alliance.ForceEnemies();
                                 }
                             }
@@ -444,7 +445,7 @@ namespace AlliancesPlugin
                 {
                     alliance.RevokeInvite(fac2.FactionId);
                     AlliancePlugin.SaveAllianceData(alliance);
-         
+
                     Context.Respond("Invite revoked.");
                 }
                 else
@@ -484,19 +485,19 @@ namespace AlliancesPlugin
                         case "leader":
                             alliance.LeaderTitle = newName;
                             AlliancePlugin.SaveAllianceData(alliance);
-              
+
                             Context.Respond("Updated");
                             return;
                         case "admiral":
                             alliance.AdmiralTitle = newName;
                             AlliancePlugin.SaveAllianceData(alliance);
-                         
+
                             Context.Respond("Updated");
                             return;
                         case "officer":
                             alliance.OfficerTitle = newName;
                             AlliancePlugin.SaveAllianceData(alliance);
-                       
+
                             Context.Respond("Updated");
                             return;
                         default:
@@ -534,7 +535,7 @@ namespace AlliancesPlugin
                 {
                     if (confirmations.ContainsKey(Context.Player.IdentityId))
                     {
-                      if (confirmations[Context.Player.IdentityId] >= DateTime.Now)
+                        if (confirmations[Context.Player.IdentityId] >= DateTime.Now)
                         {
                             File.Delete(AlliancePlugin.path + "//" + alliance.name.Replace(" ", "_") + ".json");
                             foreach (long id in alliance.AllianceMembers)
@@ -588,11 +589,69 @@ namespace AlliancesPlugin
             {
                 alliance.name = name;
                 AlliancePlugin.SaveAllianceData(alliance);
- 
+
                 Context.Respond("Name updated");
                 return;
             }
-            
+
+        }
+        [Command("bank withdraw", "withdraw from the bank")]
+        [Permission(MyPromoteLevel.None)]
+        public void BankWithdraw(string inputAmount)
+        {
+            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
+            if (fac == null)
+            {
+                Context.Respond("Only factions can be in alliances.");
+                return;
+            }
+            Int64 amount;
+            inputAmount = inputAmount.Replace(",", "");
+            inputAmount = inputAmount.Replace(".", "");
+            inputAmount = inputAmount.Replace(" ", "");
+            try
+            {
+                amount = Int64.Parse(inputAmount);
+            }
+            catch (Exception)
+            {
+                Context.Respond("Error parsing amount", Color.Red, "Bank Man");
+                return;
+            }
+            if (amount < 0 || amount == 0)
+            {
+                Context.Respond("Must be a positive amount", Color.Red,"Bank Man");
+                return;
+            }
+            Alliance alliance = AlliancePlugin.GetAlliance(fac);
+            if (alliance == null)
+            {
+                Context.Respond("Only members of an alliance may access a bank.");
+                return;
+            }
+            if (alliance != null)
+            {
+
+                if (alliance.SupremeLeader.Equals(Context.Player.SteamUserId) || alliance.bankAccess.Contains(Context.Player.SteamUserId))
+                {
+                    if (alliance.bankBalance >= amount)
+                    {
+                        EconUtils.addMoney(Context.Player.IdentityId, amount);
+                        alliance.WithdrawMoney(amount, Context.Player.SteamUserId);
+                    }
+                    else
+                    {
+                        Context.Respond("The alliance bank does not contain enough money.", Color.Red, "Bank Man");
+                    }
+                    AlliancePlugin.SaveAllianceData(alliance);
+                }
+                else
+                {
+                    Context.Respond("Only the " + alliance.LeaderTitle + " can grant this title.");
+                }
+                return;
+
+            }
         }
 
         [Command("grant title", "change a title")]
@@ -642,7 +701,7 @@ namespace AlliancesPlugin
                                 alliance.admirals.Add(MySession.Static.Players.TryGetSteamId(id.IdentityId));
                             }
                             AlliancePlugin.SaveAllianceData(alliance);
-                   
+
                             Context.Respond("Updated");
                         }
                         else
@@ -658,7 +717,22 @@ namespace AlliancesPlugin
                                 alliance.officers.Add(MySession.Static.Players.TryGetSteamId(id.IdentityId));
                             }
                             AlliancePlugin.SaveAllianceData(alliance);
-                         
+
+                        }
+                        else
+                        {
+                            Context.Respond("Only the " + alliance.LeaderTitle + " can grant this title.");
+                        }
+                        return;
+                    case "banker":
+                        if (alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
+                        {
+                            if (!alliance.bankAccess.Contains(MySession.Static.Players.TryGetSteamId(id.IdentityId)))
+                            {
+                                alliance.bankAccess.Add(MySession.Static.Players.TryGetSteamId(id.IdentityId));
+                            }
+                            AlliancePlugin.SaveAllianceData(alliance);
+
                         }
                         else
                         {
@@ -670,11 +744,112 @@ namespace AlliancesPlugin
                         {
                             alliance.SetTitle(MySession.Static.Players.TryGetSteamId(id.IdentityId), Title);
                             AlliancePlugin.SaveAllianceData(alliance);
-                         
+
                         }
                         else
                         {
                             Context.Respond("Only the " + alliance.LeaderTitle + " or " + alliance.AdmiralTitle + " can grant titles.");
+                        }
+                        break;
+                }
+            }
+        }
+
+        [Command("revoke title", "change a title")]
+        [Permission(MyPromoteLevel.None)]
+        public void RevokeTitleName(string playerName, string Title)
+        {
+            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
+            if (fac == null)
+            {
+                Context.Respond("Only factions can be in alliances.");
+                return;
+            }
+            Regex regex = new Regex("^[0-9a-zA-Z ]{3,25}$");
+            Match match = Regex.Match(Title, "^[0-9a-zA-Z ]{3,25}$", RegexOptions.IgnoreCase);
+            if (!match.Success || string.IsNullOrEmpty(Title))
+            {
+                Context.Respond("New Title does not validate, try again.");
+                return;
+            }
+            MyIdentity id = AlliancePlugin.TryGetIdentity(playerName);
+            if (id == null)
+            {
+                Context.Respond("Could not find that player");
+                return;
+            }
+            Alliance alliance = AlliancePlugin.GetAlliance(fac);
+            MyFaction playerFac = MySession.Static.Factions.GetPlayerFaction(id.IdentityId);
+            if (playerFac == null)
+            {
+                Context.Respond("That target player has no faction.");
+                return;
+            }
+            if (!alliance.AllianceMembers.Contains(playerFac.FactionId))
+            {
+                Context.Respond("That target player isnt a member of the alliance.");
+                return;
+            }
+            if (alliance != null)
+            {
+                switch (Title.ToLower())
+                {
+                    case "admiral":
+                        if (alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
+                        {
+                            if (alliance.admirals.Contains(MySession.Static.Players.TryGetSteamId(id.IdentityId)))
+                            {
+                                alliance.admirals.Remove(MySession.Static.Players.TryGetSteamId(id.IdentityId));
+                            }
+                            AlliancePlugin.SaveAllianceData(alliance);
+
+                            Context.Respond("Updated");
+                        }
+                        else
+                        {
+                            Context.Respond("Only the " + alliance.LeaderTitle + " can grant this title.");
+                        }
+                        return;
+                    case "officer":
+                        if (alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
+                        {
+                            if (alliance.officers.Contains(MySession.Static.Players.TryGetSteamId(id.IdentityId)))
+                            {
+                                alliance.officers.Remove(MySession.Static.Players.TryGetSteamId(id.IdentityId));
+                            }
+                            AlliancePlugin.SaveAllianceData(alliance);
+
+                        }
+                        else
+                        {
+                            Context.Respond("Only the " + alliance.LeaderTitle + " can grant this title.");
+                        }
+                        return;
+                    case "banker":
+                        if (alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
+                        {
+                            if (alliance.bankAccess.Contains(MySession.Static.Players.TryGetSteamId(id.IdentityId)))
+                            {
+                                alliance.bankAccess.Remove(MySession.Static.Players.TryGetSteamId(id.IdentityId));
+                            }
+                            AlliancePlugin.SaveAllianceData(alliance);
+
+                        }
+                        else
+                        {
+                            Context.Respond("Only the " + alliance.LeaderTitle + " can grant this title.");
+                        }
+                        return;
+                    default:
+                        if (alliance.admirals.Contains(Context.Player.SteamUserId) || alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
+                        {
+                            alliance.otherTitles.Remove(MySession.Static.Players.TryGetSteamId(id.IdentityId));
+                            AlliancePlugin.SaveAllianceData(alliance);
+
+                        }
+                        else
+                        {
+                            Context.Respond("Only the " + alliance.LeaderTitle + " or " + alliance.AdmiralTitle + " can revoke titles.");
                         }
                         break;
                 }

@@ -33,6 +33,7 @@ namespace AlliancesPlugin
         public List<ulong> admirals = new List<ulong>();
         public List<ulong> officers = new List<ulong>();
 
+        public List<ulong> bankAccess = new List<ulong>();
         public long bankBalance = 0;
         public Boolean hasUnlockedShipyard = false;
         public PrintQueue LoadPrintQueue()
@@ -55,6 +56,10 @@ namespace AlliancesPlugin
          
             return;
         }
+        public void WithdrawMoney(Int64 amount, ulong steamid)
+        {
+
+        }
         public BankLog GetLog()
         {
             FileUtils utils = new FileUtils();
@@ -64,7 +69,12 @@ namespace AlliancesPlugin
             }
             if (!File.Exists(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId + ".json"))
             {
-                return new BankLog();
+               BankLog log = new BankLog
+                {
+                    allianceId = AllianceId
+                };
+                utils.WriteToJsonFile<BankLog>(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId + "//log.json", log);
+                return log;
             }
             return utils.ReadFromJsonFile<BankLog>(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId + ".json");
         }
@@ -87,6 +97,11 @@ namespace AlliancesPlugin
             foreach (ulong id in officers)
             {
                 sb.AppendLine(OfficerTitle + " " + MyMultiplayer.Static.GetMemberName(id));
+            }
+            sb.AppendLine("");
+            foreach (ulong id in bankAccess)
+            {
+                sb.AppendLine("Banker " + " " + MyMultiplayer.Static.GetMemberName(id));
             }
             sb.AppendLine("");
             sb.AppendLine("Other Titled Members");
