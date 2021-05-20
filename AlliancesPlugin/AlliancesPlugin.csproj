@@ -87,6 +87,8 @@
     <Compile Include="Alliances\Alliance.cs" />
     <Compile Include="AlliancePlugin.cs" />
     <Compile Include="Alliances\AllianceCommands.cs" />
+    <Compile Include="Alliances\BankLog.cs" />
+    <Compile Include="Alliances\BankLogItem.cs" />
     <Compile Include="Alliances\Config.cs" />
     <Compile Include="GridFinder.cs" />
     <Compile Include="KOTH\DenialPoint.cs" />
@@ -98,6 +100,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Shipyard\GridCosts.cs" />
     <Compile Include="Shipyard\GridManager.cs" />
+    <Compile Include="Shipyard\PrintLog.cs" />
+    <Compile Include="Shipyard\PrintLogItem.cs" />
     <Compile Include="Shipyard\PrintQueue.cs" />
     <Compile Include="Shipyard\PrintQueueItem.cs" />
     <Compile Include="Shipyard\ShipyardBlockConfig.cs" />

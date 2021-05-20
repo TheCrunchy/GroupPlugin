@@ -10,6 +10,8 @@ namespace AlliancesPlugin
     public class UpgradeCost
     {
         public Dictionary<MyDefinitionId, int> itemsRequired = new Dictionary<MyDefinitionId, int>();
+        public int id;
+        public string type;
         public long MoneyRequired = 0;
         public double NewLevel = 1;
     }

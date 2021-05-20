@@ -52,7 +52,21 @@ namespace AlliancesPlugin
             }
 
             utils.WriteToJsonFile<PrintQueue>(AlliancePlugin.path + "//ShipyardData//" + AllianceId + "//queue.json", queue);
+         
             return;
+        }
+        public BankLog GetLog()
+        {
+            FileUtils utils = new FileUtils();
+            if (!Directory.Exists(AlliancePlugin.path + "//AllianceBankLogs"))
+            {
+                Directory.CreateDirectory(AlliancePlugin.path + "//AllianceBankLogs");
+            }
+            if (!File.Exists(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId + ".json"))
+            {
+                return new BankLog();
+            }
+            return utils.ReadFromJsonFile<BankLog>(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId + ".json");
         }
         public string OutputAlliance()
         {

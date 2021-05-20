@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,9 +13,33 @@ namespace AlliancesPlugin
         public int upgradeSlots = 0;
         public float upgradeSpeed = AlliancePlugin.shipyardConfig.StartingSpeedMultiply;
         public List<string> claimedGrids = new List<string>();
+
+        public int SpeedUpgrade = 0;
+        public int SlotsUpgrade = 0;
         //  public Int64 PriceLastUpgrade = 0;
         public Dictionary<int, PrintQueueItem> queue = new Dictionary<int, PrintQueueItem>();
-
+        public void SaveLog(Alliance alliance, PrintLog log1)
+        {
+            FileUtils utils = new FileUtils();
+            utils.WriteToJsonFile<PrintLog>(AlliancePlugin.path + "//ShipyardData//" + alliance.AllianceId + "//log.json", log1);
+        }
+        public PrintLog GetLog(Alliance alliance)
+        {
+            FileUtils utils = new FileUtils();
+            if (!Directory.Exists(AlliancePlugin.path + "//ShipyardData//" + alliance.AllianceId))
+            {
+                Directory.CreateDirectory(AlliancePlugin.path + "//ShipyardData//" + alliance.AllianceId);
+            }
+            if (!File.Exists(AlliancePlugin.path + "//ShipyardData//" + alliance.AllianceId + "//log.json")){
+                PrintLog log = new PrintLog
+                {
+                    allianceId = alliance.AllianceId
+                };
+                utils.WriteToJsonFile<PrintLog>(AlliancePlugin.path + "//ShipyardData//" + alliance.AllianceId + "//log.json", log);
+                return log;
+            }
+            return utils.ReadFromJsonFile<PrintLog>(AlliancePlugin.path + "//ShipyardData//" + alliance.AllianceId + "//log.json");
+        }
         public bool canAddToQueue()
         {
             if (upgradeSlots == 0)

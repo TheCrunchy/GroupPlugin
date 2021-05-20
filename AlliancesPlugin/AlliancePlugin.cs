@@ -237,24 +237,19 @@ namespace AlliancesPlugin
                 {
                     utils.WriteToXmlFile<KothConfig>(path + "//KOTH//example.xml", new KothConfig(), false);
                 }
-                if (!File.Exists(path + "//ShipyardBlocks.txt"))
+                if (!Directory.Exists(path + "//ShipyardUpgrades//"))
                 {
-
-                    StringBuilder output = new StringBuilder();
-                    output.AppendLine("TypeId,SubtypeId,BaseSpeedSeconds,MoneyPerBlock,FuelTypeId,FuelSubTypeId,SecondsPerInterval,FuelPerInterval");
-                    output.AppendLine("MyObjectBuilder_Projector,LargeProjector,1,5000,MyObjectBuilder_Ingot,Uranium,10,2");
-                    output.AppendLine("MyObjectBuilder_Projector,SmallProjector,0.2,1000,MyObjectBuilder_Ingot,Uranium,10,1");
-                    File.WriteAllText(path + "//ShipyardBlocks.txt", output.ToString());
-
+                    Directory.CreateDirectory(path + "//ShipyardUpgrades//");
                 }
-                if (!File.Exists(path + "//SpeedUpgrade-1.txt"))
+                if (!File.Exists(path + "//ShipyardUpgrades//SpeedUpgrade1.txt"))
                 {
 
                     StringBuilder output = new StringBuilder();
-                    output.AppendLine("TypeId,SubtypeId,Amount,NewSpeed");
-                    output.AppendLine("MyObjectBuilder_Ingot,Uranium,5000,7");
-                    output.AppendLine("Money,.,500000000");
-                    File.WriteAllText(path + "//SpeedUpgrade-1.txt", output.ToString());
+                    output.AppendLine("1,Speed,7");
+                    output.AppendLine("TypeId,SubtypeId,Amount");
+                    output.AppendLine("MyObjectBuilder_Ingot,Uranium,5000");
+                    output.AppendLine("Money,500000000");
+                    File.WriteAllText(path + "//ShipyardUpgrades//SpeedUpgrade1.txt", output.ToString());
 
                 }
                 if (!File.Exists(path + "//UnlockCost.txt"))
@@ -263,24 +258,26 @@ namespace AlliancesPlugin
                     StringBuilder output = new StringBuilder();
                     output.AppendLine("TypeId,SubtypeId,Amount");
                     output.AppendLine("MyObjectBuilder_Ingot,Uranium,5000");
-                    output.AppendLine("Money,.,500000000");
+                    output.AppendLine("Money,500000000");
                     File.WriteAllText(path + "//UnlockCost.txt", output.ToString());
 
                 }
-                if (!File.Exists(path + "//SlotUpgrade-1.txt"))
+                if (!File.Exists(path + "//ShipyardUpgrades//SlotUpgrade1.txt"))
                 {
 
                     StringBuilder output = new StringBuilder();
-                    output.AppendLine("TypeId,SubtypeId,Amount,NewSlots");
-                    output.AppendLine("MyObjectBuilder_Ingot,Uranium,5000,2");
-                    output.AppendLine("Money,.,500000000");
-                    File.WriteAllText(path + "//SlotUpgrade-1.txt", output.ToString());
+                    output.AppendLine("1,Slots,2");
+                    output.AppendLine("TypeId,SubtypeId,Amount");
+                    output.AppendLine("MyObjectBuilder_Ingot,Uranium,5000");
+                    output.AppendLine("Money,500000000");
+                    File.WriteAllText(path + "//ShipyardUpgrades//SlotUpgrade1.txt", output.ToString());
 
                 }
                 if (!Directory.Exists(path + "//ShipyardBlocks//"))
                 {
                     Directory.CreateDirectory(path + "//ShipyardBlocks//");
                 }
+         
                 if (!File.Exists(path + "//ShipyardBlocks//LargeProjector.xml"))
                 {
                     ShipyardBlockConfig config33 = new ShipyardBlockConfig();
@@ -323,6 +320,8 @@ namespace AlliancesPlugin
                 Log.Info("File doesnt exist");
 
             }
+            ShipyardCommands.speedUpgrades.Clear();
+            ShipyardCommands.slotUpgrades.Clear();
             shipyardConfig = utils.ReadFromXmlFile<ShipyardConfig>(path + "//ShipyardConfig.xml");
             foreach (String s in Directory.GetFiles(path + "//ShipyardBlocks//"))
             {
@@ -332,7 +331,10 @@ namespace AlliancesPlugin
 
                 shipyardConfig.AddToBlockConfig(conf);
             }
-
+            foreach (String s in Directory.GetFiles(path + "//ShipyardUpgrades//"))
+            {
+                ShipyardCommands.LoadUpgradeCost(s);
+            }
         }
         public int ticks;
         public static MyIdentity TryGetIdentity(string playerNameOrSteamId)
