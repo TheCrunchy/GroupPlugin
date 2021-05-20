@@ -80,10 +80,11 @@ namespace AlliancesPlugin
             foreach (long id in ids)
             {
                 BankLogItem item = new BankLogItem();
+                EconUtils.addMoney(id, amountToPay);
                 bankBalance -= amountToPay;
                 item.SteamId = steamid;
                 item.Amount = amount;
-                item.Action = "dividend payment";
+                item.Action = "dividend";
                 item.PlayerPaid = MySession.Static.Players.TryGetSteamId(id);
                 item.TimeClaimed = DateTime.Now;
                 item.BankAmount = bankBalance;

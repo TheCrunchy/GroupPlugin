@@ -575,6 +575,7 @@ namespace AlliancesPlugin
                             }
                         }
                         alliance.PayDividend(amount, idsToPay, Context.Player.SteamUserId);
+                        AlliancePlugin.SaveAllianceData(alliance);
                     }
                     else
                     {
