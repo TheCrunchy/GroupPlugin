@@ -56,6 +56,36 @@ namespace AlliancesPlugin
          
             return;
         }
+        public void PayPlayer(Int64 amount, ulong steamid, ulong targetId)
+        {
+            bankBalance -= amount;
+            FileUtils utils = new FileUtils();
+            BankLog log = GetLog();
+            BankLogItem item = new BankLogItem();
+            item.SteamId = steamid;
+            item.Amount = amount;
+            item.Action = "paid";
+            item.PlayerPaid = targetId;
+            item.TimeClaimed = DateTime.Now;
+            item.BankAmount = bankBalance;
+            log.log.Add(item);
+            utils.WriteToJsonFile<BankLog>(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId + "//log.json", log);
+        }
+        public void PayFaction(Int64 amount, ulong steamid, long factionid)
+        {
+            bankBalance -= amount;
+            FileUtils utils = new FileUtils();
+            BankLog log = GetLog();
+            BankLogItem item = new BankLogItem();
+            item.SteamId = steamid;
+            item.Amount = amount;
+            item.Action = "paid fac";
+            item.FactionPaid = factionid;
+            item.TimeClaimed = DateTime.Now;
+            item.BankAmount = bankBalance;
+            log.log.Add(item);
+            utils.WriteToJsonFile<BankLog>(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId + "//log.json", log);
+        }
         public void WithdrawMoney(Int64 amount, ulong steamid)
         {
             bankBalance -= amount;
@@ -64,6 +94,7 @@ namespace AlliancesPlugin
             BankLogItem item = new BankLogItem();
             item.SteamId = steamid;
             item.Amount = amount;
+            item.Action = "withdrew";
             item.TimeClaimed = DateTime.Now;
             item.BankAmount = bankBalance;
             log.log.Add(item);
@@ -78,6 +109,7 @@ namespace AlliancesPlugin
             item.SteamId = steamid;
             item.Amount = amount;
             item.TimeClaimed = DateTime.Now;
+            item.Action = "deposited";
             item.BankAmount = bankBalance;
             log.log.Add(item);
             utils.WriteToJsonFile<BankLog>(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId + "//log.json", log);
@@ -85,11 +117,12 @@ namespace AlliancesPlugin
         public BankLog GetLog()
         {
             FileUtils utils = new FileUtils();
-            if (!Directory.Exists(AlliancePlugin.path + "//AllianceBankLogs"))
+            if (!Directory.Exists(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId))
             {
-                Directory.CreateDirectory(AlliancePlugin.path + "//AllianceBankLogs");
+                Directory.CreateDirectory(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId +"//");
             }
-            if (!File.Exists(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId + ".json"))
+
+            if (!File.Exists(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId + "//log.json"))
             {
                BankLog log = new BankLog
                 {
@@ -98,7 +131,7 @@ namespace AlliancesPlugin
                 utils.WriteToJsonFile<BankLog>(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId + "//log.json", log);
                 return log;
             }
-            return utils.ReadFromJsonFile<BankLog>(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId + ".json");
+            return utils.ReadFromJsonFile<BankLog>(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId + "//log.json");
         }
         public string OutputAlliance()
         {

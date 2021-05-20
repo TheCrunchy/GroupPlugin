@@ -13,5 +13,8 @@ namespace AlliancesPlugin
         public DateTime TimeClaimed;
         public Boolean Claimed;
         public long BankAmount;
+        public string Action;
+        public ulong PlayerPaid = 0;
+        public long FactionPaid = 0;
     }
 }

@@ -137,7 +137,7 @@ namespace AlliancesPlugin
         }
         [Command("log", "View the queue")]
         [Permission(MyPromoteLevel.None)]
-        public void ShipyardLog()
+        public void ShipyardLog(string timeformat = "MM-dd-yyyy")
         {
             if (!AlliancePlugin.shipyardConfig.enabled)
             {
@@ -170,15 +170,16 @@ namespace AlliancesPlugin
                 }
                 PrintLog log = queue.GetLog(alliance);
                 StringBuilder sb = new StringBuilder();
+                log.log.Reverse();
                 foreach (PrintLogItem item in log.log)
                 {
                     if (!item.Claimed)
                     {
-                        sb.AppendLine(item.TimeClaimed + ": " + MyMultiplayer.Static.GetMemberName(item.SteamId) + " Started " + item.Grid.Split('_')[0]);
+                        sb.AppendLine(item.TimeClaimed.ToString(timeformat) + ": " + MyMultiplayer.Static.GetMemberName(item.SteamId) + " Started " + item.Grid.Split('_')[0]);
                     }
                     else
                     {
-                        sb.AppendLine(item.TimeClaimed + ": " + MyMultiplayer.Static.GetMemberName(item.SteamId) + " Claimed " + item.Grid.Split('_')[0]);
+                        sb.AppendLine(item.TimeClaimed.ToString(timeformat) + ": " + MyMultiplayer.Static.GetMemberName(item.SteamId) + " Claimed " + item.Grid.Split('_')[0]);
                     }
                 }
                 DialogMessage m = new DialogMessage("Shipyard Log", alliance.name, sb.ToString());

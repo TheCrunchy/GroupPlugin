@@ -645,19 +645,19 @@ namespace AlliancesPlugin
                     {
                         Context.Respond("The alliance bank does not contain enough money.", Color.Red, "Bank Man");
                     }
-               
+
                 }
                 else
                 {
-                    Context.Respond("Only the " + alliance.LeaderTitle + " can grant this title.");
+                    Context.Respond("You do not have access to the bank.");
                 }
                 return;
 
             }
         }
-        [Command("log", "View the queue")]
+        [Command("log", "View the bank log")]
         [Permission(MyPromoteLevel.None)]
-        public void ShipyardLog()
+        public void BankLog(string timeformat = "MM-dd-yyyy")
         {
 
             if (Context.Player != null)
@@ -681,11 +681,33 @@ namespace AlliancesPlugin
 
                 BankLog log = alliance.GetLog();
                 StringBuilder sb = new StringBuilder();
+                log.log.Reverse();
                 foreach (BankLogItem item in log.log)
                 {
-                        sb.AppendLine(item.TimeClaimed + " : " + MyMultiplayer.Static.GetMemberName(item.SteamId) + " : " + item.Amount + " New Bank Balance " + item.BankAmount);
+                    if (item.FactionPaid > 0)
+                    {
+                        IMyFaction fac = MySession.Static.Factions.TryGetFactionById(item.FactionPaid);
+                        if (fac != null)
+                        {
+                            sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + MyMultiplayer.Static.GetMemberName(item.SteamId) + " " + item.Action + " " + fac.Tag + " " + item.Amount + " : new balance " + item.BankAmount);
+                        }
+                        else
+                        {
+                            sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + MyMultiplayer.Static.GetMemberName(item.SteamId) + " " + item.Action + " a now dead faction " + item.Amount + " : new balance  " + item.BankAmount);
+                        }
+                        continue;
+                    }
+                    if (item.PlayerPaid > 0)
+                    {
+                        sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + MyMultiplayer.Static.GetMemberName(item.SteamId) + " " + item.Action + " " + MyMultiplayer.Static.GetMemberName(item.PlayerPaid) + " " + item.Amount + " : new balance  " + item.BankAmount);
+                    }
+                    else
+                    {
+
+                        sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + MyMultiplayer.Static.GetMemberName(item.SteamId) + " " + item.Action + " " + item.Amount + " : new balance  " + item.BankAmount);
+                    }
                 }
-                DialogMessage m = new DialogMessage("Shipyard Log", alliance.name, sb.ToString());
+                DialogMessage m = new DialogMessage("Alliance Bank Records", alliance.name, sb.ToString());
                 ModCommunication.SendMessageTo(m, Context.Player.SteamUserId);
             }
 
@@ -737,10 +759,90 @@ namespace AlliancesPlugin
                 {
                     Context.Respond("The alliance bank does not contain enough money.", Color.Red, "Bank Man");
                 }
-              
+
             }
 
             return;
+
+        }
+
+        public void DoAlliancePay(string type, string nameortag, Int64 amount, Alliance alliance, ulong steamid)
+        {
+            if (type.ToLower().Equals("player"))
+            {
+                MyIdentity id = AlliancePlugin.TryGetIdentity(nameortag);
+                if (id == null)
+                {
+                    Context.Respond("Could not find that player");
+                    return;
+                }
+                EconUtils.addMoney(id.IdentityId, amount);
+                alliance.PayPlayer(amount, steamid,MySession.Static.Players.TryGetSteamId(id.IdentityId));
+            }
+            else
+            {
+                MyFaction playerFac = MySession.Static.Factions.TryGetFactionByTag(nameortag);
+
+                if (playerFac == null)
+                {
+                    Context.Respond("That target player has no faction.");
+                    return;
+                }
+                EconUtils.addMoney(playerFac.FactionId, amount);
+                alliance.PayFaction(amount, steamid, playerFac.FactionId);
+            }
+        }
+
+        [Command("pay", "change a title")]
+        [Permission(MyPromoteLevel.None)]
+        public void GiveTitleName(string type, string nameortag, string inputAmount)
+        {
+            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
+            if (fac == null)
+            {
+                Context.Respond("Only factions can be in alliances.");
+                return;
+            }
+            Int64 amount;
+            inputAmount = inputAmount.Replace(",", "");
+            inputAmount = inputAmount.Replace(".", "");
+            inputAmount = inputAmount.Replace(" ", "");
+            try
+            {
+                amount = Int64.Parse(inputAmount);
+            }
+            catch (Exception)
+            {
+                Context.Respond("Error parsing amount", Color.Red, "Bank Man");
+                return;
+            }
+            if (amount < 0 || amount == 0)
+            {
+                Context.Respond("Must be a positive amount", Color.Red, "Bank Man");
+                return;
+            }
+            Alliance alliance = AlliancePlugin.GetAlliance(fac);
+            if (alliance == null)
+            {
+                Context.Respond("You must be in an alliance to use the bank.");
+                return;
+            }
+            
+            if (alliance.bankAccess.Contains(Context.Player.SteamUserId) || alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
+            {
+                if (alliance.bankBalance >= amount)
+                {
+                    DoAlliancePay(type, nameortag, amount, alliance, Context.Player.SteamUserId);
+                   
+                }else
+                {
+                    Context.Respond("The alliance bank does not contain enough money.", Color.Red, "Bank Man");
+                }
+            }
+            else
+            {
+                Context.Respond("You do not have access to the bank.");
+            }
 
         }
 
