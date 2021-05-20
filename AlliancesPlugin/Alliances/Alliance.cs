@@ -58,7 +58,29 @@ namespace AlliancesPlugin
         }
         public void WithdrawMoney(Int64 amount, ulong steamid)
         {
-
+            bankBalance -= amount;
+            FileUtils utils = new FileUtils();
+            BankLog log = GetLog();
+            BankLogItem item = new BankLogItem();
+            item.SteamId = steamid;
+            item.Amount = amount;
+            item.TimeClaimed = DateTime.Now;
+            item.BankAmount = bankBalance;
+            log.log.Add(item);
+            utils.WriteToJsonFile<BankLog>(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId + "//log.json", log);
+        }
+        public void DepositMoney(Int64 amount, ulong steamid)
+        {
+            bankBalance += amount;
+            FileUtils utils = new FileUtils();
+            BankLog log = GetLog();
+            BankLogItem item = new BankLogItem();
+            item.SteamId = steamid;
+            item.Amount = amount;
+            item.TimeClaimed = DateTime.Now;
+            item.BankAmount = bankBalance;
+            log.log.Add(item);
+            utils.WriteToJsonFile<BankLog>(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId + "//log.json", log);
         }
         public BankLog GetLog()
         {

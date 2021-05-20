@@ -1,4 +1,5 @@
-﻿using Sandbox.Game.GameSystems.BankingAndCurrency;
+﻿using Sandbox.Engine.Multiplayer;
+using Sandbox.Game.GameSystems.BankingAndCurrency;
 using Sandbox.Game.Multiplayer;
 using Sandbox.Game.World;
 using System;
@@ -595,7 +596,7 @@ namespace AlliancesPlugin
             }
 
         }
-        [Command("bank withdraw", "withdraw from the bank")]
+        [Command("withdraw", "withdraw from the bank")]
         [Permission(MyPromoteLevel.None)]
         public void BankWithdraw(string inputAmount)
         {
@@ -620,7 +621,7 @@ namespace AlliancesPlugin
             }
             if (amount < 0 || amount == 0)
             {
-                Context.Respond("Must be a positive amount", Color.Red,"Bank Man");
+                Context.Respond("Must be a positive amount", Color.Red, "Bank Man");
                 return;
             }
             Alliance alliance = AlliancePlugin.GetAlliance(fac);
@@ -638,12 +639,13 @@ namespace AlliancesPlugin
                     {
                         EconUtils.addMoney(Context.Player.IdentityId, amount);
                         alliance.WithdrawMoney(amount, Context.Player.SteamUserId);
+                        AlliancePlugin.SaveAllianceData(alliance);
                     }
                     else
                     {
                         Context.Respond("The alliance bank does not contain enough money.", Color.Red, "Bank Man");
                     }
-                    AlliancePlugin.SaveAllianceData(alliance);
+               
                 }
                 else
                 {
@@ -653,6 +655,95 @@ namespace AlliancesPlugin
 
             }
         }
+        [Command("log", "View the queue")]
+        [Permission(MyPromoteLevel.None)]
+        public void ShipyardLog()
+        {
+
+            if (Context.Player != null)
+            {
+
+                //Do stuff with taking components from grid storage
+                //GridCosts localGridCosts = GetComponentsAndCost(projectedGrid);
+                //gridCosts.setComponents(localGridCosts.getComponents());
+                IMyFaction faction = FacUtils.GetPlayersFaction(Context.Player.IdentityId);
+                if (faction == null)
+                {
+                    Context.Respond("You must be in a faction to use alliance features.");
+                    return;
+                }
+                Alliance alliance = AlliancePlugin.GetAlliance(faction as MyFaction);
+                if (alliance == null)
+                {
+                    Context.Respond("You are not a member of an alliance with an unlocked shipyard.");
+                    return;
+                }
+
+                BankLog log = alliance.GetLog();
+                StringBuilder sb = new StringBuilder();
+                foreach (BankLogItem item in log.log)
+                {
+                        sb.AppendLine(item.TimeClaimed + " : " + MyMultiplayer.Static.GetMemberName(item.SteamId) + " : " + item.Amount + " New Bank Balance " + item.BankAmount);
+                }
+                DialogMessage m = new DialogMessage("Shipyard Log", alliance.name, sb.ToString());
+                ModCommunication.SendMessageTo(m, Context.Player.SteamUserId);
+            }
+
+        }
+
+        [Command("deposit", "deposit to the bank")]
+        [Permission(MyPromoteLevel.None)]
+        public void BankDeposit(string inputAmount)
+        {
+            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
+            if (fac == null)
+            {
+                Context.Respond("Only factions can be in alliances.");
+                return;
+            }
+            Int64 amount;
+            inputAmount = inputAmount.Replace(",", "");
+            inputAmount = inputAmount.Replace(".", "");
+            inputAmount = inputAmount.Replace(" ", "");
+            try
+            {
+                amount = Int64.Parse(inputAmount);
+            }
+            catch (Exception)
+            {
+                Context.Respond("Error parsing amount", Color.Red, "Bank Man");
+                return;
+            }
+            if (amount < 0 || amount == 0)
+            {
+                Context.Respond("Must be a positive amount", Color.Red, "Bank Man");
+                return;
+            }
+            Alliance alliance = AlliancePlugin.GetAlliance(fac);
+            if (alliance == null)
+            {
+                Context.Respond("Only members of an alliance may access a bank.");
+                return;
+            }
+            if (alliance != null)
+            {
+                if (EconUtils.getBalance(Context.Player.IdentityId) >= amount)
+                {
+                    EconUtils.takeMoney(Context.Player.IdentityId, amount);
+                    alliance.DepositMoney(amount, Context.Player.SteamUserId);
+                    AlliancePlugin.SaveAllianceData(alliance);
+                }
+                else
+                {
+                    Context.Respond("The alliance bank does not contain enough money.", Color.Red, "Bank Man");
+                }
+              
+            }
+
+            return;
+
+        }
+
 
         [Command("grant title", "change a title")]
         [Permission(MyPromoteLevel.None)]
