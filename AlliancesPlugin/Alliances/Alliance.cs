@@ -45,6 +45,8 @@ namespace AlliancesPlugin
             }
             return null;
         }
+
+        private Dictionary<String, StringBuilder> otherTitlesDic = new Dictionary<string, StringBuilder>();
         public void SavePrintQueue(PrintQueue queue)
         {
             FileUtils utils = new FileUtils();
@@ -181,10 +183,24 @@ namespace AlliancesPlugin
                 sb.AppendLine("Banker " + " " + MyMultiplayer.Static.GetMemberName(id));
             }
             sb.AppendLine("");
-            sb.AppendLine("Other Titled Members");
+            otherTitlesDic.Clear();
             foreach (KeyValuePair<ulong, String> titles in otherTitles)
             {
-                sb.AppendLine(titles.Value + " " + MyMultiplayer.Static.GetMemberName(titles.Key));
+                if (otherTitlesDic.ContainsKey(titles.Value)) { 
+
+                otherTitlesDic[titles.Value].AppendLine(titles.Value + " " + MyMultiplayer.Static.GetMemberName(titles.Key));
+                }
+                else
+                {
+                    StringBuilder sbb = new StringBuilder();
+                    sbb.AppendLine(titles.Value + " " + MyMultiplayer.Static.GetMemberName(titles.Key));
+                    otherTitlesDic.Add(titles.Value,sbb);
+                }
+
+            }
+            foreach(KeyValuePair<String, StringBuilder> key in otherTitlesDic)
+            {
+                sb.AppendLine(key.Value.ToString());
             }
             sb.AppendLine("");
             sb.AppendLine("Hostile Factions and Hostile Alliances");
