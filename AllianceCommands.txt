@@ -32,6 +32,8 @@
 !koth reload - reload config
 
 !ah unlock - unlock the hangar
+!ah upgrade - see the upgrade cost
+!ah ugprade true - do the upgrade
 !ah log - view the log
 !ah list - list the grids in hangar
 !ah save - save an owned grid or faction owned grid to hangar 
