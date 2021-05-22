@@ -148,6 +148,13 @@ namespace AlliancesPlugin
                 Context.Respond("Cannot find alliance, maybe wait a minute and try again.");
             }
         }
+        [Command("reload", "reload the config")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void AllianceInfo()
+        {
+            AlliancePlugin.LoadConfig();
+            Context.Respond("Reloaded");
+        }
         [Command("info", "output info about an alliance")]
         [Permission(MyPromoteLevel.None)]
         public void AllianceInfo(string name = "")

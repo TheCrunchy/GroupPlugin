@@ -53,7 +53,23 @@ namespace AlliancesPlugin
 
             return SaveGrid(path, filename, keepOriginalOwner, keepProjection, objectBuilders);
         }
+        public static bool SaveGridNoDelete(string path, string filename, bool keepOriginalOwner, bool keepProjection, List<MyCubeGrid> grids)
+        {
 
+            List<MyObjectBuilder_CubeGrid> objectBuilders = new List<MyObjectBuilder_CubeGrid>();
+
+            foreach (MyCubeGrid grid in grids)
+            {
+
+                /* What else should it be? LOL? */
+                if (!(grid.GetObjectBuilder(true) is MyObjectBuilder_CubeGrid objectBuilder))
+                    throw new ArgumentException(grid + " has a ObjectBuilder thats not for a CubeGrid");
+
+                objectBuilders.Add(objectBuilder);
+            }
+
+            return SaveGridNoDelete(path, filename, keepOriginalOwner, keepProjection, objectBuilders);
+        }
         public static MyObjectBuilder_ShipBlueprintDefinition[] getBluePrint(string name, long newOwner, bool keepProjection, List<MyCubeGrid> grids)
         {
             List<MyObjectBuilder_CubeGrid> objectBuilders = new List<MyObjectBuilder_CubeGrid>();
@@ -172,6 +188,63 @@ namespace AlliancesPlugin
                     if (!keepProjection)
                         if (cubeBlock is MyObjectBuilder_ProjectorBase projector)
                             projector.ProjectedGrids = null;
+
+                    /* Remove Pilot and Components (like Characters) from cockpits */
+                    if (cubeBlock is MyObjectBuilder_Cockpit cockpit)
+                    {
+
+                        cockpit.Pilot = null;
+
+                        if (cockpit.ComponentContainer != null)
+                        {
+
+                            var components = cockpit.ComponentContainer.Components;
+
+                            if (components != null)
+                            {
+
+                                for (int i = components.Count - 1; i >= 0; i--)
+                                {
+
+                                    var component = components[i];
+
+                                    if (component.TypeId == "MyHierarchyComponentBase")
+                                    {
+                                        components.RemoveAt(i);
+                                        continue;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            MyObjectBuilder_Definitions builderDefinition = MyObjectBuilderSerializer.CreateNewObject<MyObjectBuilder_Definitions>();
+            builderDefinition.ShipBlueprints = new MyObjectBuilder_ShipBlueprintDefinition[] { definition };
+
+            return MyObjectBuilderSerializer.SerializeXML(path, false, builderDefinition);
+        }
+        public static bool SaveGridNoDelete(string path, string filename, bool keepOriginalOwner, bool keepProjection, List<MyObjectBuilder_CubeGrid> objectBuilders)
+        {
+
+            MyObjectBuilder_ShipBlueprintDefinition definition = MyObjectBuilderSerializer.CreateNewObject<MyObjectBuilder_ShipBlueprintDefinition>();
+
+            definition.Id = new MyDefinitionId(new MyObjectBuilderType(typeof(MyObjectBuilder_ShipBlueprintDefinition)), filename);
+            definition.CubeGrids = objectBuilders.Select(x => (MyObjectBuilder_CubeGrid)x.Clone()).ToArray();
+
+
+            /* Reset ownership as it will be different on the new server anyway */
+            foreach (MyObjectBuilder_CubeGrid cubeGrid in definition.CubeGrids)
+            {
+                foreach (MyObjectBuilder_CubeBlock cubeBlock in cubeGrid.CubeBlocks)
+                {
+
+                    if (!keepOriginalOwner)
+                    {
+                        cubeBlock.Owner = 0L;
+                        cubeBlock.BuiltBy = 0L;
+                    }
 
                     /* Remove Pilot and Components (like Characters) from cockpits */
                     if (cubeBlock is MyObjectBuilder_Cockpit cockpit)

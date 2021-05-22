@@ -36,6 +36,17 @@ namespace AlliancesPlugin
         public List<ulong> bankAccess = new List<ulong>();
         public long bankBalance = 0;
         public Boolean hasUnlockedShipyard = false;
+        public Boolean hasUnlockedHangar = false;
+
+        public HangarData LoadHangar()
+        {
+            if (hasUnlockedHangar)
+            {
+                FileUtils utils = new FileUtils();
+                return utils.ReadFromJsonFile<HangarData>(AlliancePlugin.path + "//HangarData//" + AllianceId + "//hangar.json");
+            }
+            return null;
+        }
         public PrintQueue LoadPrintQueue()
         {
             if (hasUnlockedShipyard)
