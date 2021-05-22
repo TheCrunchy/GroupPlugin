@@ -252,14 +252,35 @@ namespace AlliancesPlugin
                     File.WriteAllText(path + "//ShipyardUpgrades//SpeedUpgrade1.txt", output.ToString());
 
                 }
-                if (!File.Exists(path + "//UnlockCost.txt"))
+                if (!File.Exists(path + "//HangarUnlockCost.txt"))
                 {
 
                     StringBuilder output = new StringBuilder();
                     output.AppendLine("TypeId,SubtypeId,Amount");
                     output.AppendLine("MyObjectBuilder_Ingot,Uranium,5000");
                     output.AppendLine("Money,500000000");
-                    File.WriteAllText(path + "//UnlockCost.txt", output.ToString());
+                    File.WriteAllText(path + "//HangarUnlockCost.txt", output.ToString());
+
+                }
+                if (!File.Exists(path + "//HangarUpgrades//SlotUpgrade1.txt"))
+                {
+
+                    StringBuilder output = new StringBuilder();
+                    output.AppendLine("1,Slots,2");
+                    output.AppendLine("TypeId,SubtypeId,Amount");
+                    output.AppendLine("MyObjectBuilder_Ingot,Uranium,5000");
+                    output.AppendLine("Money,500000000");
+                    File.WriteAllText(path + "//HangarUpgrades//SlotUpgrade1.txt", output.ToString());
+
+                }
+                if (!File.Exists(path + "//ShipyardUnlockCost.txt"))
+                {
+
+                    StringBuilder output = new StringBuilder();
+                    output.AppendLine("TypeId,SubtypeId,Amount");
+                    output.AppendLine("MyObjectBuilder_Ingot,Uranium,5000");
+                    output.AppendLine("Money,500000000");
+                    File.WriteAllText(path + "//ShipyardUnlockCost.txt", output.ToString());
 
                 }
                 if (!File.Exists(path + "//ShipyardUpgrades//SlotUpgrade1.txt"))
@@ -302,14 +323,15 @@ namespace AlliancesPlugin
                     ReloadShipyard();
                 }
 
-                foreach (String s in Directory.GetFiles(path + "//KOTH//"))
-                {
+                    foreach (String s in Directory.GetFiles(path + "//KOTH//"))
+                    {
 
 
-                    KothConfig koth = utils.ReadFromXmlFile<KothConfig>(s);
+                        KothConfig koth = utils.ReadFromXmlFile<KothConfig>(s);
 
-                    KOTHs.Add(koth);
-                }
+                        KOTHs.Add(koth);
+                    }
+                
             }
         }
 
@@ -334,6 +356,10 @@ namespace AlliancesPlugin
             foreach (String s in Directory.GetFiles(path + "//ShipyardUpgrades//"))
             {
                 ShipyardCommands.LoadUpgradeCost(s);
+            }
+            foreach (String s in Directory.GetFiles(path + "//HangarUpgrades//"))
+            {
+                HangarCommands.LoadUpgradeCost(s);
             }
         }
         public int ticks;
@@ -417,8 +443,12 @@ namespace AlliancesPlugin
             }
             try
             {
-
+                
                 if (TorchState != TorchSessionState.Loaded)
+                {
+                    return;
+                }
+                if (!config.KothEnabled)
                 {
                     return;
                 }

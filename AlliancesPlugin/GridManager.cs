@@ -283,7 +283,7 @@ namespace AlliancesPlugin
             return MyObjectBuilderSerializer.SerializeXML(path, false, builderDefinition);
         }
 
-        public static bool LoadGrid(string path, Vector3D playerPosition, bool keepOriginalLocation, ulong steamID, bool force = false, CommandContext context = null)
+        public static bool LoadGrid(string path, Vector3D playerPosition, bool keepOriginalLocation, ulong steamID, String name, bool force = false, CommandContext context = null)
         {
             if (MyObjectBuilderSerializer.DeserializeXML(path, out MyObjectBuilder_Definitions myObjectBuilder_Definitions))
             {
@@ -304,7 +304,7 @@ namespace AlliancesPlugin
                 foreach (var shipBlueprint in shipBlueprints)
                 {
 
-                    if (!LoadShipBlueprint(shipBlueprint, playerPosition, keepOriginalLocation, (long)steamID, context, force))
+                    if (!LoadShipBlueprint(shipBlueprint, playerPosition, keepOriginalLocation, (long)steamID, name, context, force))
                     {
 
                         Log.Warn("Error Loading ShipBlueprints from File '" + path + "'");
@@ -322,46 +322,8 @@ namespace AlliancesPlugin
         
 
 
-        public static int getPCUOfProjection(MyCubeGrid projectedGrid)
-        {
-            List<MyObjectBuilder_CubeGrid> objectBuilders = new List<MyObjectBuilder_CubeGrid>();
-
-
-            /* What else should it be? LOL? */
-            if (!(projectedGrid.GetObjectBuilder(true) is MyObjectBuilder_CubeGrid objectBuilder))
-                throw new ArgumentException(projectedGrid + " has a ObjectBuilder thats not for a CubeGrid");
-
-            objectBuilders.Add(objectBuilder);
-
-
-            MyObjectBuilder_ShipBlueprintDefinition definition = MyObjectBuilderSerializer.CreateNewObject<MyObjectBuilder_ShipBlueprintDefinition>();
-
-            definition.Id = new MyDefinitionId(new MyObjectBuilderType(typeof(MyObjectBuilder_ShipBlueprintDefinition)), "alan");
-            definition.CubeGrids = objectBuilders.Select(x => (MyObjectBuilder_CubeGrid)x.Clone()).ToArray();
-
-
-
-
-
-            int count = 0;
-
-
-            if (definition.CubeGrid != null)
-            {
-                count += definition.CubeGrid.CalculatePCUs();
-            }
-
-
-            if (count == 0)
-            {
-                return 60000;
-            }
-
-            return count;
-        }
-
         public static bool LoadShipBlueprint(MyObjectBuilder_ShipBlueprintDefinition shipBlueprint,
-            Vector3D playerPosition, bool keepOriginalLocation, long steamID, CommandContext context = null, bool force = false)
+            Vector3D playerPosition, bool keepOriginalLocation, long steamID, string Name, CommandContext context = null, bool force = false )
         {
             var grids = shipBlueprint.CubeGrids;
 
@@ -378,7 +340,6 @@ namespace AlliancesPlugin
 
             foreach (var grid in grids)
             {
-                grid.DisplayName = steamID.ToString();
                 foreach (MyObjectBuilder_CubeBlock block in grid.CubeBlocks)
                 {
                     long ownerID = AlliancePlugin.GetIdentityByNameOrId(steamID.ToString()).IdentityId;
@@ -417,7 +378,7 @@ namespace AlliancesPlugin
                     return false;
                 }
                 Sandbox.Game.Entities.Character.MyCharacter player = MySession.Static.Players.GetPlayerByName(AlliancePlugin.GetIdentityByNameOrId(steamID.ToString()).DisplayName).Character;
-                MyGps gps = CreateGps(pos.Value, Color.LightGreen, 60);
+                MyGps gps = CreateGps(pos.Value, Color.LightGreen, 60, Name);
                 MyGpsCollection gpsCollection = (MyGpsCollection)MyAPIGateway.Session?.GPS;
                 MyGps gpsRef = gps;
                 long entityId = 0L;
@@ -477,14 +438,14 @@ namespace AlliancesPlugin
 
             return true;
         }
-        private static MyGps CreateGps(Vector3D Position, Color gpsColor, int seconds)
+        private static MyGps CreateGps(Vector3D Position, Color gpsColor, int seconds, string Name)
         {
 
             MyGps gps = new MyGps
             {
                 Coords = Position,
-                Name = "Paste Position",
-                DisplayName = "Paste Position",
+                Name = Name.Split('_')[0],
+                DisplayName = Name.Split('_')[0] + " Paste Position",
                 GPSColor = gpsColor,
                 IsContainerGPS = true,
                 ShowOnHud = true,

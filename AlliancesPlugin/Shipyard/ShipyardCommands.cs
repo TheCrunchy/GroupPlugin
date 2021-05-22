@@ -125,7 +125,7 @@ namespace AlliancesPlugin
         [Permission(MyPromoteLevel.Admin)]
         public void ShipyardAdminInfo(string tag)
         {
-            if (!AlliancePlugin.shipyardConfig.enabled)
+            if (!AlliancePlugin.config.ShipyardEnabled)
             {
                 Context.Respond("Shipyard not enabled.");
                 return;
@@ -139,7 +139,7 @@ namespace AlliancesPlugin
         [Permission(MyPromoteLevel.None)]
         public void ShipyardLog(string timeformat = "MM-dd-yyyy")
         {
-            if (!AlliancePlugin.shipyardConfig.enabled)
+            if (!AlliancePlugin.config.ShipyardEnabled)
             {
                 Context.Respond("Shipyard not enabled.");
                 return;
@@ -191,7 +191,7 @@ namespace AlliancesPlugin
         [Permission(MyPromoteLevel.None)]
         public void ShipyardInfo()
         {
-            if (!AlliancePlugin.shipyardConfig.enabled)
+            if (!AlliancePlugin.config.ShipyardEnabled)
             {
                 Context.Respond("Shipyard not enabled.");
                 return;
@@ -308,7 +308,7 @@ namespace AlliancesPlugin
             return cost;
         }
 
-        public static UpgradeCost LoadUnlockCost(string path, Alliance alliance, PrintQueue queue)
+        public static UpgradeCost LoadUnlockCost(string path)
         {
             if (!File.Exists(path))
             {
@@ -352,7 +352,7 @@ namespace AlliancesPlugin
         [Permission(MyPromoteLevel.None)]
         public void Unlock()
         {
-            if (!AlliancePlugin.shipyardConfig.enabled)
+            if (!AlliancePlugin.config.ShipyardEnabled)
             {
                 Context.Respond("Shipyard not enabled.");
                 return;
@@ -381,94 +381,94 @@ namespace AlliancesPlugin
                 }
                 if (!alliance.hasUnlockedShipyard)
                 {
+
+                    ConcurrentBag<MyGroups<MyCubeGrid, MyGridPhysicalGroupData>.Group> gridWithSubGrids = GridFinder.FindLookAtGridGroup(Context.Player.Character);
+
+
+                    List<MyCubeGrid> grids = new List<MyCubeGrid>();
+                    foreach (var item in gridWithSubGrids)
                     {
-                        ConcurrentBag<MyGroups<MyCubeGrid, MyGridPhysicalGroupData>.Group> gridWithSubGrids = GridFinder.FindLookAtGridGroup(Context.Player.Character);
-
-
-                        List<MyCubeGrid> grids = new List<MyCubeGrid>();
-                        foreach (var item in gridWithSubGrids)
+                        foreach (MyGroups<MyCubeGrid, MyGridPhysicalGroupData>.Node groupNodes in item.Nodes)
                         {
-                            foreach (MyGroups<MyCubeGrid, MyGridPhysicalGroupData>.Node groupNodes in item.Nodes)
+                            MyCubeGrid grid = groupNodes.NodeData;
+
+
+
+                            if (grid.Projector != null)
+                                continue;
+
+                            if (FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid)) != null)
                             {
-                                MyCubeGrid grid = groupNodes.NodeData;
-
-
-
-                                if (grid.Projector != null)
-                                    continue;
-
-                                if (FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid)) != null)
+                                if (FacUtils.InSameFaction(FacUtils.GetOwner(grid), Context.Player.IdentityId))
                                 {
-                                    if (FacUtils.InSameFaction(FacUtils.GetOwner(grid), Context.Player.IdentityId))
-                                    {
-                                        if (!grids.Contains(grid))
-                                            grids.Add(grid);
-                                    }
-                                }
-                                else
-                                {
-                                    if (FacUtils.GetOwner(grid).Equals(Context.Player.Identity.IdentityId))
-                                    {
-                                        if (!grids.Contains(grid))
-                                            grids.Add(grid);
-                                    }
-                                }
-                            }
-                        }
-                        //Do stuff with taking components from grid storage
-                        //GridCosts localGridCosts = GetComponentsAndCost(projectedGrid);
-                        //gridCosts.setComponents(localGridCosts.getComponents());
-
-                        UpgradeCost cost = new UpgradeCost();
-                        List<VRage.Game.ModAPI.IMyInventory> invents = new List<VRage.Game.ModAPI.IMyInventory>();
-                        foreach (MyCubeGrid grid in grids)
-                        {
-                            invents.AddList(GetInventories(grid));
-                        }
-
-
-                        cost = LoadUnlockCost(AlliancePlugin.path + "//UnlockCost.txt", alliance, queue);
-                        if (cost != null)
-                        {
-
-                            if (cost.MoneyRequired > 0)
-                            {
-                                if (EconUtils.getBalance(Context.Player.IdentityId) >= cost.MoneyRequired)
-                                {
-                                    if (ConsumeComponents(invents, cost.itemsRequired))
-                                    {
-                                        EconUtils.takeMoney(Context.Player.IdentityId, cost.MoneyRequired);
-                                        alliance.hasUnlockedShipyard = true;
-                                        queue.upgradeSlots = 1;
-                                        alliance.SavePrintQueue(queue);
-                                        AlliancePlugin.SaveAllianceData(alliance);
-                                        SendMessage("[Shipyard]", "Unlocking the shipyard. You were charged: " + String.Format("{0:n0}", cost.MoneyRequired) + " and components taken", Color.Green, (long)Context.Player.SteamUserId);
-
-                                    }
-                                }
-                                else
-                                {
-                                    SendMessage("[Shipyard]", "You cant afford the upgrade price of: " + String.Format("{0:n0}", cost.MoneyRequired), Color.Red, (long)Context.Player.SteamUserId);
+                                    if (!grids.Contains(grid))
+                                        grids.Add(grid);
                                 }
                             }
                             else
                             {
-                                if (ConsumeComponents(invents, cost.itemsRequired))
+                                if (FacUtils.GetOwner(grid).Equals(Context.Player.Identity.IdentityId))
                                 {
+                                    if (!grids.Contains(grid))
+                                        grids.Add(grid);
+                                }
+                            }
+                        }
+                    }
+                    //Do stuff with taking components from grid storage
+                    //GridCosts localGridCosts = GetComponentsAndCost(projectedGrid);
+                    //gridCosts.setComponents(localGridCosts.getComponents());
+
+                    UpgradeCost cost = new UpgradeCost();
+                    List<VRage.Game.ModAPI.IMyInventory> invents = new List<VRage.Game.ModAPI.IMyInventory>();
+                    foreach (MyCubeGrid grid in grids)
+                    {
+                        invents.AddList(GetInventories(grid));
+                    }
+
+
+                    cost = LoadUnlockCost(AlliancePlugin.path + "//ShipyardUnlockCost.txt");
+                    if (cost != null)
+                    {
+
+                        if (cost.MoneyRequired > 0)
+                        {
+                            if (EconUtils.getBalance(Context.Player.IdentityId) >= cost.MoneyRequired)
+                            {
+                                if (ConsumeComponents(invents, cost.itemsRequired, Context.Player.SteamUserId))
+                                {
+                                    EconUtils.takeMoney(Context.Player.IdentityId, cost.MoneyRequired);
                                     alliance.hasUnlockedShipyard = true;
                                     queue.upgradeSlots = 1;
                                     alliance.SavePrintQueue(queue);
                                     AlliancePlugin.SaveAllianceData(alliance);
+                                    SendMessage("[Shipyard]", "Unlocking the shipyard. You were charged: " + String.Format("{0:n0}", cost.MoneyRequired) + " and components taken", Color.Green, (long)Context.Player.SteamUserId);
+
                                 }
+                            }
+                            else
+                            {
+                                SendMessage("[Shipyard]", "You cant afford the upgrade price of: " + String.Format("{0:n0}", cost.MoneyRequired), Color.Red, (long)Context.Player.SteamUserId);
                             }
                         }
                         else
                         {
-                            Context.Respond("Error loading upgrade details.");
-                            return;
+                            if (ConsumeComponents(invents, cost.itemsRequired, Context.Player.SteamUserId))
+                            {
+                                alliance.hasUnlockedShipyard = true;
+                                queue.upgradeSlots = 1;
+                                alliance.SavePrintQueue(queue);
+                                AlliancePlugin.SaveAllianceData(alliance);
+                            }
                         }
-
                     }
+                    else
+                    {
+                        Context.Respond("Error loading upgrade details.");
+                        return;
+                    }
+
+
 
                 }
             }
@@ -478,7 +478,7 @@ namespace AlliancesPlugin
         [Permission(MyPromoteLevel.None)]
         public void Upgrade(string type = "", Boolean upgrade = false)
         {
-            if (!AlliancePlugin.shipyardConfig.enabled)
+            if (!AlliancePlugin.config.ShipyardEnabled)
             {
                 Context.Respond("Shipyard not enabled.");
                 return;
@@ -530,11 +530,11 @@ namespace AlliancesPlugin
 
                             try
                             {
-                                cost = speedUpgrades[queue.SpeedUpgrade+=1];
+                                cost = speedUpgrades[queue.SpeedUpgrade += 1];
                             }
                             catch (Exception ex)
                             {
-                                Context.Respond(ex.ToString());
+                            
                                 Context.Respond("Cannot upgrade any further as there are no more defined upgrade files.");
                                 return;
                             }
@@ -671,7 +671,7 @@ namespace AlliancesPlugin
                                 {
                                     if (EconUtils.getBalance(Context.Player.IdentityId) >= cost.MoneyRequired)
                                     {
-                                        if (ConsumeComponents(invents, cost.itemsRequired))
+                                        if (ConsumeComponents(invents, cost.itemsRequired, Context.Player.SteamUserId))
                                         {
                                             EconUtils.takeMoney(Context.Player.IdentityId, cost.MoneyRequired);
                                             queue.upgradeSpeed = (float)cost.NewLevel;
@@ -687,12 +687,12 @@ namespace AlliancesPlugin
                                 }
                                 else
                                 {
-                                    if (ConsumeComponents(invents, cost.itemsRequired))
+                                    if (ConsumeComponents(invents, cost.itemsRequired, Context.Player.SteamUserId))
                                     {
                                         queue.upgradeSpeed = (float)cost.NewLevel;
                                         queue.SpeedUpgrade++;
                                         alliance.SavePrintQueue(queue);
-                                  
+
                                     }
                                 }
                             }
@@ -725,7 +725,7 @@ namespace AlliancesPlugin
                                 {
                                     if (EconUtils.getBalance(Context.Player.IdentityId) >= cost.MoneyRequired)
                                     {
-                                        if (ConsumeComponents(invents, cost.itemsRequired))
+                                        if (ConsumeComponents(invents, cost.itemsRequired, Context.Player.SteamUserId))
                                         {
                                             EconUtils.takeMoney(Context.Player.IdentityId, cost.MoneyRequired);
                                             queue.upgradeSlots = (int)cost.NewLevel;
@@ -741,7 +741,7 @@ namespace AlliancesPlugin
                                 }
                                 else
                                 {
-                                    if (ConsumeComponents(invents, cost.itemsRequired))
+                                    if (ConsumeComponents(invents, cost.itemsRequired, Context.Player.SteamUserId))
                                     {
                                         queue.upgradeSlots = (int)cost.NewLevel;
                                         alliance.SavePrintQueue(queue);
@@ -767,7 +767,7 @@ namespace AlliancesPlugin
         [Permission(MyPromoteLevel.Admin)]
         public void ClaimPrintAdmin(string factionTag, string name, string targetPlayerName)
         {
-            if (!AlliancePlugin.shipyardConfig.enabled)
+            if (!AlliancePlugin.config.ShipyardEnabled)
             {
                 Context.Respond("Shipyard not enabled.");
                 return;
@@ -797,7 +797,7 @@ namespace AlliancesPlugin
             }
             if (File.Exists(System.IO.Path.Combine(AlliancePlugin.path + "\\ShipyardData\\" + alliance.AllianceId + "\\") + name + ".xml"))
             {
-                if (GridManager.LoadGrid(System.IO.Path.Combine(AlliancePlugin.path + "\\ShipyardData\\" + alliance.AllianceId + "\\") + name + ".xml", player.GetPosition(), false, player.Id.SteamId))
+                if (GridManager.LoadGrid(System.IO.Path.Combine(AlliancePlugin.path + "\\ShipyardData\\" + alliance.AllianceId + "\\") + name + ".xml", player.GetPosition(), false, player.Id.SteamId, name))
                 {
                     Context.Respond("Loaded grid");
                 }
@@ -815,7 +815,7 @@ namespace AlliancesPlugin
         [Permission(MyPromoteLevel.Admin)]
         public void PurgeClaimedPrints()
         {
-            if (!AlliancePlugin.shipyardConfig.enabled)
+            if (!AlliancePlugin.config.ShipyardEnabled)
             {
                 Context.Respond("Shipyard not enabled.");
                 return;
@@ -863,7 +863,7 @@ namespace AlliancesPlugin
         [Permission(MyPromoteLevel.None)]
         public void ClaimPrint(string slotNumber)
         {
-            if (!AlliancePlugin.shipyardConfig.enabled)
+            if (!AlliancePlugin.config.ShipyardEnabled)
             {
                 Context.Respond("Shipyard not enabled.");
                 return;
@@ -928,7 +928,7 @@ namespace AlliancesPlugin
                                 return;
                             }
                         }
-                        if (GridManager.LoadGrid(System.IO.Path.Combine(AlliancePlugin.path + "\\ShipyardData\\" + alliance.AllianceId + "\\") + item.name + ".xml", Context.Player.GetPosition(), false, Context.Player.SteamUserId))
+                        if (GridManager.LoadGrid(System.IO.Path.Combine(AlliancePlugin.path + "\\ShipyardData\\" + alliance.AllianceId + "\\") + item.name + ".xml", Context.Player.GetPosition(), false, Context.Player.SteamUserId, item.name))
                         {
                             PrintLog log = queue.GetLog(alliance);
                             PrintLogItem newLog = new PrintLogItem();
@@ -980,7 +980,7 @@ namespace AlliancesPlugin
         }
 
 
-        private List<VRage.Game.ModAPI.IMyInventory> GetInventories(MyCubeGrid grid)
+        public static List<VRage.Game.ModAPI.IMyInventory> GetInventories(MyCubeGrid grid)
         {
             List<VRage.Game.ModAPI.IMyInventory> inventories = new List<VRage.Game.ModAPI.IMyInventory>();
 
@@ -998,7 +998,7 @@ namespace AlliancesPlugin
         }
 
 
-        private bool ConsumeComponents(IEnumerable<VRage.Game.ModAPI.IMyInventory> inventories, IDictionary<MyDefinitionId, int> components)
+        public static bool ConsumeComponents(IEnumerable<VRage.Game.ModAPI.IMyInventory> inventories, IDictionary<MyDefinitionId, int> components, ulong steamid)
         {
             List<MyTuple<VRage.Game.ModAPI.IMyInventory, VRage.Game.ModAPI.IMyInventoryItem, VRage.MyFixedPoint>> toRemove = new List<MyTuple<VRage.Game.ModAPI.IMyInventory, VRage.Game.ModAPI.IMyInventoryItem, VRage.MyFixedPoint>>();
             foreach (KeyValuePair<MyDefinitionId, int> c in components)
@@ -1006,7 +1006,7 @@ namespace AlliancesPlugin
                 MyFixedPoint needed = CountComponents(inventories, c.Key, c.Value, toRemove);
                 if (needed > 0)
                 {
-                    SendMessage("[Shipyard]", "Missing " + needed + " " + c.Key.SubtypeName + " All components must be inside one grid.", Color.Red, (long)Context.Player.SteamUserId);
+                    SendMessage("[Shipyard]", "Missing " + needed + " " + c.Key.SubtypeName + " All components must be inside one grid.", Color.Red, (long) steamid);
 
                     return false;
                 }
@@ -1021,7 +1021,7 @@ namespace AlliancesPlugin
         }
 
 
-        private MyFixedPoint CountComponents(IEnumerable<VRage.Game.ModAPI.IMyInventory> inventories, MyDefinitionId id, int amount, ICollection<MyTuple<VRage.Game.ModAPI.IMyInventory, VRage.Game.ModAPI.IMyInventoryItem, MyFixedPoint>> items)
+        public static MyFixedPoint CountComponents(IEnumerable<VRage.Game.ModAPI.IMyInventory> inventories, MyDefinitionId id, int amount, ICollection<MyTuple<VRage.Game.ModAPI.IMyInventory, VRage.Game.ModAPI.IMyInventoryItem, MyFixedPoint>> items)
         {
             MyFixedPoint targetAmount = amount;
             foreach (VRage.Game.ModAPI.IMyInventory inv in inventories)
@@ -1046,7 +1046,7 @@ namespace AlliancesPlugin
         }
 
 
-        private static void GetComponents(MyCubeBlockDefinition def, IDictionary<MyDefinitionId, int> components)
+        public static void GetComponents(MyCubeBlockDefinition def, IDictionary<MyDefinitionId, int> components)
         {
             if (def?.Components != null)
             {
@@ -1063,7 +1063,7 @@ namespace AlliancesPlugin
         }
 
 
-        private static Dictionary<MyDefinitionId, int> GetComponents(VRage.Game.ModAPI.IMyCubeGrid projection)
+        public static Dictionary<MyDefinitionId, int> GetComponents(VRage.Game.ModAPI.IMyCubeGrid projection)
         {
             Dictionary<MyDefinitionId, int> comps = new Dictionary<MyDefinitionId, int>();
             List<VRage.Game.ModAPI.IMySlimBlock> temp = new List<VRage.Game.ModAPI.IMySlimBlock>(0);
@@ -1080,18 +1080,22 @@ namespace AlliancesPlugin
         [Permission(MyPromoteLevel.None)]
         public void start(string name)
         {
-            if (!AlliancePlugin.shipyardConfig.enabled)
+            if (!AlliancePlugin.config.ShipyardEnabled)
             {
                 Context.Respond("Shipyard not enabled.");
                 return;
             }
             Regex regex = new Regex("^[0-9a-zA-Z ]{3,25}$");
             Match match = Regex.Match(name, "^[0-9a-zA-Z ]{3,25}$", RegexOptions.IgnoreCase);
+
             if (!match.Success || string.IsNullOrEmpty(name))
             {
                 Context.Respond("Name does not validate, try again.");
                 return;
             }
+            name = name.Replace("/", "");
+            name = name.Replace("-", "");
+            name = name.Replace("\\", "");
             IMyPlayer player = Context.Player;
             long playerId;
             double cost = 0;
@@ -1192,7 +1196,7 @@ namespace AlliancesPlugin
                                     return;
 
                                 }
-                               
+
                                 store = grid;
                                 VRage.Game.ModAPI.IMyCubeGrid projectedGrid = projector.ProjectedGrid;
                                 if (projectedGrid == null)
@@ -1326,7 +1330,7 @@ namespace AlliancesPlugin
                     }
                 }
                 var diff = end.Subtract(DateTime.Now);
-                if (ConsumeComponents(inventories, gridCosts.getComponents()))
+                if (ConsumeComponents(inventories, gridCosts.getComponents(), Context.Player.SteamUserId))
                 {
                     PrintLog log = queue.GetLog(alliance);
                     PrintLogItem newLog = new PrintLogItem();

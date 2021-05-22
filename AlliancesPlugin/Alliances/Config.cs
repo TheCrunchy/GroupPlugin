@@ -13,8 +13,8 @@ namespace AlliancesPlugin
 
         public Boolean ShipyardEnabled = false;
         public Boolean HangarEnabled = false;
-        
-        public int MaxHangarSlots = 1;
+        public Boolean KothEnabled = false;
+        public int MaxHangarSlots = 10;
      
 
     }

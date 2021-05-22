@@ -38,6 +38,10 @@ namespace AlliancesPlugin
             }
             return utils.ReadFromJsonFile<HangarLog>(AlliancePlugin.path + "//HangarData//" + alliance.AllianceId + "//log.json");
         }
+        public void SaveHangar(Alliance alliance)
+        {
+            utils.WriteToJsonFile<HangarData>(AlliancePlugin.path + "//HangarData//" + alliance.AllianceId + "//hangar.json", this);
+        }
         public int getAvailableSlot()
         {
             for (int i = 1; i <= SlotsAmount; i++)
@@ -49,45 +53,9 @@ namespace AlliancesPlugin
             }
             return 0;
         }
-        public Boolean SaveGridToHangar(String gridName, ulong steamid, Alliance alliance, Vector3D position, MyFaction faction, List<MyCubeGrid> gridsToSave)
+        public Boolean SaveGridToHangar(String gridName, ulong steamid, Alliance alliance, Vector3D position, MyFaction faction, List<MyCubeGrid> gridsToSave, long IdentityId)
         {
-            List<VRage.ModAPI.IMyEntity> inRange = new List<VRage.ModAPI.IMyEntity>();
-            BoundingSphereD sphere = new BoundingSphereD(position, 15000);
-            inRange = MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere);
-            foreach (VRage.ModAPI.IMyEntity ent in inRange)
-            {
-                if (ent is MyCubeGrid grid)
-                {
-                    if (FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid)) != null)
-                    {
-                        if (!MySession.Static.Factions.AreFactionsFriends(faction.FactionId, FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid)).FactionId))
-                        {
-                            return false;
-                        }
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                }
-                else
-                {
-                    if (ent is MyCharacter character)
-                    {
-                        if (MySession.Static.Factions.GetPlayerFaction(character.GetIdentity().IdentityId) != null)
-                        {
-                            if (!MySession.Static.Factions.AreFactionsFriends(faction.FactionId, MySession.Static.Factions.GetPlayerFaction(character.GetIdentity().IdentityId).FactionId))
-                            {
-                                return false;
-                            }
-                        }
-                        else
-                        {
-                            return false;
-                        }
-                    }
-                }
-            }
+  
             HangarLog log = GetHangarLog(alliance);
             HangarLogItem item = new HangarLogItem();
             item.action = "Saved";
@@ -96,50 +64,20 @@ namespace AlliancesPlugin
             item.time = DateTime.Now;
             log.log.Add(item);
             utils.WriteToJsonFile<HangarLog>(AlliancePlugin.path + "//HangarData//" + alliance.AllianceId + "//log.json", log);
+            HangarItem hangItem = new HangarItem();
+            hangItem.name = gridName;
+                hangItem.steamid = steamid;
+            hangItem.position = position;
+            ItemsInHangar.Add(getAvailableSlot(), hangItem);
             GridManager.SaveGridNoDelete(System.IO.Path.Combine(AlliancePlugin.path + "//HangarData//" + alliance.AllianceId + "//" + gridName + ".xml"), gridName, false, true, gridsToSave);
+            utils.WriteToJsonFile<HangarData>(AlliancePlugin.path + "//HangarData//" + alliance.AllianceId + "//hangar.json", this);
             return true;
         }
         public Boolean LoadGridFromHangar(int slotNum, ulong steamid, Alliance alliance, MyIdentity identity, MyFaction faction)
         {
            
-            List<VRage.ModAPI.IMyEntity> inRange = new List<VRage.ModAPI.IMyEntity>();
-            BoundingSphereD sphere = new BoundingSphereD(ItemsInHangar[slotNum].position, 15000);
-           inRange = MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere);
-            foreach (VRage.ModAPI.IMyEntity ent in inRange)
-            {
-                if (ent is MyCubeGrid grid)
-                {
-                   if (FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid)) != null)
-                    {
-                        if (!MySession.Static.Factions.AreFactionsFriends(faction.FactionId, FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid)).FactionId))
-                        {
-                            return false;
-                        }
-                    }
-                   else
-                    {
-                        return false;
-                    }
-                }
-                else
-                {
-                    if (ent is MyCharacter character)
-                    {
-                        if (MySession.Static.Factions.GetPlayerFaction(character.GetIdentity().IdentityId) != null)
-                        {
-                            if (!MySession.Static.Factions.AreFactionsFriends(faction.FactionId, MySession.Static.Factions.GetPlayerFaction(character.GetIdentity().IdentityId).FactionId))
-                            {
-                                return false;
-                            }
-                        }
-                        else
-                        {
-                            return false;
-                        }
-                    }
-                }
-            }
-            if (GridManager.LoadGrid(System.IO.Path.Combine(AlliancePlugin.path + "//HangarData//" + alliance.AllianceId + "//" + ItemsInHangar[slotNum].name + ".xml"), ItemsInHangar[slotNum].position, false, steamid))
+          
+            if (GridManager.LoadGrid(System.IO.Path.Combine(AlliancePlugin.path + "//HangarData//" + alliance.AllianceId + "//" + ItemsInHangar[slotNum].name + ".xml"), ItemsInHangar[slotNum].position, false, steamid, ItemsInHangar[slotNum].name))
                 {
                 HangarLog log = GetHangarLog(alliance);
                 HangarLogItem item = new HangarLogItem();
@@ -149,6 +87,21 @@ namespace AlliancesPlugin
                 item.time = DateTime.Now;
                 log.log.Add(item);
                 utils.WriteToJsonFile<HangarLog>(AlliancePlugin.path + "//HangarData//" + alliance.AllianceId + "//log.json", log);
+                ItemsInHangar.Remove(slotNum);
+                List<HangarItem> temp = new List<HangarItem>();
+                foreach (HangarItem hangitem in ItemsInHangar.Values)
+                {
+                    temp.Add(hangitem);
+                }
+                ItemsInHangar.Clear();
+                int i = 1;
+                foreach (HangarItem hangitem in temp)
+                {
+                    ItemsInHangar.Add(i, hangitem);
+                    i++;
+                }
+                utils.WriteToJsonFile<HangarData>(AlliancePlugin.path + "//HangarData//" + alliance.AllianceId + "//hangar.json", this);
+
             }
             else
             {

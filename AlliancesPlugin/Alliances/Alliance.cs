@@ -37,12 +37,21 @@ namespace AlliancesPlugin
         public long bankBalance = 0;
         public Boolean hasUnlockedShipyard = false;
         public Boolean hasUnlockedHangar = false;
-
+        FileUtils utils = new FileUtils();
         public HangarData LoadHangar()
         {
             if (hasUnlockedHangar)
             {
-                FileUtils utils = new FileUtils();
+                if (!Directory.Exists(AlliancePlugin.path + "//HangarData//" + AllianceId + "//"))
+                {
+                    Directory.CreateDirectory(AlliancePlugin.path + "//HangarData//" + AllianceId + "//");
+                }
+                if (!File.Exists(AlliancePlugin.path + "//HangarData//" + AllianceId + "//hangar.json")){
+                    HangarData data = new HangarData();
+                    data.allianceId = AllianceId;
+                    utils.WriteToJsonFile<HangarData>(AlliancePlugin.path + "//HangarData//" + AllianceId + "//hangar.json", data);
+                }
+         
                 return utils.ReadFromJsonFile<HangarData>(AlliancePlugin.path + "//HangarData//" + AllianceId + "//hangar.json");
             }
             return null;
@@ -51,7 +60,6 @@ namespace AlliancesPlugin
         {
             if (hasUnlockedShipyard)
             {
-                FileUtils utils = new FileUtils();
                 return utils.ReadFromJsonFile<PrintQueue>(AlliancePlugin.path + "//ShipyardData//" + AllianceId + "//queue.json");
             }
             return null;
@@ -60,7 +68,6 @@ namespace AlliancesPlugin
         private Dictionary<String, StringBuilder> otherTitlesDic = new Dictionary<string, StringBuilder>();
         public void SavePrintQueue(PrintQueue queue)
         {
-            FileUtils utils = new FileUtils();
             if (!Directory.Exists(AlliancePlugin.path + "//ShipyardData//" + AllianceId)){
                 Directory.CreateDirectory(AlliancePlugin.path + "//ShipyardData//" + AllianceId);
             }
@@ -72,7 +79,6 @@ namespace AlliancesPlugin
         public void PayPlayer(Int64 amount, ulong steamid, ulong targetId)
         {
             bankBalance -= amount;
-            FileUtils utils = new FileUtils();
             BankLog log = GetLog();
             BankLogItem item = new BankLogItem();
             item.SteamId = steamid;
@@ -87,7 +93,6 @@ namespace AlliancesPlugin
 
         public void PayDividend(Int64 amount, List<long> ids, ulong steamid)
         {
-            FileUtils utils = new FileUtils();
             Int64 amountToPay = amount / ids.Count();
             BankLog log = GetLog();
             foreach (long id in ids)
@@ -109,7 +114,6 @@ namespace AlliancesPlugin
         public void PayFaction(Int64 amount, ulong steamid, long factionid)
         {
             bankBalance -= amount;
-            FileUtils utils = new FileUtils();
             BankLog log = GetLog();
             BankLogItem item = new BankLogItem();
             item.SteamId = steamid;
@@ -124,7 +128,6 @@ namespace AlliancesPlugin
         public void WithdrawMoney(Int64 amount, ulong steamid)
         {
             bankBalance -= amount;
-            FileUtils utils = new FileUtils();
             BankLog log = GetLog();
             BankLogItem item = new BankLogItem();
             item.SteamId = steamid;
@@ -138,7 +141,6 @@ namespace AlliancesPlugin
         public void DepositMoney(Int64 amount, ulong steamid)
         {
             bankBalance += amount;
-            FileUtils utils = new FileUtils();
             BankLog log = GetLog();
             BankLogItem item = new BankLogItem();
             item.SteamId = steamid;
@@ -151,7 +153,6 @@ namespace AlliancesPlugin
         }
         public BankLog GetLog()
         {
-            FileUtils utils = new FileUtils();
             if (!Directory.Exists(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId))
             {
                 Directory.CreateDirectory(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId +"//");

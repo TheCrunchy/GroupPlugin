@@ -30,3 +30,9 @@
 !koth unlock name
 !koth output - output the loaded koths
 !koth reload - reload config
+
+!ah unlock - unlock the hangar
+!ah log - view the log
+!ah list - list the grids in hangar
+!ah save - save an owned grid or faction owned grid to hangar 
+!ah load num - load the grid in that slot, if it is player that saved or officer rank or above
