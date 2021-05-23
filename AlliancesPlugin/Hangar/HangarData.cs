@@ -101,7 +101,7 @@ namespace AlliancesPlugin
                     i++;
                 }
                 utils.WriteToJsonFile<HangarData>(AlliancePlugin.path + "//HangarData//" + alliance.AllianceId + "//hangar.json", this);
-
+                File.Delete(AlliancePlugin.path + "//HangarData//" + alliance.AllianceId + "//" + ItemsInHangar[slotNum].name + ".xml");
             }
             else
             {
