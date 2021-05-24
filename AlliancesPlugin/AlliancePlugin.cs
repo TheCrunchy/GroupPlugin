@@ -515,16 +515,18 @@ namespace AlliancesPlugin
                                 else
                                 {
                                     if (messageCooldowns.ContainsKey(player.Identity.IdentityId))
+                                    {
                                         if (DateTime.Now < messageCooldowns[player.Identity.IdentityId])
                                             continue;
-                                    if (Distance <= 500)
-                                    {
-                                        NotificationMessage message;
+                                        if (Distance <= 500)
+                                        {
+                                            NotificationMessage message;
 
-                                        message = new NotificationMessage("You will jump in " + Distance + " meters", 1000, "Green");
-                                        //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
-                                        ModCommunication.SendMessageTo(message, player.Id.SteamId);
-                                        messageCooldowns[player.Identity.IdentityId] = DateTime.Now.AddSeconds(2);
+                                            message = new NotificationMessage("You will jump in " + Distance + " meters", 1000, "Green");
+                                            //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
+                                            ModCommunication.SendMessageTo(message, player.Id.SteamId);
+                                            messageCooldowns[player.Identity.IdentityId] = DateTime.Now.AddMilliseconds(500);
+                                        }
                                     }
                                     else
                                     {
@@ -533,7 +535,7 @@ namespace AlliancesPlugin
                                         message = new NotificationMessage("You will jump in " + Distance + " meters", 1000, "Green");
                                         //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
                                         ModCommunication.SendMessageTo(message, player.Id.SteamId);
-                                        messageCooldowns.Add(player.Identity.IdentityId,DateTime.Now.AddSeconds(2));
+                                        messageCooldowns.Add(player.Identity.IdentityId, DateTime.Now.AddMilliseconds(500));
                                     }
                                 }
                             }
