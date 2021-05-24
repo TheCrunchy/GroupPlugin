@@ -476,6 +476,13 @@ namespace AlliancesPlugin
             {
                 if (EconUtils.getBalance(player.Identity.IdentityId) >= gate.fee)
                 {
+                    foreach (Alliance alliance in AllAlliances.Values)
+                    {
+                        if (alliance.AllianceId == gate.OwnerAlliance)
+                        {
+                            alliance.GateFee(gate.fee, player.Id.SteamId, gate.GateName);
+                        }
+                    }
                     EconUtils.takeMoney(player.Identity.IdentityId, gate.fee);
                     return true;
                 }

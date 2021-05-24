@@ -151,6 +151,19 @@ namespace AlliancesPlugin
             log.log.Add(item);
             utils.WriteToJsonFile<BankLog>(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId + "//log.json", log);
         }
+        public void GateFee(Int64 amount, ulong steamid, string GateName)
+        {
+            bankBalance += amount;
+            BankLog log = GetLog();
+            BankLogItem item = new BankLogItem();
+            item.SteamId = steamid;
+            item.Amount = amount;
+            item.TimeClaimed = DateTime.Now;
+            item.Action = "Gate fee " + GateName;
+            item.BankAmount = bankBalance;
+            log.log.Add(item);
+            utils.WriteToJsonFile<BankLog>(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId + "//log.json", log);
+        }
         public BankLog GetLog()
         {
             if (!Directory.Exists(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId))
