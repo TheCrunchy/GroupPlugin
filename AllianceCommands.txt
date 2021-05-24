@@ -45,3 +45,8 @@
 !jumpgate refresh - reload the gate files if necessary
 !jumpgate setradius name amount - change a gates entry radius
 !jumpgate delete name - delete a gate
+!jumpgate setowner gate1 gate2 allianceName
+!jumpgate fee gate1 gate2 amount - admiral or leader can do it if they own the gate
+!jumpgate list - list the gates
+!jumpgate setradius gatename amount
+!jumpgate toggle gatename - toggles a gate on/off
