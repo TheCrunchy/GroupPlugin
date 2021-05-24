@@ -17,6 +17,8 @@ namespace AlliancesPlugin
         public Boolean Enabled = true;
         public int RadiusToJump = 75;
         private FileUtils utils = new FileUtils();
+        public Guid OwnerAlliance;
+        public long fee = 0;
         public void Save()
         {
             utils.WriteToJsonFile<JumpGate>(AlliancePlugin.path + "//JumpGates//" + GateId + ".json", this);

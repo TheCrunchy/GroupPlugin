@@ -1,4 +1,5 @@
 ﻿using Sandbox.Game.Entities;
+using Sandbox.Game.World;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -121,6 +122,79 @@ namespace AlliancesPlugin
 
             AlliancePlugin.AllGates.Remove(gate1.GateId);
             gate1.Delete();
+        }
+        [Command("fee", "set the fee to use these gates")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void SetFee(string name, string target, string inputAmount)
+        {
+            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
+            if (fac == null)
+            {
+                Context.Respond("Only factions can be in alliances.");
+                return;
+            }
+            Int64 amount;
+            inputAmount = inputAmount.Replace(",", "");
+            inputAmount = inputAmount.Replace(".", "");
+            inputAmount = inputAmount.Replace(" ", "");
+            try
+            {
+                amount = Int64.Parse(inputAmount);
+            }
+            catch (Exception)
+            {
+                Context.Respond("Error parsing amount", Color.Red, "Bank Man");
+                return;
+            }
+            if (amount < 0 || amount == 0)
+            {
+                Context.Respond("Must be a positive amount", Color.Red, "Bank Man");
+                return;
+            }
+            Alliance alliance = AlliancePlugin.GetAlliance(fac);
+            if (alliance == null)
+            {
+                Context.Respond("Only members of an alliance may access a bank.");
+                return;
+            }
+            if (alliance != null)
+            {
+                if (alliance.admirals.Contains(Context.Player.SteamUserId))
+                {
+                    JumpGate gate1 = null;
+                    JumpGate gate2 = null;
+
+                    foreach (JumpGate gate in AlliancePlugin.AllGates.Values)
+                    {
+                        if (gate.GateName.Equals(name) && gate.OwnerAlliance == alliance.AllianceId)
+                        {
+                            gate1 = gate;
+                            continue;
+                        }
+                        if (gate.GateName.Equals(target) && gate.OwnerAlliance == alliance.AllianceId)
+                        {
+                            gate2 = gate;
+                            continue;
+                        }
+                    }
+                    if (gate1 == null || gate2 == null)
+                    {
+                        Context.Respond("Could not find one of those gates, does the alliance own it?.");
+                        return;
+                    }
+                    Context.Respond("Gates linked!");
+                    gate1.fee = amount;
+                    gate2.fee = amount;
+                    AlliancePlugin.AllGates[gate1.GateId] = gate1;
+                    AlliancePlugin.AllGates[gate2.GateId] = gate2;
+                    gate1.Save();
+                    gate2.Save();
+
+                }
+
+            }
+
+        
         }
         [Command("link", "link two gates")]
         [Permission(MyPromoteLevel.Admin)]
