@@ -516,6 +516,31 @@ namespace AlliancesPlugin
                 }
                 else
                 {
+                    NotificationMessage message2;
+                    if (messageCooldowns.ContainsKey(player.Identity.IdentityId))
+                    {
+                        if (DateTime.Now < messageCooldowns[player.Identity.IdentityId])
+                            return false;
+                     
+                        message2 = new NotificationMessage("It costs " + String.Format("{0:n0}", gate.fee) + " SC to jump.", 1000, "Red");
+                        //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
+                   
+                        ModCommunication.SendMessageTo(message2, player.Id.SteamId);
+                        messageCooldowns[player.Identity.IdentityId] = DateTime.Now.AddMilliseconds(500);
+                        return false;
+                    }
+                    else
+                    {
+
+
+                        message2 = new NotificationMessage("It costs " + String.Format("{0:n0}", gate.fee) + " SC to jump.", 1000, "Red");
+                        //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
+   
+                        ModCommunication.SendMessageTo(message2, player.Id.SteamId);
+                        //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
+                        messageCooldowns.Add(player.Identity.IdentityId, DateTime.Now.AddMilliseconds(500));
+                        return false;
+                    }
                     return false;
                 }
             }
