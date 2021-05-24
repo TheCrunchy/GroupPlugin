@@ -62,7 +62,7 @@ namespace AlliancesPlugin
             basePath = StoragePath;
             SetupConfig();
             path = CreatePath();
- 
+
 
 
         }
@@ -311,12 +311,12 @@ namespace AlliancesPlugin
                 {
                     Directory.CreateDirectory(path + "//ShipyardBlocks//");
                 }
-         
+
                 if (!File.Exists(path + "//ShipyardBlocks//LargeProjector.xml"))
                 {
                     ShipyardBlockConfig config33 = new ShipyardBlockConfig();
                     config33.SetShipyardBlockConfig("LargeProjector");
-                    utils.WriteToXmlFile<ShipyardBlockConfig>(path + "//ShipyardBlocks//LargeProjector.xml", config33 , false);
+                    utils.WriteToXmlFile<ShipyardBlockConfig>(path + "//ShipyardBlocks//LargeProjector.xml", config33, false);
 
                 }
                 if (!File.Exists(path + "//ShipyardBlocks//SmallProjector.xml"))
@@ -336,15 +336,15 @@ namespace AlliancesPlugin
                     ReloadShipyard();
                 }
 
-                    foreach (String s in Directory.GetFiles(path + "//KOTH//"))
-                    {
+                foreach (String s in Directory.GetFiles(path + "//KOTH//"))
+                {
 
 
-                        KothConfig koth = utils.ReadFromXmlFile<KothConfig>(s);
+                    KothConfig koth = utils.ReadFromXmlFile<KothConfig>(s);
 
-                        KOTHs.Add(koth);
-                    }
-                
+                    KOTHs.Add(koth);
+                }
+
             }
         }
 
@@ -479,13 +479,14 @@ namespace AlliancesPlugin
                 if (config.JumpGatesEnabled)
                 {
                     List<MyPlayer> players = new List<MyPlayer>();
-                    foreach (MyPlayer player in MySession.Static.Players.GetOnlinePlayers()){
+                    foreach (MyPlayer player in MySession.Static.Players.GetOnlinePlayers())
+                    {
                         if (player?.Controller?.ControlledEntity is MyCockpit controller)
                         {
                             players.Add(player);
                         }
                     }
-  
+
                     foreach (KeyValuePair<Guid, JumpGate> key in AllGates)
                     {
                         JumpGate gate = key.Value;
@@ -511,38 +512,26 @@ namespace AlliancesPlugin
                                     MatrixD worldMatrix = MatrixD.CreateWorld(target.Position + offset, controller.CubeGrid.WorldMatrix.Forward, controller.CubeGrid.WorldMatrix.Up);
                                     controller.CubeGrid.Teleport(worldMatrix);
                                 }
-                                else {
-                                    if (Distance <= 250)
+                                else
+                                {
+                                    if (Distance <= 500)
                                     {
-                                        if (messageCooldowns.TryGetValue(player.Identity.IdentityId, out int tick))
-                                        {
-                                            if (ticks >= tick)
-                                            {
-                                                NotificationMessage message;
+                                        NotificationMessage message;
 
-                                                message = new NotificationMessage("You will jump in "+ Distance + " meters", 495, "LightBlue");
-                                                //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
-                                                ModCommunication.SendMessageTo(message, player.Id.SteamId);
-                                                messageCooldowns[player.Identity.IdentityId] = ticks + 500;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            messageCooldowns.Add(player.Identity.IdentityId, ticks + 500);
-                                            ModCommunication.SendMessageTo(new NotificationMessage("You will jump in " + Distance + " meters", 495, "LightBlue"), player.Id.SteamId);
-
-                                        }
+                                        message = new NotificationMessage("You will jump in " + Distance + " meters", 1000, "Green");
+                                        //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
+                                        ModCommunication.SendMessageTo(message, player.Id.SteamId);
                                     }
                                 }
                             }
                         }
-                     
+
                     }
                 }
             }
             try
             {
-                
+
                 if (TorchState != TorchSessionState.Loaded)
                 {
                     return;
