@@ -439,10 +439,8 @@ namespace AlliancesPlugin
                 }
             }
         }
-        public void LoadAllGates()
+        public static void LoadAllGates()
         {
-            if (TorchState == TorchSessionState.Loaded)
-            {
                 FileUtils jsonStuff = new FileUtils();
                 try
                 {
@@ -459,7 +457,7 @@ namespace AlliancesPlugin
                 {
                     Log.Error(ex.ToString());
                 }
-            }
+            
         }
 
         public static Dictionary<long, DateTime> messageCooldowns = new Dictionary<long, DateTime>();
@@ -516,7 +514,7 @@ namespace AlliancesPlugin
                                 if (Distance <= gate.RadiusToJump)
                                 {
                                     Random rand = new Random();
-                                    Vector3 offset = new Vector3(rand.Next(250, 1000), rand.Next(250, 1000), rand.Next(250, 1000));
+                                    Vector3 offset = new Vector3(rand.Next(config.JumpGateMinimumOffset, config.JumPGateMaximumOffset), rand.Next(config.JumpGateMinimumOffset, config.JumPGateMaximumOffset), rand.Next(config.JumpGateMinimumOffset, config.JumPGateMaximumOffset));
                                     MatrixD worldMatrix = MatrixD.CreateWorld(target.Position + offset, controller.CubeGrid.WorldMatrix.Forward, controller.CubeGrid.WorldMatrix.Up);
                                     controller.CubeGrid.Teleport(worldMatrix);
                                 }

@@ -14,26 +14,23 @@ namespace AlliancesPlugin
     [Category("jumpgate")]
     public class JumpGateCommands : CommandModule
     {
-        [Command("testjump", "Move a grid to input position")]
+        [Command("refresh", "refresh the loaded gates")]
         [Permission(MyPromoteLevel.Admin)]
-        public void BankLog(int x, int y, int z)
+        public void CreateGate()
         {
-            if (Context.Player.Controller.ControlledEntity is MyCockpit controller)
-            {
-                MyCubeGrid grid = controller.CubeGrid;
-                MatrixD worldMatrix = MatrixD.CreateWorld(new Vector3(x, y, z), grid.WorldMatrix.Forward, grid.WorldMatrix.Up);
-                grid.Teleport(worldMatrix);
-            }
+            AlliancePlugin.LoadAllGates();
+            Context.Respond("Refreshed the gates!");
+            Context.Respond(AlliancePlugin.AllGates.Count + " Gates Loaded");
         }
-
         [Command("create", "create a gate")]
         [Permission(MyPromoteLevel.Admin)]
-        public void CreateGate(string name)
+        public void CreateGate(string name, int radiusToJump = 75)
         {
             JumpGate gate = new JumpGate
             {
                 Position = Context.Player.Character.GetPosition(),
-                GateName = name
+                GateName = name,
+                RadiusToJump = radiusToJump
             };
             AlliancePlugin.AllGates.Add(gate.GateId, gate);
             gate.Save();

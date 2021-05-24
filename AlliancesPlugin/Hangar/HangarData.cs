@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VRage.Game;
 using VRageMath;
 
 namespace AlliancesPlugin
@@ -53,9 +54,72 @@ namespace AlliancesPlugin
             }
             return 0;
         }
+
+        public Boolean CheckCharacters(Vector3 Position, long PlayerIdentityId)
+        {
+
+
+            MyFaction PlayersFaction = MySession.Static.Factions.GetPlayerFaction(PlayerIdentityId);
+
+            foreach (MyCharacter Player in MyEntities.GetEntities().OfType<MyCharacter>())
+            {
+                if (Player == null || Player.MarkedForClose)
+                    continue;
+
+                long PlayerID = Player.GetPlayerIdentityId();
+                if (PlayerID == 0L || PlayerID == PlayerIdentityId)
+                    continue;
+
+
+                MyFaction CheckFaction = MySession.Static.Factions.GetPlayerFaction(PlayerID);
+                if (PlayersFaction != null && CheckFaction != null)
+                {
+                    if (PlayersFaction.FactionId == CheckFaction.FactionId)
+                        continue;
+                   
+                    MyRelationsBetweenFactions Relation = MySession.Static.Factions.GetRelationBetweenFactions(PlayersFaction.FactionId, CheckFaction.FactionId).Item1;
+                    if (Relation == MyRelationsBetweenFactions.Neutral || Relation == MyRelationsBetweenFactions.Friends)
+                        continue;
+                }
+
+                if (Vector3D.Distance(Position, Player.PositionComp.GetPosition()) <= 15000)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        public Boolean CheckGrids(Vector3 Position, long PlayerIdentityId)
+        {
+            MyFaction PlayersFaction = MySession.Static.Factions.GetPlayerFaction(PlayerIdentityId);
+            BoundingSphereD sphere = new BoundingSphereD(Position, 15000);
+            foreach (MyCubeGrid grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere))
+            {
+                if (FacUtils.IsOwnerOrFactionOwned(grid, PlayerIdentityId, true))
+                    continue;
+
+                MyFaction CheckFaction = MySession.Static.Factions.GetPlayerFaction(FacUtils.GetOwner(grid));
+                if (PlayersFaction != null && CheckFaction != null)
+                {
+                    MyRelationsBetweenFactions Relation = MySession.Static.Factions.GetRelationBetweenFactions(PlayersFaction.FactionId, CheckFaction.FactionId).Item1;
+                    if (Relation == MyRelationsBetweenFactions.Neutral || Relation == MyRelationsBetweenFactions.Friends)
+                        continue;
+                }
+
+                if (Vector3D.Distance(Position, grid.PositionComp.GetPosition()) <= 15000)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
         public Boolean SaveGridToHangar(String gridName, ulong steamid, Alliance alliance, Vector3D position, MyFaction faction, List<MyCubeGrid> gridsToSave, long IdentityId)
         {
-  
+            if (!CheckGrids(position, IdentityId))
+                return false;
+
+            if (!CheckCharacters(position, IdentityId))
+                return false;
             HangarLog log = GetHangarLog(alliance);
             HangarLogItem item = new HangarLogItem();
             item.action = "Saved";
@@ -75,8 +139,13 @@ namespace AlliancesPlugin
         }
         public Boolean LoadGridFromHangar(int slotNum, ulong steamid, Alliance alliance, MyIdentity identity, MyFaction faction)
         {
-           
-          
+            HangarItem hangItem = ItemsInHangar[slotNum];
+            if (!CheckGrids(hangItem.position, identity.IdentityId))
+                return false;
+
+            if (!CheckCharacters(hangItem.position, identity.IdentityId))
+                return false;
+
             if (GridManager.LoadGrid(System.IO.Path.Combine(AlliancePlugin.path + "//HangarData//" + alliance.AllianceId + "//" + ItemsInHangar[slotNum].name + ".xml"), ItemsInHangar[slotNum].position, false, steamid, ItemsInHangar[slotNum].name))
                 {
                 HangarLog log = GetHangarLog(alliance);
@@ -107,10 +176,6 @@ namespace AlliancesPlugin
             {
                 return false;
             }
-                    //check for enemies
- 
-
-
             return true;
         }
     }
