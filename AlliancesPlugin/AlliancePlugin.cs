@@ -285,6 +285,26 @@ namespace AlliancesPlugin
                     File.WriteAllText(path + "//HangarDeniedLocations.txt", output.ToString());
 
                 }
+                else
+                {
+                    String[] line;
+                    line = File.ReadAllLines(path + "//HangarDeniedLocations.txt");
+                    for (int i = 1; i < line.Length; i++)
+                    {
+                        DeniedLocation loc = new DeniedLocation();
+                        String[] split = line[i].Split(',');
+                        foreach (String s in split)
+                        {
+                            s.Replace(" ", "");
+                        }
+                        loc.name = split[0];
+                        loc.x = Double.Parse(split[1]);
+                        loc.y= Double.Parse(split[2]);
+                        loc.z = Double.Parse(split[3]);
+                        loc.radius = double.Parse(split[4]);
+                        HangarDeniedLocations.Add(loc);
+                    }
+                }
                 if (!File.Exists(path + "//HangarUpgrades//SlotUpgrade1.txt"))
                 {
 
@@ -357,7 +377,7 @@ namespace AlliancesPlugin
 
             }
         }
-
+        public static List<DeniedLocation> HangarDeniedLocations = new List<DeniedLocation>();
         public static void ReloadShipyard()
         {
             if (!File.Exists(path + "//ShipyardConfig.xml"))

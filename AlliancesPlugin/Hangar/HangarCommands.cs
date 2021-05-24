@@ -470,6 +470,34 @@ namespace AlliancesPlugin
                 }
             }
         }
+
+        [Command("reload", "reload the denied locations")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void Reload()
+        {
+            String[] line;
+            line = File.ReadAllLines(AlliancePlugin.path + "//HangarDeniedLocations.txt");
+            AlliancePlugin.HangarDeniedLocations.Clear();
+            for (int i = 1; i < line.Length; i++)
+            {
+                DeniedLocation loc = new DeniedLocation();
+                String[] split = line[i].Split(',');
+                foreach (String s in split)
+                {
+                    s.Replace(" ", "");
+                }
+                loc.name = split[0];
+                loc.x = Double.Parse(split[1]);
+                loc.y = Double.Parse(split[2]);
+                loc.z = Double.Parse(split[3]);
+                loc.radius = double.Parse(split[4]);
+                AlliancePlugin.HangarDeniedLocations.Add(loc);
+            }
+            Context.Respond("Reloaded!");
+        }
+    
+           
+
         [Command("load", "save a grid to alliance hangar")]
         [Permission(MyPromoteLevel.None)]
         public void LoadFromHangar(string slotNumber)
@@ -569,6 +597,15 @@ namespace AlliancesPlugin
             {
                 Context.Respond("Alliance hangar is not enabled.");
                 return;
+            }
+
+            foreach (DeniedLocation denied in AlliancePlugin.HangarDeniedLocations)
+            {
+                if (Vector3.Distance(Context.Player.GetPosition(), new Vector3(denied.x,denied.y,denied.z)) <= denied.radius)
+                {
+                    Context.Respond("Cannot hangar here! Too close to a denied location.");
+                    return;
+                }
             }
             Boolean console = false;
             if (Context.Player == null)
