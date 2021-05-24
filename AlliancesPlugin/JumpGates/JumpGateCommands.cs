@@ -124,7 +124,7 @@ namespace AlliancesPlugin
             gate1.Delete();
         }
         [Command("fee", "set the fee to use these gates")]
-        [Permission(MyPromoteLevel.Admin)]
+        [Permission(MyPromoteLevel.None)]
         public void SetFee(string name, string target, string inputAmount)
         {
             MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
@@ -151,6 +151,11 @@ namespace AlliancesPlugin
                 Context.Respond("Must be a positive amount", Color.Red, "Bank Man");
                 return;
             }
+            if (amount >= AlliancePlugin.config.MaximumGateFee)
+            {
+                Context.Respond("Amount exceeds the maximum of " + String.Format("{0:n0}", AlliancePlugin.config.MaximumGateFee) + " SC.");
+                return;
+            }
             Alliance alliance = AlliancePlugin.GetAlliance(fac);
             if (alliance == null)
             {
@@ -159,7 +164,7 @@ namespace AlliancesPlugin
             }
             if (alliance != null)
             {
-                if (alliance.admirals.Contains(Context.Player.SteamUserId))
+                if (alliance.admirals.Contains(Context.Player.SteamUserId) || alliance.SupremeLeader == Context.Player.SteamUserId)
                 {
                     JumpGate gate1 = null;
                     JumpGate gate2 = null;
@@ -182,7 +187,7 @@ namespace AlliancesPlugin
                         Context.Respond("Could not find one of those gates, does the alliance own it?.");
                         return;
                     }
-                    Context.Respond("Gates linked!");
+                    Context.Respond("Fee updated.");
                     gate1.fee = amount;
                     gate2.fee = amount;
                     AlliancePlugin.AllGates[gate1.GateId] = gate1;
@@ -190,12 +195,72 @@ namespace AlliancesPlugin
                     gate1.Save();
                     gate2.Save();
 
+                }else {
+                    Context.Respond("You dont have the rank to do this.");
                 }
 
             }
 
         
         }
+        [Command("list", "list all loaded gates")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void OutputGates()
+        {
+            
+            foreach (JumpGate gate in AlliancePlugin.AllGates.Values)
+            {
+                Context.Respond(gate.GateName);
+            }
+         
+        }
+        [Command("setowner", "set the owner of a gates")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void LinkGate(string name, string target, string alliance)
+        {
+            JumpGate gate1 = null;
+            JumpGate gate2 = null;
+
+            Alliance tempalliance = null;
+            foreach (Alliance alliance1 in AlliancePlugin.AllAlliances.Values)
+            {
+                if (alliance1.name.Equals(alliance))
+                {
+                    tempalliance = alliance1;
+                }
+            }
+            if (tempalliance == null)
+            {
+                Context.Respond("Could not find that alliance.");
+                return;
+            }
+            foreach (JumpGate gate in AlliancePlugin.AllGates.Values)
+            {
+                if (gate.GateName.Equals(name))
+                {
+                    gate1 = gate;
+                    continue;
+                }
+                if (gate.GateName.Equals(target))
+                {
+                    gate2 = gate;
+                    continue;
+                }
+            }
+            if (gate1 == null || gate2 == null)
+            {
+                Context.Respond("Could not find one of those gates.");
+                return;
+            }
+            Context.Respond("Gates linked!");
+            gate1.OwnerAlliance = tempalliance.AllianceId;
+            gate2.OwnerAlliance = tempalliance.AllianceId;
+            AlliancePlugin.AllGates[gate1.GateId] = gate1;
+            AlliancePlugin.AllGates[gate2.GateId] = gate2;
+            gate1.Save();
+            gate2.Save();
+        }
+
         [Command("link", "link two gates")]
         [Permission(MyPromoteLevel.Admin)]
         public void LinkGate(string name, string target)

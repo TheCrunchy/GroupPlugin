@@ -159,7 +159,7 @@ namespace AlliancesPlugin
             item.SteamId = steamid;
             item.Amount = amount;
             item.TimeClaimed = DateTime.Now;
-            item.Action = "Gate fee " + GateName;
+            item.Action = "gate fee " + GateName;
             item.BankAmount = bankBalance;
             log.log.Add(item);
             utils.WriteToJsonFile<BankLog>(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId + "//log.json", log);

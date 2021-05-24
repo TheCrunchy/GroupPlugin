@@ -18,6 +18,7 @@ namespace AlliancesPlugin
         public Boolean JumpGatesEnabled = false;
         public int JumpGateMinimumOffset = 500;
         public int JumPGateMaximumOffset = 1000;
+        public int MaximumGateFee = 10000000;
 
     }
 }

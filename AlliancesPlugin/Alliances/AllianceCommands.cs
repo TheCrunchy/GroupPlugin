@@ -779,22 +779,22 @@ namespace AlliancesPlugin
                         IMyFaction fac = MySession.Static.Factions.TryGetFactionById(item.FactionPaid);
                         if (fac != null)
                         {
-                            sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + MyMultiplayer.Static.GetMemberName(item.SteamId) + " " + item.Action + " " + fac.Tag + " " + item.Amount + " : new balance " + item.BankAmount);
+                            sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + MyMultiplayer.Static.GetMemberName(item.SteamId) + " " + item.Action + " " + fac.Tag + " " + String.Format("{0:n0}", item.Amount) + " : new balance " + String.Format("{0:n0}", item.BankAmount));
                         }
                         else
                         {
-                            sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + MyMultiplayer.Static.GetMemberName(item.SteamId) + " " + item.Action + " a now dead faction " + item.Amount + " : new balance  " + item.BankAmount);
+                            sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + MyMultiplayer.Static.GetMemberName(item.SteamId) + " " + item.Action + " a now dead faction " + String.Format("{0:n0}", item.Amount) + " : new balance  " + String.Format("{0:n0}", item.BankAmount));
                         }
                         continue;
                     }
                     if (item.PlayerPaid > 0)
                     {
-                        sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + MyMultiplayer.Static.GetMemberName(item.SteamId) + " " + item.Action + " " + MyMultiplayer.Static.GetMemberName(item.PlayerPaid) + " " + item.Amount + " : new balance  " + item.BankAmount);
+                        sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + MyMultiplayer.Static.GetMemberName(item.SteamId) + " " + item.Action + " " + MyMultiplayer.Static.GetMemberName(item.PlayerPaid) + " " + String.Format("{0:n0}", item.Amount) + " : new balance  " + String.Format("{0:n0}", item.BankAmount));
                     }
                     else
                     {
 
-                        sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + MyMultiplayer.Static.GetMemberName(item.SteamId) + " " + item.Action + " " + item.Amount + " : new balance  " + item.BankAmount);
+                        sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + MyMultiplayer.Static.GetMemberName(item.SteamId) + " " + item.Action + " " + String.Format("{0:n0}", item.Amount) + " : new balance  " + String.Format("{0:n0}", item.BankAmount));
                     }
                 }
                 DialogMessage m = new DialogMessage("Alliance Bank Records", alliance.name, sb.ToString());

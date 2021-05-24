@@ -476,12 +476,20 @@ namespace AlliancesPlugin
             {
                 if (EconUtils.getBalance(player.Identity.IdentityId) >= gate.fee)
                 {
+                    Alliance temp = null;
                     foreach (Alliance alliance in AllAlliances.Values)
                     {
                         if (alliance.AllianceId == gate.OwnerAlliance)
                         {
-                            alliance.GateFee(gate.fee, player.Id.SteamId, gate.GateName);
+                            temp = LoadAllianceData(alliance.AllianceId);
+                           temp.GateFee(gate.fee, player.Id.SteamId, gate.GateName);
+                           
+                          
                         }
+                    }
+                    if (temp != null)
+                    {
+                        SaveAllianceData(temp);
                     }
                     EconUtils.takeMoney(player.Identity.IdentityId, gate.fee);
                     return true;
@@ -502,7 +510,7 @@ namespace AlliancesPlugin
             {
                 NotificationMessage message;
                 NotificationMessage message2;
-                if (EconUtils.getBalance(player.Identity.IdentityId) < gate.fee)
+                if (EconUtils.getBalance(player.Identity.IdentityId) >= gate.fee)
                 {
                     if (messageCooldowns.ContainsKey(player.Identity.IdentityId))
                     {
@@ -514,7 +522,7 @@ namespace AlliancesPlugin
                         ModCommunication.SendMessageTo(message, player.Id.SteamId);
                         ModCommunication.SendMessageTo(message2, player.Id.SteamId);
                         messageCooldowns[player.Identity.IdentityId] = DateTime.Now.AddMilliseconds(500);
-                        return false;
+                        return true;
                     }
                     else
                     {
@@ -528,11 +536,11 @@ namespace AlliancesPlugin
                         //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
                         ModCommunication.SendMessageTo(message, player.Id.SteamId);
                         messageCooldowns.Add(player.Identity.IdentityId, DateTime.Now.AddMilliseconds(500));
-                        return false;
+                        return true;
                     }
                 }
             }
-            return true;
+            return false;
         }
         public static Dictionary<long, DateTime> messageCooldowns = new Dictionary<long, DateTime>();
         public override void Update()
@@ -606,11 +614,12 @@ namespace AlliancesPlugin
                                         NotificationMessage message;
                                         if (messageCooldowns.ContainsKey(player.Identity.IdentityId))
                                         {
-                                            if (DoFeeMessage(player, gate, Distance))
-                                                continue;
+                                          
                                             if (DateTime.Now < messageCooldowns[player.Identity.IdentityId])
                                                 continue;
 
+                                            if (DoFeeMessage(player, gate, Distance))
+                                                continue;
 
                                             message = new NotificationMessage("You will jump in " + Distance + " meters", 1000, "Green");
                                             //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
