@@ -483,6 +483,14 @@ namespace AlliancesPlugin
                     {
                         if (player?.Controller?.ControlledEntity is MyCockpit controller)
                         {
+                            if (controller.CubeGrid.IsStatic)
+                                continue;
+
+                            if (!controller.CubeGrid.Editable)
+                                continue;
+
+                            if (!controller.CubeGrid.DestructibleBlocks)
+                                continue;
                             players.Add(player);
                         }
                     }
@@ -504,15 +512,6 @@ namespace AlliancesPlugin
                         {
                             if (player?.Controller?.ControlledEntity is MyCockpit controller)
                             {
-                                if (controller.CubeGrid.IsStatic)
-                                    continue;
-
-                                if (!controller.CubeGrid.Editable)
-                                    continue;
-
-                                if (!controller.CubeGrid.DestructibleBlocks)
-                                    continue;
-
                                 float Distance = Vector3.Distance(gate.Position, controller.CubeGrid.PositionComp.GetPosition());
                                 if (Distance <= gate.RadiusToJump)
                                 {
