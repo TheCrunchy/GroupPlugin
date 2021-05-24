@@ -20,6 +20,8 @@ namespace AlliancesPlugin
         public Guid allianceId;
         FileUtils utils = new FileUtils();
         public Dictionary<int, HangarItem> ItemsInHangar = new Dictionary<int, HangarItem>();
+
+    
         public HangarLog GetHangarLog(Alliance alliance)
         {
            

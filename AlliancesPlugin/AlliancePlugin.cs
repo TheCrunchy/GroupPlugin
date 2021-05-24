@@ -40,7 +40,8 @@ namespace AlliancesPlugin
         public static string basePath;
         public static Logger Log = LogManager.GetLogger("Alliances");
         public DateTime NextUpdate = DateTime.Now;
-
+        public static Dictionary<Guid, List<ulong>> playersInAlliances = new Dictionary<Guid, List<ulong>>();
+        public static Dictionary<ulong, Guid> playersAllianceId = new Dictionary<ulong, Guid>();
         public static List<KothConfig> KOTHs = new List<KothConfig>();
         private static List<DateTime> captureIntervals = new List<DateTime>();
         private static Dictionary<String, int> amountCaptured = new Dictionary<String, int>();
@@ -237,7 +238,7 @@ namespace AlliancesPlugin
                 SetupFriendMethod();
 
                 LoadAllAlliances();
-
+     
 
                 if (!File.Exists(path + "//KOTH//example.xml"))
                 {
@@ -600,6 +601,29 @@ namespace AlliancesPlugin
                     NextUpdate = DateTime.Now.AddMinutes(1);
                     LoadAllAlliances();
                     LoadAllGates();
+                    playersInAlliances.Clear();
+                    foreach (MyPlayer player in MySession.Static.Players.GetOnlinePlayers())
+                    {
+                        if (MySession.Static.Factions.GetPlayerFaction(player.Identity.IdentityId) != null)
+                        {
+                            Alliance temp = GetAllianceNoLoading(MySession.Static.Factions.GetPlayerFaction(player.Identity.IdentityId));
+                            if (temp != null)
+                            {
+                                if (playersInAlliances.ContainsKey(temp.AllianceId))
+                                {
+                                    playersInAlliances[temp.AllianceId].Add(player.Id.SteamId);
+                                    playersAllianceId.Add(player.Id.SteamId, temp.AllianceId);
+                                }
+                                else
+                                {
+                                    List<ulong> bob = new List<ulong>();
+                                    bob.Add(player.Id.SteamId);
+                                    playersInAlliances.Add(temp.AllianceId, bob);
+                                    playersAllianceId.Add(player.Id.SteamId, temp.AllianceId);
+                                }
+                            }
+                        }
+                    }
                 }
                 if (config.JumpGatesEnabled)
                 {
