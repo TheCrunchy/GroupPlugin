@@ -24,6 +24,8 @@ using VRage;
 using Sandbox.ModAPI.Ingame;
 using VRage.Game.ModAPI.Ingame;
 using Sandbox.Game.Entities;
+using Torch.Mod.Messages;
+using Torch.Mod;
 
 namespace AlliancesPlugin
 {
@@ -459,6 +461,8 @@ namespace AlliancesPlugin
                 }
             }
         }
+
+        public static Dictionary<long, int> messageCooldowns = new Dictionary<long, int>();
         public override void Update()
         {
             ticks++;
@@ -506,6 +510,29 @@ namespace AlliancesPlugin
                                     Vector3 offset = new Vector3(rand.Next(250, 1000), rand.Next(250, 1000), rand.Next(250, 1000));
                                     MatrixD worldMatrix = MatrixD.CreateWorld(target.Position + offset, controller.CubeGrid.WorldMatrix.Forward, controller.CubeGrid.WorldMatrix.Up);
                                     controller.CubeGrid.Teleport(worldMatrix);
+                                }
+                                else {
+                                    if (Distance <= 250)
+                                    {
+                                        if (messageCooldowns.TryGetValue(player.Identity.IdentityId, out int tick))
+                                        {
+                                            if (ticks >= tick)
+                                            {
+                                                NotificationMessage message;
+
+                                                message = new NotificationMessage("You will jump in "+ Distance + " meters", 495, "LightBlue");
+                                                //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
+                                                ModCommunication.SendMessageTo(message, player.Id.SteamId);
+                                                messageCooldowns[player.Identity.IdentityId] = ticks + 500;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            messageCooldowns.Add(player.Identity.IdentityId, ticks + 500);
+                                            ModCommunication.SendMessageTo(new NotificationMessage("You will jump in " + Distance + " meters", 495, "LightBlue"), player.Id.SteamId);
+
+                                        }
+                                    }
                                 }
                             }
                         }
