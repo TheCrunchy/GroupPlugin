@@ -502,7 +502,9 @@ namespace AlliancesPlugin
                                 float Distance = Vector3.Distance(gate.Position, controller.CubeGrid.PositionComp.GetPosition());
                                 if (Distance <= gate.RadiusToJump)
                                 {
-                                    MatrixD worldMatrix = MatrixD.CreateWorld(target.Position, controller.CubeGrid.WorldMatrix.Forward, controller.CubeGrid.WorldMatrix.Up);
+                                    Random rand = new Random();
+                                    Vector3 offset = new Vector3(rand.Next(250, 1000), rand.Next(250, 1000), rand.Next(250, 1000));
+                                    MatrixD worldMatrix = MatrixD.CreateWorld(target.Position + offset, controller.CubeGrid.WorldMatrix.Forward, controller.CubeGrid.WorldMatrix.Up);
                                     controller.CubeGrid.Teleport(worldMatrix);
                                 }
                             }
