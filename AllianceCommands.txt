@@ -38,3 +38,10 @@
 !ah list - list the grids in hangar
 !ah save - save an owned grid or faction owned grid to hangar 
 !ah load num - load the grid in that slot, if it is player that saved or officer rank or above
+
+!jumpgate create name radius (optional, default is 75)
+!jumpgate link FirstGateName SecondGateName - makes the gates functional
+!jumpgate unlink FirstGateName SecondGateName - unlinks the gates so they are no longer functional
+!jumpgate refresh - reload the gate files if necessary
+!jumpgate setradius name amount - change a gates entry radius
+!jumpgate delete name - delete a gate

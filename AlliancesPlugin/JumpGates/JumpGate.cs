@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,6 +20,10 @@ namespace AlliancesPlugin
         public void Save()
         {
             utils.WriteToJsonFile<JumpGate>(AlliancePlugin.path + "//JumpGates//" + GateId + ".json", this);
+        }
+        public void Delete()
+        {
+            File.Delete(AlliancePlugin.path + "//JumpGates//" + GateId + ".json");
         }
     }
 }

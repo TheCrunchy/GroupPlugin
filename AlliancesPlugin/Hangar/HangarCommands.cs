@@ -1,6 +1,9 @@
 ﻿using Sandbox.Engine.Multiplayer;
 using Sandbox.Game.Entities;
+using Sandbox.Game.Multiplayer;
+using Sandbox.Game.Screens.Helpers;
 using Sandbox.Game.World;
+using Sandbox.ModAPI;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -107,6 +110,7 @@ namespace AlliancesPlugin
                     if (hangar == null)
                     {
                         Context.Respond("Error loading the hangar.");
+                        
                         return;
                     }
                     Context.Respond("Hangar Slots available : " + hangar.SlotsAmount, Color.LightBlue, "Alliance Hangar");
@@ -516,6 +520,7 @@ namespace AlliancesPlugin
                     return;
                 }
                 HangarItem item = hangar.ItemsInHangar[slot];
+
                 //this took up way too much of one line
                 if (item.steamid.Equals(Context.Player.SteamUserId) || alliance.SupremeLeader.Equals(Context.Player.SteamUserId)
                     || alliance.officers.Contains(Context.Player.SteamUserId) || alliance.admirals.Contains(Context.Player.SteamUserId)){
@@ -526,6 +531,22 @@ namespace AlliancesPlugin
                   else
                     {
                         Context.Respond("Could not load, are there enemies within 15km?");
+                        MyGps gps = new MyGps
+                        {
+                            Coords = item.position,
+                            Name = item.name + " Failed load location",
+                            DisplayName = item.name + " Failed load location",
+                            Description = "Failed load location",
+                            GPSColor = Color.LightBlue,
+                            IsContainerGPS = true,
+                            ShowOnHud = true,
+                            DiscardAt = new TimeSpan(50000)
+                        };
+                        gps.UpdateHash();
+                        MyGpsCollection gpscol = (MyGpsCollection)MyAPIGateway.Session?.GPS;
+
+
+                        gpscol.SendAddGps(Context.Player.IdentityId, ref gps);
                     }
 
                 }

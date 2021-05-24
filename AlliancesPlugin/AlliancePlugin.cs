@@ -275,6 +275,15 @@ namespace AlliancesPlugin
                     File.WriteAllText(path + "//HangarUnlockCost.txt", output.ToString());
 
                 }
+                if (!File.Exists(path + "//HangarDeniedLocations.txt"))
+                {
+
+                    StringBuilder output = new StringBuilder();
+                    output.AppendLine("Name,X,Y,Z,Radius");
+                    output.AppendLine("Fred,0,0,0,50000");
+                    File.WriteAllText(path + "//HangarDeniedLocations.txt", output.ToString());
+
+                }
                 if (!File.Exists(path + "//HangarUpgrades//SlotUpgrade1.txt"))
                 {
 
@@ -506,6 +515,10 @@ namespace AlliancesPlugin
                         if (!target.Enabled)
                             continue;
 
+                        if (gate.TargetGateId == gate.GateId)
+                            continue;
+                        if (target.TargetGateId == target.GateId)
+                            continue;
                         foreach (MyPlayer player in players)
                         {
                             if (player?.Controller?.ControlledEntity is MyCockpit controller)
