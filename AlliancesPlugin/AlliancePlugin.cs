@@ -462,7 +462,7 @@ namespace AlliancesPlugin
             }
         }
 
-        public static Dictionary<long, int> messageCooldowns = new Dictionary<long, int>();
+        public static Dictionary<long, DateTime> messageCooldowns = new Dictionary<long, DateTime>();
         public override void Update()
         {
             ticks++;
@@ -514,6 +514,9 @@ namespace AlliancesPlugin
                                 }
                                 else
                                 {
+                                    if (messageCooldowns.ContainsKey(player.Identity.IdentityId))
+                                        if (DateTime.Now < messageCooldowns[player.Identity.IdentityId])
+                                            continue;
                                     if (Distance <= 500)
                                     {
                                         NotificationMessage message;
@@ -521,6 +524,16 @@ namespace AlliancesPlugin
                                         message = new NotificationMessage("You will jump in " + Distance + " meters", 1000, "Green");
                                         //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
                                         ModCommunication.SendMessageTo(message, player.Id.SteamId);
+                                        messageCooldowns[player.Identity.IdentityId] = DateTime.Now.AddSeconds(2);
+                                    }
+                                    else
+                                    {
+                                        NotificationMessage message;
+
+                                        message = new NotificationMessage("You will jump in " + Distance + " meters", 1000, "Green");
+                                        //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
+                                        ModCommunication.SendMessageTo(message, player.Id.SteamId);
+                                        messageCooldowns.Add(player.Identity.IdentityId,DateTime.Now.AddSeconds(2));
                                     }
                                 }
                             }
