@@ -1,5 +1,6 @@
 ﻿using Sandbox.Engine.Multiplayer;
 using Sandbox.Game.Entities;
+using Sandbox.Game.GameSystems;
 using Sandbox.Game.Multiplayer;
 using Sandbox.Game.Screens.Helpers;
 using Sandbox.Game.World;
@@ -596,6 +597,11 @@ namespace AlliancesPlugin
             if (!AlliancePlugin.config.HangarEnabled)
             {
                 Context.Respond("Alliance hangar is not enabled.");
+                return;
+            }
+            if (MyGravityProviderSystem.IsPositionInNaturalGravity(Context.Player.GetPosition()))
+            {
+                Context.Respond("You cannot use this command in natural gravity!");
                 return;
             }
 
