@@ -89,13 +89,15 @@
     <Compile Include="Alliances\AllianceCommands.cs" />
     <Compile Include="Alliances\BankLog.cs" />
     <Compile Include="Alliances\BankLogItem.cs" />
-    <Compile Include="Alliances\Config.cs" />
+    <Compile Include="Config.cs" />
     <Compile Include="Hangar\HangarCommands.cs" />
     <Compile Include="Hangar\HangarData.cs" />
     <Compile Include="Hangar\HangarItem.cs" />
     <Compile Include="Hangar\HangarLog.cs" />
     <Compile Include="Hangar\HangarLogItem.cs" />
     <Compile Include="GridFinder.cs" />
+    <Compile Include="JumpGates\JumpGate.cs" />
+    <Compile Include="JumpGates\JumpGateCommands.cs" />
     <Compile Include="KOTH\DenialPoint.cs" />
     <Compile Include="EconUtils.cs" />
     <Compile Include="FacUtils.cs" />

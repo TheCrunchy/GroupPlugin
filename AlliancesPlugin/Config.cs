@@ -15,7 +15,7 @@ namespace AlliancesPlugin
         public Boolean HangarEnabled = false;
         public Boolean KothEnabled = false;
         public int MaxHangarSlots = 10;
-     
+        public Boolean JumpGatesEnabled = false;
 
     }
 }

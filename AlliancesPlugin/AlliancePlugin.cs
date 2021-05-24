@@ -35,6 +35,7 @@ namespace AlliancesPlugin
         public static Config config;
         public static ShipyardConfig shipyardConfig;
         public static string path;
+        public static string basePath;
         public static Logger Log = LogManager.GetLogger("Alliances");
         public DateTime NextUpdate = DateTime.Now;
 
@@ -42,7 +43,7 @@ namespace AlliancesPlugin
         private static List<DateTime> captureIntervals = new List<DateTime>();
         private static Dictionary<String, int> amountCaptured = new Dictionary<String, int>();
 
-
+        public static Dictionary<Guid, JumpGate> AllGates = new Dictionary<Guid, JumpGate>();
 
         public static FileUtils utils = new FileUtils();
         public static Dictionary<string, DenialPoint> denials = new Dictionary<string, DenialPoint>();
@@ -56,9 +57,10 @@ namespace AlliancesPlugin
             {
                 sessionManager.SessionStateChanged += SessionChanged;
             }
+            basePath = StoragePath;
             SetupConfig();
             path = CreatePath();
-
+ 
 
 
         }
@@ -124,10 +126,11 @@ namespace AlliancesPlugin
             Directory.CreateDirectory(folder);
             return folder;
         }
+
         public static Config LoadConfig()
         {
             FileUtils utils = new FileUtils();
-            config = utils.ReadFromXmlFile<Config>(path + "\\Alliances.xml");
+            config = utils.ReadFromXmlFile<Config>(basePath + "\\Alliances.xml");
 
 
 
@@ -240,6 +243,14 @@ namespace AlliancesPlugin
                 if (!Directory.Exists(path + "//ShipyardUpgrades//"))
                 {
                     Directory.CreateDirectory(path + "//ShipyardUpgrades//");
+                }
+                if (!Directory.Exists(path + "//HangarUpgrades//"))
+                {
+                    Directory.CreateDirectory(path + "//HangarUpgrades//");
+                }
+                if (!Directory.Exists(path + "//JumpGates//"))
+                {
+                    Directory.CreateDirectory(path + "//JumpGates//");
                 }
                 if (!File.Exists(path + "//ShipyardUpgrades//SpeedUpgrade1.txt"))
                 {
@@ -426,11 +437,32 @@ namespace AlliancesPlugin
                 }
             }
         }
+        public void LoadAllGates()
+        {
+            if (TorchState == TorchSessionState.Loaded)
+            {
+                FileUtils jsonStuff = new FileUtils();
+                try
+                {
+                    AllGates.Clear();
+                    foreach (String s in Directory.GetFiles(path + "//JumpGates//"))
+                    {
 
+                        JumpGate gate = jsonStuff.ReadFromJsonFile<JumpGate>(s);
+                        AllGates.Add(gate.GateId, gate);
+
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex.ToString());
+                }
+            }
+        }
         public override void Update()
         {
             ticks++;
-            if (ticks % 128 == 0)
+            if (ticks % 32 == 0)
             {
 
                 if (DateTime.Now > NextUpdate)
@@ -438,8 +470,46 @@ namespace AlliancesPlugin
 
                     NextUpdate = DateTime.Now.AddMinutes(1);
                     LoadAllAlliances();
+                    LoadAllGates();
                 }
+                if (config.JumpGatesEnabled)
+                {
+                    List<MyPlayer> players = new List<MyPlayer>();
+                    foreach (MyPlayer player in MySession.Static.Players.GetOnlinePlayers()){
+                        if (player?.Controller?.ControlledEntity is MyCockpit controller)
+                        {
+                            players.Add(player);
+                        }
+                    }
+  
+                    foreach (KeyValuePair<Guid, JumpGate> key in AllGates)
+                    {
+                        JumpGate gate = key.Value;
+                        if (!gate.Enabled)
+                            continue;
 
+                        if (!AllGates.ContainsKey(gate.TargetGateId))
+                            continue;
+
+                        JumpGate target = AllGates[gate.TargetGateId];
+                        if (!target.Enabled)
+                            continue;
+
+                        foreach (MyPlayer player in players)
+                        {
+                            if (player?.Controller?.ControlledEntity is MyCockpit controller)
+                            {
+                                float Distance = Vector3.Distance(gate.Position, controller.CubeGrid.PositionComp.GetPosition());
+                                if (Distance <= gate.RadiusToJump)
+                                {
+                                    MatrixD worldMatrix = MatrixD.CreateWorld(target.Position, controller.CubeGrid.WorldMatrix.Forward, controller.CubeGrid.WorldMatrix.Up);
+                                    controller.CubeGrid.Teleport(worldMatrix);
+                                }
+                            }
+                        }
+                     
+                    }
+                }
             }
             try
             {
