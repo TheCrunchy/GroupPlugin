@@ -110,30 +110,39 @@ namespace AlliancesPlugin
             {
                 return;
             }
-              AlliancePlugin.Log.Info("Login?");
+            AlliancePlugin.Log.Info("Login?");
             MyIdentity id = AlliancePlugin.GetIdentityByNameOrId(p.SteamId.ToString());
             if (id == null)
             {
                 return;
             }
-                AlliancePlugin.Log.Info("got id");
+            AlliancePlugin.Log.Info("got id");
             if (MySession.Static.Factions.GetPlayerFaction(id.IdentityId) != null && AlliancePlugin.FactionsInAlliances.ContainsKey(MySession.Static.Factions.GetPlayerFaction(id.IdentityId).FactionId))
             {
-                     AlliancePlugin.Log.Info("faction isnt null and alliances thing contains it");
+                AlliancePlugin.Log.Info("faction isnt null and alliances thing contains it");
                 Alliance alliance = AlliancePlugin.GetAllianceNoLoading(MySession.Static.Factions.GetPlayerFaction(id.IdentityId) as MyFaction);
                 if (AlliancePlugin.playersInAlliances.ContainsKey(alliance.AllianceId))
                 {
 
                     if (!AlliancePlugin.playersInAlliances[alliance.AllianceId].Contains(p.SteamId))
                     {
-                          AlliancePlugin.Log.Info("Adding them to the list?");
+
+                        AlliancePlugin.Log.Info("Adding them to the list?");
                         AlliancePlugin.playersInAlliances[alliance.AllianceId].Add(p.SteamId);
                         AlliancePlugin.playersAllianceId.Add(p.SteamId, alliance.AllianceId);
                     }
                 }
+                else
+                {
+                    List<ulong> bob = new List<ulong>();
+                    bob.Add(p.SteamId);
+                    AlliancePlugin.playersInAlliances.Add(alliance.AllianceId, bob);
+                    AlliancePlugin.playersAllianceId.Add(p.SteamId, alliance.AllianceId);
+                }
             }
-
         }
+
+
         public static void Logout(IPlayer p)
         {
             if (p == null)
