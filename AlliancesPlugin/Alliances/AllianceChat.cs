@@ -70,12 +70,15 @@ namespace AlliancesPlugin
                 {
                     consumed = true;
                     Guid allianceId = AlliancePlugin.playersAllianceId[(ulong)msg.AuthorSteamId];
+
+                    Alliance alliance = AlliancePlugin.GetAllianceNoLoading(allianceId);
                     List<ulong> OtherMembers = AlliancePlugin.playersInAlliances[allianceId];
 
-                   ShipyardCommands.SendMessage(msg.Author, "You are in alliance chat", Color.BlueViolet, (long)msg.AuthorSteamId);
+                  // ShipyardCommands.SendMessage(msg.Author, "You are in alliance chat", Color.BlueViolet, (long)msg.AuthorSteamId);
                     foreach (ulong id in OtherMembers)
                     {
-                        ShipyardCommands.SendMessage("[Alliance]" + " " + msg.Author, msg.Message, Color.Cyan, (long)p.Id.SteamId);
+                        ShipyardCommands.SendMessage("[A] " + alliance.GetTitle((ulong) msg.AuthorSteamId) + " " + msg.Author, msg.Message, Color.Cyan, (long)id);
+
                         MyGpsCollection gpscol = (MyGpsCollection)MyAPIGateway.Session?.GPS;
 
                         if (ScanChat(msg.Message, null) != null)

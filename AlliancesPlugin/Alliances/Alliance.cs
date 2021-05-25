@@ -38,6 +38,27 @@ namespace AlliancesPlugin
         public Boolean hasUnlockedShipyard = false;
         public Boolean hasUnlockedHangar = false;
         FileUtils utils = new FileUtils();
+
+        public string GetTitle(ulong id)
+        {
+            if (SupremeLeader == id)
+            {
+                return LeaderTitle;
+            }
+            if (admirals.Contains(id))
+            {
+                return AdmiralTitle;
+            }
+            if (officers.Contains(id))
+            {
+                return OfficerTitle;
+            }
+            if (otherTitles.ContainsKey(id))
+            {
+                return otherTitles[id];
+            }
+            return "Citizen";
+        }
         public HangarData LoadHangar()
         {
             if (hasUnlockedHangar)

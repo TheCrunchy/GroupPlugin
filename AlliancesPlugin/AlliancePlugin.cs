@@ -194,6 +194,19 @@ namespace AlliancesPlugin
             }
             return null;
         }
+        public static Alliance GetAllianceNoLoading(Guid guid)
+        {
+            //fuck it lets just return something that might be null
+            foreach (KeyValuePair<String, Alliance> alliance in AllAlliances)
+            {
+                if (alliance.Value.AllianceId == guid)
+                {
+
+                    return alliance.Value;
+                }
+            }
+            return null;
+        }
         public static Dictionary<long, String> FactionsInAlliances = new Dictionary<long, string>();
         public static Alliance GetAllianceNoLoading(MyFaction fac)
         {
