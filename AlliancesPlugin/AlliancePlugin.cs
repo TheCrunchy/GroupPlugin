@@ -26,6 +26,7 @@ using VRage.Game.ModAPI.Ingame;
 using Sandbox.Game.Entities;
 using Torch.Mod.Messages;
 using Torch.Mod;
+using Torch.Managers.ChatManager;
 
 namespace AlliancesPlugin
 {
@@ -226,6 +227,8 @@ namespace AlliancesPlugin
             Type FactionCollection = MySession.Static.Factions.GetType().Assembly.GetType("Sandbox.Game.Multiplayer.MyFactionCollection");
             sendChange = FactionCollection?.GetMethod("SendFactionChange", BindingFlags.NonPublic | BindingFlags.Static);
         }
+
+        public static ChatManagerServer _chatmanager;
         private void SessionChanged(ITorchSession session, TorchSessionState state)
         {
 
@@ -234,7 +237,18 @@ namespace AlliancesPlugin
 
 
                 TorchState = TorchSessionState.Loaded;
+                _chatmanager = Torch.CurrentSession.Managers.GetManager<ChatManagerServer>();
 
+                if (_chatmanager == null)
+                {
+                    Log.Warn("No chat manager loaded!");
+                }
+                else
+                {
+                    _chatmanager.MessageProcessing += AllianceChat.DoChatMessage;
+                    session.Managers.GetManager<IMultiplayerManagerBase>().PlayerJoined += AllianceChat.Login;
+                    session.Managers.GetManager<IMultiplayerManagerBase>().PlayerLeft += AllianceChat.Logout;
+                }
                 SetupFriendMethod();
 
                 LoadAllAlliances();
