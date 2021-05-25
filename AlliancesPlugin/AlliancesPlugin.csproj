@@ -86,6 +86,7 @@
   <ItemGroup>
     <Compile Include="Alliances\Alliance.cs" />
     <Compile Include="AlliancePlugin.cs" />
+    <Compile Include="Alliances\AllianceChat.cs" />
     <Compile Include="Alliances\AllianceCommands.cs" />
     <Compile Include="Alliances\BankLog.cs" />
     <Compile Include="Alliances\BankLogItem.cs" />

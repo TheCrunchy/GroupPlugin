@@ -45,6 +45,10 @@ namespace AlliancesPlugin
             {
                 return LeaderTitle;
             }
+            if (otherTitles.ContainsKey(id))
+            {
+                return otherTitles[id];
+            }
             if (admirals.Contains(id))
             {
                 return AdmiralTitle;
@@ -53,10 +57,7 @@ namespace AlliancesPlugin
             {
                 return OfficerTitle;
             }
-            if (otherTitles.ContainsKey(id))
-            {
-                return otherTitles[id];
-            }
+      
             return "Citizen";
         }
         public HangarData LoadHangar()

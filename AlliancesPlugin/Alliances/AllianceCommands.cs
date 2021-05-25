@@ -936,7 +936,37 @@ namespace AlliancesPlugin
             }
 
         }
+        [Command("chat", "toggle alliance chat")]
+        [Permission(MyPromoteLevel.None)]
+        public void DoAllianceChat(string message = "")
+        {
+            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
+            if (fac == null)
+            {
+                Context.Respond("Only factions can be in alliances.");
+                return;
+            }
 
+            Alliance alliance = AlliancePlugin.GetAlliance(fac);
+
+            if (alliance != null)
+            {
+                if (AllianceChat.PeopleInAllianceChat.Contains(Context.Player.SteamUserId))
+                {
+                    AllianceChat.PeopleInAllianceChat.Remove(Context.Player.SteamUserId);
+                    Context.Respond("Leaving alliance chat.", Color.Red);
+                }
+                else
+                {
+                    AllianceChat.PeopleInAllianceChat.Add(Context.Player.SteamUserId);
+                    Context.Respond("Entering alliance chat.", Color.Cyan);
+                }
+            }
+            else
+            {
+                Context.Respond("You must be in an alliance to use alliance chat.");
+            }
+        }
 
         [Command("grant title", "change a title")]
         [Permission(MyPromoteLevel.None)]

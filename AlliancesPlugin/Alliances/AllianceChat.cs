@@ -77,7 +77,7 @@ namespace AlliancesPlugin
                   // ShipyardCommands.SendMessage(msg.Author, "You are in alliance chat", Color.BlueViolet, (long)msg.AuthorSteamId);
                     foreach (ulong id in OtherMembers)
                     {
-                        ShipyardCommands.SendMessage("[A] " + alliance.GetTitle((ulong) msg.AuthorSteamId) + " " + msg.Author, msg.Message, Color.Cyan, (long)id);
+                        ShipyardCommands.SendMessage(alliance.GetTitle((ulong) msg.AuthorSteamId) + " | " + msg.Author, msg.Message, Color.LightBlue, (long)id);
 
                         MyGpsCollection gpscol = (MyGpsCollection)MyAPIGateway.Session?.GPS;
 
