@@ -119,6 +119,7 @@ namespace AlliancesPlugin
                 {
                     if (!AlliancePlugin.playersInAlliances[alliance.AllianceId].Contains(p.SteamId)){
                         AlliancePlugin.playersInAlliances[alliance.AllianceId].Add(p.SteamId);
+                        AlliancePlugin.playersAllianceId.Add(p.SteamId, alliance.AllianceId);
                     }
                 }
             }
