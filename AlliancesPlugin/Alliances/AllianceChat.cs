@@ -134,11 +134,15 @@ namespace AlliancesPlugin
                 }
                 else
                 {
-                    List<ulong> bob = new List<ulong>();
-                    bob.Add(p.SteamId);
-                    AlliancePlugin.playersInAlliances.Add(alliance.AllianceId, bob);
-                    AlliancePlugin.playersAllianceId.Add(p.SteamId, alliance.AllianceId);
+                    AlliancePlugin.Log.Info("Doesnt");
                 }
+                //else
+                //{
+                //    List<ulong> bob = new List<ulong>();
+                //    bob.Add(p.SteamId);
+                //    AlliancePlugin.playersInAlliances.Add(alliance.AllianceId, bob);
+                //    AlliancePlugin.playersAllianceId.Add(p.SteamId, alliance.AllianceId);
+                //}
             }
         }
 
