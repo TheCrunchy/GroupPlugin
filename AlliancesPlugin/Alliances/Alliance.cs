@@ -17,7 +17,7 @@ namespace AlliancesPlugin
         public String name;
         public String description;
         public ulong SupremeLeader;
-        public string LeaderTitle = "His Glorious Majesty the Supreme Leader";
+        public string LeaderTitle = "Supreme Leader";
         public string AdmiralTitle = "Grand Admiral";
         public string OfficerTitle = "Admiral";
         public Boolean AllowElections = false;

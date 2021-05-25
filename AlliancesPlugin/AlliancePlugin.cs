@@ -265,7 +265,30 @@ namespace AlliancesPlugin
                 SetupFriendMethod();
 
                 LoadAllAlliances();
-     
+                LoadAllGates();
+                playersInAlliances.Clear();
+                foreach (MyPlayer player in MySession.Static.Players.GetOnlinePlayers())
+                {
+                    if (MySession.Static.Factions.GetPlayerFaction(player.Identity.IdentityId) != null)
+                    {
+                        Alliance temp = GetAllianceNoLoading(MySession.Static.Factions.GetPlayerFaction(player.Identity.IdentityId));
+                        if (temp != null)
+                        {
+                            if (playersInAlliances.ContainsKey(temp.AllianceId))
+                            {
+                                playersInAlliances[temp.AllianceId].Add(player.Id.SteamId);
+                                playersAllianceId.Add(player.Id.SteamId, temp.AllianceId);
+                            }
+                            else
+                            {
+                                List<ulong> bob = new List<ulong>();
+                                bob.Add(player.Id.SteamId);
+                                playersInAlliances.Add(temp.AllianceId, bob);
+                                playersAllianceId.Add(player.Id.SteamId, temp.AllianceId);
+                            }
+                        }
+                    }
+                }
 
                 if (!File.Exists(path + "//KOTH//example.xml"))
                 {

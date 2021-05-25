@@ -63,9 +63,13 @@ namespace AlliancesPlugin
         public static List<ulong> PeopleInAllianceChat = new List<ulong>();
         public static void DoChatMessage(TorchChatMessage msg, ref bool consumed)
         {
+            if (msg.Message.StartsWith("!"))
+            {
+                return;
+            }
             if (PeopleInAllianceChat.Contains((ulong)msg.AuthorSteamId))
             {
-            
+
                 if (AlliancePlugin.playersAllianceId.ContainsKey((ulong)msg.AuthorSteamId))
                 {
                     consumed = true;
@@ -74,10 +78,10 @@ namespace AlliancesPlugin
                     Alliance alliance = AlliancePlugin.GetAllianceNoLoading(allianceId);
                     List<ulong> OtherMembers = AlliancePlugin.playersInAlliances[allianceId];
 
-                  // ShipyardCommands.SendMessage(msg.Author, "You are in alliance chat", Color.BlueViolet, (long)msg.AuthorSteamId);
+                    // ShipyardCommands.SendMessage(msg.Author, "You are in alliance chat", Color.BlueViolet, (long)msg.AuthorSteamId);
                     foreach (ulong id in OtherMembers)
                     {
-                        ShipyardCommands.SendMessage(alliance.GetTitle((ulong) msg.AuthorSteamId) + " | " + msg.Author, msg.Message, Color.LightBlue, (long)id);
+                        ShipyardCommands.SendMessage(alliance.GetTitle((ulong)msg.AuthorSteamId) + " | " + msg.Author, msg.Message, new Color(3,3,3), (long)id);
 
                         MyGpsCollection gpscol = (MyGpsCollection)MyAPIGateway.Session?.GPS;
 
@@ -106,18 +110,23 @@ namespace AlliancesPlugin
             {
                 return;
             }
-            
+            AlliancePlugin.Log.Info("Login?");
             MyIdentity id = AlliancePlugin.GetIdentityByNameOrId(p.SteamId.ToString());
             if (id == null)
             {
                 return;
             }
-            if (MySession.Static.Factions.TryGetFactionById(id.IdentityId) != null && AlliancePlugin.FactionsInAlliances.ContainsKey(MySession.Static.Factions.TryGetFactionById(id.IdentityId).FactionId))
+            AlliancePlugin.Log.Info("got id");
+            if (MySession.Static.Factions.GetPlayerFaction(id.IdentityId) != null && AlliancePlugin.FactionsInAlliances.ContainsKey(MySession.Static.Factions.GetPlayerFaction(id.IdentityId).FactionId))
             {
-                Alliance alliance = AlliancePlugin.GetAllianceNoLoading(MySession.Static.Factions.TryGetFactionById(id.IdentityId) as MyFaction);
-                if (AlliancePlugin.playersInAlliances.ContainsKey(alliance.AllianceId))
+                AlliancePlugin.Log.Info("faction isnt null and alliances thing contains it");
+                Alliance alliance = AlliancePlugin.GetAllianceNoLoading(MySession.Static.Factions.GetPlayerFaction(id.IdentityId) as MyFaction);
+                    if (AlliancePlugin.playersInAlliances.ContainsKey(alliance.AllianceId))
                 {
-                    if (!AlliancePlugin.playersInAlliances[alliance.AllianceId].Contains(p.SteamId)){
+
+                    if (!AlliancePlugin.playersInAlliances[alliance.AllianceId].Contains(p.SteamId))
+                    {
+                        AlliancePlugin.Log.Info("Adding them to the list?");
                         AlliancePlugin.playersInAlliances[alliance.AllianceId].Add(p.SteamId);
                         AlliancePlugin.playersAllianceId.Add(p.SteamId, alliance.AllianceId);
                     }
@@ -139,7 +148,7 @@ namespace AlliancesPlugin
             }
             if (MySession.Static.Factions.TryGetFactionById(id.IdentityId) != null && AlliancePlugin.FactionsInAlliances.ContainsKey(MySession.Static.Factions.TryGetFactionById(id.IdentityId).FactionId))
             {
-                Alliance alliance = AlliancePlugin.GetAllianceNoLoading(MySession.Static.Factions.TryGetFactionById(id.IdentityId) as MyFaction);
+                Alliance alliance = AlliancePlugin.GetAllianceNoLoading(MySession.Static.Factions.GetPlayerFaction(id.IdentityId) as MyFaction);
                 if (AlliancePlugin.playersInAlliances.ContainsKey(alliance.AllianceId))
                 {
                     if (AlliancePlugin.playersInAlliances[alliance.AllianceId].Contains(p.SteamId))
