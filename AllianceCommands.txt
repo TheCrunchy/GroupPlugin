@@ -17,6 +17,7 @@
 !alliance withdraw amount - only bankers and supreme leader can do this
 !alliance dividend amount - pay dividends to members online in last 10 days
 !alliance change leader NewLeaderName - changes the supreme leader of the alliance to the target
+!alliance chat - toggle alliance chat
 
 !shipyard restore tag filename targetplayer - Example !shipyard restore fre "Fighter2021-05-1216-32-48-094" Crunch
 !shipyard purge - deletes the files of claimed grids
@@ -24,7 +25,7 @@
 !shipyard info - lists the queue and the current times to wait
 !shipyard log input - outputs the log with optional time format input
 !shipyard claim number - Claims the grid in that slot if it is finished, faction leaders have override to claim any grids in their queue.
-!shipyard start Name Slow/Quick/Fast - Example !shipyard start "Crunch Fighter" Fast
+!shipyard start Name - Example !shipyard start "Crunch Fighter"
 !shipyard unlock - unlock the shipyard
 !shipyard upgrade speed/slots - output the costs for the next upgrade
 !shipyard upgrade speed/slots true - do the next upgrade
