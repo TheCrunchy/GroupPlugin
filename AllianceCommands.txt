@@ -16,6 +16,7 @@
 !alliance pay player/faction amount - only bankers and supreme leader can do this
 !alliance withdraw amount - only bankers and supreme leader can do this
 !alliance dividend amount - pay dividends to members online in last 10 days
+!alliance change leader NewLeaderName - changes the supreme leader of the alliance to the target
 
 !shipyard restore tag filename targetplayer - Example !shipyard restore fre "Fighter2021-05-1216-32-48-094" Crunch
 !shipyard purge - deletes the files of claimed grids

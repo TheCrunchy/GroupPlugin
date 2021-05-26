@@ -1068,7 +1068,55 @@ namespace AlliancesPlugin
                 }
             }
         }
+        [Command("change leader", "change the leader of the alliance")]
+        [Permission(MyPromoteLevel.None)]
+        public void Abdicate(string playerName)
+        {
+            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
+            if (fac == null)
+            {
+                Context.Respond("Only factions can be in alliances.");
+                return;
+            }
 
+            MyIdentity id = AlliancePlugin.TryGetIdentity(playerName);
+            if (id == null)
+            {
+                Context.Respond("Could not find that player");
+                return;
+            }
+            Alliance alliance = AlliancePlugin.GetAlliance(fac);
+            MyFaction playerFac = MySession.Static.Factions.GetPlayerFaction(id.IdentityId);
+            if (playerFac == null)
+            {
+                Context.Respond("That target player has no faction.");
+                return;
+            }
+            if (!alliance.AllianceMembers.Contains(playerFac.FactionId))
+            {
+                Context.Respond("That target player isnt a member of the alliance.");
+                return;
+            }
+            if (alliance != null)
+            {
+
+
+                if (alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
+                {
+                    alliance.SupremeLeader = MySession.Static.Players.TryGetSteamId(id.IdentityId);
+                    AlliancePlugin.SaveAllianceData(alliance);
+
+                    Context.Respond("They are now the alliance leader.");
+                }
+                else
+                {
+                    Context.Respond("Only the " + alliance.LeaderTitle + " can change the leader.");
+                }
+                return;
+
+
+            }
+        }
         [Command("revoke title", "change a title")]
         [Permission(MyPromoteLevel.None)]
         public void RevokeTitleName(string playerName, string Title)

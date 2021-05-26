@@ -89,7 +89,7 @@ namespace AlliancesPlugin
         }
         public string CreatePath()
         {
-            string fileName = "Alliances";
+           
             var folder = "";
             if (config.StoragePath.Equals("default"))
             {
