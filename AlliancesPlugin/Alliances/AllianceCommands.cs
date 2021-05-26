@@ -951,14 +951,14 @@ namespace AlliancesPlugin
 
             if (alliance != null)
             {
-                if (AllianceChat.PeopleInAllianceChat.Contains(Context.Player.SteamUserId))
+                if (AllianceChat.PeopleInAllianceChat.ContainsKey(Context.Player.SteamUserId))
                 {
                     AllianceChat.PeopleInAllianceChat.Remove(Context.Player.SteamUserId);
                     Context.Respond("Leaving alliance chat.", Color.Red);
                 }
                 else
                 {
-                    AllianceChat.PeopleInAllianceChat.Add(Context.Player.SteamUserId);
+                    AllianceChat.PeopleInAllianceChat.Add(Context.Player.SteamUserId, alliance.AllianceId);
                     Context.Respond("Entering alliance chat.", Color.Cyan);
                 }
             }

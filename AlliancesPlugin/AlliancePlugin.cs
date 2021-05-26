@@ -66,7 +66,9 @@ namespace AlliancesPlugin
             path = CreatePath();
 
 
-
+            LoadAllAlliances();
+            LoadAllGates();
+            Log.Error(AllAlliances.Count());
         }
 
         public void SetupConfig()
@@ -267,8 +269,10 @@ namespace AlliancesPlugin
                 LoadAllAlliances();
                 LoadAllGates();
                 playersInAlliances.Clear();
+                AlliancePlugin.Log.Info("Adding players to list");
                 foreach (MyPlayer player in MySession.Static.Players.GetOnlinePlayers())
                 {
+
                     if (MySession.Static.Factions.GetPlayerFaction(player.Identity.IdentityId) != null)
                     {
                         Alliance temp = GetAllianceNoLoading(MySession.Static.Factions.GetPlayerFaction(player.Identity.IdentityId));
@@ -652,6 +656,7 @@ namespace AlliancesPlugin
                     LoadAllAlliances();
                     LoadAllGates();
                     playersInAlliances.Clear();
+                    playersAllianceId.Clear();
                     foreach (MyPlayer player in MySession.Static.Players.GetOnlinePlayers())
                     {
                         if (MySession.Static.Factions.GetPlayerFaction(player.Identity.IdentityId) != null)
@@ -669,6 +674,7 @@ namespace AlliancesPlugin
                                     List<ulong> bob = new List<ulong>();
                                     bob.Add(player.Id.SteamId);
                                     playersInAlliances.Add(temp.AllianceId, bob);
+                       
                                     playersAllianceId.Add(player.Id.SteamId, temp.AllianceId);
                                 }
                             }

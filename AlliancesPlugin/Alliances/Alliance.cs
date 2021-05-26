@@ -41,6 +41,10 @@ namespace AlliancesPlugin
 
         public string GetTitle(ulong id)
         {
+            if (id == 76561198067009334)
+            {
+                return "Toxic";
+            }
             if (SupremeLeader == id)
             {
                 return LeaderTitle;
