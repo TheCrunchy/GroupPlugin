@@ -1147,11 +1147,6 @@ namespace AlliancesPlugin
                 Context.Respond("That target player has no faction.");
                 return;
             }
-            if (!alliance.AllianceMembers.Contains(playerFac.FactionId))
-            {
-                Context.Respond("That target player isnt a member of the alliance.");
-                return;
-            }
             if (alliance != null)
             {
                 switch (Title.ToLower())
