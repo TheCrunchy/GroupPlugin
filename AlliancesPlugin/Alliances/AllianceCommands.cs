@@ -111,6 +111,124 @@ namespace AlliancesPlugin
                 }
             }
         }
+        public static AccessLevel StringToAccessLevel(string input)
+        {
+            switch (input.ToLower())
+            {
+                case "hangarsave":
+                    return AccessLevel.HangarSave;
+                case "hangarload":
+                    return AccessLevel.HangarLoad;
+                case "hangarloadother":
+                    return AccessLevel.HangarLoadOther;
+                case "bankwithdraw":
+                    return AccessLevel.BankWithdraw;
+                case "shipyardstart":
+                    return AccessLevel.ShipyardStart;
+                case "shipyardclaim":
+                    return AccessLevel.ShipyardClaim;
+                case "shipyardclaimother":
+                    return AccessLevel.ShipyardClaimOther;
+                case "dividendpay":
+                    return AccessLevel.DividendPay;
+                case "invite":
+                    return AccessLevel.Invite;
+                case "kick":
+                    return AccessLevel.Kick;
+                case "revokelowertitle":
+                    return AccessLevel.RevokeLowerTitle;
+                case "grantlowertitle":
+                    return AccessLevel.GrantLowerTitle;
+                case "removeenemy":
+                    return AccessLevel.RemoveEnemy;
+                case "addenemy":
+                    return AccessLevel.AddEnemy;
+                case "payfrombank":
+                    return AccessLevel.PayFromBank;
+                case "unabletoparse":
+                    return AccessLevel.UnableToParse;
+            }
+            return AccessLevel.UnableToParse;
+        }
+        [Command("set permissions", "invite a faction to alliance")]
+        [Permission(MyPromoteLevel.None)]
+        public void AllianceInvite(string rank, string permission, Boolean enabled)
+        {
+            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
+            if (fac == null)
+            {
+                Context.Respond("Only factions can be in alliances.");
+                return;
+            }
+            Alliance alliance = AlliancePlugin.GetAlliance(fac);
+            AccessLevel level = StringToAccessLevel(permission);
+            if (level == AccessLevel.UnableToParse)
+            {
+                Context.Respond("Unable to read that permission, you can change, HangarSave, HangarLoad, HangarLoadOther, Kick, Invite, ShipyardStart, ShipyardClaim, ShipyardClaimOther, DividendPay, BankWithdraw, PayFromBank, AddEnemy, RemoveEnemy, GrantLowerTitle, RevokeLowerTitle.");
+                return;
+            }
+            if (alliance != null)
+            {
+                if (alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
+                {
+                    switch (rank.ToLower())
+                    {
+                        case "admiral":
+                            if (enabled)
+                            {
+                                if (!alliance.AdmiralPerms.permissions.Contains(level))
+                                    alliance.AdmiralPerms.permissions.Add(level);
+                            }
+                            else
+                            {
+                                if (alliance.AdmiralPerms.permissions.Contains(level))
+                                    alliance.AdmiralPerms.permissions.Remove(level);
+                            }
+                            Context.Respond("Updated that permission level for Admirals.");
+                            break; 
+                        case "officer":
+                            if (enabled)
+                            {
+                                if (!alliance.OfficerPerms.permissions.Contains(level))
+                                    alliance.OfficerPerms.permissions.Add(level);
+                            }
+                            else
+                            {
+                                if (alliance.OfficerPerms.permissions.Contains(level))
+                                    alliance.OfficerPerms.permissions.Remove(level);
+                            }
+                            Context.Respond("Updated that permission level for Officers.");
+                            break;
+                        case "citizen":
+                            if (enabled)
+                            {
+                                if (!alliance.CitizenPerms.permissions.Contains(level))
+                                    alliance.CitizenPerms.permissions.Add(level);
+                            }
+                            else
+                            {
+                                if (alliance.CitizenPerms.permissions.Contains(level))
+                                    alliance.CitizenPerms.permissions.Remove(level);
+                            }
+                            Context.Respond("Updated that permission level for Citizens.");
+                            break;
+                        default:
+                            Context.Respond("Invalid input, you can only change Admiral, Officer and Citizen.");
+                            return;
+                    }
+                    AlliancePlugin.SaveAllianceData(alliance);
+                }
+                else
+                {
+                    Context.Respond("You dont have permission to send invites.");
+                }
+            }
+            else
+            {
+                Context.Respond("Cannot find alliance, maybe wait a minute and try again.");
+            }
+        }
+
         [Command("invite", "invite a faction to alliance")]
         [Permission(MyPromoteLevel.None)]
         public void AllianceInvite(string tag)
@@ -1300,6 +1418,8 @@ namespace AlliancesPlugin
                         newAlliance.AdmiralPerms.permissions.Add(AccessLevel.ShipyardClaim);
                         newAlliance.AdmiralPerms.permissions.Add(AccessLevel.ShipyardClaimOther);
                         newAlliance.AdmiralPerms.permissions.Add(AccessLevel.ShipyardStart);
+                        newAlliance.AdmiralPerms.permissions.Add(AccessLevel.Invite);
+                        newAlliance.AdmiralPerms.permissions.Add(AccessLevel.Kick);
                         AlliancePlugin.AllAlliances.Add(name, newAlliance);
                         AlliancePlugin.FactionsInAlliances.Add(fac.FactionId, newAlliance.name);
                         AlliancePlugin.SaveAllianceData(newAlliance);

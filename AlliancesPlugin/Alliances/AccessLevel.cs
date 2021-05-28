@@ -23,7 +23,8 @@ namespace AlliancesPlugin
         UnlockUpgrades,
         RemoveEnemy,
         AddEnemy,
-        PayFromBank
+        PayFromBank,
+        UnableToParse
 
     }
 }

@@ -264,16 +264,35 @@ namespace AlliancesPlugin
             {
                 sb.AppendLine(AdmiralTitle + " " + MyMultiplayer.Static.GetMemberName(id));
             }
+            StringBuilder perms = new StringBuilder();
+            foreach (AccessLevel level in AdmiralPerms.permissions)
+            {
+                perms.Append(level.ToString() + ", ");
+            }
+            sb.AppendLine("Admiral Permissions : " + perms.ToString());
             sb.AppendLine("");
             foreach (ulong id in officers)
             {
                 sb.AppendLine(OfficerTitle + " " + MyMultiplayer.Static.GetMemberName(id));
             }
+            perms.Clear();
+            foreach (AccessLevel level in OfficerPerms.permissions)
+            {
+                perms.Append(level.ToString() + ", ");
+            }
+            sb.AppendLine("Officer Permissions : " + perms.ToString());
             sb.AppendLine("");
             foreach (ulong id in bankAccess)
             {
                 sb.AppendLine("Banker " + " " + MyMultiplayer.Static.GetMemberName(id));
             }
+            sb.AppendLine("");
+            perms.Clear();
+            foreach (AccessLevel level in CitizenPerms.permissions)
+            {
+                perms.Append(level.ToString() + ", ");
+            }
+            sb.AppendLine("Citizen Permissions : " + perms.ToString());
             sb.AppendLine("");
             otherTitlesDic.Clear();
             foreach (KeyValuePair<ulong, String> titles in otherTitles)
