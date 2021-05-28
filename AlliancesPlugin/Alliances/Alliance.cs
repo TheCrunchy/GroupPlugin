@@ -39,7 +39,46 @@ namespace AlliancesPlugin
         public Boolean hasUnlockedHangar = false;
         FileUtils utils = new FileUtils();
 
+
+        public RankPermissions AdmiralPerms = new RankPermissions();
+        public RankPermissions OfficerPerms = new RankPermissions();
+        public RankPermissions CitizenPerms = new RankPermissions();
         public int CurrentMetaPoints = 0;
+
+        public Boolean HasAccess(ulong id, AccessLevel level)
+        {
+            if (SupremeLeader == id)
+            {
+                return true;
+            }
+            if (admirals.Contains(id))
+            {
+                if (AdmiralPerms.permissions.Contains(level))
+                {
+                    return true;
+                }
+            }
+            if (officers.Contains(id))
+            {
+                if (OfficerPerms.permissions.Contains(level))
+                {
+                    return true;
+                }
+            }
+            if (CitizenPerms.permissions.Contains(level))
+            {
+                return true;
+            }
+
+            if (level == AccessLevel.BankWithdraw)
+            {
+                if (bankAccess.Contains(id))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
 
         public string GetTitle(ulong id)
         {
@@ -59,7 +98,7 @@ namespace AlliancesPlugin
             {
                 return OfficerTitle;
             }
-      
+
             return "Citizen";
         }
         public HangarData LoadHangar()
@@ -70,12 +109,13 @@ namespace AlliancesPlugin
                 {
                     Directory.CreateDirectory(AlliancePlugin.path + "//HangarData//" + AllianceId + "//");
                 }
-                if (!File.Exists(AlliancePlugin.path + "//HangarData//" + AllianceId + "//hangar.json")){
+                if (!File.Exists(AlliancePlugin.path + "//HangarData//" + AllianceId + "//hangar.json"))
+                {
                     HangarData data = new HangarData();
                     data.allianceId = AllianceId;
                     utils.WriteToJsonFile<HangarData>(AlliancePlugin.path + "//HangarData//" + AllianceId + "//hangar.json", data);
                 }
-         
+
                 return utils.ReadFromJsonFile<HangarData>(AlliancePlugin.path + "//HangarData//" + AllianceId + "//hangar.json");
             }
             return null;
@@ -92,12 +132,13 @@ namespace AlliancesPlugin
         private Dictionary<String, StringBuilder> otherTitlesDic = new Dictionary<string, StringBuilder>();
         public void SavePrintQueue(PrintQueue queue)
         {
-            if (!Directory.Exists(AlliancePlugin.path + "//ShipyardData//" + AllianceId)){
+            if (!Directory.Exists(AlliancePlugin.path + "//ShipyardData//" + AllianceId))
+            {
                 Directory.CreateDirectory(AlliancePlugin.path + "//ShipyardData//" + AllianceId);
             }
 
             utils.WriteToJsonFile<PrintQueue>(AlliancePlugin.path + "//ShipyardData//" + AllianceId + "//queue.json", queue);
-         
+
             return;
         }
         public void PayPlayer(Int64 amount, ulong steamid, ulong targetId)
@@ -192,12 +233,12 @@ namespace AlliancesPlugin
         {
             if (!Directory.Exists(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId))
             {
-                Directory.CreateDirectory(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId +"//");
+                Directory.CreateDirectory(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId + "//");
             }
 
             if (!File.Exists(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId + "//log.json"))
             {
-               BankLog log = new BankLog
+                BankLog log = new BankLog
                 {
                     allianceId = AllianceId
                 };
@@ -237,19 +278,20 @@ namespace AlliancesPlugin
             otherTitlesDic.Clear();
             foreach (KeyValuePair<ulong, String> titles in otherTitles)
             {
-                if (otherTitlesDic.ContainsKey(titles.Value)) { 
+                if (otherTitlesDic.ContainsKey(titles.Value))
+                {
 
-                otherTitlesDic[titles.Value].AppendLine(titles.Value + " " + MyMultiplayer.Static.GetMemberName(titles.Key));
+                    otherTitlesDic[titles.Value].AppendLine(titles.Value + " " + MyMultiplayer.Static.GetMemberName(titles.Key));
                 }
                 else
                 {
                     StringBuilder sbb = new StringBuilder();
                     sbb.AppendLine(titles.Value + " " + MyMultiplayer.Static.GetMemberName(titles.Key));
-                    otherTitlesDic.Add(titles.Value,sbb);
+                    otherTitlesDic.Add(titles.Value, sbb);
                 }
 
             }
-            foreach(KeyValuePair<String, StringBuilder> key in otherTitlesDic)
+            foreach (KeyValuePair<String, StringBuilder> key in otherTitlesDic)
             {
                 sb.AppendLine(key.Value.ToString());
             }

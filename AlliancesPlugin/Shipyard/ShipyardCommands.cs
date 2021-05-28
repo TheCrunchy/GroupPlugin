@@ -899,6 +899,11 @@ namespace AlliancesPlugin
                     Context.Respond("Target faction not member of alliance.");
                     return;
                 }
+                if (!alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.ShipyardClaim) && !alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.ShipyardClaimOther))
+                {
+                    Context.Respond("Current rank does not have access to claim shipyard builds.");
+                    return;
+                }
                 PrintQueue queue = alliance.LoadPrintQueue();
                 if (queue == null)
                 {
@@ -1128,6 +1133,11 @@ namespace AlliancesPlugin
             if (alliance == null)
             {
                 Context.Respond("Target faction not member of alliance.");
+                return;
+            }
+            if (!alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.ShipyardStart))
+            {
+                Context.Respond("Current rank does not have access to start shipyard builds.");
                 return;
             }
             PrintQueue queue = alliance.LoadPrintQueue();

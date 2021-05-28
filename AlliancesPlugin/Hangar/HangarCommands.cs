@@ -32,7 +32,7 @@ namespace AlliancesPlugin
 
             return false;
         }
-        [Command("log", "View the bank log")]
+        [Command("log", "View the hangar log")]
         [Permission(MyPromoteLevel.None)]
         public void BankLog(string timeformat = "MM-dd-yyyy")
         {
@@ -192,7 +192,7 @@ namespace AlliancesPlugin
         }
 
 
-        [Command("upgrade", "Upgrade shipyard slots")]
+        [Command("upgrade", "Upgrade hangar slots")]
         [Permission(MyPromoteLevel.None)]
         public void Upgrade(Boolean upgrade = false)
         {
@@ -356,7 +356,7 @@ namespace AlliancesPlugin
             }
         }
 
-        [Command("unlock", "save a grid to alliance hangar")]
+        [Command("unlock", "unlock the alliance hangar")]
         [Permission(MyPromoteLevel.None)]
         public void UnlockHangar()
         {
@@ -525,6 +525,11 @@ namespace AlliancesPlugin
                 Context.Respond("You are not a member of an alliance.");
                 return;
             }
+            if (!alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.HangarLoad) && !alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.HangarLoadOther))
+            {
+                Context.Respond("Current rank does not have access to hangar load.");
+                return;
+            }
             if (alliance.hasUnlockedHangar)
             {
                 HangarData hangar = alliance.LoadHangar();
@@ -628,6 +633,10 @@ namespace AlliancesPlugin
             if (alliance == null)
             {
                 Context.Respond("You are not a member of an alliance.");
+                return;
+            }
+            if(!alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.HangarSave)){
+                Context.Respond("Current rank does not have access to hangar save.");
                 return;
             }
             if (alliance.hasUnlockedHangar)

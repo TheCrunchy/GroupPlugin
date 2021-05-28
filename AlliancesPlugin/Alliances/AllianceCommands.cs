@@ -155,6 +155,31 @@ namespace AlliancesPlugin
             AlliancePlugin.LoadConfig();
             Context.Respond("Reloaded");
         }
+        [Command("takepoints", "take points from an alliance")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void AllianceInfo(string name, int amount)
+        {
+            Boolean console = false;
+            Alliance alliance = null;
+
+                alliance = AlliancePlugin.GetAlliance(name);
+            if (alliance == null)
+            {
+                Context.Respond("Could not find that alliance.");
+                return;
+            }
+
+            if (alliance.CurrentMetaPoints >= amount)
+            {
+                alliance.CurrentMetaPoints -= amount;
+                AlliancePlugin.SaveAllianceData(alliance);
+                Context.Respond("Points taken, new balance " + alliance.CurrentMetaPoints);
+            }
+            else {
+                Context.Respond("Alliance does not have enough points.");
+            }
+        }
+
         [Command("info", "output info about an alliance")]
         [Permission(MyPromoteLevel.None)]
         public void AllianceInfo(string name = "")
@@ -258,7 +283,7 @@ namespace AlliancesPlugin
             Alliance alliance = AlliancePlugin.GetAlliance(fac);
             if (alliance != null)
             {
-                if (alliance.HasPermissionToInvite(Context.Player.SteamUserId))
+                if (alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.Kick))
                 {
                     if (alliance.AllianceMembers.Contains(fac2.FactionId))
                     {
@@ -321,7 +346,7 @@ namespace AlliancesPlugin
             Alliance alliance = AlliancePlugin.GetAlliance(fac);
             if (alliance != null)
             {
-                if (alliance.HasPermissionToInvite(Context.Player.SteamUserId) || alliance.officers.Contains(Context.Player.SteamUserId))
+                if (alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.RemoveEnemy))
                 {
                     switch (type.ToLower())
                     {
@@ -382,7 +407,7 @@ namespace AlliancesPlugin
             Alliance alliance = AlliancePlugin.GetAlliance(fac);
             if (alliance != null)
             {
-                if (alliance.HasPermissionToInvite(Context.Player.SteamUserId) || alliance.officers.Contains(Context.Player.SteamUserId))
+                if (alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.AddEnemy))
                 {
                     switch (type.ToLower())
                     {
@@ -449,7 +474,7 @@ namespace AlliancesPlugin
             Alliance alliance = AlliancePlugin.GetAlliance(fac);
             if (alliance != null)
             {
-                if (alliance.HasPermissionToInvite(Context.Player.SteamUserId))
+                if (alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.Invite))
                 {
                     alliance.RevokeInvite(fac2.FactionId);
                     AlliancePlugin.SaveAllianceData(alliance);
@@ -556,7 +581,7 @@ namespace AlliancesPlugin
             if (alliance != null)
             {
 
-                if (alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
+                if (alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.DividendPay))
                 {
                     if (alliance.bankBalance >= amount)
                     {
@@ -727,7 +752,7 @@ namespace AlliancesPlugin
             if (alliance != null)
             {
 
-                if (alliance.SupremeLeader.Equals(Context.Player.SteamUserId) || alliance.bankAccess.Contains(Context.Player.SteamUserId))
+                if (alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.BankWithdraw))
                 {
                     if (alliance.bankBalance >= amount)
                     {
@@ -887,7 +912,7 @@ namespace AlliancesPlugin
             }
         }
 
-        [Command("pay", "change a title")]
+        [Command("pay", "pay a player from the bank")]
         [Permission(MyPromoteLevel.None)]
         public void GiveTitleName(string type, string nameortag, string inputAmount)
         {
@@ -922,7 +947,7 @@ namespace AlliancesPlugin
                 return;
             }
 
-            if (alliance.bankAccess.Contains(Context.Player.SteamUserId) || alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
+            if (alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.PayFromBank))
             {
                 if (alliance.bankBalance >= amount)
                 {
@@ -1028,7 +1053,7 @@ namespace AlliancesPlugin
                         }
                         return;
                     case "officer":
-                        if (alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
+                        if (alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.GrantLowerTitle) && !alliance.officers.Contains(Context.Player.SteamUserId))
                         {
                             if (!alliance.officers.Contains(MySession.Static.Players.TryGetSteamId(id.IdentityId)))
                             {
@@ -1058,7 +1083,7 @@ namespace AlliancesPlugin
                         }
                         return;
                     default:
-                        if (alliance.admirals.Contains(Context.Player.SteamUserId) || alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
+                        if (alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.GrantLowerTitle))
                         {
                             alliance.SetTitle(MySession.Static.Players.TryGetSteamId(id.IdentityId), Title);
                             AlliancePlugin.SaveAllianceData(alliance);
@@ -1172,7 +1197,7 @@ namespace AlliancesPlugin
                         }
                         return;
                     case "officer":
-                        if (alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
+                        if (alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.RevokeLowerTitle) && !alliance.officers.Contains(Context.Player.SteamUserId))
                         {
                             if (alliance.officers.Contains(MySession.Static.Players.TryGetSteamId(id.IdentityId)))
                             {
@@ -1202,7 +1227,7 @@ namespace AlliancesPlugin
                         }
                         return;
                     default:
-                        if (alliance.admirals.Contains(Context.Player.SteamUserId) || alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
+                        if (alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.RevokeLowerTitle))
                         {
                             alliance.otherTitles.Remove(MySession.Static.Players.TryGetSteamId(id.IdentityId));
                             AlliancePlugin.SaveAllianceData(alliance);
@@ -1269,7 +1294,12 @@ namespace AlliancesPlugin
                                 }
                             }
                         }
-
+                        newAlliance.AdmiralPerms.permissions.Add(AccessLevel.HangarSave);
+                        newAlliance.AdmiralPerms.permissions.Add(AccessLevel.HangarLoad);
+                        newAlliance.AdmiralPerms.permissions.Add(AccessLevel.HangarLoadOther);
+                        newAlliance.AdmiralPerms.permissions.Add(AccessLevel.ShipyardClaim);
+                        newAlliance.AdmiralPerms.permissions.Add(AccessLevel.ShipyardClaimOther);
+                        newAlliance.AdmiralPerms.permissions.Add(AccessLevel.ShipyardStart);
                         AlliancePlugin.AllAlliances.Add(name, newAlliance);
                         AlliancePlugin.FactionsInAlliances.Add(fac.FactionId, newAlliance.name);
                         AlliancePlugin.SaveAllianceData(newAlliance);

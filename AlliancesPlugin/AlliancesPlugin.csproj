@@ -84,12 +84,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Alliances\AccessLevel.cs" />
     <Compile Include="Alliances\Alliance.cs" />
     <Compile Include="AlliancePlugin.cs" />
     <Compile Include="Alliances\AllianceChat.cs" />
     <Compile Include="Alliances\AllianceCommands.cs" />
     <Compile Include="Alliances\BankLog.cs" />
     <Compile Include="Alliances\BankLogItem.cs" />
+    <Compile Include="Alliances\RankPermissions.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="Hangar\DeniedLocation.cs" />
     <Compile Include="Hangar\HangarCommands.cs" />
