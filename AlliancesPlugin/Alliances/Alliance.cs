@@ -39,12 +39,10 @@ namespace AlliancesPlugin
         public Boolean hasUnlockedHangar = false;
         FileUtils utils = new FileUtils();
 
+        public int CurrentMetaPoints = 0;
+
         public string GetTitle(ulong id)
         {
-            if (id == 76561198067009334)
-            {
-                return "Toxic";
-            }
             if (SupremeLeader == id)
             {
                 return LeaderTitle;
@@ -214,6 +212,8 @@ namespace AlliancesPlugin
             sb.AppendLine(description);
             sb.AppendLine("");
             sb.AppendLine("Bank Balance : " + String.Format("{0:n0}", bankBalance) + " SC.");
+            sb.AppendLine("");
+            sb.AppendLine("Meta Points : " + String.Format("{0:n0}", CurrentMetaPoints));
             sb.AppendLine("");
             sb.AppendLine(LeaderTitle);
 

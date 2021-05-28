@@ -997,6 +997,9 @@ namespace AlliancesPlugin
                                     SpawnCores(lootgrid, config);
                                     config.nextCoreSpawn = DateTime.Now.AddSeconds(config.SecondsBetweenCoreSpawn / 2);
                                     SendChatMessage("Capture block and owned, half spawn time");
+                                    Alliance alliance = GetAlliance(config.owner);
+                                    alliance.CurrentMetaPoints += config.MetaPointsPerCapWithBonus;
+                                    SaveAllianceData(alliance);
                                 }
                                 else
                                 {
@@ -1004,6 +1007,9 @@ namespace AlliancesPlugin
                                     SpawnCores(lootgrid, config);
                                     SendChatMessage("No capture block and owned, normal spawn time");
                                     config.nextCoreSpawn = DateTime.Now.AddSeconds(config.SecondsBetweenCoreSpawn);
+                                    Alliance alliance = GetAlliance(config.owner);
+                                    alliance.CurrentMetaPoints += config.MetaPointsPerCap;
+                                    SaveAllianceData(alliance);
                                 }
                             }
                             else

@@ -28,6 +28,8 @@ namespace AlliancesPlugin
         public int PointsPerCap = 10;
         public int PointsToCap = 100;
         public int MinsPerCaptureBroadcast = 5;
+        public int MetaPointsPerCapWithBonus = 1;
+        public int MetaPointsPerCap = 1;
         public string owner = "NOBODY";
         public string captureBlockType = "Beacon";
         public string captureBlockSubtype = "LargeBlockBeacon";

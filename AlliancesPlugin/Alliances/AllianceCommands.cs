@@ -670,10 +670,14 @@ namespace AlliancesPlugin
             Match match = Regex.Match(name, "^[0-9a-zA-Z ]{3,25}$", RegexOptions.IgnoreCase);
             if (!match.Success || string.IsNullOrEmpty(name))
             {
-                Context.Respond("New Title does not validate, try again.");
+                Context.Respond("New Name does not validate, try again.");
                 return;
             }
-
+            if (AlliancePlugin.AllAlliances.ContainsKey(name))
+            {
+                Context.Respond("Alliance with that name already exists.");
+                return;
+            }
             Alliance alliance = AlliancePlugin.GetAlliance(fac);
 
             if (alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
