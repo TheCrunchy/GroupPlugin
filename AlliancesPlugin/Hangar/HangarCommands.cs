@@ -604,6 +604,11 @@ namespace AlliancesPlugin
                 Context.Respond("Alliance hangar is not enabled.");
                 return;
             }
+            if (MySession.Static.IsSaveInProgress)
+            {
+                Context.Respond("World is saving! Try again soon.");
+                return;
+            }
             if (MyGravityProviderSystem.IsPositionInNaturalGravity(Context.Player.GetPosition()))
             {
                 Context.Respond("You cannot use this command in natural gravity!");
