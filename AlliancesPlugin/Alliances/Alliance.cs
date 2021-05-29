@@ -505,13 +505,10 @@ namespace AlliancesPlugin
                 return false;
             }
         }
-        public void KickMember(string tag)
-        {
-            //
-        }
+
         public long GetBalance()
         {
-            return 0;
+            return this.bankBalance;
         }
 
     }
