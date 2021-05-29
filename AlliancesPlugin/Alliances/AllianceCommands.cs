@@ -150,9 +150,9 @@ namespace AlliancesPlugin
             }
             return AccessLevel.UnableToParse;
         }
-        [Command("set permissions", "invite a faction to alliance")]
+        [Command("rank permissions", "set a ranks permissions")]
         [Permission(MyPromoteLevel.None)]
-        public void AllianceInvite(string rank, string permission, Boolean enabled)
+        public void AlliancePermissions(string rank, string permission, Boolean enabled)
         {
             MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
             if (fac == null)
@@ -185,7 +185,7 @@ namespace AlliancesPlugin
                                     alliance.AdmiralPerms.permissions.Remove(level);
                             }
                             Context.Respond("Updated that permission level for Admirals.");
-                            break; 
+                            break;
                         case "officer":
                             if (enabled)
                             {
@@ -223,6 +223,142 @@ namespace AlliancesPlugin
                     Context.Respond("You dont have permission to send invites.");
                 }
             }
+            else
+            {
+                Context.Respond("Cannot find alliance, maybe wait a minute and try again.");
+            }
+        }
+        [Command("view permissions", "set a players permissions")]
+        [Permission(MyPromoteLevel.None)]
+        public void ViewPermissions(string playerName, string permission, Boolean enabled)
+        {
+            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
+            if (fac == null)
+            {
+                Context.Respond("Only factions can be in alliances.");
+                return;
+            }
+            Alliance alliance = AlliancePlugin.GetAlliance(fac);
+
+
+            if (alliance != null)
+            {
+                StringBuilder sb = new StringBuilder();
+                StringBuilder perms = new StringBuilder();
+                foreach (AccessLevel level in alliance.AdmiralPerms.permissions)
+                {
+                    perms.Append(level.ToString() + ", ");
+                }
+                sb.AppendLine("Admiral Permissions : " + perms.ToString());
+                sb.AppendLine("");
+                perms.Clear();
+                foreach (AccessLevel level in alliance.OfficerPerms.permissions)
+                {
+                    perms.Append(level.ToString() + ", ");
+                }
+                sb.AppendLine("Officer Permissions : " + perms.ToString());
+                perms.Clear();
+                sb.AppendLine("");
+                foreach (AccessLevel level in alliance.CitizenPerms.permissions)
+                {
+                    perms.Append(level.ToString() + ", ");
+                }
+                sb.AppendLine("Officer Permissions : " + perms.ToString());
+                sb.AppendLine("");
+                foreach (KeyValuePair<ulong, RankPermissions> player in alliance.playerPermissions)
+                {
+                    perms.Clear();
+                    foreach (AccessLevel level in player.Value.permissions)
+                    {
+                        perms.Append(level.ToString() + ", ");
+                    }
+                    sb.AppendLine(MyMultiplayer.Static.GetMemberName(player.Key) + " " + perms.ToString());
+                }
+                sb.AppendLine("Officer Permissions : " + perms.ToString());
+                sb.AppendLine("");
+
+                DialogMessage m = new DialogMessage("Alliance Permissions", alliance.name, sb.ToString());
+                ModCommunication.SendMessageTo(m, Context.Player.SteamUserId);
+            }
+            else
+            {
+                Context.Respond("You arent a member of an alliance.");
+            }
+        }
+        [Command("player permissions", "set a players permissions")]
+        [Permission(MyPromoteLevel.None)]
+        public void AlliancePlayerPermissions(string playerName, string permission, Boolean enabled)
+        {
+            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
+            if (fac == null)
+            {
+                Context.Respond("Only factions can be in alliances.");
+                return;
+            }
+            Alliance alliance = AlliancePlugin.GetAlliance(fac);
+            AccessLevel level = StringToAccessLevel(permission);
+            if (level == AccessLevel.UnableToParse)
+            {
+                Context.Respond("Unable to read that permission, you can change, HangarSave, HangarLoad, HangarLoadOther, Kick, Invite, ShipyardStart, ShipyardClaim, ShipyardClaimOther, DividendPay, BankWithdraw, PayFromBank, AddEnemy, RemoveEnemy, GrantLowerTitle, RevokeLowerTitle.");
+                return;
+            }
+            MyIdentity id = AlliancePlugin.TryGetIdentity(playerName);
+            if (id == null)
+            {
+                Context.Respond("Could not find that player");
+                return;
+            }
+            MyFaction playerFac = MySession.Static.Factions.GetPlayerFaction(id.IdentityId);
+            if (playerFac == null)
+            {
+                Context.Respond("That target player has no faction.");
+                return;
+            }
+
+            if (alliance != null)
+            {
+                if (!alliance.AllianceMembers.Contains(playerFac.FactionId))
+                {
+                    Context.Respond("That target player isnt a member of the alliance.");
+                    return;
+                }
+                if (alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
+                {
+
+                    if (enabled)
+                    {
+                        if (!alliance.playerPermissions.ContainsKey(MySession.Static.Players.TryGetSteamId(id.IdentityId)))
+                        {
+                            alliance.playerPermissions[MySession.Static.Players.TryGetSteamId(id.IdentityId)].permissions.Add(level);
+                        }
+                        else
+                        {
+                            RankPermissions bob = new RankPermissions();
+                            bob.permissions.Add(level);
+                            alliance.playerPermissions.Add(MySession.Static.Players.TryGetSteamId(id.IdentityId), bob);
+
+                        }
+
+                    }
+                    else
+                    {
+                        if (alliance.playerPermissions.ContainsKey(MySession.Static.Players.TryGetSteamId(id.IdentityId)))
+                        {
+                            alliance.playerPermissions[MySession.Static.Players.TryGetSteamId(id.IdentityId)].permissions.Remove(level);
+                        }
+
+                    }
+                    Context.Respond("Updated that permission level for the player.");
+                    AlliancePlugin.SaveAllianceData(alliance);
+                }
+                else
+                {
+                    Context.Respond("You dont have permission to send invites.");
+                }
+
+            }
+
+
             else
             {
                 Context.Respond("Cannot find alliance, maybe wait a minute and try again.");
@@ -280,7 +416,7 @@ namespace AlliancesPlugin
             Boolean console = false;
             Alliance alliance = null;
 
-                alliance = AlliancePlugin.GetAlliance(name);
+            alliance = AlliancePlugin.GetAlliance(name);
             if (alliance == null)
             {
                 Context.Respond("Could not find that alliance.");
@@ -293,7 +429,8 @@ namespace AlliancesPlugin
                 AlliancePlugin.SaveAllianceData(alliance);
                 Context.Respond("Points taken, new balance " + alliance.CurrentMetaPoints);
             }
-            else {
+            else
+            {
                 Context.Respond("Alliance does not have enough points.");
             }
         }

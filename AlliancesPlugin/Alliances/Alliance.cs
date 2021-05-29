@@ -45,11 +45,19 @@ namespace AlliancesPlugin
         public RankPermissions CitizenPerms = new RankPermissions();
         public int CurrentMetaPoints = 0;
 
+        public Dictionary<ulong, RankPermissions> playerPermissions = new Dictionary<ulong, RankPermissions>();
         public Boolean HasAccess(ulong id, AccessLevel level)
         {
             if (SupremeLeader == id)
             {
                 return true;
+            }
+            if (playerPermissions.ContainsKey(id))
+            {
+                if (playerPermissions[id].permissions.Contains(level))
+                {
+                    return true;
+                }
             }
             if (admirals.Contains(id))
             {
@@ -77,6 +85,7 @@ namespace AlliancesPlugin
                     return true;
                 }
             }
+        
             return false;
         }
 
@@ -342,7 +351,7 @@ namespace AlliancesPlugin
             sb.AppendLine("Pending invites");
             foreach (long id in Invites)
             {
-               IMyFaction fac = MySession.Static.Factions.TryGetFactionById(id));
+               IMyFaction fac = MySession.Static.Factions.TryGetFactionById(id);
                 if (fac != null) {
                     sb.AppendLine(fac.Name + " - " + fac.Tag);
                 }
