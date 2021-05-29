@@ -338,6 +338,16 @@ namespace AlliancesPlugin
                     sb.AppendLine(fac.Tag + " - " + fac.Members.Count + " members");
                 }
             }
+            sb.AppendLine("");
+            sb.AppendLine("Pending invites");
+            foreach (long id in Invites)
+            {
+               IMyFaction fac = MySession.Static.Factions.TryGetFactionById(id));
+                if (fac != null) {
+                    sb.AppendLine(fac.Name + " - " + fac.Tag);
+                }
+            }
+
             return sb.ToString();
         }
 
