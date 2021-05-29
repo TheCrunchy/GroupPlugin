@@ -524,7 +524,50 @@ namespace AlliancesPlugin
              */
             return MyEntities.FindFreePlace(playerPosition, sphere.Radius);
         }
+        public static BoundingSphereD FindBoundingSphere(MyCubeGrid grid)
+        {
 
+            Vector3? vector = null;
+            float radius = 0F;
+
+            var obj = grid.GetObjectBuilder() as MyObjectBuilder_CubeGrid;
+            var gridSphere = obj.CalculateBoundingSphere();
+
+            /* If this is the first run, we use the center of that grid, and its radius as it is */
+            if (vector == null)
+            {
+
+                vector = gridSphere.Center;
+                radius = gridSphere.Radius;
+
+            }
+            else
+            {
+
+                /* 
+                 * If its not the first run, we use the vector we already have and 
+                 * figure out how far it is away from the center of the subgrids sphere. 
+                 */
+                float distance = Vector3.Distance(vector.Value, gridSphere.Center);
+
+                /* 
+                 * Now we figure out how big our new radius must be to house both grids
+                 * so the distance between the center points + the radius of our subgrid.
+                 */
+                float newRadius = distance + gridSphere.Radius;
+
+                /*
+                 * If the new radius is bigger than our old one we use that, otherwise the subgrid 
+                 * is contained in the other grid and therefore no need to make it bigger. 
+                 */
+                if (newRadius > radius)
+                    radius = newRadius;
+            }
+
+            
+
+            return new BoundingSphereD(vector.Value, radius);
+        }
         private static BoundingSphereD FindBoundingSphere(MyObjectBuilder_CubeGrid[] grids)
         {
 

@@ -729,7 +729,14 @@ namespace AlliancesPlugin
                                         continue;
                                     Random rand = new Random();
                                     Vector3 offset = new Vector3(rand.Next(config.JumpGateMinimumOffset, config.JumPGateMaximumOffset), rand.Next(config.JumpGateMinimumOffset, config.JumPGateMaximumOffset), rand.Next(config.JumpGateMinimumOffset, config.JumPGateMaximumOffset));
-                                    MatrixD worldMatrix = MatrixD.CreateWorld(target.Position + offset, controller.CubeGrid.WorldMatrix.Forward, controller.CubeGrid.WorldMatrix.Up);
+                                    Vector3D newPos = new Vector3D(target.Position + offset);
+                                   Vector3D? newPosition = MyEntities.FindFreePlace(newPos, (float) GridManager.FindBoundingSphere(controller.CubeGrid).Radius);
+                                    if (newPosition.Value == null)
+                                    {
+                                        break;
+                                    }
+                                    MatrixD worldMatrix = MatrixD.CreateWorld(newPosition.Value, controller.CubeGrid.WorldMatrix.Forward, controller.CubeGrid.WorldMatrix.Up);
+                                    
                                     controller.CubeGrid.Teleport(worldMatrix);
                                 }
                                 else
