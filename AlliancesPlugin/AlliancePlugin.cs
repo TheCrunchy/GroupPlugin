@@ -972,7 +972,7 @@ namespace AlliancesPlugin
 
 
 
-                        if (DateTime.Now > config.nextCoreSpawn && !config.IsDenialPoint)
+                        if (DateTime.Now > config.nextCoreSpawn && !config.IsDenialPoint && config.HasReward)
                         {
                             MyCubeGrid lootgrid = GetLootboxGrid(position, config);
                             //spawn the cores

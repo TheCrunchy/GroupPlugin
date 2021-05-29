@@ -11,6 +11,7 @@ namespace AlliancesPlugin
         public double x = 100000;
         public double y = 100000;
         public double z = 100000;
+        public Boolean HasReward = true;
         public string KothName = "example";
         public string RewardTypeId = "Ingot";
         public string RewardSubTypeId = "Iron";

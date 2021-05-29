@@ -14,7 +14,6 @@ Things that can be bought/upgraded to improve the output and maybe even give ite
 Each upgrade tier allows more citizens to work there, increasing its output of resources / money? 
 Citizens start to die if there isnt enough food / a point is held by another alliance
 
-Power planet - Allows the other things to be purchased and work. Reactor must have uranium in the planet cargo to consume in order to power the other things.
 Housing - Provides citizens to operate the buildings
 Military Industry - Reduces shipyard build time?
 Commercial Industry - Improves the planetary profit based on the amount of citizens in housing
@@ -24,7 +23,16 @@ Ice drill - Produces ice once an hour
 Quarry - Produces gravel once an hour
 Mine - Produces a random ore between configured amounts
 
+One time builds 
+Space elevator - Increases moneys 
+Hyper Refinery - Lower build time of buildings by 10%
+Power planet - Allows the other things to be purchased and work. Reactor must have uranium in the planet cargo to consume in order to power the other things.
+Planetary Defence Shield - Increase the amount of time it takes to capture a point
+Bunker network - Reduce citizen deaths from conflict by 50% 
+Scientific Research Centre - Convert datacores to meta points? 20 cores = 1 point?
+Military Academy - Convert population to defenders, defenders increase the warmup time before a point is capturable, but they die in the process
+#
 
-
-
- 
+First iteration of planet shit - An alliance can only gain the full output from 1 planet, any others are 50% then 25% then 0% 
+Conquest 3 points
+Once a day payment for how many points are held, 33m per point, increasing by 1m for every day held
