@@ -1500,9 +1500,7 @@ namespace AlliancesPlugin
                         }
                         newAlliance.CustomRankPermissions["Admiral"].permissions.Add(AccessLevel.HangarSave);
                         newAlliance.CustomRankPermissions["Admiral"].permissions.Add(AccessLevel.HangarLoad);
-                        newAlliance.CustomRankPermissions["Admiral"].permissions.Add(AccessLevel.HangarLoadOther);
                         newAlliance.CustomRankPermissions["Admiral"].permissions.Add(AccessLevel.ShipyardClaim);
-                        newAlliance.CustomRankPermissions["Admiral"].permissions.Add(AccessLevel.ShipyardClaimOther);
                         newAlliance.CustomRankPermissions["Admiral"].permissions.Add(AccessLevel.ShipyardStart);
                         newAlliance.CustomRankPermissions["Admiral"].permissions.Add(AccessLevel.Invite);
                         newAlliance.CustomRankPermissions["Admiral"].permissions.Add(AccessLevel.Kick);
