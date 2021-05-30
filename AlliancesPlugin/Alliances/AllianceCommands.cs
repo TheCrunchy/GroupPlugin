@@ -164,7 +164,7 @@ namespace AlliancesPlugin
             AccessLevel level = StringToAccessLevel(permission);
             if (level == AccessLevel.UnableToParse)
             {
-                Context.Respond("Unable to read that permission, you can change, HangarSave, HangarLoad, HangarLoadOther, Kick, Invite, ShipyardStart, ShipyardClaim, ShipyardClaimOther, DividendPay, BankWithdraw, PayFromBank, AddEnemy, RemoveEnemy, GrantLowerTitle, RevokeLowerTitle.");
+                Context.Respond("Unable to read that permission, you can change, HangarSave, HangarLoad, HangarLoadOther, Kick, Invite, ShipyardStart, ShipyardClaim, ShipyardClaimOther, DividendPay, BankWithdraw, PayFromBank, AddEnemy, RemoveEnemy, GrantLowerTitle, Vote, RevokeLowerTitle.");
                 return;
             }
             if (alliance != null)
@@ -278,7 +278,7 @@ namespace AlliancesPlugin
             AccessLevel level = StringToAccessLevel(permission);
             if (level == AccessLevel.UnableToParse)
             {
-                Context.Respond("Unable to read that permission, you can change, HangarSave, HangarLoad, HangarLoadOther, Kick, Invite, ShipyardStart, ShipyardClaim, ShipyardClaimOther, DividendPay, BankWithdraw, PayFromBank, AddEnemy, RemoveEnemy, GrantLowerTitle, RevokeLowerTitle.");
+                Context.Respond("Unable to read that permission, you can change, HangarSave, HangarLoad, HangarLoadOther, Kick, Invite, ShipyardStart, ShipyardClaim, ShipyardClaimOther, DividendPay, BankWithdraw, PayFromBank, AddEnemy, RemoveEnemy, GrantLowerTitle, Vote, RevokeLowerTitle.");
                 return;
             }
             MyIdentity id = AlliancePlugin.TryGetIdentity(playerName);
