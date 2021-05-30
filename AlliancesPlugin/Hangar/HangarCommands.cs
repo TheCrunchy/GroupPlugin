@@ -556,8 +556,7 @@ namespace AlliancesPlugin
                 HangarItem item = hangar.ItemsInHangar[slot];
 
                 //this took up way too much of one line
-                if (item.steamid.Equals(Context.Player.SteamUserId) || alliance.SupremeLeader.Equals(Context.Player.SteamUserId)
-                    || alliance.officers.Contains(Context.Player.SteamUserId) || alliance.admirals.Contains(Context.Player.SteamUserId)){
+
                   if (hangar.LoadGridFromHangar(slot, Context.Player.SteamUserId, alliance, Context.Player.Identity as MyIdentity, fac))
                     {
                         Context.Respond("Grid should be loaded!");
@@ -583,10 +582,7 @@ namespace AlliancesPlugin
                         gpscol.SendAddGps(Context.Player.IdentityId, ref gps);
                     }
 
-                }
-                else {
-                    Context.Respond("That is not your grid and you do not have the rank to load it.");
-                }
+
 
 
             }

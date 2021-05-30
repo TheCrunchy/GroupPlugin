@@ -164,7 +164,7 @@ namespace AlliancesPlugin
             }
             if (alliance != null)
             {
-                if (alliance.admirals.Contains(Context.Player.SteamUserId) || alliance.SupremeLeader == Context.Player.SteamUserId)
+                if (alliance.SupremeLeader == Context.Player.SteamUserId)
                 {
                     JumpGate gate1 = null;
                     JumpGate gate2 = null;

@@ -914,7 +914,7 @@ namespace AlliancesPlugin
                 PrintQueueItem item;
                 queue.getQueue().TryGetValue(slot, out item);
 
-                if (item.ownerSteam.Equals((long)Context.Player.SteamUserId) || alliance.officers.Contains(Context.Player.SteamUserId) || alliance.admirals.Contains(Context.Player.SteamUserId) || alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
+                if (item.ownerSteam.Equals((long)Context.Player.SteamUserId) || alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.ShipyardClaimOther))
                 {
 
                     DateTime start = item.startTime;
@@ -947,14 +947,9 @@ namespace AlliancesPlugin
                             //  MoneyPlugin.DoOwnerShipTask((long)Context.Player.SteamUserId, item.name);
                             queue.claimedGrids.Add(item.name);
 
-                            if (alliance.officers.Contains(Context.Player.SteamUserId) || alliance.admirals.Contains(Context.Player.SteamUserId) || alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
-                            {
-                                SendMessage("[Shipyard]", "Spawning the grid with officer override! It will be placed near you.", Color.Green, (long)Context.Player.SteamUserId);
-                            }
-                            else
-                            {
+
                                 SendMessage("[Shipyard]", "Spawning the grid! It will be placed near you.", Color.Green, (long)Context.Player.SteamUserId);
-                            }
+                            
                             queue.removeFromQueue(slot);
                             alliance.SavePrintQueue(queue);
                         }

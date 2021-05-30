@@ -169,58 +169,43 @@ namespace AlliancesPlugin
             }
             if (alliance != null)
             {
-                if (alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
+                if (alliance.SupremeLeader.Equals(Context.Player.SteamUserId) && alliance.CustomRankPermissions.ContainsKey(rank))
                 {
-                    switch (rank.ToLower())
+                    if (rank.ToLower().Equals("citizen"))
                     {
-                        case "admiral":
-                            if (enabled)
-                            {
-                                if (!alliance.AdmiralPerms.permissions.Contains(level))
-                                    alliance.AdmiralPerms.permissions.Add(level);
-                            }
-                            else
-                            {
-                                if (alliance.AdmiralPerms.permissions.Contains(level))
-                                    alliance.AdmiralPerms.permissions.Remove(level);
-                            }
-                            Context.Respond("Updated that permission level for Admirals.");
-                            break;
-                        case "officer":
-                            if (enabled)
-                            {
-                                if (!alliance.OfficerPerms.permissions.Contains(level))
-                                    alliance.OfficerPerms.permissions.Add(level);
-                            }
-                            else
-                            {
-                                if (alliance.OfficerPerms.permissions.Contains(level))
-                                    alliance.OfficerPerms.permissions.Remove(level);
-                            }
-                            Context.Respond("Updated that permission level for Officers.");
-                            break;
-                        case "citizen":
-                            if (enabled)
-                            {
-                                if (!alliance.CitizenPerms.permissions.Contains(level))
-                                    alliance.CitizenPerms.permissions.Add(level);
-                            }
-                            else
-                            {
-                                if (alliance.CitizenPerms.permissions.Contains(level))
-                                    alliance.CitizenPerms.permissions.Remove(level);
-                            }
-                            Context.Respond("Updated that permission level for Citizens.");
-                            break;
-                        default:
-                            Context.Respond("Invalid input, you can only change Admiral, Officer and Citizen.");
-                            return;
+                        if (enabled)
+                        {
+                            if (!alliance.CitizenPerms.permissions.Contains(level))
+                                alliance.CitizenPerms.permissions.Add(level);
+                        }
+                        else
+                        {
+                            if (alliance.CitizenPerms.permissions.Contains(level))
+                                alliance.CitizenPerms.permissions.Remove(level);
+                        }
                     }
+                    else
+                    {
+                        if (enabled)
+                        {
+                            if (!alliance.CustomRankPermissions[rank].permissions.Contains(level))
+                                alliance.CustomRankPermissions[rank].permissions.Add(level);
+                        }
+                        else
+                        {
+                            if (alliance.CustomRankPermissions[rank].permissions.Contains(level))
+                                alliance.CustomRankPermissions[rank].permissions.Remove(level);
+                        }
+                    }
+
+                    Context.Respond("Updated that permission level for Citizens.");
+
+
                     AlliancePlugin.SaveAllianceData(alliance);
                 }
                 else
                 {
-                    Context.Respond("You dont have permission to send invites.");
+                    Context.Respond("You dont have permission or that rank doesnt exist.");
                 }
             }
             else
@@ -245,25 +230,21 @@ namespace AlliancesPlugin
             {
                 StringBuilder sb = new StringBuilder();
                 StringBuilder perms = new StringBuilder();
-                foreach (AccessLevel level in alliance.AdmiralPerms.permissions)
+                foreach (String key in alliance.CustomRankPermissions.Keys)
                 {
-                    perms.Append(level.ToString() + ", ");
+                    foreach (AccessLevel level in alliance.CustomRankPermissions[key].permissions)
+                    {
+                        perms.Append(level.ToString() + ", ");
+                    }
+                    sb.AppendLine(key + " Permissions : " + perms.ToString());
                 }
-                sb.AppendLine("Admiral Permissions : " + perms.ToString());
-                sb.AppendLine("");
-                perms.Clear();
-                foreach (AccessLevel level in alliance.OfficerPerms.permissions)
-                {
-                    perms.Append(level.ToString() + ", ");
-                }
-                sb.AppendLine("Officer Permissions : " + perms.ToString());
                 perms.Clear();
                 sb.AppendLine("");
                 foreach (AccessLevel level in alliance.CitizenPerms.permissions)
                 {
                     perms.Append(level.ToString() + ", ");
                 }
-                sb.AppendLine("Officer Permissions : " + perms.ToString());
+                sb.AppendLine("Citizen Permissions : " + perms.ToString());
                 sb.AppendLine("");
                 foreach (KeyValuePair<ulong, RankPermissions> player in alliance.playerPermissions)
                 {
@@ -274,8 +255,6 @@ namespace AlliancesPlugin
                     }
                     sb.AppendLine(MyMultiplayer.Static.GetMemberName(player.Key) + " " + perms.ToString());
                 }
-                sb.AppendLine("Officer Permissions : " + perms.ToString());
-                sb.AppendLine("");
 
                 DialogMessage m = new DialogMessage("Alliance Permissions", alliance.name, sb.ToString());
                 ModCommunication.SendMessageTo(m, Context.Player.SteamUserId);
@@ -498,14 +477,9 @@ namespace AlliancesPlugin
                         Context.Respond("The " + alliance.LeaderTitle + " Cannot leave the alliance, Leadership must be transferred first.");
                         return;
                     }
-                    if (alliance.officers.Contains(MySession.Static.Players.TryGetSteamId(m.PlayerId)))
+                    if (alliance.PlayersCustomRank.ContainsKey(MySession.Static.Players.TryGetSteamId(m.PlayerId)))
                     {
-                        alliance.officers.Remove(MySession.Static.Players.TryGetSteamId(m.PlayerId));
-                    }
-
-                    if (alliance.admirals.Contains(MySession.Static.Players.TryGetSteamId(m.PlayerId)))
-                    {
-                        alliance.admirals.Remove(MySession.Static.Players.TryGetSteamId(m.PlayerId));
+                        alliance.PlayersCustomRank.Remove(MySession.Static.Players.TryGetSteamId(m.PlayerId));
                     }
 
                 }
@@ -545,7 +519,7 @@ namespace AlliancesPlugin
                         bool CanKick = true;
                         foreach (MyFactionMember m in fac2.Members.Values)
                         {
-                            if (alliance.SupremeLeader.Equals(MySession.Static.Players.TryGetSteamId(m.PlayerId)) || alliance.officers.Contains(MySession.Static.Players.TryGetSteamId(m.PlayerId)) || alliance.admirals.Contains(MySession.Static.Players.TryGetSteamId(m.PlayerId)))
+                            if (alliance.SupremeLeader.Equals(MySession.Static.Players.TryGetSteamId(m.PlayerId)) || alliance.PlayersCustomRank.ContainsKey(MySession.Static.Players.TryGetSteamId(m.PlayerId)))
                             {
                                 CanKick = false;
                             }
@@ -768,31 +742,37 @@ namespace AlliancesPlugin
             {
                 if (alliance != null)
                 {
-                    switch (title.ToLower())
+                    if (title.ToLower().Equals("leader"))
                     {
-                        case "leader":
-                            alliance.LeaderTitle = newName;
-                            AlliancePlugin.SaveAllianceData(alliance);
+                        alliance.LeaderTitle = newName;
+                        AlliancePlugin.SaveAllianceData(alliance);
 
-                            Context.Respond("Updated");
-                            return;
-                        case "admiral":
-                            alliance.AdmiralTitle = newName;
-                            AlliancePlugin.SaveAllianceData(alliance);
+                        Context.Respond("Updated");
+                        return;
+                    }
+                    else
+                    {
+                        if (alliance.CustomRankPermissions.ContainsKey(title) && !alliance.CustomRankPermissions.ContainsKey(newName))
+                        {
+                            RankPermissions temp = alliance.CustomRankPermissions[title];
+                            alliance.CustomRankPermissions.Remove(title);
+                            alliance.CustomRankPermissions.Add(newName, temp);
 
-                            Context.Respond("Updated");
-                            return;
-                        case "officer":
-                            alliance.OfficerTitle = newName;
-                            AlliancePlugin.SaveAllianceData(alliance);
-
-                            Context.Respond("Updated");
-                            return;
-                        default:
-                            Context.Respond("Could not find that title. You can change Leader, Admiral and Officer");
-                            break;
+                            foreach (KeyValuePair<ulong, string> fuck in alliance.PlayersCustomRank)
+                            {
+                                if (fuck.Value.Equals(title))
+                                {
+                                    alliance.PlayersCustomRank[fuck.Key] = newName;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            Context.Respond("Could not find that title. Or changing it would conflict.");
+                        }
                     }
                 }
+
             }
             else
             {
@@ -1289,69 +1269,54 @@ namespace AlliancesPlugin
             }
             if (alliance != null)
             {
-                switch (Title.ToLower())
+
+                if (alliance.CustomRankPermissions.ContainsKey(Title))
                 {
-                    case "admiral":
-                        if (alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
-                        {
-                            if (!alliance.admirals.Contains(MySession.Static.Players.TryGetSteamId(id.IdentityId)))
-                            {
-                                alliance.admirals.Add(MySession.Static.Players.TryGetSteamId(id.IdentityId));
-                            }
-                            AlliancePlugin.SaveAllianceData(alliance);
 
-                            Context.Respond("Updated");
-                        }
-                        else
-                        {
-                            Context.Respond("Only the " + alliance.LeaderTitle + " can grant this title.");
-                        }
-                        return;
-                    case "officer":
-                        if (alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.GrantLowerTitle) && !alliance.officers.Contains(Context.Player.SteamUserId))
-                        {
-                            if (!alliance.officers.Contains(MySession.Static.Players.TryGetSteamId(id.IdentityId)))
-                            {
-                                alliance.officers.Add(MySession.Static.Players.TryGetSteamId(id.IdentityId));
-                            }
-                            AlliancePlugin.SaveAllianceData(alliance);
 
-                        }
-                        else
+                    if (alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
+                    {
+                        if (!alliance.PlayersCustomRank.ContainsKey(MySession.Static.Players.TryGetSteamId(id.IdentityId)))
                         {
-                            Context.Respond("Only the " + alliance.LeaderTitle + " can grant this title.");
+                            alliance.PlayersCustomRank.Add(MySession.Static.Players.TryGetSteamId(id.IdentityId), Title);
                         }
-                        return;
-                    case "banker":
-                        if (alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
-                        {
-                            if (!alliance.bankAccess.Contains(MySession.Static.Players.TryGetSteamId(id.IdentityId)))
-                            {
-                                alliance.bankAccess.Add(MySession.Static.Players.TryGetSteamId(id.IdentityId));
-                            }
-                            AlliancePlugin.SaveAllianceData(alliance);
+                        AlliancePlugin.SaveAllianceData(alliance);
 
-                        }
-                        else
-                        {
-                            Context.Respond("Only the " + alliance.LeaderTitle + " can grant this title.");
-                        }
-                        return;
-                    default:
-                        if (alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.GrantLowerTitle))
+                        Context.Respond("Updated");
+                    }
+                    else
+                    {
+                        Context.Respond("Only the " + alliance.LeaderTitle + " can grant this title.");
+                    }
+                    return;
+                }
+                else
+                {
+                    if (alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.GrantLowerTitle))
+                    {
+                        RankPermissions thisGuy = alliance.CustomRankPermissions[alliance.PlayersCustomRank[Context.Player.SteamUserId]];
+                        RankPermissions newTitle = alliance.CustomRankPermissions[Title];
+
+                        if (thisGuy.permissionLevel > newTitle.permissionLevel)
                         {
                             alliance.SetTitle(MySession.Static.Players.TryGetSteamId(id.IdentityId), Title);
                             AlliancePlugin.SaveAllianceData(alliance);
-
                         }
                         else
                         {
-                            Context.Respond("Only the " + alliance.LeaderTitle + " or " + alliance.AdmiralTitle + " can grant titles.");
+                            Context.Respond("That rank is higher or same rank as you.");
                         }
-                        break;
+                   
+
+                    }
+                    else
+                    {
+                        Context.Respond("No permission to grant titles.");
+                    }
                 }
             }
         }
+
         [Command("change leader", "change the leader of the alliance")]
         [Permission(MyPromoteLevel.None)]
         public void Abdicate(string playerName)
@@ -1433,66 +1398,49 @@ namespace AlliancesPlugin
             }
             if (alliance != null)
             {
-                switch (Title.ToLower())
+                if (alliance.CustomRankPermissions.ContainsKey(Title))
                 {
-                    case "admiral":
-                        if (alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
-                        {
-                            if (alliance.admirals.Contains(MySession.Static.Players.TryGetSteamId(id.IdentityId)))
-                            {
-                                alliance.admirals.Remove(MySession.Static.Players.TryGetSteamId(id.IdentityId));
-                            }
-                            AlliancePlugin.SaveAllianceData(alliance);
 
-                            Context.Respond("Updated");
+
+                    if (alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
+                    {
+                        if (alliance.PlayersCustomRank.ContainsKey(MySession.Static.Players.TryGetSteamId(id.IdentityId)))
+                        {
+                            alliance.PlayersCustomRank.Remove(MySession.Static.Players.TryGetSteamId(id.IdentityId));
+                        }
+                        AlliancePlugin.SaveAllianceData(alliance);
+
+                        Context.Respond("Updated");
+                    }
+                    else
+                    {
+                        Context.Respond("Only the " + alliance.LeaderTitle + " can grant this title.");
+                    }
+                    return;
+                }
+                else
+                {
+                    if (alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.RevokeLowerTitle))
+                    {
+                        RankPermissions thisGuy = alliance.CustomRankPermissions[alliance.PlayersCustomRank[Context.Player.SteamUserId]];
+                        RankPermissions newTitle = alliance.CustomRankPermissions[Title];
+
+                        if (thisGuy.permissionLevel > newTitle.permissionLevel)
+                        {
+                            alliance.SetTitle(MySession.Static.Players.TryGetSteamId(id.IdentityId), Title);
+                            AlliancePlugin.SaveAllianceData(alliance);
                         }
                         else
                         {
-                            Context.Respond("Only the " + alliance.LeaderTitle + " can grant this title.");
+                            Context.Respond("That rank is higher or same rank as you.");
                         }
-                        return;
-                    case "officer":
-                        if (alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.RevokeLowerTitle) && !alliance.officers.Contains(Context.Player.SteamUserId))
-                        {
-                            if (alliance.officers.Contains(MySession.Static.Players.TryGetSteamId(id.IdentityId)))
-                            {
-                                alliance.officers.Remove(MySession.Static.Players.TryGetSteamId(id.IdentityId));
-                            }
-                            AlliancePlugin.SaveAllianceData(alliance);
 
-                        }
-                        else
-                        {
-                            Context.Respond("Only the " + alliance.LeaderTitle + " can grant this title.");
-                        }
-                        return;
-                    case "banker":
-                        if (alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
-                        {
-                            if (alliance.bankAccess.Contains(MySession.Static.Players.TryGetSteamId(id.IdentityId)))
-                            {
-                                alliance.bankAccess.Remove(MySession.Static.Players.TryGetSteamId(id.IdentityId));
-                            }
-                            AlliancePlugin.SaveAllianceData(alliance);
 
-                        }
-                        else
-                        {
-                            Context.Respond("Only the " + alliance.LeaderTitle + " can grant this title.");
-                        }
-                        return;
-                    default:
-                        if (alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.RevokeLowerTitle))
-                        {
-                            alliance.otherTitles.Remove(MySession.Static.Players.TryGetSteamId(id.IdentityId));
-                            AlliancePlugin.SaveAllianceData(alliance);
-
-                        }
-                        else
-                        {
-                            Context.Respond("Only the " + alliance.LeaderTitle + " or " + alliance.AdmiralTitle + " can revoke titles.");
-                        }
-                        break;
+                    }
+                    else
+                    {
+                        Context.Respond("No permission to revoke titles.");
+                    }
                 }
             }
         }
@@ -1538,6 +1486,7 @@ namespace AlliancesPlugin
                         newAlliance.SupremeLeader = Context.Player.SteamUserId;
                         newAlliance.ForceAddMember(fac.FactionId);
                         EconUtils.takeMoney(Context.Player.IdentityId, AlliancePlugin.config.PriceNewAlliance);
+                        newAlliance.CustomRankPermissions.Add("Admiral", new RankPermissions());
                         foreach (MyFactionMember m in fac.Members.Values)
                         {
                             if (m.IsLeader)
@@ -1545,18 +1494,19 @@ namespace AlliancesPlugin
                                 ulong steamId = Sync.Players.TryGetSteamId(m.PlayerId);
                                 if (steamId > 0)
                                 {
-                                    newAlliance.admirals.Add(steamId);
+                                    newAlliance.PlayersCustomRank.Add(steamId, "Admiral");
                                 }
                             }
                         }
-                        newAlliance.AdmiralPerms.permissions.Add(AccessLevel.HangarSave);
-                        newAlliance.AdmiralPerms.permissions.Add(AccessLevel.HangarLoad);
-                        newAlliance.AdmiralPerms.permissions.Add(AccessLevel.HangarLoadOther);
-                        newAlliance.AdmiralPerms.permissions.Add(AccessLevel.ShipyardClaim);
-                        newAlliance.AdmiralPerms.permissions.Add(AccessLevel.ShipyardClaimOther);
-                        newAlliance.AdmiralPerms.permissions.Add(AccessLevel.ShipyardStart);
-                        newAlliance.AdmiralPerms.permissions.Add(AccessLevel.Invite);
-                        newAlliance.AdmiralPerms.permissions.Add(AccessLevel.Kick);
+                        newAlliance.CustomRankPermissions["Admiral"].permissions.Add(AccessLevel.HangarSave);
+                        newAlliance.CustomRankPermissions["Admiral"].permissions.Add(AccessLevel.HangarLoad);
+                        newAlliance.CustomRankPermissions["Admiral"].permissions.Add(AccessLevel.HangarLoadOther);
+                        newAlliance.CustomRankPermissions["Admiral"].permissions.Add(AccessLevel.ShipyardClaim);
+                        newAlliance.CustomRankPermissions["Admiral"].permissions.Add(AccessLevel.ShipyardClaimOther);
+                        newAlliance.CustomRankPermissions["Admiral"].permissions.Add(AccessLevel.ShipyardStart);
+                        newAlliance.CustomRankPermissions["Admiral"].permissions.Add(AccessLevel.Invite);
+                        newAlliance.CustomRankPermissions["Admiral"].permissions.Add(AccessLevel.Kick);
+                        newAlliance.CustomRankPermissions["Admiral"].permissions.Add(AccessLevel.Vote);
                         AlliancePlugin.AllAlliances.Add(name, newAlliance);
                         AlliancePlugin.FactionsInAlliances.Add(fac.FactionId, newAlliance.name);
                         AlliancePlugin.SaveAllianceData(newAlliance);

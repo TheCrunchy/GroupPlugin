@@ -24,6 +24,7 @@ namespace AlliancesPlugin
         RemoveEnemy,
         AddEnemy,
         PayFromBank,
+        Vote,
         UnableToParse
 
     }

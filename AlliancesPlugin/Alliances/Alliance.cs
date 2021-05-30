@@ -18,8 +18,6 @@ namespace AlliancesPlugin
         public String description;
         public ulong SupremeLeader;
         public string LeaderTitle = "Supreme Leader";
-        public string AdmiralTitle = "Grand Admiral";
-        public string OfficerTitle = "Admiral";
         public Boolean AllowElections = false;
         public List<long> BlockedFactions = new List<long>();
         public Dictionary<ulong, String> otherTitles = new Dictionary<ulong, string>();
@@ -30,18 +28,13 @@ namespace AlliancesPlugin
         public List<long> Invites = new List<long>();
         public List<long> AllianceMembers = new List<long>();
 
-        public List<ulong> admirals = new List<ulong>();
-        public List<ulong> officers = new List<ulong>();
-
-        public List<ulong> bankAccess = new List<ulong>();
         public long bankBalance = 0;
         public Boolean hasUnlockedShipyard = false;
         public Boolean hasUnlockedHangar = false;
         FileUtils utils = new FileUtils();
 
-
-        public RankPermissions AdmiralPerms = new RankPermissions();
-        public RankPermissions OfficerPerms = new RankPermissions();
+        public Dictionary<String, RankPermissions> CustomRankPermissions = new Dictionary<string, RankPermissions>();
+        public Dictionary<ulong, String> PlayersCustomRank = new Dictionary<ulong, string>();
         public RankPermissions CitizenPerms = new RankPermissions();
         public int CurrentMetaPoints = 0;
 
@@ -52,6 +45,13 @@ namespace AlliancesPlugin
             {
                 return true;
             }
+            if (PlayersCustomRank.ContainsKey(id))
+            {
+                if (CustomRankPermissions[PlayersCustomRank[id]].permissions.Contains(level))
+                {
+                    return true;
+                }
+            }
             if (playerPermissions.ContainsKey(id))
             {
                 if (playerPermissions[id].permissions.Contains(level))
@@ -59,32 +59,12 @@ namespace AlliancesPlugin
                     return true;
                 }
             }
-            if (admirals.Contains(id))
-            {
-                if (AdmiralPerms.permissions.Contains(level))
-                {
-                    return true;
-                }
-            }
-            if (officers.Contains(id))
-            {
-                if (OfficerPerms.permissions.Contains(level))
-                {
-                    return true;
-                }
-            }
+
             if (CitizenPerms.permissions.Contains(level))
             {
                 return true;
             }
 
-            if (level == AccessLevel.BankWithdraw)
-            {
-                if (bankAccess.Contains(id))
-                {
-                    return true;
-                }
-            }
         
             return false;
         }
@@ -95,18 +75,15 @@ namespace AlliancesPlugin
             {
                 return LeaderTitle;
             }
-            if (otherTitles.ContainsKey(id))
+            if (PlayersCustomRank.ContainsKey(id))
+            {
+                return PlayersCustomRank[id];
+            }
+                if (otherTitles.ContainsKey(id))
             {
                 return otherTitles[id];
             }
-            if (admirals.Contains(id))
-            {
-                return AdmiralTitle;
-            }
-            if (officers.Contains(id))
-            {
-                return OfficerTitle;
-            }
+         
 
             return "Citizen";
         }
@@ -269,32 +246,18 @@ namespace AlliancesPlugin
 
             sb.AppendLine(MyMultiplayer.Static.GetMemberName(SupremeLeader));
             sb.AppendLine("");
-            foreach (ulong id in admirals)
-            {
-                sb.AppendLine(AdmiralTitle + " " + MyMultiplayer.Static.GetMemberName(id));
-            }
+
             StringBuilder perms = new StringBuilder();
-            foreach (AccessLevel level in AdmiralPerms.permissions)
+            foreach (KeyValuePair<String, RankPermissions> customs in CustomRankPermissions)
             {
-                perms.Append(level.ToString() + ", ");
+                perms.Clear();
+                foreach (AccessLevel level in customs.Value.permissions)
+                {
+                    perms.Append(level.ToString() + ", ");
+                }
+                sb.AppendLine(customs.Key + "Permissions : " + perms.ToString());
             }
-            sb.AppendLine("Admiral Permissions : " + perms.ToString());
-            sb.AppendLine("");
-            foreach (ulong id in officers)
-            {
-                sb.AppendLine(OfficerTitle + " " + MyMultiplayer.Static.GetMemberName(id));
-            }
-            perms.Clear();
-            foreach (AccessLevel level in OfficerPerms.permissions)
-            {
-                perms.Append(level.ToString() + ", ");
-            }
-            sb.AppendLine("Officer Permissions : " + perms.ToString());
-            sb.AppendLine("");
-            foreach (ulong id in bankAccess)
-            {
-                sb.AppendLine("Banker " + " " + MyMultiplayer.Static.GetMemberName(id));
-            }
+
             sb.AppendLine("");
             perms.Clear();
             foreach (AccessLevel level in CitizenPerms.permissions)
@@ -302,6 +265,27 @@ namespace AlliancesPlugin
                 perms.Append(level.ToString() + ", ");
             }
             sb.AppendLine("Citizen Permissions : " + perms.ToString());
+            sb.AppendLine("");
+            otherTitlesDic.Clear();
+            foreach (KeyValuePair<ulong, String> titles in PlayersCustomRank)
+            {
+                if (otherTitlesDic.ContainsKey(titles.Value))
+                {
+
+                    otherTitlesDic[titles.Value].AppendLine(titles.Value + " " + MyMultiplayer.Static.GetMemberName(titles.Key));
+                }
+                else
+                {
+                    StringBuilder sbb = new StringBuilder();
+                    sbb.AppendLine(titles.Value + " " + MyMultiplayer.Static.GetMemberName(titles.Key));
+                    otherTitlesDic.Add(titles.Value, sbb);
+                }
+
+            }
+            foreach (KeyValuePair<String, StringBuilder> key in otherTitlesDic)
+            {
+                sb.AppendLine(key.Value.ToString());
+            }
             sb.AppendLine("");
             otherTitlesDic.Clear();
             foreach (KeyValuePair<ulong, String> titles in otherTitles)
@@ -461,6 +445,18 @@ namespace AlliancesPlugin
         }
         public void SetTitle(ulong steamid, String title)
         {
+            if (CustomRankPermissions.ContainsKey(title))
+            {
+                if (PlayersCustomRank.ContainsKey(steamid))
+                {
+                    PlayersCustomRank[steamid] = title;
+                }
+                else
+                {
+                    PlayersCustomRank.Add(steamid, title);
+                }
+                return;
+            }
             if (otherTitles.ContainsKey(steamid))
             {
                 otherTitles[steamid] = title;
@@ -474,9 +470,8 @@ namespace AlliancesPlugin
         {
             if (SupremeLeader.Equals(id))
                 return true;
-            if (admirals.Contains(id))
+            if (HasAccess(id, AccessLevel.Invite))
                 return true;
-
             return false;
         }
         public Boolean JoinAlliance(MyFaction fac)

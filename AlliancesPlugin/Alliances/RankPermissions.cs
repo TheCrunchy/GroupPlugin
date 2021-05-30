@@ -9,6 +9,6 @@ namespace AlliancesPlugin
     public class RankPermissions
     {
         public List<AccessLevel> permissions = new List<AccessLevel>();
-
+        public int permissionLevel = 100;
     }
 }
