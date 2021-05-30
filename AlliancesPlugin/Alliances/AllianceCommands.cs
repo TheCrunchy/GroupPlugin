@@ -237,6 +237,7 @@ namespace AlliancesPlugin
                         perms.Append(level.ToString() + ", ");
                     }
                     sb.AppendLine(key + " Permissions : " + perms.ToString());
+                    sb.AppendLine(key + " Permission Level " + alliance.CustomRankPermissions[key].permissionLevel);
                 }
                 perms.Clear();
                 sb.AppendLine("");
@@ -262,6 +263,110 @@ namespace AlliancesPlugin
             else
             {
                 Context.Respond("You arent a member of an alliance.");
+            }
+        }
+        [Command("create rank", "create a rank")]
+        [Permission(MyPromoteLevel.None)]
+        public void AllianceCreateRank(string rankName, int permissionLevel)
+        {
+            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
+            if (fac == null)
+            {
+                Context.Respond("Only factions can be in alliances.");
+                return;
+            }
+            Alliance alliance = AlliancePlugin.GetAlliance(fac);
+
+
+
+            if (alliance != null)
+            {
+                if (alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
+                {
+
+
+                        if (alliance.CustomRankPermissions.ContainsKey(rankName))
+                        {
+                        Context.Respond("Rank with that name already exists!");
+                        }
+                        else
+                        {
+                            RankPermissions bob = new RankPermissions();
+                        bob.permissionLevel = permissionLevel;
+                        alliance.CustomRankPermissions.Add(rankName, bob);
+                        Context.Respond("Rank created!");
+                        AlliancePlugin.SaveAllianceData(alliance);
+                    }
+         
+                }
+                else
+                {
+                    Context.Respond("You dont have permission to create ranks");
+                }
+
+            }
+
+
+            else
+            {
+                Context.Respond("Cannot find alliance, maybe wait a minute and try again.");
+            }
+        }
+
+        [Command("delete rank", "create a rank")]
+        [Permission(MyPromoteLevel.None)]
+        public void AllianceDeleteRank(string rankName)
+        {
+            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
+            if (fac == null)
+            {
+                Context.Respond("Only factions can be in alliances.");
+                return;
+            }
+            Alliance alliance = AlliancePlugin.GetAlliance(fac);
+
+            if (alliance != null)
+            {
+                if (alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
+                {
+
+
+                    if (alliance.CustomRankPermissions.ContainsKey(rankName))
+                    {
+                        List<ulong> yeetThese = new List<ulong>();
+                        foreach (ulong id in alliance.PlayersCustomRank.Keys)
+                        {
+                            if (alliance.PlayersCustomRank[id].Equals(rankName))
+                            {
+                                yeetThese.Add(id);
+                            }
+                        }
+                        foreach (ulong id in yeetThese)
+                        {
+                            alliance.PlayersCustomRank.Remove(id);
+                        }
+                        alliance.CustomRankPermissions.Remove(rankName);
+                        Context.Respond("Rank deleted.");
+                        AlliancePlugin.SaveAllianceData(alliance);
+                    }
+                    else
+                    {
+                        Context.Respond("Rank with that name doesnt exist!");
+                     
+                    }
+
+                }
+                else
+                {
+                    Context.Respond("You dont have permission to delete ranks");
+                }
+
+            }
+
+
+            else
+            {
+                Context.Respond("Cannot find alliance, maybe wait a minute and try again.");
             }
         }
         [Command("player permissions", "set a players permissions")]
@@ -332,7 +437,7 @@ namespace AlliancesPlugin
                 }
                 else
                 {
-                    Context.Respond("You dont have permission to send invites.");
+                    Context.Respond("You dont have permission to set permissions.");
                 }
 
             }

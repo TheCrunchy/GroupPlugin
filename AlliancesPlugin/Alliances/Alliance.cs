@@ -39,6 +39,9 @@ namespace AlliancesPlugin
         public int CurrentMetaPoints = 0;
 
         public Dictionary<ulong, RankPermissions> playerPermissions = new Dictionary<ulong, RankPermissions>();
+
+        public bool ElectionCycle = false;
+
         public Boolean HasAccess(ulong id, AccessLevel level)
         {
             if (SupremeLeader == id)

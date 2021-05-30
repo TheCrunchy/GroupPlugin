@@ -1,27 +1,40 @@
-!alliance invite tag- invite a faction the alliance
-!alliance revoke tag - revoke a factions invitation
-!alliance join name - join an alliance if invited
-!alliance enemy faction/alliance tag/name - add to enemy list
-!alliance peace faction/alliance tag/name - remove from enemy list
-!alliance create name - create an alliance
-!alliance set title leader/admiral/officer - change the name of those titles
-!alliance grant title admiral/officer/other/banker - grant those titles to players in the alliance
-!alliance revoke title admiral/officer/other/banker - remove those titles to players in the alliance
-!alliance kick tag - kicks the target if they have permission and the target faction doesnt have any members with a rank
+Creation and invites/joining
+!alliance create <name> - create an alliance
+!alliance join <name> - join an alliance if invited
+!alliance invite <tag>- invite a faction the alliance
+!alliance revoke <tag> - revoke a factions invitation
+!alliance kick <tag> - kicks the target if they have permission and the target faction doesnt have any members with a rank
 !alliance leave - leaves the alliance
-!alliance info name - outputs alliance info, if no input, outputs your own alliance
-!alliance description input - changes the description
-!alliance log input- show the log for moneys with optional time format input eg "MM-dd-yyyy"
-!alliance deposit amount - deposit money, anyone can do it
-!alliance pay player/faction amount - only bankers and supreme leader can do this
-!alliance withdraw amount - only bankers and supreme leader can do this
-!alliance dividend amount - pay dividends to members online in last 10 days
-!alliance change leader NewLeaderName - changes the supreme leader of the alliance to the target
+
+Managing hostiles
+!alliance enemy faction/alliance <tag/name> - add to enemy list
+!alliance peace faction/alliance <tag/name> - remove from enemy list
+
+Misc
+!alliance info <name> - outputs alliance info, if no input, outputs your own alliance
+!alliance log <input>- show the log for moneys with optional time format input eg "MM-dd-yyyy"
+!alliance description <input> - changes the description
 !alliance chat - toggle alliance chat
+
+Bank
+!alliance deposit <amount> - deposit money, anyone can do it
+!alliance pay <player/faction> <amount> - only bankers and supreme leader can do this
+!alliance withdraw <amount> - only bankers and supreme leader can do this
+!alliance dividend <amount> - pay dividends to members online in last 10 days
+
+Permission system and titles
+!alliance create rank name permissionLevel
+!alliance delete rank name
 !alliance rank permissions string rank, string permission, Boolean enabled - give or remove a permission for that rank
 !alliance player permissions string playername, string permission, Boolean enabled - give or remove a permission for that rank
 !alliance view permissions - output all permissions
+!alliance set title leader/otherRank <newtitle> - change the name of those titles
+!alliance grant title admiral/otherRank/other - grant those titles to players in the alliance
+!alliance revoke title admiral/otherRank/other  - remove those titles to players in the alliance
+!alliance change leader NewLeaderName - changes the supreme leader of the alliance to the target
 
+
+Shipyard stuff
 !shipyard restore tag filename targetplayer - Example !shipyard restore fre "Fighter2021-05-1216-32-48-094" Crunch
 !shipyard purge - deletes the files of claimed grids
 !shipyard reload - reloads the config, this doesnt setup and start saving to the different folder if you change it though, do a restart for that.
@@ -32,10 +45,13 @@
 !shipyard unlock - unlock the shipyard
 !shipyard upgrade speed/slots - output the costs for the next upgrade
 !shipyard upgrade speed/slots true - do the next upgrade
+
+Koth admin commands
 !koth unlock name
 !koth output - output the loaded koths
 !koth reload - reload config
 
+Hangar commands
 !ah unlock - unlock the hangar
 !ah upgrade - see the upgrade cost
 !ah ugprade true - do the upgrade
@@ -44,6 +60,8 @@
 !ah save - save an owned grid or faction owned grid to hangar 
 !ah load num - load the grid in that slot, if it is player that saved or officer rank or above
 
+
+Admin gate commands
 !jumpgate create name radius (optional, default is 75)
 !jumpgate link FirstGateName SecondGateName - makes the gates functional
 !jumpgate unlink FirstGateName SecondGateName - unlinks the gates so they are no longer functional
