@@ -23,7 +23,7 @@ Bank
 !alliance dividend <amount> - pay dividends to members online in last 10 days
 
 Permission system and titles
-!alliance create rank name permissionLevel
+!alliance make rank name permissionLevel
 !alliance delete rank name
 !alliance rank permissions string rank, string permission, Boolean enabled - give or remove a permission for that rank
 !alliance player permissions string playername, string permission, Boolean enabled - give or remove a permission for that rank

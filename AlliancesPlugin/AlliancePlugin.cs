@@ -517,6 +517,26 @@ namespace AlliancesPlugin
             return null;
         }
         public static Dictionary<String, Alliance> AllAlliances = new Dictionary<string, Alliance>();
+        public static void LoadAllJumpZones()
+        {
+                FileUtils jsonStuff = new FileUtils();
+                try
+                {
+                    JumpPatch.Zones.Clear();
+                    foreach (String s in Directory.GetFiles(path + "//JumpZones//"))
+                    {
+
+                        JumpPatch.Zones.Add(jsonStuff.ReadFromXmlFile<JumpZone>(s));
+                      
+
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex);
+                }
+            
+        }
         public void LoadAllAlliances()
         {
             if (TorchState == TorchSessionState.Loaded)
@@ -694,6 +714,7 @@ namespace AlliancesPlugin
                     LoadAllAlliances();
                     LoadAllGates();
                     playersInAlliances.Clear();
+                    LoadAllJumpZones();
                     playersAllianceId.Clear();
                     foreach (MyPlayer player in MySession.Static.Players.GetOnlinePlayers())
                     {
