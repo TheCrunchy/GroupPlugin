@@ -1,5 +1,6 @@
 ﻿using Sandbox.Engine.Multiplayer;
 using Sandbox.Game.Entities;
+using Sandbox.Game.Entities.Blocks;
 using Sandbox.Game.GameSystems;
 using Sandbox.Game.Multiplayer;
 using Sandbox.Game.Screens.Helpers;
@@ -75,7 +76,7 @@ namespace AlliancesPlugin
                     Context.Respond("Alliance has not unlocked hangar.");
                 }
             }
-        
+
         }
 
         [Command("list", "View the hangar")]
@@ -111,7 +112,7 @@ namespace AlliancesPlugin
                     if (hangar == null)
                     {
                         Context.Respond("Error loading the hangar.");
-                        
+
                         return;
                     }
                     Context.Respond("Hangar Slots available : " + hangar.SlotsAmount, Color.LightBlue, "Alliance Hangar");
@@ -120,13 +121,13 @@ namespace AlliancesPlugin
                         if (hangar.ItemsInHangar.ContainsKey(i))
                         {
                             hangar.ItemsInHangar.TryGetValue(i, out HangarItem slot);
-                         
-                               Context.Respond(slot.name.Split('_')[0] + " : " + MyMultiplayer.Static.GetMemberName(slot.steamid), Color.LightBlue, "[ " + i + " ]");
-                            
+
+                            Context.Respond(slot.name.Split('_')[0] + " : " + MyMultiplayer.Static.GetMemberName(slot.steamid), Color.LightBlue, "[ " + i + " ]");
+
                         }
                         else
                         {
-                            Context.Respond("",  Color.Green,"[ Available ]");
+                            Context.Respond("", Color.Green, "[ Available ]");
                         }
                     }
                 }
@@ -216,55 +217,56 @@ namespace AlliancesPlugin
                     Context.Respond("You are not a member of an alliance with an unlocked shipyard.");
                     return;
                 }
-    
+
                 if (!alliance.hasUnlockedHangar)
                 {
-                   ShipyardCommands.SendMessage("[Alliance Hangar]", "To unlock use !ah unlock", Color.Cyan, (long)Context.Player.SteamUserId);
+                    ShipyardCommands.SendMessage("[Alliance Hangar]", "To unlock use !ah unlock", Color.Cyan, (long)Context.Player.SteamUserId);
                     return;
                 }
                 HangarData hangar = alliance.LoadHangar();
+                UpgradeCost cost = new UpgradeCost();
                 if (!upgrade)
                 {
-                    UpgradeCost cost = new UpgradeCost();
-               
+                  
+
                     ShipyardCommands.SendMessage("[Alliance Hangar]", "To upgrade use !ah upgrade true ,while looking at an owned grid.", Color.Cyan, (long)Context.Player.SteamUserId);
                     StringBuilder sb = new StringBuilder();
 
 
-                            try
-                            {
-                                cost = slotUpgrades[hangar.SlotUpgradeNum += 1];
-                            }
-                            catch (Exception ex)
-                            {
-                                Context.Respond("Cannot upgrade any further as there are no more defined upgrade files.");
-                                return;
-                            }
-                            if (cost != null)
-                            {
-                                if (cost.MoneyRequired > 0)
-                                {
+                    try
+                    {
+                        cost = slotUpgrades[hangar.SlotUpgradeNum += 1];
+                    }
+                    catch (Exception ex)
+                    {
+                        Context.Respond("Cannot upgrade any further as there are no more defined upgrade files.");
+                        return;
+                    }
+                    if (cost != null)
+                    {
+                        if (cost.MoneyRequired > 0)
+                        {
                             ShipyardCommands.SendMessage("[Alliance Hangar]", "SC Cost for next speed upgrade " + String.Format("{0:n0}", cost.MoneyRequired), Color.Cyan, (long)Context.Player.SteamUserId);
-                                }
+                        }
 
-                                sb.AppendLine("Items required.");
-                                foreach (KeyValuePair<MyDefinitionId, int> id in cost.itemsRequired)
-                                {
-                                    sb.AppendLine(id.Key.ToString() + " - " + id.Value);
-                                }
-                                Context.Respond(sb.ToString());
-                            }
+                        sb.AppendLine("Items required.");
+                        foreach (KeyValuePair<MyDefinitionId, int> id in cost.itemsRequired)
+                        {
+                            sb.AppendLine(id.Key.ToString() + " - " + id.Value);
+                        }
+                        Context.Respond(sb.ToString());
+                    }
 
-                        
+                }
                 else
                 {
-                    ConcurrentBag<MyGroups<MyCubeGrid, MyGridPhysicalGroupData>.Group> gridWithSubGrids = GridFinder.FindLookAtGridGroup(Context.Player.Character);
+                    ConcurrentBag<MyGroups<MyCubeGrid, MyGridMechanicalGroupData>.Group> gridWithSubGrids = GridFinder.FindLookAtGridGroupMechanical(Context.Player.Character);
 
 
                     List<MyCubeGrid> grids = new List<MyCubeGrid>();
                     foreach (var item in gridWithSubGrids)
                     {
-                        foreach (MyGroups<MyCubeGrid, MyGridPhysicalGroupData>.Node groupNodes in item.Nodes)
+                        foreach (MyGroups<MyCubeGrid, MyGridMechanicalGroupData>.Node groupNodes in item.Nodes)
                         {
                             MyCubeGrid grid = groupNodes.NodeData;
 
@@ -297,62 +299,62 @@ namespace AlliancesPlugin
                         invents.AddList(ShipyardCommands.GetInventories(grid));
                     }
 
-                            if (hangar.SlotsAmount >= AlliancePlugin.config.MaxHangarSlots)
-                            {
-                                Context.Respond("Cannot upgrade any further");
-                                return;
-                            }
+                    if (hangar.SlotsAmount >= AlliancePlugin.config.MaxHangarSlots)
+                    {
+                        Context.Respond("Cannot upgrade any further");
+                        return;
+                    }
 
-                            try
-                            {
-                                cost = slotUpgrades[hangar.SlotUpgradeNum +=1];
-                            }
-                            catch (Exception)
-                            {
-                                Context.Respond("Cannot upgrade any further as there are no more defined upgrade files.");
-                                return;
-                            }
-                            if (cost != null)
-                            {
+                    try
+                    {
+                        cost = slotUpgrades[hangar.SlotUpgradeNum += 1];
+                    }
+                    catch (Exception)
+                    {
+                        Context.Respond("Cannot upgrade any further as there are no more defined upgrade files.");
+                        return;
+                    }
+                    if (cost != null)
+                    {
 
-                                if (cost.MoneyRequired > 0)
+                        if (cost.MoneyRequired > 0)
+                        {
+                            if (EconUtils.getBalance(Context.Player.IdentityId) >= cost.MoneyRequired)
+                            {
+                                if (ShipyardCommands.ConsumeComponents(invents, cost.itemsRequired, Context.Player.SteamUserId))
                                 {
-                                    if (EconUtils.getBalance(Context.Player.IdentityId) >= cost.MoneyRequired)
-                                    {
-                                        if (ShipyardCommands.ConsumeComponents(invents, cost.itemsRequired, Context.Player.SteamUserId))
-                                        {
-                                            EconUtils.takeMoney(Context.Player.IdentityId, cost.MoneyRequired);
-                                        hangar.SlotsAmount = (int) cost.NewLevel;
-                                        hangar.SlotUpgradeNum++;
-                                        hangar.SaveHangar(alliance);
-                                        AlliancePlugin.SaveAllianceData(alliance);
-                                        ShipyardCommands.SendMessage("[Alliance Hangar]", "Upgrading slots. You were charged: " + String.Format("{0:n0}", cost.MoneyRequired), Color.LightBlue, (long)Context.Player.SteamUserId);
-                                        }
-                                    }
-                                    else
-                                    {
-                                    ShipyardCommands.SendMessage("[Alliance Hangar]", "You cant afford the upgrade price of: " + String.Format("{0:n0}", cost.MoneyRequired), Color.Red, (long)Context.Player.SteamUserId);
-                                    }
-                                }
-                                else
-                                {
-                                    if (ShipyardCommands.ConsumeComponents(invents, cost.itemsRequired, Context.Player.SteamUserId))
-                                    {
-                                    hangar.SlotsAmount = (int) cost.NewLevel;
+                                    EconUtils.takeMoney(Context.Player.IdentityId, cost.MoneyRequired);
+                                    hangar.SlotsAmount = (int)cost.NewLevel;
                                     hangar.SlotUpgradeNum++;
                                     hangar.SaveHangar(alliance);
                                     AlliancePlugin.SaveAllianceData(alliance);
-                                }
+                                    ShipyardCommands.SendMessage("[Alliance Hangar]", "Upgrading slots. You were charged: " + String.Format("{0:n0}", cost.MoneyRequired), Color.LightBlue, (long)Context.Player.SteamUserId);
                                 }
                             }
                             else
                             {
-                                Context.Respond("Error loading upgrade details.");
-                                return;
+                                ShipyardCommands.SendMessage("[Alliance Hangar]", "You cant afford the upgrade price of: " + String.Format("{0:n0}", cost.MoneyRequired), Color.Red, (long)Context.Player.SteamUserId);
                             }
+                        }
+                        else
+                        {
+                            if (ShipyardCommands.ConsumeComponents(invents, cost.itemsRequired, Context.Player.SteamUserId))
+                            {
+                                hangar.SlotsAmount = (int)cost.NewLevel;
+                                hangar.SlotUpgradeNum++;
+                                hangar.SaveHangar(alliance);
+                                AlliancePlugin.SaveAllianceData(alliance);
+                            }
+                        }
                     }
-
+                    else
+                    {
+                        Context.Respond("Error loading upgrade details.");
+                        return;
+                    }
                 }
+
+
             }
         }
 
@@ -496,10 +498,10 @@ namespace AlliancesPlugin
             }
             Context.Respond("Reloaded!");
         }
-    
-           
 
-        [Command("load", "save a grid to alliance hangar")]
+
+
+        [Command("load", "load a grid from alliance hangar")]
         [Permission(MyPromoteLevel.None)]
         public void LoadFromHangar(string slotNumber)
         {
@@ -557,30 +559,32 @@ namespace AlliancesPlugin
 
                 //this took up way too much of one line
 
-                  if (hangar.LoadGridFromHangar(slot, Context.Player.SteamUserId, alliance, Context.Player.Identity as MyIdentity, fac))
-                    {
-                        Context.Respond("Grid should be loaded!");
-                    }
-                  else
-                    {
-                        Context.Respond("Could not load, are there enemies within 15km?");
-                        MyGps gps = new MyGps
-                        {
-                            Coords = item.position,
-                            Name = item.name + " Failed load location",
-                            DisplayName = item.name + " Failed load location",
-                            Description = "Failed load location",
-                            GPSColor = Color.LightBlue,
-                            IsContainerGPS = true,
-                            ShowOnHud = true,
-                            DiscardAt = new TimeSpan(50000)
-                        };
-                        gps.UpdateHash();
-                        MyGpsCollection gpscol = (MyGpsCollection)MyAPIGateway.Session?.GPS;
+                if (hangar.LoadGridFromHangar(slot, Context.Player.SteamUserId, alliance, Context.Player.Identity as MyIdentity, fac))
+                {
+                    Context.Respond("Grid should be loaded!");
 
 
-                        gpscol.SendAddGps(Context.Player.IdentityId, ref gps);
-                    }
+                }
+                else
+                {
+                    Context.Respond("Could not load, are there enemies within 15km?");
+                    MyGps gps = new MyGps
+                    {
+                        Coords = item.position,
+                        Name = item.name + " Failed load location",
+                        DisplayName = item.name + " Failed load location",
+                        Description = "Failed load location",
+                        GPSColor = Color.LightBlue,
+                        IsContainerGPS = true,
+                        ShowOnHud = true,
+                        DiscardAt = new TimeSpan(50000)
+                    };
+                    gps.UpdateHash();
+                    MyGpsCollection gpscol = (MyGpsCollection)MyAPIGateway.Session?.GPS;
+
+
+                    gpscol.SendAddGps(Context.Player.IdentityId, ref gps);
+                }
 
 
 
@@ -613,7 +617,7 @@ namespace AlliancesPlugin
 
             foreach (DeniedLocation denied in AlliancePlugin.HangarDeniedLocations)
             {
-                if (Vector3.Distance(Context.Player.GetPosition(), new Vector3(denied.x,denied.y,denied.z)) <= denied.radius)
+                if (Vector3.Distance(Context.Player.GetPosition(), new Vector3(denied.x, denied.y, denied.z)) <= denied.radius)
                 {
                     Context.Respond("Cannot hangar here! Too close to a denied location.");
                     return;
@@ -636,7 +640,8 @@ namespace AlliancesPlugin
                 Context.Respond("You are not a member of an alliance.");
                 return;
             }
-            if(!alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.HangarSave)){
+            if (!alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.HangarSave))
+            {
                 Context.Respond("Current rank does not have access to hangar save.");
                 return;
             }
@@ -665,8 +670,12 @@ namespace AlliancesPlugin
                                 continue;
                             if (FacUtils.IsOwnerOrFactionOwned(grid, Context.Player.IdentityId, true))
                             {
+                                foreach (MyProjectorBase proj in grid.GetFatBlocks().OfType<MyProjectorBase>())
+                                {
+                                    proj.Clipboard.Clear();
+                                }
                                 grids.Add(grid);
-                                Context.Respond(grid.DisplayName);
+                      
                                 if (name == "")
                                 {
                                     name = grid.DisplayName;
@@ -701,6 +710,7 @@ namespace AlliancesPlugin
                     else
                     {
                         Context.Respond("Grid saved.");
+
                         foreach (MyCubeGrid grid in grids)
                         {
                             grid.Close();

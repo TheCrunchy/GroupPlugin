@@ -103,6 +103,8 @@
     <Compile Include="GridFinder.cs" />
     <Compile Include="JumpGates\JumpGate.cs" />
     <Compile Include="JumpGates\JumpGateCommands.cs" />
+    <Compile Include="JumpPatch.cs" />
+    <Compile Include="JumpZone.cs" />
     <Compile Include="KOTH\DenialPoint.cs" />
     <Compile Include="EconUtils.cs" />
     <Compile Include="FacUtils.cs" />

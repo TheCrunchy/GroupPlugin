@@ -265,7 +265,7 @@ namespace AlliancesPlugin
                 Context.Respond("You arent a member of an alliance.");
             }
         }
-        [Command("create rank", "create a rank")]
+        [Command("make rank", "make a rank")]
         [Permission(MyPromoteLevel.None)]
         public void AllianceCreateRank(string rankName, int permissionLevel)
         {
@@ -362,8 +362,6 @@ namespace AlliancesPlugin
                 }
 
             }
-
-
             else
             {
                 Context.Respond("Cannot find alliance, maybe wait a minute and try again.");

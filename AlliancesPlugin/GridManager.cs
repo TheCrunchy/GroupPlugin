@@ -104,7 +104,12 @@ namespace AlliancesPlugin
                     /* Remove Projections if not needed */
                     if (!keepProjection)
                         if (cubeBlock is MyObjectBuilder_ProjectorBase projector)
+                        {
+                            projector.ProjectedGrid = null;
                             projector.ProjectedGrids = null;
+                        }
+                            
+                    
 
                     /* Remove Pilot and Components (like Characters) from cockpits */
                     if (cubeBlock is MyObjectBuilder_Cockpit cockpit)
@@ -186,8 +191,11 @@ namespace AlliancesPlugin
 
                     /* Remove Projections if not needed */
                     if (!keepProjection)
-                        if (cubeBlock is MyObjectBuilder_ProjectorBase projector)
+                    if (cubeBlock is MyObjectBuilder_ProjectorBase projector)
+                        {
+                            projector.ProjectedGrid = null;
                             projector.ProjectedGrids = null;
+                        }
 
                     /* Remove Pilot and Components (like Characters) from cockpits */
                     if (cubeBlock is MyObjectBuilder_Cockpit cockpit)
@@ -282,7 +290,35 @@ namespace AlliancesPlugin
 
             return MyObjectBuilderSerializer.SerializeXML(path, false, builderDefinition);
         }
+        public static List<MyObjectBuilder_CubeGrid> GetObjectBuilders(string path)
+        {
+            if (MyObjectBuilderSerializer.DeserializeXML(path, out MyObjectBuilder_Definitions Definition))
+            {
+                List<MyObjectBuilder_CubeGrid> gridsToReturn = new List<MyObjectBuilder_CubeGrid>();
+                if (Definition.Prefabs != null && Definition.Prefabs.Count() != 0)
+                {
+                    foreach (var prefab in Definition.Prefabs)
+                    {
+                        foreach (var grid in prefab.CubeGrids)
+                        {
+                            gridsToReturn.Add(grid);
+                        }
+                    }
+                }
+                else if (Definition.ShipBlueprints != null && Definition.ShipBlueprints.Count() != 0)
+                {
+                    foreach (var bp in Definition.ShipBlueprints)
+                    {
+                        foreach (var grid in bp.CubeGrids)
+                        {
+                            gridsToReturn.Add(grid);
+                        }
+                    }
+                }
+            }
 
+            return null;
+        }
         public static bool LoadGrid(string path, Vector3D playerPosition, bool keepOriginalLocation, ulong steamID, String name, bool force = false, CommandContext context = null)
         {
             if (MyObjectBuilderSerializer.DeserializeXML(path, out MyObjectBuilder_Definitions myObjectBuilder_Definitions))
@@ -319,11 +355,11 @@ namespace AlliancesPlugin
 
             return false;
         }
-        
+
 
 
         public static bool LoadShipBlueprint(MyObjectBuilder_ShipBlueprintDefinition shipBlueprint,
-            Vector3D playerPosition, bool keepOriginalLocation, long steamID, string Name, CommandContext context = null, bool force = false )
+            Vector3D playerPosition, bool keepOriginalLocation, long steamID, string Name, CommandContext context = null, bool force = false)
         {
             var grids = shipBlueprint.CubeGrids;
 
@@ -564,7 +600,7 @@ namespace AlliancesPlugin
                     radius = newRadius;
             }
 
-            
+
 
             return new BoundingSphereD(vector.Value, radius);
         }

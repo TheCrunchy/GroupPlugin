@@ -95,9 +95,12 @@ namespace AlliancesPlugin
         {
             MyFaction PlayersFaction = MySession.Static.Factions.GetPlayerFaction(PlayerIdentityId);
             BoundingSphereD sphere = new BoundingSphereD(Position, 15000);
-            foreach (MyCubeGrid grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere))
+            foreach (MyCubeGrid grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
             {
                 if (FacUtils.IsOwnerOrFactionOwned(grid, PlayerIdentityId, true))
+                    continue;
+
+                if (grid.Projector != null)
                     continue;
 
                 MyFaction CheckFaction = MySession.Static.Factions.GetPlayerFaction(FacUtils.GetOwner(grid));
@@ -118,10 +121,16 @@ namespace AlliancesPlugin
         public Boolean SaveGridToHangar(String gridName, ulong steamid, Alliance alliance, Vector3D position, MyFaction faction, List<MyCubeGrid> gridsToSave, long IdentityId)
         {
             if (!CheckGrids(position, IdentityId))
+            {
+                AlliancePlugin.Log.Info("Failed grid check");
                 return false;
+            }
 
             if (!CheckCharacters(position, IdentityId))
+            {
+                AlliancePlugin.Log.Info("Failed character check");
                 return false;
+            }
             HangarLog log = GetHangarLog(alliance);
             HangarLogItem item = new HangarLogItem();
             item.action = "Saved";
@@ -135,7 +144,16 @@ namespace AlliancesPlugin
                 hangItem.steamid = steamid;
             hangItem.position = position;
             ItemsInHangar.Add(getAvailableSlot(), hangItem);
-            GridManager.SaveGridNoDelete(System.IO.Path.Combine(AlliancePlugin.path + "//HangarData//" + alliance.AllianceId + "//" + gridName + ".xml"), gridName, false, true, gridsToSave);
+            GridManager.SaveGridNoDelete(System.IO.Path.Combine(AlliancePlugin.path + "//HangarData//" + alliance.AllianceId + "//" + gridName + ".xml"), gridName, true, false, gridsToSave);
+            if (AlliancePlugin.GridBackupInstalled)
+            {
+                List<MyObjectBuilder_CubeGrid> obBuilders = new List<MyObjectBuilder_CubeGrid>();
+                foreach (MyCubeGrid grid in gridsToSave)
+                {
+                    obBuilders.Add(grid.GetObjectBuilder() as MyObjectBuilder_CubeGrid);
+                }
+                AlliancePlugin.BackupGridMethod(obBuilders, IdentityId);
+            }
             utils.WriteToJsonFile<HangarData>(AlliancePlugin.path + "//HangarData//" + alliance.AllianceId + "//hangar.json", this);
             return true;
         }
@@ -148,8 +166,14 @@ namespace AlliancesPlugin
             if (!CheckCharacters(hangItem.position, identity.IdentityId))
                 return false;
 
-            if (GridManager.LoadGrid(System.IO.Path.Combine(AlliancePlugin.path + "//HangarData//" + alliance.AllianceId + "//" + ItemsInHangar[slotNum].name + ".xml"), ItemsInHangar[slotNum].position, false, steamid, ItemsInHangar[slotNum].name))
+            if (!GridManager.LoadGrid(System.IO.Path.Combine(AlliancePlugin.path + "//HangarData//" + alliance.AllianceId + "//" + ItemsInHangar[slotNum].name + ".xml"), ItemsInHangar[slotNum].position, true, steamid, ItemsInHangar[slotNum].name))
+            {
+                if (!GridManager.LoadGrid(System.IO.Path.Combine(AlliancePlugin.path + "//HangarData//" + alliance.AllianceId + "//" + ItemsInHangar[slotNum].name + ".xml"), ItemsInHangar[slotNum].position, false, steamid, ItemsInHangar[slotNum].name))
                 {
+                    return false;
+                }
+            }
+
                 HangarLog log = GetHangarLog(alliance);
                 HangarLogItem item = new HangarLogItem();
                 item.action = "Loaded";
@@ -158,6 +182,23 @@ namespace AlliancesPlugin
                 item.time = DateTime.Now;
                 log.log.Add(item);
                 utils.WriteToJsonFile<HangarLog>(AlliancePlugin.path + "//HangarData//" + alliance.AllianceId + "//log.json", log);
+
+
+            if (AlliancePlugin.GridBackupInstalled)
+            {
+                List<MyObjectBuilder_CubeGrid> obBuilders = new List<MyObjectBuilder_CubeGrid>();
+                obBuilders = GridManager.GetObjectBuilders(AlliancePlugin.path + "//HangarData//" + alliance.AllianceId + "//" + ItemsInHangar[slotNum].name + ".xml");
+                if (obBuilders != null)
+                {
+                    AlliancePlugin.BackupGridMethod(obBuilders, identity.IdentityId);
+                }
+                else
+                {
+                    AlliancePlugin.Log.Error("Error saving a backup when loading this grid");
+                }
+            }
+
+            File.Delete(AlliancePlugin.path + "//HangarData//" + alliance.AllianceId + "//" + ItemsInHangar[slotNum].name + ".xml");
                 ItemsInHangar.Remove(slotNum);
                 List<HangarItem> temp = new List<HangarItem>();
                 foreach (HangarItem hangitem in ItemsInHangar.Values)
@@ -172,12 +213,7 @@ namespace AlliancesPlugin
                     i++;
                 }
                 utils.WriteToJsonFile<HangarData>(AlliancePlugin.path + "//HangarData//" + alliance.AllianceId + "//hangar.json", this);
-                File.Delete(AlliancePlugin.path + "//HangarData//" + alliance.AllianceId + "//" + ItemsInHangar[slotNum].name + ".xml");
-            }
-            else
-            {
-                return false;
-            }
+            
             return true;
         }
     }

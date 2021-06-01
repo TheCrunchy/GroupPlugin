@@ -27,6 +27,8 @@ using Sandbox.Game.Entities;
 using Torch.Mod.Messages;
 using Torch.Mod;
 using Torch.Managers.ChatManager;
+using Torch.Managers;
+using Torch.API.Plugins;
 
 namespace AlliancesPlugin
 {
@@ -51,12 +53,40 @@ namespace AlliancesPlugin
 
         public static FileUtils utils = new FileUtils();
         public static Dictionary<string, DenialPoint> denials = new Dictionary<string, DenialPoint>();
+        public static ITorchPlugin GridBackup;
+        public static MethodInfo BackupGrid;
+        public static bool GridBackupInstalled = false;
+        public static void InitPluginDependencies(PluginManager Plugins)
+        {
+
+            if (Plugins.Plugins.TryGetValue(Guid.Parse("75e99032-f0eb-4c0d-8710-999808ed970c"), out ITorchPlugin GridBackupPlugin))
+            {
+
+                BackupGrid = GridBackupPlugin.GetType().GetMethod("BackupGridsManuallyWithBuilders", BindingFlags.Public | BindingFlags.Instance, null, new Type[2] { typeof(List<MyObjectBuilder_CubeGrid>), typeof(long) }, null);
+                GridBackup = GridBackupPlugin;
+                GridBackupInstalled = true;
+            }
+
+        }
+
+        public static void BackupGridMethod(List<MyObjectBuilder_CubeGrid> Grids, long User)
+        {
+            try
+            {
+                BackupGrid?.Invoke(GridBackup, new object[] { Grids, User });
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+            }
+        }
 
         public override void Init(ITorchBase torch)
         {
 
             base.Init(torch);
             sessionManager = Torch.Managers.GetManager<TorchSessionManager>();
+        
             if (sessionManager != null)
             {
                 sessionManager.SessionStateChanged += SessionChanged;
@@ -250,7 +280,7 @@ namespace AlliancesPlugin
             if (state == TorchSessionState.Loaded)
             {
 
-
+                InitPluginDependencies(Torch.Managers.GetManager<PluginManager>());
                 TorchState = TorchSessionState.Loaded;
                 _chatmanager = Torch.CurrentSession.Managers.GetManager<ChatManagerServer>();
 
@@ -293,7 +323,14 @@ namespace AlliancesPlugin
                         }
                     }
                 }
-
+                if (!Directory.Exists(path + "//JumpZones//"))
+                {
+                    Directory.CreateDirectory(path + "//JumpZones//");
+                }
+                if (!File.Exists(path + "//JumpZones//example.xml"))
+                {
+                    utils.WriteToXmlFile<JumpZone>(path + "//JumpZones//example.xml", new JumpZone(), false);
+                }
                 if (!File.Exists(path + "//KOTH//example.xml"))
                 {
                     utils.WriteToXmlFile<KothConfig>(path + "//KOTH//example.xml", new KothConfig(), false);
@@ -635,6 +672,7 @@ namespace AlliancesPlugin
                         ModCommunication.SendMessageTo(message2, player.Id.SteamId);
                         //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
                         ModCommunication.SendMessageTo(message, player.Id.SteamId);
+                       // MyAPIGateway.Utilities.ShowNotification
                         messageCooldowns.Add(player.Identity.IdentityId, DateTime.Now.AddMilliseconds(500));
                         return true;
                     }
