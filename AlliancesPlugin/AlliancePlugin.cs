@@ -56,7 +56,7 @@ namespace AlliancesPlugin
         public static ITorchPlugin GridBackup;
         public static MethodInfo BackupGrid;
 
-       public static ITorchBase TorchBase;
+        public static ITorchBase TorchBase;
         public static bool GridBackupInstalled = false;
         public static void InitPluginDependencies(PluginManager Plugins)
         {
@@ -88,7 +88,7 @@ namespace AlliancesPlugin
 
             base.Init(torch);
             sessionManager = Torch.Managers.GetManager<TorchSessionManager>();
-        
+
             if (sessionManager != null)
             {
                 sessionManager.SessionStateChanged += SessionChanged;
@@ -97,7 +97,7 @@ namespace AlliancesPlugin
             SetupConfig();
             path = CreatePath();
 
-          TorchBase = Torch;
+            TorchBase = Torch;
             LoadAllAlliances();
             LoadAllGates();
             Log.Error(AllAlliances.Count());
@@ -121,7 +121,7 @@ namespace AlliancesPlugin
         }
         public string CreatePath()
         {
-           
+
             var folder = "";
             if (config.StoragePath.Equals("default"))
             {
@@ -169,8 +169,15 @@ namespace AlliancesPlugin
         {
             FileUtils utils = new FileUtils();
             config = utils.ReadFromXmlFile<Config>(basePath + "\\Alliances.xml");
+            KOTHs.Clear();
+            foreach (String s in Directory.GetFiles(path + "//KOTH//"))
+            {
 
 
+                KothConfig koth = utils.ReadFromXmlFile<KothConfig>(s);
+
+                KOTHs.Add(koth);
+            }
 
             return config;
         }
@@ -280,11 +287,11 @@ namespace AlliancesPlugin
         {
             if (state == TorchSessionState.Unloading)
             {
-               DiscordStuff.Stopdiscord();
+                DiscordStuff.Stopdiscord();
             }
             if (state == TorchSessionState.Loaded)
             {
-           
+
                 InitPluginDependencies(Torch.Managers.GetManager<PluginManager>());
                 TorchState = TorchSessionState.Loaded;
                 _chatmanager = Torch.CurrentSession.Managers.GetManager<ChatManagerServer>();
@@ -392,7 +399,7 @@ namespace AlliancesPlugin
                         }
                         loc.name = split[0];
                         loc.x = Double.Parse(split[1]);
-                        loc.y= Double.Parse(split[2]);
+                        loc.y = Double.Parse(split[2]);
                         loc.z = Double.Parse(split[3]);
                         loc.radius = double.Parse(split[4]);
                         HangarDeniedLocations.Add(loc);
@@ -525,23 +532,23 @@ namespace AlliancesPlugin
         public static Dictionary<String, Alliance> AllAlliances = new Dictionary<string, Alliance>();
         public static void LoadAllJumpZones()
         {
-                FileUtils jsonStuff = new FileUtils();
-                try
+            FileUtils jsonStuff = new FileUtils();
+            try
+            {
+                JumpPatch.Zones.Clear();
+                foreach (String s in Directory.GetFiles(path + "//JumpZones//"))
                 {
-                    JumpPatch.Zones.Clear();
-                    foreach (String s in Directory.GetFiles(path + "//JumpZones//"))
-                    {
 
-                        JumpPatch.Zones.Add(jsonStuff.ReadFromXmlFile<JumpZone>(s));
-                      
+                    JumpPatch.Zones.Add(jsonStuff.ReadFromXmlFile<JumpZone>(s));
 
-                    }
+
                 }
-                catch (Exception ex)
-                {
-                    Log.Error(ex);
-                }
-            
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+            }
+
         }
         public void LoadAllAlliances()
         {
@@ -620,9 +627,9 @@ namespace AlliancesPlugin
                         if (alliance.AllianceId == gate.OwnerAlliance)
                         {
                             temp = LoadAllianceData(alliance.AllianceId);
-                           temp.GateFee(gate.fee, player.Id.SteamId, gate.GateName);
-                           
-                          
+                            temp.GateFee(gate.fee, player.Id.SteamId, gate.GateName);
+
+
                         }
                     }
                     if (temp != null)
@@ -639,10 +646,10 @@ namespace AlliancesPlugin
                     {
                         if (DateTime.Now < messageCooldowns[player.Identity.IdentityId])
                             return false;
-                     
+
                         message2 = new NotificationMessage("It costs " + String.Format("{0:n0}", gate.fee) + " SC to jump.", 1000, "Red");
                         //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
-                   
+
                         ModCommunication.SendMessageTo(message2, player.Id.SteamId);
                         messageCooldowns[player.Identity.IdentityId] = DateTime.Now.AddMilliseconds(500);
                         return false;
@@ -653,7 +660,7 @@ namespace AlliancesPlugin
 
                         message2 = new NotificationMessage("It costs " + String.Format("{0:n0}", gate.fee) + " SC to jump.", 1000, "Red");
                         //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
-   
+
                         ModCommunication.SendMessageTo(message2, player.Id.SteamId);
                         //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
                         messageCooldowns.Add(player.Identity.IdentityId, DateTime.Now.AddMilliseconds(500));
@@ -698,7 +705,7 @@ namespace AlliancesPlugin
                         ModCommunication.SendMessageTo(message2, player.Id.SteamId);
                         //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
                         ModCommunication.SendMessageTo(message, player.Id.SteamId);
-                       // MyAPIGateway.Utilities.ShowNotification
+                        // MyAPIGateway.Utilities.ShowNotification
                         messageCooldowns.Add(player.Identity.IdentityId, DateTime.Now.AddMilliseconds(500));
                         return true;
                     }
@@ -739,7 +746,7 @@ namespace AlliancesPlugin
                                     List<ulong> bob = new List<ulong>();
                                     bob.Add(player.Id.SteamId);
                                     playersInAlliances.Add(temp.AllianceId, bob);
-                       
+
                                     playersAllianceId.Add(player.Id.SteamId, temp.AllianceId);
                                 }
                             }
@@ -795,13 +802,13 @@ namespace AlliancesPlugin
                                     Random rand = new Random();
                                     Vector3 offset = new Vector3(rand.Next(config.JumpGateMinimumOffset, config.JumPGateMaximumOffset), rand.Next(config.JumpGateMinimumOffset, config.JumPGateMaximumOffset), rand.Next(config.JumpGateMinimumOffset, config.JumPGateMaximumOffset));
                                     Vector3D newPos = new Vector3D(target.Position + offset);
-                                   Vector3D? newPosition = MyEntities.FindFreePlace(newPos, (float) GridManager.FindBoundingSphere(controller.CubeGrid).Radius);
+                                    Vector3D? newPosition = MyEntities.FindFreePlace(newPos, (float)GridManager.FindBoundingSphere(controller.CubeGrid).Radius);
                                     if (newPosition.Value == null)
                                     {
                                         break;
                                     }
                                     MatrixD worldMatrix = MatrixD.CreateWorld(newPosition.Value, controller.CubeGrid.WorldMatrix.Forward, controller.CubeGrid.WorldMatrix.Up);
-                                    
+
                                     controller.CubeGrid.Teleport(worldMatrix);
                                 }
                                 else
@@ -811,7 +818,7 @@ namespace AlliancesPlugin
                                         NotificationMessage message;
                                         if (messageCooldowns.ContainsKey(player.Identity.IdentityId))
                                         {
-                                          
+
                                             if (DateTime.Now < messageCooldowns[player.Identity.IdentityId])
                                                 continue;
 
@@ -867,38 +874,52 @@ namespace AlliancesPlugin
 
                         if (DateTime.Now >= config.nextCaptureInterval)
                         {
-
+                            Log.Info(config.owner + " " + config.capturingNation);
                             //setup a time check for capture time
                             String capturingNation = "";
-
+                            if (!config.capturingNation.Equals(""))
+                            {
+                                capturingNation = config.capturingNation;
+                            }
                             Boolean locked = false;
 
                             Log.Info("Yeah we capping");
 
-
+                            StringBuilder gridOwners = new StringBuilder();
                             int entitiesInCapPoint = 0;
                             foreach (MyCubeGrid grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
                             {
                                 entitiesInCapPoint++;
-                                if (!contested)
+
+                                IMyFaction fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
+                                if (fac != null && !fac.Tag.Equals(config.KothBuildingOwner))
                                 {
-                                    IMyFaction fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
-                                    if (fac != null && !fac.Tag.Equals(config.KothBuildingOwner))
+
+                                    if (IsContested(fac, config, capturingNation))
                                     {
-
-                                        if (IsContested(fac, config, capturingNation))
-                                        {
-                                            contested = true;
-                                            break;
-                                        }
-                                        else
-                                        {
-                                            capturingNation = GetNationTag(fac);
-                                        }
-
+                                        Log.Info("Contested faction " + fac.Tag + " " + capturingNation);
+                                        contested = true;
                                     }
-                                    hasActiveCaptureBlock = DoesGridHaveCaptureBlock(grid, config);
+                                    else
+                                    {
+                                        capturingNation = GetNationTag(fac);
+                                        if (!hasActiveCaptureBlock)
+                                        {
+                                            Log.Info("Checking for a capture block");
+                                            hasActiveCaptureBlock = DoesGridHaveCaptureBlock(grid, config);
+                                        }
+                                    }
+
                                 }
+                                if (fac == null)
+                                {
+                                    Log.Info("Contested no faction");
+                                    contested = true;
+                                    break;
+                                }
+                         
+
+
                             }
 
                             if (!contested)
@@ -906,13 +927,17 @@ namespace AlliancesPlugin
                                 //now check characters
                                 foreach (MyCharacter character in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCharacter>())
                                 {
+                                    if (character.MarkedForClose)
+                                        continue;
+
                                     entitiesInCapPoint++;
-                                    IMyFaction fac = FacUtils.GetPlayersFaction(character.GetPlayerIdentityId());
+                                    IMyFaction fac = MySession.Static.Factions.GetPlayerFaction(character.GetPlayerIdentityId());
                                     if (fac != null)
                                     {
                                         float distance = Vector3.Distance(position, character.PositionComp.GetPosition());
                                         if (IsContested(fac, config, capturingNation))
                                         {
+                                            Log.Info("Contested character");
                                             contested = true;
                                             break;
                                         }
@@ -923,6 +948,7 @@ namespace AlliancesPlugin
                                     }
                                     else
                                     {
+                                        Log.Info("Contested character");
                                         contested = true;
                                     }
                                 }
@@ -944,7 +970,7 @@ namespace AlliancesPlugin
                                 config.capturingNation = capturingNation;
                                 SendChatMessage("Can cap in however many minutes");
 
-                                DiscordStuff.SendMessageToDiscord(config.KothName + " Capture can begin in " +config.MinutesBeforeCaptureStarts, config);
+                                DiscordStuff.SendMessageToDiscord(config.KothName + " Capture can begin in " + config.MinutesBeforeCaptureStarts, config);
                             }
                             else
                             {
@@ -955,6 +981,7 @@ namespace AlliancesPlugin
                                     {
                                         if (config.capturingNation.Equals(capturingNation) && !config.capturingNation.Equals(""))
                                         {
+                                            Log.Info(capturingNation);
                                             Log.Info("Is the same nation as whats capping");
                                             if (!hasActiveCaptureBlock)
                                             {
@@ -1002,7 +1029,13 @@ namespace AlliancesPlugin
                                                 }
                                                 else
                                                 {
+                                                    //       if (DateTime.Now >= config.nextBroadcast)
+                                                    //        {
+
+
                                                     DiscordStuff.SendMessageToDiscord(config.KothName + " Capture progress " + config.amountCaptured + "//" + config.PointsToCap, config);
+                                                    //         config.nextBroadcast = DateTime.Now.AddMinutes(config.MinsPerCaptureBroadcast);
+                                                    //  }
                                                 }
                                             }
                                         }
@@ -1025,10 +1058,21 @@ namespace AlliancesPlugin
                                 }
                                 else
                                 {
+                                    if (!hasActiveCaptureBlock)
+                                    {
+                                        Log.Info("Locking because no active cap block");
+                                        config.capturingNation = config.owner;
+                                        config.nextCaptureAvailable = DateTime.Now.AddHours(1);
+                                        //broadcast that its locked
+                                        config.capturingNation = "";
+                                        config.amountCaptured = 0;
+                                        SendChatMessage("Locked because capture blocks are dead");
+                                        DiscordStuff.SendMessageToDiscord(config.KothName + " Locked, Capture blocks are missing or destroyed. Locked for " + config.hourCooldownAfterFail + " hours", config);
+                                    }
                                     Log.Info("Its contested or the fuckers trying to cap have no nation");
                                     //send contested message
                                     SendChatMessage("Contested or unaff trying to cap");
-                                    DiscordStuff.SendMessageToDiscord(config.KothName + " Capture point contested! " + config.hourCooldownAfterFail + " hours", config);
+                                    DiscordStuff.SendMessageToDiscord(config.KothName + " Capture point contested!", config);
                                 }
 
 
@@ -1172,18 +1216,10 @@ namespace AlliancesPlugin
         {
             foreach (MyCubeBlock block in grid.GetFatBlocks())
             {
-                if (block != null && block.BlockDefinition != null)
-                {
-                    Log.Info(block.BlockDefinition.Id.TypeId + " " + block.BlockDefinition.Id.SubtypeName);
-
-                }
-                else
-                {
-                    Log.Info("Null id for capture block");
-                }
 
                 if (block.OwnerId > 0 && block.BlockDefinition.Id.TypeId.ToString().Replace("MyObjectBuilder_", "").Equals(koth.captureBlockType) && block.BlockDefinition.Id.SubtypeName.Equals(koth.captureBlockSubtype))
                 {
+
                     if (block.IsFunctional && block.IsWorking)
                     {
                         if (block is Sandbox.ModAPI.IMyFunctionalBlock bl)
@@ -1205,7 +1241,7 @@ namespace AlliancesPlugin
         public static KothConfig SaveKothConfig(String name, KothConfig config)
         {
             FileUtils utils = new FileUtils();
-            utils.WriteToXmlFile<KothConfig>(path + "//KOTH" + name + ".xml", config);
+            utils.WriteToXmlFile<KothConfig>(path + "//KOTH//" + name + ".xml", config);
 
             return config;
         }
@@ -1219,7 +1255,6 @@ namespace AlliancesPlugin
                 else
                 {
                     return true;
-
                 }
             }
             else

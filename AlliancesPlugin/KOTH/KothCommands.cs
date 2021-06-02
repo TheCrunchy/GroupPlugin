@@ -22,7 +22,7 @@ namespace AlliancesPlugin
 
         [Command("unlock", "unlock koth")]
         [Permission(MyPromoteLevel.Admin)]
-        public void UnlockKoth(string name)
+        public void UnlockKoth(string name, string allianceName = "")
         {
             foreach (KothConfig koth in AlliancePlugin.KOTHs)
             {
@@ -30,6 +30,10 @@ namespace AlliancesPlugin
                 {
                     koth.nextCaptureAvailable = DateTime.Now;
                     koth.nextCaptureInterval = DateTime.Now;
+                  koth.CaptureStarted = true;
+                    koth.nextCaptureAvailable = DateTime.Now.AddSeconds(1);
+                    koth.owner = "";
+                    koth.capturingNation = allianceName;
                     Context.Respond("Unlocked the koth");
                 }
 

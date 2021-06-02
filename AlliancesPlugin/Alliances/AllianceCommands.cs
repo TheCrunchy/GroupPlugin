@@ -991,7 +991,7 @@ namespace AlliancesPlugin
                     {
                         if (confirmations[Context.Player.IdentityId] >= DateTime.Now)
                         {
-                            File.Delete(AlliancePlugin.path + "//" + alliance.name.Replace(" ", "_") + ".json");
+                            File.Delete(AlliancePlugin.path + "//AllianceData//" + alliance.AllianceId+ ".json");
                             foreach (long id in alliance.AllianceMembers)
                             {
                                 AlliancePlugin.FactionsInAlliances.Remove(id);
