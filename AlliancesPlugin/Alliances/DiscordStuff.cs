@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VRageMath;
 
 namespace AlliancesPlugin
 {
@@ -104,19 +105,23 @@ namespace AlliancesPlugin
             {
                 if (config.doChatMessages)
                 {
-
+                    ShipyardCommands.SendMessage("Territory Capture", message, Color.LightGreen, 0L);
                 }
             }
         }
 
         private static Task Discord_MessageCreated(DSharpPlus.EventArgs.MessageCreateEventArgs e)
         {
-            if (ChannelIds.Contains(e.Channel.Id))
+            foreach (KothConfig koth in AlliancePlugin.KOTHs)
             {
-                if (e.Author.IsBot)
+                if (koth.DiscordChannelId == e.Channel.Id)
                 {
-
+                    if (e.Author.IsBot)
+                    {
+                        ShipyardCommands.SendMessage(e.Author.Username, e.Message.Content, Color.LightGreen, 0L);
+                    }
                 }
+             
             }
             return Task.CompletedTask;
         }
