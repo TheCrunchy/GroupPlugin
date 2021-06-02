@@ -55,6 +55,8 @@ namespace AlliancesPlugin
         public static Dictionary<string, DenialPoint> denials = new Dictionary<string, DenialPoint>();
         public static ITorchPlugin GridBackup;
         public static MethodInfo BackupGrid;
+
+       public static ITorchBase TorchBase;
         public static bool GridBackupInstalled = false;
         public static void InitPluginDependencies(PluginManager Plugins)
         {
@@ -95,7 +97,7 @@ namespace AlliancesPlugin
             SetupConfig();
             path = CreatePath();
 
-
+          TorchBase = Torch;
             LoadAllAlliances();
             LoadAllGates();
             Log.Error(AllAlliances.Count());
@@ -276,10 +278,13 @@ namespace AlliancesPlugin
         public static ChatManagerServer _chatmanager;
         private void SessionChanged(ITorchSession session, TorchSessionState state)
         {
-
+            if (state == TorchSessionState.Unloading)
+            {
+               DiscordStuff.Stopdiscord();
+            }
             if (state == TorchSessionState.Loaded)
             {
-
+           
                 InitPluginDependencies(Torch.Managers.GetManager<PluginManager>());
                 TorchState = TorchSessionState.Loaded;
                 _chatmanager = Torch.CurrentSession.Managers.GetManager<ChatManagerServer>();
@@ -294,11 +299,7 @@ namespace AlliancesPlugin
                     session.Managers.GetManager<IMultiplayerManagerBase>().PlayerJoined += AllianceChat.Login;
                     session.Managers.GetManager<IMultiplayerManagerBase>().PlayerLeft += AllianceChat.Logout;
                 }
-                SetupFriendMethod();
 
-                LoadAllAlliances();
-                LoadAllGates();
-                playersInAlliances.Clear();
                 AlliancePlugin.Log.Info("Adding players to list");
                 foreach (MyPlayer player in MySession.Static.Players.GetOnlinePlayers())
                 {
@@ -466,7 +467,12 @@ namespace AlliancesPlugin
 
                     KOTHs.Add(koth);
                 }
+                SetupFriendMethod();
 
+                LoadAllAlliances();
+                LoadAllGates();
+                playersInAlliances.Clear();
+                DiscordStuff.RegisterDiscord();
             }
         }
         public static List<DeniedLocation> HangarDeniedLocations = new List<DeniedLocation>();
@@ -870,7 +876,6 @@ namespace AlliancesPlugin
                             Log.Info("Yeah we capping");
 
 
-
                             int entitiesInCapPoint = 0;
                             foreach (MyCubeGrid grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
                             {
@@ -938,6 +943,8 @@ namespace AlliancesPlugin
                                 Log.Info("Can cap in 10 minutes");
                                 config.capturingNation = capturingNation;
                                 SendChatMessage("Can cap in however many minutes");
+
+                                DiscordStuff.SendMessageToDiscord(config.KothName + " Capture can begin in " +config.MinutesBeforeCaptureStarts, config);
                             }
                             else
                             {
@@ -958,6 +965,7 @@ namespace AlliancesPlugin
                                                 config.capturingNation = "";
                                                 config.amountCaptured = 0;
                                                 SendChatMessage("Locked because capture blocks are dead");
+                                                DiscordStuff.SendMessageToDiscord(config.KothName + " Locked, Capture blocks are missing or destroyed. Locked for " + config.hourCooldownAfterFail + " hours", config);
                                             }
                                             else
                                             {
@@ -983,12 +991,18 @@ namespace AlliancesPlugin
                                                 {
                                                     //lock
                                                     Log.Info("Locking because points went over the threshold");
+
                                                     locked = true;
                                                     config.nextCaptureInterval = DateTime.Now.AddHours(config.hoursToLockAfterCap);
                                                     config.capturingNation = capturingNation;
                                                     config.owner = capturingNation;
                                                     config.amountCaptured = 0;
                                                     SendChatMessage(config.captureMessage.Replace("%NATION%", config.owner));
+                                                    DiscordStuff.SendMessageToDiscord(config.captureMessage.Replace("%NATION%", config.owner), config);
+                                                }
+                                                else
+                                                {
+                                                    DiscordStuff.SendMessageToDiscord(config.KothName + " Capture progress " + config.amountCaptured + "//" + config.PointsToCap, config);
                                                 }
                                             }
                                         }
@@ -996,11 +1010,11 @@ namespace AlliancesPlugin
                                         {
                                             Log.Info("Locking because the capturing nation changed");
                                             config.capturingNation = config.owner;
-                                            config.nextCaptureAvailable = DateTime.Now.AddHours(1);
+                                            config.nextCaptureAvailable = DateTime.Now.AddHours(config.hourCooldownAfterFail);
                                             //broadcast that its locked
                                             SendChatMessage("Locked because capturing nation has changed.");
                                             config.amountCaptured = 0;
-
+                                            DiscordStuff.SendMessageToDiscord(config.KothName + " Locked, Capturing alliance has changed. Locked for " + config.hourCooldownAfterFail + " hours", config);
                                         }
                                     }
                                     else
@@ -1014,6 +1028,7 @@ namespace AlliancesPlugin
                                     Log.Info("Its contested or the fuckers trying to cap have no nation");
                                     //send contested message
                                     SendChatMessage("Contested or unaff trying to cap");
+                                    DiscordStuff.SendMessageToDiscord(config.KothName + " Capture point contested! " + config.hourCooldownAfterFail + " hours", config);
                                 }
 
 

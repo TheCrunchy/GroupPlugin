@@ -31,6 +31,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="DSharpPlus">
+      <HintPath>..\DSharpPlus.dll</HintPath>
+    </Reference>
+    <Reference Include="DSharpPlus.WebSocket.WebSocket4Net">
+      <HintPath>..\DSharpPlus.WebSocket.WebSocket4Net.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\NationCommands\NationsPlugin\bin\Debug\Newtonsoft.Json.dll</HintPath>
@@ -91,6 +97,7 @@
     <Compile Include="Alliances\AllianceCommands.cs" />
     <Compile Include="Alliances\BankLog.cs" />
     <Compile Include="Alliances\BankLogItem.cs" />
+    <Compile Include="Alliances\DiscordStuff.cs" />
     <Compile Include="Alliances\RankPermissions.cs" />
     <Compile Include="Alliances\VoteType.cs" />
     <Compile Include="Config.cs" />

@@ -17,6 +17,7 @@ namespace AlliancesPlugin
         public string RewardSubTypeId = "Iron";
         public int RewardAmount = 1;
         public Boolean enabled = false;
+
         public string KothBuildingOwner = "BOB";
         public long LootboxGridEntityId = 0;
         public string LootBoxTerminalName = "LOOT BOX";
@@ -45,7 +46,8 @@ namespace AlliancesPlugin
         public string captureCompleteMessage = "%NATION% has captured the mooooooon it is now locked for %HOURS%";
         public Boolean doChatMessages = true;
         public Boolean doDiscordMessages = true;
-        public string DiscordChannelId = "";
+        public ulong DiscordChannelId = 1;
+
 
         public DateTime nextCaptureInterval = DateTime.Now;
         public DateTime nextCoreSpawn = DateTime.Now;

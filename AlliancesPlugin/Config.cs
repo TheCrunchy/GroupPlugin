@@ -19,6 +19,7 @@ namespace AlliancesPlugin
         public int JumpGateMinimumOffset = 500;
         public int JumPGateMaximumOffset = 1000;
         public int MaximumGateFee = 10000000;
+        public string DiscordBotToken = "bob";
 
     }
 }
