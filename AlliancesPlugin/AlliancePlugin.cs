@@ -339,10 +339,10 @@ namespace AlliancesPlugin
                 {
                     utils.WriteToXmlFile<JumpZone>(path + "//JumpZones//example.xml", new JumpZone(), false);
                 }
-                if (!File.Exists(path + "//BankDatabase.db"))
-                {
-                    File.Create(path + "//BankDatabase.db");
-                }
+          //      if (!File.Exists(path + "//bank.db"))
+            //    {
+               //     File.Create(path + "//bank.db");
+              // }
                 if (!File.Exists(path + "//KOTH//example.xml"))
                 {
                     utils.WriteToXmlFile<KothConfig>(path + "//KOTH//example.xml", new KothConfig(), false);
@@ -564,14 +564,16 @@ namespace AlliancesPlugin
                 try
                 {
                     AllAlliances.Clear();
+                    FactionsInAlliances.Clear();
                     foreach (String s in Directory.GetFiles(path + "//AllianceData//"))
                     {
 
                         Alliance alliance = jsonStuff.ReadFromJsonFile<Alliance>(s);
                         if (AllAlliances.ContainsKey(alliance.name))
                         {
-                            AllAlliances[alliance.name] = alliance;
-                            FactionsInAlliances.Clear();
+                            alliance.name += " DUPLICATE";
+                            AllAlliances.Add(alliance.name, alliance);
+
                             foreach (long id in alliance.AllianceMembers)
                             {
                                 FactionsInAlliances.Add(id, alliance.name);
@@ -580,7 +582,6 @@ namespace AlliancesPlugin
                         else
                         {
                             AllAlliances.Add(alliance.name, alliance);
-                            FactionsInAlliances.Clear();
                             foreach (long id in alliance.AllianceMembers)
                             {
                                 FactionsInAlliances.Add(id, alliance.name);
@@ -728,8 +729,9 @@ namespace AlliancesPlugin
 
                 if (DateTime.Now > NextUpdate)
                 {
-
+                 
                     NextUpdate = DateTime.Now.AddMinutes(1);
+               
                     LoadAllAlliances();
                     LoadAllGates();
                     playersInAlliances.Clear();
@@ -1048,7 +1050,8 @@ namespace AlliancesPlugin
                                         else
                                         {
                                             Log.Info("Locking because the capturing nation changed");
-                                            config.capturingNation = config.owner;
+                                            config.capturingNation = "";
+                                            config.CaptureStarted = false;
                                             config.nextCaptureAvailable = DateTime.Now.AddHours(config.hourCooldownAfterFail);
                                             //broadcast that its locked
                                             SendChatMessage("Locked because capturing nation has changed.");
@@ -1064,11 +1067,12 @@ namespace AlliancesPlugin
                                 }
                                 else
                                 {
-                                    if (!hasActiveCaptureBlock)
+                                    if (!hasActiveCaptureBlock && config.CaptureStarted)
                                     {
                                         Log.Info("Locking because no active cap block");
                                         config.capturingNation = config.owner;
                                         config.nextCaptureAvailable = DateTime.Now.AddHours(1);
+                                        config.CaptureStarted = false;
                                         //broadcast that its locked
                                         config.capturingNation = "";
                                         config.amountCaptured = 0;
@@ -1113,6 +1117,7 @@ namespace AlliancesPlugin
                                 }
 
                             }
+                       
                             if (denials.TryGetValue(config.KothName, out DenialPoint den))
                             {
                                 if (den.IsDenied())
@@ -1125,28 +1130,48 @@ namespace AlliancesPlugin
                                 if (hasActiveCaptureBlock)
                                 {
                                     Log.Info("The owner has an active block so reducing time between spawning");
-                                    SpawnCores(lootgrid, config);
+                                    if (lootgrid != null)
+                                    {
+                                        SpawnCores(lootgrid, config);
+                                        return;
+                                    }
+                             
                                     config.nextCoreSpawn = DateTime.Now.AddSeconds(config.SecondsBetweenCoreSpawn / 2);
                                     SendChatMessage("Capture block and owned, half spawn time");
                                     Alliance alliance = GetAlliance(config.owner);
-                                    alliance.CurrentMetaPoints += config.MetaPointsPerCapWithBonus;
-                                    SaveAllianceData(alliance);
+                                    if (alliance != null)
+                                    {
+                                        alliance.CurrentMetaPoints += config.MetaPointsPerCapWithBonus;
+                                        SaveAllianceData(alliance);
+                                    }
+                                 
                                 }
                                 else
                                 {
                                     Log.Info("No block");
-                                    SpawnCores(lootgrid, config);
+                                    if (lootgrid != null)
+                                    {
+                                        SpawnCores(lootgrid, config);
+                                        return;
+                                    }
                                     SendChatMessage("No capture block and owned, normal spawn time");
                                     config.nextCoreSpawn = DateTime.Now.AddSeconds(config.SecondsBetweenCoreSpawn);
                                     Alliance alliance = GetAlliance(config.owner);
-                                    alliance.CurrentMetaPoints += config.MetaPointsPerCap;
-                                    SaveAllianceData(alliance);
+                                    if (alliance != null)
+                                    {
+                                        alliance.CurrentMetaPoints += config.MetaPointsPerCapWithBonus;
+                                        SaveAllianceData(alliance);
+                                    }
                                 }
                             }
                             else
                             {
                                 Log.Info("No owner, normal spawn time");
-                                SpawnCores(lootgrid, config);
+                                if (lootgrid != null)
+                                {
+                                    SpawnCores(lootgrid, config);
+                                    return;
+                                }
                                 config.nextCoreSpawn = DateTime.Now.AddSeconds(config.SecondsBetweenCoreSpawn);
                                 SendChatMessage("No owner, normal spawn time");
                             }

@@ -257,6 +257,7 @@ namespace AlliancesPlugin
             StringBuilder sb = new StringBuilder();
             sb.AppendLine(description);
             sb.AppendLine("");
+            bankBalance = DatabaseForBank.GetBalance(AllianceId);
             sb.AppendLine("Bank Balance : " + String.Format("{0:n0}", bankBalance) + " SC.");
             sb.AppendLine("");
             sb.AppendLine("Meta Points : " + String.Format("{0:n0}", CurrentMetaPoints));

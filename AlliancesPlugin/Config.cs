@@ -20,6 +20,9 @@ namespace AlliancesPlugin
         public int JumPGateMaximumOffset = 1000;
         public int MaximumGateFee = 10000000;
         public string DiscordBotToken = "bob";
-
+        public string DatabaseIP = "localhost";
+        public string DatabaseUser = "fred";
+        public int DatabasePort = 3306;
+        public string DatabasePassword = "alan";
     }
 }

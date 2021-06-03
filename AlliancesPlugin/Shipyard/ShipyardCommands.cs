@@ -861,6 +861,62 @@ namespace AlliancesPlugin
         }
         [Command("claim", "Claim a print")]
         [Permission(MyPromoteLevel.None)]
+        public void ChangeFee(string inputAmount)
+        {
+            if (!AlliancePlugin.config.ShipyardEnabled)
+            {
+                Context.Respond("Shipyard not enabled.");
+                return;
+            }
+            Int64 amount;
+            inputAmount = inputAmount.Replace(",", "");
+            inputAmount = inputAmount.Replace(".", "");
+            inputAmount = inputAmount.Replace(" ", "");
+            try
+            {
+                amount = Int64.Parse(inputAmount);
+            }
+            catch (Exception)
+            {
+                Context.Respond("Error parsing amount", Color.Red, "Bank Man");
+                return;
+            }
+            if (amount < 0 || amount == 0)
+            {
+                Context.Respond("Must be a positive amount", Color.Red, "Bank Man");
+                return;
+            }
+            if (Context.Player != null)
+            {
+
+
+                IMyFaction faction = FacUtils.GetPlayersFaction(Context.Player.IdentityId);
+                int slot;
+                if (faction == null)
+                {
+                    SendMessage("[Shipyard]", "You arent in a faction.", Color.Red, (long)Context.Player.SteamUserId);
+                    return;
+                }
+ 
+
+                Alliance alliance = AlliancePlugin.GetAlliance(faction as MyFaction);
+                if (alliance == null)
+                {
+                    Context.Respond("Target faction not member of alliance.");
+                    return;
+                }
+                if (alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.BankWithdraw))
+                {
+                    alliance.ShipyardFee = amount;
+                    AlliancePlugin.SaveAllianceData(alliance);
+                }
+                else {
+                    Context.Respond("You do not have permission to change the fee!, Must have bank withdraw perms.");
+                }
+            }
+        }
+        [Command("claim", "Claim a print")]
+        [Permission(MyPromoteLevel.None)]
         public void ClaimPrint(string slotNumber)
         {
             if (!AlliancePlugin.config.ShipyardEnabled)
@@ -1283,7 +1339,7 @@ namespace AlliancesPlugin
                     NeedsFuel = true;
                 }
                 Int64 balance = EconUtils.getBalance(Context.Player.IdentityId);
-
+           
 
                 if (price < 0)
                 {
@@ -1292,7 +1348,12 @@ namespace AlliancesPlugin
                 }
                 if (NeedsMoney)
                 {
-                    if (balance < price)
+                    long tempPrice = price;
+                    if (alliance.ShipyardFee > 0 && DatabaseForBank.ReadyToSave)
+                    {
+                        tempPrice += alliance.ShipyardFee;
+                    }
+                    if (balance < tempPrice)
                     {
                         SendMessage("[Shipyard]", "You cant afford the start price of " + String.Format("{0:n0}", price) + " SC", Color.Red, (long)Context.Player.SteamUserId);
                         return;
@@ -1347,6 +1408,15 @@ namespace AlliancesPlugin
                     queue.SaveLog(alliance, log);
                     if (NeedsMoney)
                     {
+                    
+                        if (alliance.ShipyardFee > 0 && DatabaseForBank.ReadyToSave)
+                        {
+                       
+                             if (DatabaseForBank.PayShipyardFee(alliance, alliance.ShipyardFee, Context.Player.SteamUserId))
+                            {
+                                price += alliance.ShipyardFee;
+                            }
+                        }
                         EconUtils.takeMoney(Context.Player.IdentityId, price);
                         if (AlliancePlugin.shipyardConfig.ShowMoneyTakenOnStart)
                         {
@@ -1385,6 +1455,10 @@ namespace AlliancesPlugin
 
                 confirmations.Add(Context.Player.IdentityId, timeToAdd);
                 Context.Respond("Run command again within 20 seconds to confirm, it will cost " + String.Format("{0:n0} ", price) + " SC");
+                if (alliance.ShipyardFee > 0)
+                {
+                    Context.Respond("It also has a fee of " + String.Format("{0:n0} ", alliance.ShipyardFee) + " SC");
+                }
                 double seconds = gridCosts.BlockCount * printerConfig.SecondsPerBlock * queue.upgradeSpeed;
                 DateTime end = DateTime.Now.AddSeconds(seconds);
                 int fuel = 0;

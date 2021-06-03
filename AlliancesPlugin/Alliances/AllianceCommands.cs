@@ -891,6 +891,11 @@ namespace AlliancesPlugin
         [Permission(MyPromoteLevel.None)]
         public void Dividend(string inputAmount, int cutoffDays = 10)
         {
+            if (!DatabaseForBank.ReadyToSave)
+            {
+                Context.Respond("Bank is disabled while it cannot connect to database.");
+                return;
+            }
             MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
             if (fac == null)
             {
@@ -925,6 +930,8 @@ namespace AlliancesPlugin
 
                 if (alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.DividendPay))
                 {
+                    alliance.bankBalance = DatabaseForBank.GetBalance(alliance.AllianceId);
+                    long AmountPerMember;
                     if (alliance.bankBalance >= amount)
                     {
                         List<long> idsToPay = new List<long>();
@@ -948,8 +955,14 @@ namespace AlliancesPlugin
                                 }
                             }
                         }
-                        alliance.PayDividend(amount, idsToPay, Context.Player.SteamUserId);
-                        AlliancePlugin.SaveAllianceData(alliance);
+                        if (DatabaseForBank.RemoveFromBalance(alliance, amount))
+                        {
+                            alliance.PayDividend(amount, idsToPay, Context.Player.SteamUserId);
+                            AlliancePlugin.SaveAllianceData(alliance);
+                        }
+                        else{
+                            Context.Respond("Error on removing balance, is the database connected?");
+                        }
                     }
                     else
                     {
@@ -1061,6 +1074,11 @@ namespace AlliancesPlugin
         [Permission(MyPromoteLevel.None)]
         public void BankWithdraw(string inputAmount)
         {
+            if (!DatabaseForBank.ReadyToSave)
+            {
+                Context.Respond("Bank is disabled while it cannot connect to database.");
+                return;
+            }
             MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
             if (fac == null)
             {
@@ -1093,14 +1111,23 @@ namespace AlliancesPlugin
             }
             if (alliance != null)
             {
-
+                alliance.bankBalance = DatabaseForBank.GetBalance(alliance.AllianceId);
                 if (alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.BankWithdraw))
                 {
                     if (alliance.bankBalance >= amount)
                     {
-                        EconUtils.addMoney(Context.Player.IdentityId, amount);
-                        alliance.WithdrawMoney(amount, Context.Player.SteamUserId);
-                        AlliancePlugin.SaveAllianceData(alliance);
+                        if (DatabaseForBank.RemoveFromBalance(alliance, amount))
+                        {
+                            EconUtils.addMoney(Context.Player.IdentityId, amount);
+                            alliance.WithdrawMoney(amount, Context.Player.SteamUserId);
+                            AlliancePlugin.SaveAllianceData(alliance);
+                            
+                        }
+                        else
+                        {
+                            Context.Respond("Error on removing the balance, is the database connected?");
+                        }
+                      
                     }
                     else
                     {
@@ -1178,6 +1205,11 @@ namespace AlliancesPlugin
         [Permission(MyPromoteLevel.None)]
         public void BankDeposit(string inputAmount)
         {
+            if (!DatabaseForBank.ReadyToSave)
+            {
+                Context.Respond("Bank is disabled while it cannot connect to database.");
+                return;
+            }
             MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
             if (fac == null)
             {
@@ -1210,11 +1242,19 @@ namespace AlliancesPlugin
             }
             if (alliance != null)
             {
+                alliance.bankBalance = DatabaseForBank.GetBalance(alliance.AllianceId);
                 if (EconUtils.getBalance(Context.Player.IdentityId) >= amount)
                 {
-                    EconUtils.takeMoney(Context.Player.IdentityId, amount);
-                    alliance.DepositMoney(amount, Context.Player.SteamUserId);
-                    AlliancePlugin.SaveAllianceData(alliance);
+                    if (DatabaseForBank.AddToBalance(alliance, amount))
+                    {
+                        EconUtils.takeMoney(Context.Player.IdentityId, amount);
+                        alliance.DepositMoney(amount, Context.Player.SteamUserId);
+                        AlliancePlugin.SaveAllianceData(alliance);
+                    }
+                    else
+                    {
+                        Context.Respond("Error on adding to balance, is the database connected?");
+                    }
                 }
                 else
                 {
@@ -1258,6 +1298,11 @@ namespace AlliancesPlugin
         [Permission(MyPromoteLevel.None)]
         public void GiveTitleName(string type, string nameortag, string inputAmount)
         {
+            if (!DatabaseForBank.ReadyToSave)
+            {
+                Context.Respond("Bank is disabled while it cannot connect to database.");
+                return;
+            }
             MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
             if (fac == null)
             {
@@ -1291,10 +1336,17 @@ namespace AlliancesPlugin
 
             if (alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.PayFromBank))
             {
+                alliance.bankBalance = DatabaseForBank.GetBalance(alliance.AllianceId);
                 if (alliance.bankBalance >= amount)
                 {
-                    DoAlliancePay(type, nameortag, amount, alliance, Context.Player.SteamUserId);
-
+                    if (DatabaseForBank.RemoveFromBalance(alliance, amount))
+                    {
+                        DoAlliancePay(type, nameortag, amount, alliance, Context.Player.SteamUserId);
+                    }
+                    else
+                    {
+                        Context.Respond("Error on removing balance, is the database connected?");
+                    }
                 }
                 else
                 {
@@ -1615,6 +1667,7 @@ namespace AlliancesPlugin
                         AlliancePlugin.AllAlliances.Add(name, newAlliance);
                         AlliancePlugin.FactionsInAlliances.Add(fac.FactionId, newAlliance.name);
                         AlliancePlugin.SaveAllianceData(newAlliance);
+                        DatabaseForBank.CreateAllianceBank(newAlliance);
                     }
                     else
                     {
