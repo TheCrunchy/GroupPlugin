@@ -83,7 +83,7 @@ namespace AlliancesPlugin
             }
             if (PlayersCustomRank.ContainsKey(id))
             {
-                return CustomRankPermissions[PlayersCustomRank[id]].taxRate)
+                return CustomRankPermissions[PlayersCustomRank[id]].taxRate;
             }
 
             return CitizenPerms.taxRate;
