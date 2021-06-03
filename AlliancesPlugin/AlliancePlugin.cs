@@ -484,8 +484,8 @@ namespace AlliancesPlugin
                 LoadAllGates();
                 playersInAlliances.Clear();
                 DiscordStuff.RegisterDiscord();
-              //  DatabaseForBank bank = new DatabaseForBank();
-              //  bank.CreateTable(bank.CreateConnection());
+        //        DatabaseForBank bank = new DatabaseForBank();
+           //    bank.CreateTable(bank.CreateConnection());
             }
         }
         public static List<DeniedLocation> HangarDeniedLocations = new List<DeniedLocation>();

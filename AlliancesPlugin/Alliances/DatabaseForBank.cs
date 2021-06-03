@@ -3,21 +3,21 @@
 //using System.Linq;
 //using System.Text;
 //using System.Threading.Tasks;
-//using System.Data.SQLite;
+//using SQLite;
 
 //namespace AlliancesPlugin
 //{
-//   public class DatabaseForBank
+//    public class DatabaseForBank
 //    {
 
-//      public  SQLiteConnection CreateConnection()
+//        public SQLiteConnection CreateConnection()
 //        {
 
 //            SQLiteConnection sqlite_conn;
 //            // Create a new database connection:
 //            sqlite_conn = new SQLiteConnection("Data Source=" + AlliancePlugin.path + "//BankDatabase.db; Version = 3; New = True; Compress = True; ");
-//           // Open the connection:
-//         try
+//            // Open the connection:
+//            try
 //            {
 //                sqlite_conn.Open();
 //            }
@@ -32,9 +32,9 @@
 //        {
 
 //            SQLiteCommand sqlite_cmd;
-//            string Createsql = "CREATE TABLE BankBalances(allianceId CHAR(36), balance BIGINT)";
-//           string Createsql1 = "CREATE TABLE BankRecords(allianceId CHAR(36), balanceNow BIGINT, balanceAfter BIGINT, change BIGINT, reason VARCHAR(50), steamId BIGINT, date DATETIME)";
-//           sqlite_cmd = conn.CreateCommand();
+//            string Createsql = "CREATE TABLE IF NOT EXISTS BankBalances(allianceId CHAR(36) PRIMARY KEY, balance BIGINT) ";
+//            string Createsql1 = "CREATE TABLE IF NOT EXISTS BankRecords(allianceId CHAR(36) PRIMARY KEY, balanceNow BIGINT, balanceAfter BIGINT, change BIGINT, reason VARCHAR(50), steamId BIGINT, date DATETIME)";
+//            sqlite_cmd = conn.CreateCommand();
 //            sqlite_cmd.CommandText = Createsql;
 //            sqlite_cmd.ExecuteNonQuery();
 //            sqlite_cmd.CommandText = Createsql1;
@@ -42,24 +42,24 @@
 
 //        }
 
-//        public  void InsertData(SQLiteConnection conn)
+//        public void InsertData(SQLiteConnection conn)
 //        {
 //            SQLiteCommand sqlite_cmd;
 //            sqlite_cmd = conn.CreateCommand();
-//           // sqlite_cmd.CommandText = "INSERT INTO SampleTable
-//           //    (Col1, Col2) VALUES('Test Text ', 1); ";
-//           //sqlite_cmd.ExecuteNonQuery();
-//           // sqlite_cmd.CommandText = "INSERT INTO SampleTable
-//           //    (Col1, Col2) VALUES('Test1 Text1 ', 2); ";
-//           //sqlite_cmd.ExecuteNonQuery();
-//           // sqlite_cmd.CommandText = "INSERT INTO SampleTable
-//           //    (Col1, Col2) VALUES('Test2 Text2 ', 3); ";
-//           //sqlite_cmd.ExecuteNonQuery();
+//            // sqlite_cmd.CommandText = "INSERT INTO SampleTable
+//            //    (Col1, Col2) VALUES('Test Text ', 1); ";
+//            //sqlite_cmd.ExecuteNonQuery();
+//            // sqlite_cmd.CommandText = "INSERT INTO SampleTable
+//            //    (Col1, Col2) VALUES('Test1 Text1 ', 2); ";
+//            //sqlite_cmd.ExecuteNonQuery();
+//            // sqlite_cmd.CommandText = "INSERT INTO SampleTable
+//            //    (Col1, Col2) VALUES('Test2 Text2 ', 3); ";
+//            //sqlite_cmd.ExecuteNonQuery();
 
 
-//           // sqlite_cmd.CommandText = "INSERT INTO SampleTable1
-//           //    (Col1, Col2) VALUES('Test3 Text3 ', 3); ";
-//           sqlite_cmd.ExecuteNonQuery();
+//            // sqlite_cmd.CommandText = "INSERT INTO SampleTable1
+//            //    (Col1, Col2) VALUES('Test3 Text3 ', 3); ";
+//            sqlite_cmd.ExecuteNonQuery();
 
 //        }
 
