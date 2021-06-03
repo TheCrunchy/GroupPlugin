@@ -339,6 +339,10 @@ namespace AlliancesPlugin
                 {
                     utils.WriteToXmlFile<JumpZone>(path + "//JumpZones//example.xml", new JumpZone(), false);
                 }
+                if (!File.Exists(path + "//BankDatabase.db"))
+                {
+                    File.Create(path + "//BankDatabase.db");
+                }
                 if (!File.Exists(path + "//KOTH//example.xml"))
                 {
                     utils.WriteToXmlFile<KothConfig>(path + "//KOTH//example.xml", new KothConfig(), false);
