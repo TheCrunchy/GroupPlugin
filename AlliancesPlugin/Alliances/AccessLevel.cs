@@ -25,6 +25,8 @@ namespace AlliancesPlugin
         AddEnemy,
         PayFromBank,
         Vote,
+        RecieveDividend,
+        TaxExempt,
         UnableToParse
 
     }

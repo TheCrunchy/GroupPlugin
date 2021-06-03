@@ -41,7 +41,7 @@ namespace AlliancesPlugin
         public Dictionary<ulong, RankPermissions> playerPermissions = new Dictionary<ulong, RankPermissions>();
 
         public bool ElectionCycle = false;
-
+        public long ShipyardFee = 25000000;
         public Boolean HasAccess(ulong id, AccessLevel level)
         {
             if (SupremeLeader == id)
@@ -71,7 +71,23 @@ namespace AlliancesPlugin
         
             return false;
         }
+        public float GetTaxRate(ulong id)
+        {
+            if (SupremeLeader == id)
+            {
+                return 0;
+            }
+            if (HasAccess(id, AccessLevel.TaxExempt))
+            {
+                return 0;
+            }
+            if (PlayersCustomRank.ContainsKey(id))
+            {
+                return CustomRankPermissions[PlayersCustomRank[id]].taxRate)
+            }
 
+            return CitizenPerms.taxRate;
+        }
         public string GetTitle(ulong id)
         {
             if (SupremeLeader == id)

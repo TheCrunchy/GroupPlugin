@@ -10,5 +10,6 @@ namespace AlliancesPlugin
     {
         public List<AccessLevel> permissions = new List<AccessLevel>();
         public int permissionLevel = 100;
+        public float taxRate = 0;
     }
 }

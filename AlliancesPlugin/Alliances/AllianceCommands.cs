@@ -145,6 +145,10 @@ namespace AlliancesPlugin
                     return AccessLevel.AddEnemy;
                 case "payfrombank":
                     return AccessLevel.PayFromBank;
+                case "recievedividend":
+                    return AccessLevel.RecieveDividend;
+                case "taxexempt":
+                    return AccessLevel.TaxExempt;
                 case "unabletoparse":
                     return AccessLevel.UnableToParse;
             }
@@ -164,7 +168,7 @@ namespace AlliancesPlugin
             AccessLevel level = StringToAccessLevel(permission);
             if (level == AccessLevel.UnableToParse)
             {
-                Context.Respond("Unable to read that permission, you can change, HangarSave, HangarLoad, HangarLoadOther, Kick, Invite, ShipyardStart, ShipyardClaim, ShipyardClaimOther, DividendPay, BankWithdraw, PayFromBank, AddEnemy, RemoveEnemy, GrantLowerTitle, Vote, RevokeLowerTitle.");
+                Context.Respond("Unable to read that permission, you can change, HangarSave, HangarLoad, HangarLoadOther, Kick, Invite, ShipyardStart, ShipyardClaim, ShipyardClaimOther, DividendPay, BankWithdraw, PayFromBank, AddEnemy, RemoveEnemy, GrantLowerTitle, Vote, RecieveDividend, TaxExempt, RevokeLowerTitle.");
                 return;
             }
             if (alliance != null)
@@ -381,7 +385,7 @@ namespace AlliancesPlugin
             AccessLevel level = StringToAccessLevel(permission);
             if (level == AccessLevel.UnableToParse)
             {
-                Context.Respond("Unable to read that permission, you can change, HangarSave, HangarLoad, HangarLoadOther, Kick, Invite, ShipyardStart, ShipyardClaim, ShipyardClaimOther, DividendPay, BankWithdraw, PayFromBank, AddEnemy, RemoveEnemy, GrantLowerTitle, Vote, RevokeLowerTitle.");
+                Context.Respond("Unable to read that permission, you can change, HangarSave, HangarLoad, HangarLoadOther, Kick, Invite, ShipyardStart, ShipyardClaim, ShipyardClaimOther, DividendPay, BankWithdraw, PayFromBank, AddEnemy, RemoveEnemy, GrantLowerTitle, Vote, RecieveDividend, TaxExempt, RevokeLowerTitle.");
                 return;
             }
             MyIdentity id = AlliancePlugin.TryGetIdentity(playerName);
@@ -935,7 +939,7 @@ namespace AlliancesPlugin
                                     DateTime referenceTime = idenid.LastLoginTime;
                                     if (idenid.LastLogoutTime > referenceTime)
                                         referenceTime = idenid.LastLogoutTime;
-                                    if (referenceTime >= cutoff)
+                                    if (referenceTime >= cutoff && alliance.HasAccess(MySession.Static.Players.TryGetSteamId(mem.Value.PlayerId), AccessLevel.RecieveDividend))
                                     {
                                         idsToPay.Add(mem.Value.PlayerId);
 
