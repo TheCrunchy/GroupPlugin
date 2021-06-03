@@ -21,7 +21,7 @@ namespace AlliancesPlugin
         public string KothBuildingOwner = "BOB";
         public long LootboxGridEntityId = 0;
         public string LootBoxTerminalName = "LOOT BOX";
-        public string capturingNation = "";
+        public Guid capturingNation = Guid.Empty;
         public int amountCaptured = 0;
         public int MinutesBeforeCaptureStarts = 10;
         public int CaptureRadiusInMetre = 20;

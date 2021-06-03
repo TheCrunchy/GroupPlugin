@@ -73,9 +73,10 @@ namespace AlliancesPlugin
         }
         public float GetTaxRate(ulong id)
         {
+         
             if (SupremeLeader == id)
             {
-                return 0;
+                return 0.1f;
             }
             if (HasAccess(id, AccessLevel.TaxExempt))
             {

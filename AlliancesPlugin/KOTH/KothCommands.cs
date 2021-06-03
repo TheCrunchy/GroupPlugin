@@ -32,8 +32,16 @@ namespace AlliancesPlugin
                     koth.nextCaptureInterval = DateTime.Now;
                   koth.CaptureStarted = true;
                     koth.nextCaptureAvailable = DateTime.Now.AddSeconds(1);
-                    koth.owner = "";
-                    koth.capturingNation = allianceName;
+                    koth.owner = "NOBODY";
+                    if (!allianceName.Equals(""))
+                    {
+                        Alliance alliance = AlliancePlugin.GetAllianceNoLoading(allianceName);
+                        koth.capturingNation = alliance.AllianceId;
+                    }
+                    else
+                    {
+                        koth.capturingNation = Guid.Empty;
+                    }
                     Context.Respond("Unlocked the koth");
                 }
 

@@ -473,6 +473,13 @@ namespace AlliancesPlugin
                 }
             }
         }
+        public static Dictionary<long, DateTime> cooldowns = new Dictionary<long, DateTime>();
+        public string GetCooldownMessage(DateTime time)
+        {
+            var diff = time.Subtract(DateTime.Now);
+            string output = String.Format("{0} Seconds", diff.Seconds) + " until command can be used.";
+            return output;
+        }
 
         [Command("reload", "reload the denied locations")]
         [Permission(MyPromoteLevel.Admin)]
@@ -510,10 +517,21 @@ namespace AlliancesPlugin
                 Context.Respond("Alliance hangar is not enabled.");
                 return;
             }
-            Boolean console = false;
-            if (Context.Player == null)
+            if (cooldowns.TryGetValue(Context.Player.IdentityId, out DateTime value))
             {
-                console = true;
+                if (DateTime.Now <= value)
+                {
+                    Context.Respond(GetCooldownMessage(value));
+                    return;
+                }
+                else
+                {
+                    cooldowns.Add(Context.Player.IdentityId, DateTime.Now.AddSeconds(60));
+                }
+            }
+            else
+            {
+                cooldowns.Add(Context.Player.IdentityId, DateTime.Now.AddSeconds(60));
             }
             MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
             if (fac == null)
@@ -608,6 +626,22 @@ namespace AlliancesPlugin
             {
                 Context.Respond("World is saving! Try again soon.");
                 return;
+            }
+            if (cooldowns.TryGetValue(Context.Player.IdentityId, out DateTime value))
+            {
+                if (DateTime.Now <= value)
+                {
+                    Context.Respond(GetCooldownMessage(value));
+                    return;
+                }
+                else
+                {
+                    cooldowns.Add(Context.Player.IdentityId, DateTime.Now.AddSeconds(60));
+                }
+            }
+            else
+            {
+                cooldowns.Add(Context.Player.IdentityId, DateTime.Now.AddSeconds(60));
             }
             if (MyGravityProviderSystem.IsPositionInNaturalGravity(Context.Player.GetPosition()))
             {

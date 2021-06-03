@@ -11,7 +11,7 @@ namespace AlliancesPlugin
 {
     public class DatabaseForBank
     {
-        private static string connStr = "server=" + AlliancePlugin.config.DatabaseIP + ";user=" + AlliancePlugin.config.DatabaseUser + ";port=" + AlliancePlugin.config.DatabasePort + ";password=" + AlliancePlugin.config.DatabasePassword;
+
         public static bool ReadyToSave = true;
 
         //public static void testConnection()

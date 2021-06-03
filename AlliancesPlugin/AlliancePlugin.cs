@@ -135,11 +135,11 @@ namespace AlliancesPlugin
             Directory.CreateDirectory(folder);
             if (config.StoragePath.Equals("default"))
             {
-                folder2 = Path.Combine(StoragePath + "//Alliances//KOTH");
+                folder2 = Path.Combine(StoragePath + "//Alliances//KOTH//");
             }
             else
             {
-                folder2 = config.StoragePath + "//KOTH";
+                folder2 = config.StoragePath + "//KOTH//";
             }
             Directory.CreateDirectory(folder2);
             if (config.StoragePath.Equals("default"))
@@ -339,10 +339,10 @@ namespace AlliancesPlugin
                 {
                     utils.WriteToXmlFile<JumpZone>(path + "//JumpZones//example.xml", new JumpZone(), false);
                 }
-          //      if (!File.Exists(path + "//bank.db"))
-            //    {
-               //     File.Create(path + "//bank.db");
-              // }
+                //      if (!File.Exists(path + "//bank.db"))
+                //    {
+                //     File.Create(path + "//bank.db");
+                // }
                 if (!File.Exists(path + "//KOTH//example.xml"))
                 {
                     utils.WriteToXmlFile<KothConfig>(path + "//KOTH//example.xml", new KothConfig(), false);
@@ -484,8 +484,8 @@ namespace AlliancesPlugin
                 LoadAllGates();
                 playersInAlliances.Clear();
                 DiscordStuff.RegisterDiscord();
-        //        DatabaseForBank bank = new DatabaseForBank();
-           //    bank.CreateTable(bank.CreateConnection());
+                //        DatabaseForBank bank = new DatabaseForBank();
+                //    bank.CreateTable(bank.CreateConnection());
             }
         }
         public static List<DeniedLocation> HangarDeniedLocations = new List<DeniedLocation>();
@@ -720,18 +720,77 @@ namespace AlliancesPlugin
             }
             return false;
         }
+        public static Dictionary<long, long> TaxesToBeProcessed = new Dictionary<long, long>();
         public static Dictionary<long, DateTime> messageCooldowns = new Dictionary<long, DateTime>();
         public override void Update()
         {
             ticks++;
+            if (ticks % 512 == 0)
+            {
+                List<long> Processed = new List<long>();
+                foreach (long id in TaxesToBeProcessed.Keys)
+                {
+
+
+                    if (MySession.Static.Factions.TryGetPlayerFaction(id) != null)
+                    {
+
+                        Alliance alliance = GetAllianceNoLoading(MySession.Static.Factions.TryGetPlayerFaction(id) as MyFaction);
+                        if (alliance != null)
+                        {
+
+                            alliance = GetAlliance(alliance.name);
+
+                            if (alliance.GetTaxRate(MySession.Static.Players.TryGetSteamId(id)) > 0)
+                            {
+
+                                float tax = TaxesToBeProcessed[id] * alliance.GetTaxRate(MySession.Static.Players.TryGetSteamId(id));
+                                if (EconUtils.getBalance(id) >= tax)
+                                {
+                                    if (DatabaseForBank.AddToBalance(alliance, (long)tax))
+                                    {
+
+                                        EconUtils.takeMoney(id, (long)tax);
+
+                                        alliance.DepositMoney((long)tax, MySession.Static.Players.TryGetSteamId(id));
+                                        SaveAllianceData(alliance);
+                                        Processed.Add(id);
+                                    }
+                                    else
+                                    {
+
+                                        Processed.Add(id);
+                                    }
+                                }
+                                else
+                                {
+                                    Processed.Add(id);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            Processed.Add(id);
+                        }
+                    }
+                    else
+                    {
+                        Processed.Add(id);
+                    }
+                }
+                foreach (long id in Processed)
+                {
+                    TaxesToBeProcessed.Remove(id);
+                }
+            }
             if (ticks % 32 == 0)
             {
 
                 if (DateTime.Now > NextUpdate)
                 {
-                 
+
                     NextUpdate = DateTime.Now.AddMinutes(1);
-               
+
                     LoadAllAlliances();
                     LoadAllGates();
                     playersInAlliances.Clear();
@@ -884,8 +943,8 @@ namespace AlliancesPlugin
                         {
                             Log.Info(config.owner + " " + config.capturingNation);
                             //setup a time check for capture time
-                            String capturingNation = "";
-                            if (!config.capturingNation.Equals(""))
+                            Guid capturingNation = Guid.Empty;
+                            if (config.capturingNation != null)
                             {
                                 capturingNation = config.capturingNation;
                             }
@@ -897,12 +956,12 @@ namespace AlliancesPlugin
                             int entitiesInCapPoint = 0;
                             foreach (MyCubeGrid grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
                             {
-                                entitiesInCapPoint++;
+
 
                                 IMyFaction fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
                                 if (fac != null && !fac.Tag.Equals(config.KothBuildingOwner))
                                 {
-
+                                    entitiesInCapPoint++;
                                     if (IsContested(fac, config, capturingNation))
                                     {
                                         Log.Info("Contested faction " + fac.Tag + " " + capturingNation);
@@ -910,7 +969,7 @@ namespace AlliancesPlugin
                                     }
                                     else
                                     {
-                                        capturingNation = GetNationTag(fac);
+                                        capturingNation = GetNationTag(fac).AllianceId;
                                         if (!hasActiveCaptureBlock)
                                         {
                                             Log.Info("Checking for a capture block");
@@ -921,11 +980,12 @@ namespace AlliancesPlugin
                                 }
                                 if (fac == null)
                                 {
+
                                     Log.Info("Contested no faction");
                                     contested = true;
                                     break;
                                 }
-                         
+
 
 
                             }
@@ -951,7 +1011,7 @@ namespace AlliancesPlugin
                                         }
                                         else
                                         {
-                                            capturingNation = GetNationTag(fac);
+                                            capturingNation = GetNationTag(fac).AllianceId;
                                         }
                                     }
                                     else
@@ -970,19 +1030,23 @@ namespace AlliancesPlugin
                                     SaveKothConfig(config.KothName, config);
                                 }
                             }
-                            if (!contested && hasActiveCaptureBlock && !config.CaptureStarted && !capturingNation.Equals(""))
-                            {
-                                config.CaptureStarted = true;
-                                config.nextCaptureAvailable = DateTime.Now.AddMinutes(config.MinutesBeforeCaptureStarts);
-                                Log.Info("Can cap in 10 minutes");
-                                config.capturingNation = capturingNation;
-                                SendChatMessage("Can cap in however many minutes");
 
-                                DiscordStuff.SendMessageToDiscord(config.KothName + " Capture can begin in " + config.MinutesBeforeCaptureStarts, config);
+                            if (!contested && !config.CaptureStarted && capturingNation != Guid.Empty)
+                            {
+                                if (hasActiveCaptureBlock)
+                                {
+                                    config.CaptureStarted = true;
+                                    config.nextCaptureAvailable = DateTime.Now.AddMinutes(config.MinutesBeforeCaptureStarts);
+                                    Log.Info("Can cap in 10 minutes");
+                                    config.capturingNation = capturingNation;
+                                    SendChatMessage("Can cap in however many minutes");
+
+                                    DiscordStuff.SendMessageToDiscord(config.KothName + " Capture can begin in " + config.MinutesBeforeCaptureStarts, config);
+                                }
                             }
                             else
                             {
-                                if (!contested && !capturingNation.Equals(""))
+                                if (!contested && capturingNation != Guid.Empty)
                                 {
                                     Log.Info("Got to the capping check and not contested");
                                     if (DateTime.Now >= config.nextCaptureAvailable && config.CaptureStarted)
@@ -994,10 +1058,9 @@ namespace AlliancesPlugin
                                             if (!hasActiveCaptureBlock)
                                             {
                                                 Log.Info("Locking because no active cap block");
-                                                config.capturingNation = config.owner;
+                                                config.capturingNation = GetAllianceNoLoading(config.owner).AllianceId;
                                                 config.nextCaptureAvailable = DateTime.Now.AddHours(1);
                                                 //broadcast that its locked
-                                                config.capturingNation = "";
                                                 config.amountCaptured = 0;
                                                 SendChatMessage("Locked because capture blocks are dead");
                                                 DiscordStuff.SendMessageToDiscord(config.KothName + " Locked, Capture blocks are missing or destroyed. Locked for " + config.hourCooldownAfterFail + " hours", config);
@@ -1030,7 +1093,7 @@ namespace AlliancesPlugin
                                                     locked = true;
                                                     config.nextCaptureInterval = DateTime.Now.AddHours(config.hoursToLockAfterCap);
                                                     config.capturingNation = capturingNation;
-                                                    config.owner = capturingNation;
+                                                    config.owner = GetAllianceNoLoading(capturingNation).name;
                                                     config.amountCaptured = 0;
                                                     SendChatMessage(config.captureMessage.Replace("%NATION%", config.owner));
                                                     DiscordStuff.SendMessageToDiscord(config.captureMessage.Replace("%NATION%", config.owner), config);
@@ -1050,7 +1113,7 @@ namespace AlliancesPlugin
                                         else
                                         {
                                             Log.Info("Locking because the capturing nation changed");
-                                            config.capturingNation = "";
+                                            config.capturingNation = Guid.Empty;
                                             config.CaptureStarted = false;
                                             config.nextCaptureAvailable = DateTime.Now.AddHours(config.hourCooldownAfterFail);
                                             //broadcast that its locked
@@ -1061,6 +1124,7 @@ namespace AlliancesPlugin
                                     }
                                     else
                                     {
+                                        SendChatMessage(config.capturingNation.ToString());
                                         SendChatMessage("Waiting to cap");
                                         Log.Info("Waiting to cap");
                                     }
@@ -1070,24 +1134,31 @@ namespace AlliancesPlugin
                                     if (!hasActiveCaptureBlock && config.CaptureStarted)
                                     {
                                         Log.Info("Locking because no active cap block");
-                                        config.capturingNation = config.owner;
+                                        config.capturingNation = Guid.Empty;
                                         config.nextCaptureAvailable = DateTime.Now.AddHours(1);
                                         config.CaptureStarted = false;
                                         //broadcast that its locked
-                                        config.capturingNation = "";
+
                                         config.amountCaptured = 0;
                                         SendChatMessage("Locked because capture blocks are dead");
                                         DiscordStuff.SendMessageToDiscord(config.KothName + " Locked, Capture blocks are missing or destroyed. Locked for " + config.hourCooldownAfterFail + " hours", config);
                                     }
-                                    Log.Info("Its contested or the fuckers trying to cap have no nation");
-                                    //send contested message
-                                    SendChatMessage("Contested or unaff trying to cap");
-                                    DiscordStuff.SendMessageToDiscord(config.KothName + " Capture point contested!", config);
+                                    if (contested && config.CaptureStarted)
+                                    {
+                                        Log.Info("Its contested or the fuckers trying to cap have no nation");
+                                        //send contested message
+                                        SendChatMessage("Contested or unaff trying to cap");
+                                        DiscordStuff.SendMessageToDiscord(config.KothName + " Capture point contested!", config);
+                                    }
+                                    else
+                                    {
+                                        SendChatMessage("Not contested, no cap block, no capping nation");
+                                    }
                                 }
 
 
-                            }
 
+                            }
                             if (!locked)
                             {
                                 config.nextCaptureInterval = DateTime.Now.AddSeconds(config.SecondsBetweenCaptureCheck);
@@ -1117,7 +1188,7 @@ namespace AlliancesPlugin
                                 }
 
                             }
-                       
+
                             if (denials.TryGetValue(config.KothName, out DenialPoint den))
                             {
                                 if (den.IsDenied())
@@ -1135,7 +1206,7 @@ namespace AlliancesPlugin
                                         SpawnCores(lootgrid, config);
                                         return;
                                     }
-                             
+
                                     config.nextCoreSpawn = DateTime.Now.AddSeconds(config.SecondsBetweenCoreSpawn / 2);
                                     SendChatMessage("Capture block and owned, half spawn time");
                                     Alliance alliance = GetAlliance(config.owner);
@@ -1144,7 +1215,7 @@ namespace AlliancesPlugin
                                         alliance.CurrentMetaPoints += config.MetaPointsPerCapWithBonus;
                                         SaveAllianceData(alliance);
                                     }
-                                 
+
                                 }
                                 else
                                 {
@@ -1276,13 +1347,13 @@ namespace AlliancesPlugin
 
             return config;
         }
-        public static Boolean IsContested(IMyFaction fac, KothConfig koth, string capturingNation)
+        public static Boolean IsContested(IMyFaction fac, KothConfig koth, Guid capturingNation)
         {
 
             if (GetNationTag(fac) != null)
             {
-                if (capturingNation.Equals(GetNationTag(fac)) || capturingNation.Equals(""))
-                    capturingNation = GetNationTag(fac);
+                if (capturingNation.Equals(GetNationTag(fac).AllianceId))
+                    return false;
                 else
                 {
                     return true;
@@ -1300,11 +1371,11 @@ namespace AlliancesPlugin
             MyDefinitionId.TryParse("MyObjectBuilder_" + config.RewardTypeId, config.RewardSubTypeId, out MyDefinitionId id);
             return id;
         }
-        public static string GetNationTag(IMyFaction fac)
+        public static Alliance GetNationTag(IMyFaction fac)
         {
             if (GetAllianceNoLoading(fac as MyFaction) != null)
             {
-                return GetAllianceNoLoading(fac as MyFaction).name;
+                return GetAllianceNoLoading(fac as MyFaction);
             }
             return null;
         }
