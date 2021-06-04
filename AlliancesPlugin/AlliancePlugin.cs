@@ -766,7 +766,7 @@ namespace AlliancesPlugin
 
                                         EconUtils.takeMoney(id, (long)tax);
 
-                                        alliance.DepositMoney((long)tax, MySession.Static.Players.TryGetSteamId(id));
+                                        alliance.DepositTax((long)tax, MySession.Static.Players.TryGetSteamId(id));
                                         SaveAllianceData(alliance);
                                         Processed.Add(id);
                                     }

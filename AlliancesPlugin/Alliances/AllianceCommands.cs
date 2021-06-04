@@ -1018,6 +1018,7 @@ namespace AlliancesPlugin
                         }
                         if (DatabaseForBank.RemoveFromBalance(alliance, amount))
                         {
+                            Context.Respond("Paying " + idsToPay.Count + " " + String.Format("{0:n0}", amount / idsToPay.Count) + " SC each.");
                             alliance.PayDividend(amount, idsToPay, Context.Player.SteamUserId);
                             AlliancePlugin.SaveAllianceData(alliance);
                         }

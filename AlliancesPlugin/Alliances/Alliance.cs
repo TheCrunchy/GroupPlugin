@@ -225,6 +225,19 @@ namespace AlliancesPlugin
             log.log.Add(item);
             utils.WriteToJsonFile<BankLog>(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId + "//log.json", log);
         }
+        public void DepositTax(Int64 amount, ulong steamid)
+        {
+            bankBalance += amount;
+            BankLog log = GetLog();
+            BankLogItem item = new BankLogItem();
+            item.SteamId = steamid;
+            item.Amount = amount;
+            item.TimeClaimed = DateTime.Now;
+            item.Action = "tax";
+            item.BankAmount = bankBalance;
+            log.log.Add(item);
+            utils.WriteToJsonFile<BankLog>(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId + "//log.json", log);
+        }
         public void GateFee(Int64 amount, ulong steamid, string GateName)
         {
             bankBalance += amount;
