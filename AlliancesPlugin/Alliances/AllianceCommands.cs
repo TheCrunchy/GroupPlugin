@@ -149,10 +149,71 @@ namespace AlliancesPlugin
                     return AccessLevel.RecieveDividend;
                 case "taxexempt":
                     return AccessLevel.TaxExempt;
+                case "changetax":
+                    return AccessLevel.ChangeTax;
                 case "unabletoparse":
                     return AccessLevel.UnableToParse;
             }
             return AccessLevel.UnableToParse;
+        }
+        [Command("tax", "set a ranks tax rate")]
+        [Permission(MyPromoteLevel.None)]
+        public void AllianceTax(string rank, string tax)
+        {
+            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
+            if (fac == null)
+            {
+                Context.Respond("Only factions can be in alliances.");
+                return;
+            }
+            Alliance alliance = AlliancePlugin.GetAlliance(fac);
+            float amount = float.Parse(tax.Replace("%", ""));
+            amount = amount / 100;
+            if (amount > 0.1f)
+            {
+                Context.Respond("Maximum tax rate is 10%");
+                return;
+            }
+            if (amount < 0)
+            {
+                Context.Respond("Tax rate cannot be negative.");
+                return;
+            }
+            if (alliance != null)
+            {
+                if (alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.ChangeTax))
+                {
+
+                    if (rank.ToLower().Equals("unranked"))
+                    {
+                        alliance.UnrankedPerms.taxRate = amount;
+                        Context.Respond("Updated tax rate for unranked.");
+                        AlliancePlugin.SaveAllianceData(alliance);
+                    }
+                    else
+                    {
+                        if (alliance.CustomRankPermissions.ContainsKey(rank))
+                        {
+                            alliance.CustomRankPermissions[rank].taxRate = amount;
+                            Context.Respond("Updated tax rate for " + rank + ".");
+                            AlliancePlugin.SaveAllianceData(alliance);
+                        }
+                        else
+                        {
+                            Context.Respond("That rank doesnt exist.");
+                        }
+                    }
+                }
+               
+                else
+                {
+                    Context.Respond("You dont have permission.");
+                }
+            }
+            else
+            {
+                Context.Respond("Cannot find alliance, maybe wait a minute and try again.");
+            }
         }
         [Command("rank permissions", "set a ranks permissions")]
         [Permission(MyPromoteLevel.None)]
@@ -168,24 +229,24 @@ namespace AlliancesPlugin
             AccessLevel level = StringToAccessLevel(permission);
             if (level == AccessLevel.UnableToParse)
             {
-                Context.Respond("Unable to read that permission, you can change, HangarSave, HangarLoad, HangarLoadOther, Kick, Invite, ShipyardStart, ShipyardClaim, ShipyardClaimOther, DividendPay, BankWithdraw, PayFromBank, AddEnemy, RemoveEnemy, GrantLowerTitle, Vote, RecieveDividend, TaxExempt, RevokeLowerTitle.");
+                Context.Respond("Unable to read that permission, you can change, HangarSave, HangarLoad, HangarLoadOther, Kick, Invite, ShipyardStart, ShipyardClaim, ShipyardClaimOther, DividendPay, BankWithdraw, PayFromBank, AddEnemy, RemoveEnemy, GrantLowerTitle, Vote, RecieveDividend, TaxExempt, ChangeTax, RevokeLowerTitle.");
                 return;
             }
             if (alliance != null)
             {
-                if (alliance.SupremeLeader.Equals(Context.Player.SteamUserId) && alliance.CustomRankPermissions.ContainsKey(rank))
+                if (alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
                 {
-                    if (rank.ToLower().Equals("citizen"))
+                    if (rank.ToLower().Equals("unranked"))
                     {
                         if (enabled)
                         {
-                            if (!alliance.CitizenPerms.permissions.Contains(level))
-                                alliance.CitizenPerms.permissions.Add(level);
+                            if (!alliance.UnrankedPerms.permissions.Contains(level))
+                                alliance.UnrankedPerms.permissions.Add(level);
                         }
                         else
                         {
-                            if (alliance.CitizenPerms.permissions.Contains(level))
-                                alliance.CitizenPerms.permissions.Remove(level);
+                            if (alliance.UnrankedPerms.permissions.Contains(level))
+                                alliance.UnrankedPerms.permissions.Remove(level);
                         }
                     }
                     else
@@ -202,7 +263,7 @@ namespace AlliancesPlugin
                         }
                     }
 
-                    Context.Respond("Updated that permission level for Citizens.");
+                    Context.Respond("Updated that permission level for unrankeds.");
 
 
                     AlliancePlugin.SaveAllianceData(alliance);
@@ -245,11 +306,11 @@ namespace AlliancesPlugin
                 }
                 perms.Clear();
                 sb.AppendLine("");
-                foreach (AccessLevel level in alliance.CitizenPerms.permissions)
+                foreach (AccessLevel level in alliance.UnrankedPerms.permissions)
                 {
                     perms.Append(level.ToString() + ", ");
                 }
-                sb.AppendLine("Citizen Permissions : " + perms.ToString());
+                sb.AppendLine("unranked Permissions : " + perms.ToString());
                 sb.AppendLine("");
                 foreach (KeyValuePair<ulong, RankPermissions> player in alliance.playerPermissions)
                 {
@@ -258,7 +319,7 @@ namespace AlliancesPlugin
                     {
                         perms.Append(level.ToString() + ", ");
                     }
-                    sb.AppendLine(MyMultiplayer.Static.GetMemberName(player.Key) + " " + perms.ToString());
+                    sb.AppendLine(AlliancePlugin.GetPlayerName(player.Key) + " " + perms.ToString());
                 }
 
                 DialogMessage m = new DialogMessage("Alliance Permissions", alliance.name, sb.ToString());
@@ -289,19 +350,19 @@ namespace AlliancesPlugin
                 {
 
 
-                        if (alliance.CustomRankPermissions.ContainsKey(rankName))
-                        {
+                    if (alliance.CustomRankPermissions.ContainsKey(rankName))
+                    {
                         Context.Respond("Rank with that name already exists!");
-                        }
-                        else
-                        {
-                            RankPermissions bob = new RankPermissions();
+                    }
+                    else
+                    {
+                        RankPermissions bob = new RankPermissions();
                         bob.permissionLevel = permissionLevel;
                         alliance.CustomRankPermissions.Add(rankName, bob);
                         Context.Respond("Rank created!");
                         AlliancePlugin.SaveAllianceData(alliance);
                     }
-         
+
                 }
                 else
                 {
@@ -356,7 +417,7 @@ namespace AlliancesPlugin
                     else
                     {
                         Context.Respond("Rank with that name doesnt exist!");
-                     
+
                     }
 
                 }
@@ -385,7 +446,7 @@ namespace AlliancesPlugin
             AccessLevel level = StringToAccessLevel(permission);
             if (level == AccessLevel.UnableToParse)
             {
-                Context.Respond("Unable to read that permission, you can change, HangarSave, HangarLoad, HangarLoadOther, Kick, Invite, ShipyardStart, ShipyardClaim, ShipyardClaimOther, DividendPay, BankWithdraw, PayFromBank, AddEnemy, RemoveEnemy, GrantLowerTitle, Vote, RecieveDividend, TaxExempt, RevokeLowerTitle.");
+                Context.Respond("Unable to read that permission, you can change, HangarSave, HangarLoad, HangarLoadOther, Kick, Invite, ShipyardStart, ShipyardClaim, ShipyardClaimOther, DividendPay, BankWithdraw, PayFromBank, AddEnemy, RemoveEnemy, GrantLowerTitle, Vote, RecieveDividend, TaxExempt, ChangeTax, RevokeLowerTitle.");
                 return;
             }
             MyIdentity id = AlliancePlugin.TryGetIdentity(playerName);
@@ -960,7 +1021,8 @@ namespace AlliancesPlugin
                             alliance.PayDividend(amount, idsToPay, Context.Player.SteamUserId);
                             AlliancePlugin.SaveAllianceData(alliance);
                         }
-                        else{
+                        else
+                        {
                             Context.Respond("Error on removing balance, is the database connected?");
                         }
                     }
@@ -1008,7 +1070,7 @@ namespace AlliancesPlugin
                     {
                         if (confirmations[Context.Player.IdentityId] >= DateTime.Now)
                         {
-                            File.Delete(AlliancePlugin.path + "//AllianceData//" + alliance.AllianceId+ ".json");
+                            File.Delete(AlliancePlugin.path + "//AllianceData//" + alliance.AllianceId + ".json");
                             foreach (long id in alliance.AllianceMembers)
                             {
                                 AlliancePlugin.FactionsInAlliances.Remove(id);
@@ -1121,13 +1183,13 @@ namespace AlliancesPlugin
                             EconUtils.addMoney(Context.Player.IdentityId, amount);
                             alliance.WithdrawMoney(amount, Context.Player.SteamUserId);
                             AlliancePlugin.SaveAllianceData(alliance);
-                            
+
                         }
                         else
                         {
                             Context.Respond("Error on removing the balance, is the database connected?");
                         }
-                      
+
                     }
                     else
                     {
@@ -1177,22 +1239,22 @@ namespace AlliancesPlugin
                         IMyFaction fac = MySession.Static.Factions.TryGetFactionById(item.FactionPaid);
                         if (fac != null)
                         {
-                            sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + MyMultiplayer.Static.GetMemberName(item.SteamId) + " " + item.Action + " " + fac.Tag + " " + String.Format("{0:n0}", item.Amount) + " : new balance " + String.Format("{0:n0}", item.BankAmount));
+                            sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + AlliancePlugin.GetPlayerName(item.SteamId) + " " + item.Action + " " + fac.Tag + " " + String.Format("{0:n0}", item.Amount) + " : new balance " + String.Format("{0:n0}", item.BankAmount));
                         }
                         else
                         {
-                            sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + MyMultiplayer.Static.GetMemberName(item.SteamId) + " " + item.Action + " a now dead faction " + String.Format("{0:n0}", item.Amount) + " : new balance  " + String.Format("{0:n0}", item.BankAmount));
+                            sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + AlliancePlugin.GetPlayerName(item.SteamId) + " " + item.Action + " a now dead faction " + String.Format("{0:n0}", item.Amount) + " : new balance  " + String.Format("{0:n0}", item.BankAmount));
                         }
                         continue;
                     }
                     if (item.PlayerPaid > 0)
                     {
-                        sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + MyMultiplayer.Static.GetMemberName(item.SteamId) + " " + item.Action + " " + MyMultiplayer.Static.GetMemberName(item.PlayerPaid) + " " + String.Format("{0:n0}", item.Amount) + " : new balance  " + String.Format("{0:n0}", item.BankAmount));
+                        sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + AlliancePlugin.GetPlayerName(item.SteamId) + " " + item.Action + " " + AlliancePlugin.GetPlayerName(item.PlayerPaid) + " " + String.Format("{0:n0}", item.Amount) + " : new balance  " + String.Format("{0:n0}", item.BankAmount));
                     }
                     else
                     {
 
-                        sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + MyMultiplayer.Static.GetMemberName(item.SteamId) + " " + item.Action + " " + String.Format("{0:n0}", item.Amount) + " : new balance  " + String.Format("{0:n0}", item.BankAmount));
+                        sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + AlliancePlugin.GetPlayerName(item.SteamId) + " " + item.Action + " " + String.Format("{0:n0}", item.Amount) + " : new balance  " + String.Format("{0:n0}", item.BankAmount));
                     }
                 }
                 DialogMessage m = new DialogMessage("Alliance Bank Records", alliance.name, sb.ToString());
@@ -1465,7 +1527,7 @@ namespace AlliancesPlugin
                         {
                             Context.Respond("That rank is higher or same rank as you.");
                         }
-                   
+
 
                     }
                     else

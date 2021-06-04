@@ -65,7 +65,7 @@ namespace AlliancesPlugin
                     foreach (HangarLogItem item in log.log)
                     {
 
-                        sb.AppendLine(item.time.ToString(timeformat) + " : " + MyMultiplayer.Static.GetMemberName(item.steamid) + " " + item.action + " " + item.GridName.Split('_')[0]);
+                        sb.AppendLine(item.time.ToString(timeformat) + " : " + AlliancePlugin.GetPlayerName(item.steamid) + " " + item.action + " " + item.GridName.Split('_')[0]);
                         continue;
                     }
                     DialogMessage m = new DialogMessage("Alliance Hangar Records", alliance.name, sb.ToString());
@@ -122,7 +122,7 @@ namespace AlliancesPlugin
                         {
                             hangar.ItemsInHangar.TryGetValue(i, out HangarItem slot);
 
-                            Context.Respond(slot.name.Split('_')[0] + " : " + MyMultiplayer.Static.GetMemberName(slot.steamid), Color.LightBlue, "[ " + i + " ]");
+                            Context.Respond(slot.name.Split('_')[0] + " : " + AlliancePlugin.GetPlayerName(slot.steamid), Color.LightBlue, "[ " + i + " ]");
 
                         }
                         else

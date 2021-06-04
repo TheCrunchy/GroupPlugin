@@ -35,7 +35,7 @@ namespace AlliancesPlugin
 
         public Dictionary<String, RankPermissions> CustomRankPermissions = new Dictionary<string, RankPermissions>();
         public Dictionary<ulong, String> PlayersCustomRank = new Dictionary<ulong, string>();
-        public RankPermissions CitizenPerms = new RankPermissions();
+        public RankPermissions UnrankedPerms = new RankPermissions();
         public int CurrentMetaPoints = 0;
 
         public Dictionary<ulong, RankPermissions> playerPermissions = new Dictionary<ulong, RankPermissions>();
@@ -63,7 +63,7 @@ namespace AlliancesPlugin
                 }
             }
 
-            if (CitizenPerms.permissions.Contains(level))
+            if (UnrankedPerms.permissions.Contains(level))
             {
                 return true;
             }
@@ -76,7 +76,7 @@ namespace AlliancesPlugin
          
             if (SupremeLeader == id)
             {
-                return 0.1f;
+                return 0;
             }
             if (HasAccess(id, AccessLevel.TaxExempt))
             {
@@ -84,10 +84,13 @@ namespace AlliancesPlugin
             }
             if (PlayersCustomRank.ContainsKey(id))
             {
-                return CustomRankPermissions[PlayersCustomRank[id]].taxRate;
+                if (CustomRankPermissions.ContainsKey(PlayersCustomRank[id]))
+                {
+                    return CustomRankPermissions[PlayersCustomRank[id]].taxRate;
+                }
             }
 
-            return CitizenPerms.taxRate;
+            return UnrankedPerms.taxRate;
         }
         public string GetTitle(ulong id)
         {
@@ -105,7 +108,7 @@ namespace AlliancesPlugin
             }
          
 
-            return "Citizen";
+            return "Unranked";
         }
         public HangarData LoadHangar()
         {
@@ -265,7 +268,7 @@ namespace AlliancesPlugin
             sb.AppendLine("");
             sb.AppendLine(LeaderTitle);
 
-            sb.AppendLine(MyMultiplayer.Static.GetMemberName(SupremeLeader));
+            sb.AppendLine(AlliancePlugin.GetPlayerName(SupremeLeader));
             sb.AppendLine("");
 
             StringBuilder perms = new StringBuilder();
@@ -277,15 +280,17 @@ namespace AlliancesPlugin
                     perms.Append(level.ToString() + ", ");
                 }
                 sb.AppendLine(customs.Key + "Permissions : " + perms.ToString());
+                sb.AppendLine(customs.Key + " tax rate : " + CustomRankPermissions[customs.Key].taxRate * 100 + "%");
             }
 
             sb.AppendLine("");
             perms.Clear();
-            foreach (AccessLevel level in CitizenPerms.permissions)
+            foreach (AccessLevel level in UnrankedPerms.permissions)
             {
                 perms.Append(level.ToString() + ", ");
             }
-            sb.AppendLine("Citizen Permissions : " + perms.ToString());
+            sb.AppendLine("Unranked Permissions : " + perms.ToString());
+            sb.AppendLine("Unranked tax rate : " + UnrankedPerms.taxRate * 100 + "%");
             sb.AppendLine("");
             otherTitlesDic.Clear();
             foreach (KeyValuePair<ulong, String> titles in PlayersCustomRank)
@@ -293,12 +298,12 @@ namespace AlliancesPlugin
                 if (otherTitlesDic.ContainsKey(titles.Value))
                 {
 
-                    otherTitlesDic[titles.Value].AppendLine(titles.Value + " " + MyMultiplayer.Static.GetMemberName(titles.Key));
+                    otherTitlesDic[titles.Value].AppendLine(titles.Value + " " + AlliancePlugin.GetPlayerName(titles.Key));
                 }
                 else
                 {
                     StringBuilder sbb = new StringBuilder();
-                    sbb.AppendLine(titles.Value + " " + MyMultiplayer.Static.GetMemberName(titles.Key));
+                    sbb.AppendLine(titles.Value + " " + AlliancePlugin.GetPlayerName(titles.Key));
                     otherTitlesDic.Add(titles.Value, sbb);
                 }
 
@@ -314,12 +319,12 @@ namespace AlliancesPlugin
                 if (otherTitlesDic.ContainsKey(titles.Value))
                 {
 
-                    otherTitlesDic[titles.Value].AppendLine(titles.Value + " " + MyMultiplayer.Static.GetMemberName(titles.Key));
+                    otherTitlesDic[titles.Value].AppendLine(titles.Value + " " + AlliancePlugin.GetPlayerName(titles.Key));
                 }
                 else
                 {
                     StringBuilder sbb = new StringBuilder();
-                    sbb.AppendLine(titles.Value + " " + MyMultiplayer.Static.GetMemberName(titles.Key));
+                    sbb.AppendLine(titles.Value + " " + AlliancePlugin.GetPlayerName(titles.Key));
                     otherTitlesDic.Add(titles.Value, sbb);
                 }
 

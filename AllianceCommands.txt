@@ -23,7 +23,7 @@ Bank
 !alliance dividend <amount> - pay dividends to members online in last 10 days
 
 Permission system and titles
-!alliance make rank name permissionLevel
+!alliance make rank name permissionLevel - Higher permission level = higher rank, higher ranks can grant lower ranks to people if they have permissions
 !alliance delete rank name
 !alliance rank permissions string rank, string permission, Boolean enabled - give or remove a permission for that rank
 !alliance player permissions string playername, string permission, Boolean enabled - give or remove a permission for that rank
@@ -32,7 +32,7 @@ Permission system and titles
 !alliance grant title admiral/otherRank/other - grant those titles to players in the alliance
 !alliance revoke title admiral/otherRank/other  - remove those titles to players in the alliance
 !alliance change leader NewLeaderName - changes the supreme leader of the alliance to the target
-
+!alliance tax rank taxrate - Change the tax rate for a rank, maximum of 10%
 
 Shipyard stuff
 !shipyard restore tag filename targetplayer - Example !shipyard restore fre "Fighter2021-05-1216-32-48-094" Crunch
@@ -50,6 +50,7 @@ Koth admin commands
 !koth unlock name
 !koth output - output the loaded koths
 !koth reload - reload config
+!koth meta - output every alliances points
 
 Hangar commands
 !ah unlock - unlock the hangar

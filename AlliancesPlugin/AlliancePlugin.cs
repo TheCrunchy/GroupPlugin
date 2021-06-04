@@ -591,6 +591,7 @@ namespace AlliancesPlugin
                             {
                                 FactionsInAlliances.Add(id, alliance.name);
                             }
+                            SaveAllianceData(alliance);
                         }
                         else
                         {
@@ -1486,6 +1487,18 @@ namespace AlliancesPlugin
             scriptedChatMsg1.Target = Sync.Players.TryGetIdentityId(steamID);
             ScriptedChatMsg scriptedChatMsg2 = scriptedChatMsg1;
             MyMultiplayerBase.SendScriptedChatMessage(ref scriptedChatMsg2);
+        }
+        public static string GetPlayerName(ulong steamId)
+        {
+            MyIdentity id = GetIdentityByNameOrId(steamId.ToString());
+            if (id != null && id.DisplayName != null)
+            {
+                return id.DisplayName;
+            }
+            else
+            {
+                return steamId.ToString();
+            }
         }
         public static MyIdentity GetIdentityByNameOrId(string playerNameOrSteamId)
         {

@@ -27,6 +27,7 @@ namespace AlliancesPlugin
         Vote,
         RecieveDividend,
         TaxExempt,
+        ChangeTax,
         UnableToParse
 
     }
