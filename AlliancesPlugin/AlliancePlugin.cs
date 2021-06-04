@@ -647,17 +647,23 @@ namespace AlliancesPlugin
                     {
                         if (alliance.AllianceId == gate.OwnerAlliance)
                         {
-                            temp = LoadAllianceData(alliance.AllianceId);
-                            temp.GateFee(gate.fee, player.Id.SteamId, gate.GateName);
+                            if (DatabaseForBank.AddToBalance(alliance, gate.fee))
+                            {
+                                temp = LoadAllianceData(alliance.AllianceId);
+                                if (temp != null)
+                                {
+                                    temp.GateFee(gate.fee, player.Id.SteamId, gate.GateName);
+                                    EconUtils.takeMoney(player.Identity.IdentityId, gate.fee);
+                                    SaveAllianceData(temp);
+                                }
+                        
+                            }
 
 
                         }
                     }
-                    if (temp != null)
-                    {
-                        SaveAllianceData(temp);
-                    }
-                    EconUtils.takeMoney(player.Identity.IdentityId, gate.fee);
+                 
+              
                     return true;
                 }
                 else
