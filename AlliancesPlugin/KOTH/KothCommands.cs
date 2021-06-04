@@ -47,7 +47,7 @@ namespace AlliancesPlugin
 
             }
         }
-        [Command("koth meta", "output all point counts")]
+        [Command("meta", "output all point counts")]
         [Permission(MyPromoteLevel.Admin)]
         public void OutputAllPoints()
         {
