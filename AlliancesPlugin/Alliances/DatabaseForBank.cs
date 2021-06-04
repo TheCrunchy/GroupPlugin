@@ -100,9 +100,23 @@ namespace AlliancesPlugin
                 {
                     var collection = db.GetCollection<BankData>("BankData");
                     var bank = collection.FindById(alliance.AllianceId);
+                    if (bank == null)
+                    {
+                        bank = new BankData
+                        {
+                            Id = alliance.AllianceId,
+                            balance = fee
+                        };
+                        collection.Insert(bank);
+
+                    }
+                    else
+                    {
                         bank.balance += fee;
 
                         collection.Update(bank);
+                    }
+                 
                     
                 }
 
@@ -145,9 +159,23 @@ namespace AlliancesPlugin
                 {
                     var collection = db.GetCollection<BankData>("BankData");
                     var bank = collection.FindById(alliance.AllianceId);
-                    bank.balance += amount;
+                    if (bank == null)
+                    {
+                        bank = new BankData
+                        {
+                            Id = alliance.AllianceId,
+                            balance = amount
+                        };
+                        collection.Insert(bank);
 
-                    collection.Update(bank);
+                    }
+                    else
+                    {
+                        bank.balance += amount;
+
+                        collection.Update(bank);
+                    }
+                 
 
                 }
 
@@ -168,9 +196,22 @@ namespace AlliancesPlugin
                 {
                     var collection = db.GetCollection<BankData>("BankData");
                     var bank = collection.FindById(alliance.AllianceId);
-                    bank.balance -= amount;
+                    if (bank == null)
+                    {
+                        bank = new BankData
+                        {
+                            Id = alliance.AllianceId,
+                            balance = 0
+                        };
+                        collection.Insert(bank);
 
-                    collection.Update(bank);
+                    }
+                    else
+                    {
+                        bank.balance -= amount;
+
+                        collection.Update(bank);
+                    }
                 }
 
             }
@@ -192,9 +233,21 @@ namespace AlliancesPlugin
                     var bank = collection.FindById(allianceId);
                     if (bank == null)
                     {
+
+                        bank = new BankData
+                        {
+                            Id = allianceId,
+                            balance = 0
+                        };
+                        collection.Insert(bank);
+
+
                         return 0;
                     }
-                    return bank.balance;
+                    else
+                    {
+                        return bank.balance;
+                    }
                 }
 
             }
