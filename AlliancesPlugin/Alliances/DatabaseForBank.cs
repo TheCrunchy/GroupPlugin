@@ -190,6 +190,10 @@ namespace AlliancesPlugin
                 {
                     var collection = db.GetCollection<BankData>("BankData");
                     var bank = collection.FindById(allianceId);
+                    if (bank == null)
+                    {
+                        return 0;
+                    }
                     return bank.balance;
                 }
 

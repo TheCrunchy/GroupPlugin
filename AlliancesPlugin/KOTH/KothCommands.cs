@@ -32,7 +32,7 @@ namespace AlliancesPlugin
                     koth.nextCaptureInterval = DateTime.Now;
                   koth.CaptureStarted = true;
                     koth.nextCaptureAvailable = DateTime.Now.AddSeconds(1);
-                    koth.owner = "NOBODY";
+                   // koth.owner = Guid.Empty;
                     if (!allianceName.Equals(""))
                     {
                         Alliance alliance = AlliancePlugin.GetAllianceNoLoading(allianceName);
@@ -47,6 +47,17 @@ namespace AlliancesPlugin
 
             }
         }
+        [Command("koth meta", "output all point counts")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void OutputAllPoints()
+        {
+            foreach (Alliance alliance in AlliancePlugin.AllAlliances.Values)
+            {
+                Context.Respond(alliance.name + " " + alliance.CurrentMetaPoints);
+
+            }
+        }
+
         [Command("output", "unlock koth")]
         [Permission(MyPromoteLevel.Admin)]
         public void OutputAllKothNames()

@@ -32,7 +32,7 @@ namespace AlliancesPlugin
         public int MinsPerCaptureBroadcast = 5;
         public int MetaPointsPerCapWithBonus = 1;
         public int MetaPointsPerCap = 1;
-        public string owner = "NOBODY";
+        public Guid owner = Guid.Empty;
         public string captureBlockType = "Beacon";
         public string captureBlockSubtype = "LargeBlockBeacon";
         public Boolean captureBlockNeedsToBeTurnedOn = true;
@@ -42,12 +42,9 @@ namespace AlliancesPlugin
         public int hoursToLockAfterCap = 12;
 
         public DateTime nextCaptureAvailable = DateTime.Now;
-        public string captureMessage = "%NATION% is capturing the moooooooooon";
-        public string captureCompleteMessage = "%NATION% has captured the mooooooon it is now locked for %HOURS%";
         public Boolean doChatMessages = true;
         public Boolean doDiscordMessages = true;
         public ulong DiscordChannelId = 1;
-
 
         public DateTime nextCaptureInterval = DateTime.Now;
         public DateTime nextCoreSpawn = DateTime.Now;
