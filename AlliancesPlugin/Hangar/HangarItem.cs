@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using VRageMath;
 
-namespace AlliancesPlugin
+namespace AlliancesPlugin.Hangar
 {
     public class HangarItem
     {

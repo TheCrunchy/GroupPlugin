@@ -9,8 +9,8 @@ using Torch.Commands;
 using Torch.Commands.Permissions;
 using VRage.Game.ModAPI;
 using VRageMath;
-
-namespace AlliancesPlugin
+using AlliancesPlugin.Alliances;
+namespace AlliancesPlugin.JumpGates
 {
     [Category("jumpgate")]
     public class JumpGateCommands : CommandModule

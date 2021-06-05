@@ -7,8 +7,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using VRageMath;
+using AlliancesPlugin.KOTH;
+using AlliancesPlugin.Shipyard;
 
-namespace AlliancesPlugin
+namespace AlliancesPlugin.Alliances
 {
     public class DiscordStuff
     {

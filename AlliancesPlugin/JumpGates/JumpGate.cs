@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using VRageMath;
 
-namespace AlliancesPlugin
+namespace AlliancesPlugin.JumpGates
 {
     public class JumpGate
     {

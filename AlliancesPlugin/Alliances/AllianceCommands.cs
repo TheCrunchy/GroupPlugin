@@ -17,7 +17,7 @@ using VRage.Game;
 using VRage.Game.ModAPI;
 using VRageMath;
 
-namespace AlliancesPlugin
+namespace AlliancesPlugin.Alliances
 {
     [Category("alliance")]
     public class Commands : CommandModule

@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 
-namespace AlliancesPlugin
+namespace AlliancesPlugin.Alliances
 {
     public class DatabaseForBank
     {
@@ -223,6 +223,7 @@ namespace AlliancesPlugin
             }
             return true;
         }
+
         public static long GetBalance(Guid allianceId)
         {
             try

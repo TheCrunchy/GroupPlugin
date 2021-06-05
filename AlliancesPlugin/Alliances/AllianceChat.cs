@@ -1,4 +1,5 @@
-﻿using Sandbox.Game.Entities;
+﻿using AlliancesPlugin.Shipyard;
+using Sandbox.Game.Entities;
 using Sandbox.Game.Multiplayer;
 using Sandbox.Game.Screens.Helpers;
 using Sandbox.Game.World;
@@ -15,7 +16,7 @@ using Torch.API.Managers;
 using VRage.Game;
 using VRageMath;
 
-namespace AlliancesPlugin
+namespace AlliancesPlugin.Alliances
 {
     public static class AllianceChat
     {

@@ -38,8 +38,9 @@ using System.Collections;
 using VRage;
 using Torch.Mod.Messages;
 using Torch.Mod;
+using AlliancesPlugin.Alliances;
 
-namespace AlliancesPlugin
+namespace AlliancesPlugin.Shipyard
 {
     [Category("shipyard")]
     public class ShipyardCommands : CommandModule

@@ -21,8 +21,10 @@ using VRage.Game;
 using VRage.Game.ModAPI;
 using VRage.Groups;
 using VRageMath;
+using AlliancesPlugin.Alliances;
+using AlliancesPlugin.Shipyard;
 
-namespace AlliancesPlugin
+namespace AlliancesPlugin.Hangar
 {
     [Category("ah")]
     public class HangarCommands : CommandModule

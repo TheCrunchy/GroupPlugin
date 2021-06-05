@@ -8,8 +8,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using VRage.Game.ModAPI;
+using AlliancesPlugin.Hangar;
+using AlliancesPlugin.Shipyard;
+using AlliancesPlugin.JumpGates;
 
-namespace AlliancesPlugin
+namespace AlliancesPlugin.Alliances
 {
     public class Alliance
     {

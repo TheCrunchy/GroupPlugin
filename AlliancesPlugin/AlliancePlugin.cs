@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 using Torch;
 using Torch.API;
 using Torch.API.Session;
@@ -29,6 +28,11 @@ using Torch.Mod;
 using Torch.Managers.ChatManager;
 using Torch.Managers;
 using Torch.API.Plugins;
+using AlliancesPlugin.Alliances;
+using AlliancesPlugin.KOTH;
+using AlliancesPlugin.Hangar;
+using AlliancesPlugin.Shipyard;
+using AlliancesPlugin.JumpGates;
 
 namespace AlliancesPlugin
 {
@@ -658,12 +662,8 @@ namespace AlliancesPlugin
                                 }
                         
                             }
-
-
                         }
                     }
-                 
-              
                     return true;
                 }
                 else

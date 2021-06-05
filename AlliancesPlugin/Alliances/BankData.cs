@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AlliancesPlugin
+namespace AlliancesPlugin.Alliances
 {
     public class BankData
     {

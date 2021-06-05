@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using VRage.Game;
 using VRage.Game.ModAPI.Ingame;
 
-namespace AlliancesPlugin
+namespace AlliancesPlugin.Shipyard
 {
     public class GridCosts
     {

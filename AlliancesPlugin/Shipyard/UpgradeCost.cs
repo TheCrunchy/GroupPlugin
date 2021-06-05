@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using VRage.Game;
 
-namespace AlliancesPlugin
+namespace AlliancesPlugin.Shipyard
 {
     public class UpgradeCost
     {

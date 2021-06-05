@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Torch.Managers.PatchManager;
 
-namespace AlliancesPlugin
+namespace AlliancesPlugin.Alliances
 {
     [PatchShim]
     public class StorePatchTaxes

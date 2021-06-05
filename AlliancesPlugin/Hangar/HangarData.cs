@@ -10,8 +10,8 @@ using System.Text;
 using System.Threading.Tasks;
 using VRage.Game;
 using VRageMath;
-
-namespace AlliancesPlugin
+using AlliancesPlugin.Alliances;
+namespace AlliancesPlugin.Hangar
 {
    public class HangarData
     {

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AlliancesPlugin.Alliances;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,7 +8,7 @@ using Torch.Commands;
 using Torch.Commands.Permissions;
 using VRage.Game.ModAPI;
 
-namespace AlliancesPlugin
+namespace AlliancesPlugin.KOTH
 {
     [Category("koth")]
     public class KothCommands : CommandModule
