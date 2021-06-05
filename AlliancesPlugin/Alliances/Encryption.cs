@@ -5,7 +5,7 @@ using System.Text;
 
 namespace AlliancesPlugin.Alliances
 {
-    public class AesOperation
+    public class Encryption
     {
         public static string EncryptString(string key, string plainText)
         {
@@ -14,7 +14,7 @@ namespace AlliancesPlugin.Alliances
 
             using (Aes aes = Aes.Create())
             {
-                aes.Key = Encoding.UTF8.GetBytes(key);
+                aes.Key = Encoding.UTF8.GetBytes(key.Replace("-", ""));
                 aes.IV = iv;
 
                 ICryptoTransform encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
@@ -43,7 +43,7 @@ namespace AlliancesPlugin.Alliances
 
             using (Aes aes = Aes.Create())
             {
-                aes.Key = Encoding.UTF8.GetBytes(key);
+                aes.Key = Encoding.UTF8.GetBytes(key.Replace("-", ""));
                 aes.IV = iv;
                 ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
 

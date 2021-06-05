@@ -30,7 +30,68 @@ namespace AlliancesPlugin.Alliances
             string output = String.Format("{0} Seconds", diff.Seconds) + " until command can be used.";
             return output;
         }
+        [Command("token", "set a discord token")]
+        [Permission(MyPromoteLevel.None)]
+        public void AllianceToken(string token)
+        {
+            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
+            if (fac == null)
+            {
+                Context.Respond("Only factions can be in alliances.");
+                return;
+            }
 
+            Alliance alliance = AlliancePlugin.GetAlliance(fac);
+            if (alliance != null)
+            {
+                if (alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
+                {
+                    string encrypted = Encryption.EncryptString(alliance.AllianceId.ToString(), token);
+                    alliance.DiscordToken = encrypted;
+                    AlliancePlugin.SaveAllianceData(alliance);
+                    Context.Respond("Added token! If the channel Id is also set the bot should start working in a couple minutes.");
+                }
+                else
+                {
+                    Context.Respond("Only the supreme leader can set the bot token.");
+                }
+            }
+            else
+            {
+                Context.Respond("You dont have an alliance.");
+            }
+        }
+        [Command("channel", "set a discord channel id")]
+        [Permission(MyPromoteLevel.None)]
+        public void AllianceChannelId(string channel)
+        {
+            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
+            if (fac == null)
+            {
+                Context.Respond("Only factions can be in alliances.");
+                return;
+            }
+
+            Alliance alliance = AlliancePlugin.GetAlliance(fac);
+            if (alliance != null)
+            {
+                if (alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
+                {
+                   
+                    alliance.DiscordChannelId = ulong.Parse(channel);
+                    AlliancePlugin.SaveAllianceData(alliance);
+                    Context.Respond("Added Channel Id! If the token is also set the bot should start working in a couple minutes.");
+                }
+                else
+                {
+                    Context.Respond("Only the supreme leader can set the bot token.");
+                }
+            }
+            else
+            {
+                Context.Respond("You dont have an alliance.");
+            }
+        }
         [Command("join", "join an alliance")]
         [Permission(MyPromoteLevel.None)]
         public void AllianceJoin(string name)

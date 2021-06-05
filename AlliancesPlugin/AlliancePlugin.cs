@@ -327,30 +327,7 @@ namespace AlliancesPlugin
                     session.Managers.GetManager<IMultiplayerManagerBase>().PlayerLeft += AllianceChat.Logout;
                 }
 
-                AlliancePlugin.Log.Info("Adding players to list");
-                foreach (MyPlayer player in MySession.Static.Players.GetOnlinePlayers())
-                {
 
-                    if (MySession.Static.Factions.GetPlayerFaction(player.Identity.IdentityId) != null)
-                    {
-                        Alliance temp = GetAllianceNoLoading(MySession.Static.Factions.GetPlayerFaction(player.Identity.IdentityId));
-                        if (temp != null)
-                        {
-                            if (playersInAlliances.ContainsKey(temp.AllianceId))
-                            {
-                                playersInAlliances[temp.AllianceId].Add(player.Id.SteamId);
-                                playersAllianceId.Add(player.Id.SteamId, temp.AllianceId);
-                            }
-                            else
-                            {
-                                List<ulong> bob = new List<ulong>();
-                                bob.Add(player.Id.SteamId);
-                                playersInAlliances.Add(temp.AllianceId, bob);
-                                playersAllianceId.Add(player.Id.SteamId, temp.AllianceId);
-                            }
-                        }
-                    }
-                }
                 if (!Directory.Exists(path + "//JumpZones//"))
                 {
                     Directory.CreateDirectory(path + "//JumpZones//");
@@ -499,7 +476,7 @@ namespace AlliancesPlugin
 
                 LoadAllAlliances();
                 LoadAllGates();
-                playersInAlliances.Clear();
+               
                 DiscordStuff.RegisterDiscord();
                 //        DatabaseForBank bank = new DatabaseForBank();
                 //    bank.CreateTable(bank.CreateConnection());
@@ -616,7 +593,12 @@ namespace AlliancesPlugin
                 {
                     alliance.ForceFriendlies();
                     alliance.ForceEnemies();
+                    if (alliance.DiscordChannelId > 0 && !String.IsNullOrEmpty(alliance.DiscordToken))
+                    {
+                        DiscordStuff.RegisterAllianceBot(alliance, alliance.DiscordChannelId);
+                    }
                 }
+
             }
         }
         public static void LoadAllGates()
@@ -660,7 +642,7 @@ namespace AlliancesPlugin
                                     EconUtils.takeMoney(player.Identity.IdentityId, gate.fee);
                                     SaveAllianceData(temp);
                                 }
-                        
+
                             }
                         }
                     }
@@ -1366,7 +1348,7 @@ namespace AlliancesPlugin
             if (ticks % 512 == 0)
             {
                 DoTaxStuff();
-               
+
             }
             if (ticks % 32 == 0)
             {
@@ -1378,9 +1360,9 @@ namespace AlliancesPlugin
 
                     LoadAllAlliances();
                     LoadAllGates();
-                    playersInAlliances.Clear();
+                   
                     LoadAllJumpZones();
-                    playersAllianceId.Clear();
+           
                     OrganisePlayers();
                 }
                 if (config.JumpGatesEnabled)

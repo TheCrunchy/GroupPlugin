@@ -62,6 +62,93 @@ namespace AlliancesPlugin.Alliances
         }
 
         public static Dictionary<ulong, Guid> PeopleInAllianceChat = new Dictionary<ulong, Guid>();
+        public static void SendChatMessage(Guid allianceId, string prefix, string message, bool toDiscord)
+        {
+            prefix = prefix.Replace(":", "");
+            Alliance alliance = AlliancePlugin.GetAllianceNoLoading(allianceId);
+            List<ulong> OtherMembers = new List<ulong>();
+
+            foreach (MyPlayer player in MySession.Static.Players.GetOnlinePlayers())
+            {
+                MyFaction fac = MySession.Static.Factions.TryGetPlayerFaction(player.Identity.IdentityId) as MyFaction;
+                if (fac != null)
+                {
+                    if (alliance.AllianceMembers.Contains(fac.FactionId))
+                    {
+                        OtherMembers.Add(player.Id.SteamId);
+                    }
+                }
+
+            }
+            bool DiscordSent = false;
+            if (toDiscord && DiscordStuff.AllianceHasBot(allianceId))
+            {
+                try
+                {
+                    DiscordStuff.SendAllianceMessage(alliance, prefix, message);
+                 DiscordSent = true;
+                }
+                catch (Exception)
+                {
+                }
+            }
+            foreach (ulong id in OtherMembers)
+            {
+             if (!DiscordSent)
+                {
+                    ShipyardCommands.SendMessage(prefix, message, new Color(66, 163, 237), (long)id);
+                    MyGpsCollection gpscol = (MyGpsCollection)MyAPIGateway.Session?.GPS;
+
+                    if (ScanChat(message, null) != null)
+                    {
+                        MyGps gpsRef = ScanChat(message, null);
+                        gpsRef.GPSColor = Color.Yellow;
+                        gpsRef.AlwaysVisible = true;
+                        gpsRef.ShowOnHud = true;
+
+                        long idenId = MySession.Static.Players.TryGetIdentityId(id);
+                        gpscol.SendAddGps(idenId, ref gpsRef);
+                    }
+                }  
+          
+            }
+        }
+        public static void SendChatMessage(Guid allianceId, string prefix, string message)
+        {
+
+            Alliance alliance = AlliancePlugin.GetAllianceNoLoading(allianceId);
+            List<ulong> OtherMembers = new List<ulong>();
+
+            foreach (MyPlayer player in MySession.Static.Players.GetOnlinePlayers())
+            {
+                MyFaction fac = MySession.Static.Factions.TryGetPlayerFaction(player.Identity.IdentityId) as MyFaction;
+                if (fac != null)
+                {
+                    if (alliance.AllianceMembers.Contains(fac.FactionId))
+                    {
+                        OtherMembers.Add(player.Id.SteamId);
+                    }
+                }
+
+            }
+            foreach (ulong id in OtherMembers)
+            {
+
+                ShipyardCommands.SendMessage(prefix, message, new Color(66, 163, 237), (long)id);
+                MyGpsCollection gpscol = (MyGpsCollection)MyAPIGateway.Session?.GPS;
+
+                if (ScanChat(message, null) != null)
+                {
+                    MyGps gpsRef = ScanChat(message, null);
+                    gpsRef.GPSColor = Color.Yellow;
+                    gpsRef.AlwaysVisible = true;
+                    gpsRef.ShowOnHud = true;
+
+                    long idenId = MySession.Static.Players.TryGetIdentityId(id);
+                    gpscol.SendAddGps(idenId, ref gpsRef);
+                }
+            }
+        }
         public static void DoChatMessage(TorchChatMessage msg, ref bool consumed)
         {
             if (msg.AuthorSteamId == null)
@@ -79,28 +166,24 @@ namespace AlliancesPlugin.Alliances
 
                 consumed = true;
                 Guid allianceId = PeopleInAllianceChat[(ulong) msg.AuthorSteamId];
+                List<ulong> OtherMembers = new List<ulong>();
 
                 Alliance alliance = AlliancePlugin.GetAllianceNoLoading(allianceId);
-                List<ulong> OtherMembers = AlliancePlugin.playersInAlliances[allianceId];
-
-                // ShipyardCommands.SendMessage(msg.Author, "You are in alliance chat", Color.BlueViolet, (long)msg.AuthorSteamId);
-                foreach (ulong id in OtherMembers)
+               foreach (MyPlayer player in MySession.Static.Players.GetOnlinePlayers())
                 {
-                    ShipyardCommands.SendMessage("[A] " + alliance.GetTitle((ulong)msg.AuthorSteamId) + " | " + msg.Author, msg.Message, new Color(66, 163, 237), (long)id);
-
-                    MyGpsCollection gpscol = (MyGpsCollection)MyAPIGateway.Session?.GPS;
-
-                    if (ScanChat(msg.Message, null) != null)
+                    MyFaction fac = MySession.Static.Factions.TryGetPlayerFaction(player.Identity.IdentityId) as MyFaction;
+                    if (fac != null)
                     {
-                        MyGps gpsRef = ScanChat(msg.Message, null);
-                        gpsRef.GPSColor = Color.Yellow;
-                        gpsRef.AlwaysVisible = true;
-                        gpsRef.ShowOnHud = true;
-
-                        long idenId = MySession.Static.Players.TryGetIdentityId(id);
-                        gpscol.SendAddGps(idenId, ref gpsRef);
+                        if (alliance.AllianceMembers.Contains(fac.FactionId))
+                        {
+                            OtherMembers.Add(player.Id.SteamId);
+                        }
                     }
+                
                 }
+                
+                // ShipyardCommands.SendMessage(msg.Author, "You are in alliance chat", Color.BlueViolet, (long)msg.AuthorSteamId);
+                SendChatMessage(allianceId, alliance.GetTitle((ulong)msg.AuthorSteamId) + " | " + msg.Author, msg.Message, true);
             }
             else
             {
@@ -111,76 +194,44 @@ namespace AlliancesPlugin.Alliances
         }
         public static void Login(IPlayer p)
         {
-            if (p == null)
-            {
-                return;
-            }
-            //  AlliancePlugin.Log.Info("Login?");
-            MyIdentity id = AlliancePlugin.GetIdentityByNameOrId(p.SteamId.ToString());
-            if (id == null)
-            {
-                return;
-            }
+            //if (p == null)
+            //{
+            //    return;
+            //}
+            ////  AlliancePlugin.Log.Info("Login?");
+            //MyIdentity id = AlliancePlugin.GetIdentityByNameOrId(p.SteamId.ToString());
+            //if (id == null)
+            //{
+            //    return;
+            //}
             //   AlliancePlugin.Log.Info("got id");
-            if (MySession.Static.Factions.GetPlayerFaction(id.IdentityId) != null && AlliancePlugin.FactionsInAlliances.ContainsKey(MySession.Static.Factions.TryGetPlayerFaction(id.IdentityId).FactionId))
-            {
-                //       AlliancePlugin.Log.Info("faction isnt null and alliances thing contains it");
-                Alliance alliance = AlliancePlugin.GetAllianceNoLoading(MySession.Static.Factions.TryGetPlayerFaction(id.IdentityId) as MyFaction);
-                if (alliance != null)
-                {
-                    if (AlliancePlugin.playersInAlliances.ContainsKey(alliance.AllianceId))
-                    {
-                        AlliancePlugin.playersInAlliances[alliance.AllianceId].Add(p.SteamId);
-                        if (!AlliancePlugin.playersAllianceId.ContainsKey(p.SteamId))
-                        {
-                            AlliancePlugin.playersAllianceId.Add(p.SteamId, alliance.AllianceId);
-                        }
-                    }
-                    else
-                    {
-                        List<ulong> bob = new List<ulong>();
-                       bob.Add(p.SteamId);
-                        AlliancePlugin.playersInAlliances.Add(alliance.AllianceId, bob);
-                        if (!AlliancePlugin.playersAllianceId.ContainsKey(p.SteamId))
-                        {
-                            AlliancePlugin.playersAllianceId.Add(p.SteamId, alliance.AllianceId);
-                        }
-                    }
-                    //else
-                    //{
-                    //    List<ulong> bob = new List<ulong>();
-                    //    bob.Add(p.SteamId);
-                    //    AlliancePlugin.playersInAlliances.Add(alliance.AllianceId, bob);
-                    //  AlliancePlugin.playersAllianceId.Add(p.SteamId, alliance.AllianceId);
-                    //}
-                }
-            }
+
         }
 
 
         public static void Logout(IPlayer p)
         {
-            if (p == null)
-            {
-                return;
-            }
+            //if (p == null)
+            //{
+            //    return;
+            //}
 
-            MyIdentity id = AlliancePlugin.GetIdentityByNameOrId(p.SteamId.ToString());
-            if (id == null)
-            {
-                return;
-            }
-            if (MySession.Static.Factions.TryGetFactionById(id.IdentityId) != null && AlliancePlugin.FactionsInAlliances.ContainsKey(MySession.Static.Factions.TryGetFactionById(id.IdentityId).FactionId))
-            {
-                Alliance alliance = AlliancePlugin.GetAllianceNoLoading(MySession.Static.Factions.GetPlayerFaction(id.IdentityId) as MyFaction);
-                if (AlliancePlugin.playersInAlliances.ContainsKey(alliance.AllianceId))
-                {
-                    if (AlliancePlugin.playersInAlliances[alliance.AllianceId].Contains(p.SteamId))
-                    {
-                        AlliancePlugin.playersInAlliances[alliance.AllianceId].Remove(p.SteamId);
-                    }
-                }
-            }
+            //MyIdentity id = AlliancePlugin.GetIdentityByNameOrId(p.SteamId.ToString());
+            //if (id == null)
+            //{
+            //    return;
+            //}
+            //if (MySession.Static.Factions.TryGetFactionById(id.IdentityId) != null && AlliancePlugin.FactionsInAlliances.ContainsKey(MySession.Static.Factions.TryGetFactionById(id.IdentityId).FactionId))
+            //{
+            //    Alliance alliance = AlliancePlugin.GetAllianceNoLoading(MySession.Static.Factions.GetPlayerFaction(id.IdentityId) as MyFaction);
+            //    if (AlliancePlugin.playersInAlliances.ContainsKey(alliance.AllianceId))
+            //    {
+            //        if (AlliancePlugin.playersInAlliances[alliance.AllianceId].Contains(p.SteamId))
+            //        {
+            //            AlliancePlugin.playersInAlliances[alliance.AllianceId].Remove(p.SteamId);
+            //        }
+            //    }
+            //}
 
         }
     }

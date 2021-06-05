@@ -19,10 +19,12 @@ namespace AlliancesPlugin.Alliances
         private static DiscordActivity game;
         private static ulong botId = 0;
 
+        public static bool AllianceReady { get; set; } = false;
         public static bool Ready { get; set; } = false;
         public static DiscordClient Discord { get; set; }
         public static List<ulong> ChannelIds = new List<ulong>();
-
+        private static Dictionary<Guid, DiscordClient> allianceBots = new Dictionary<Guid, DiscordClient>();
+        private static Dictionary<ulong, Guid> allianceChannels = new Dictionary<ulong, Guid>();
         public static Task RegisterDiscord()
         {
             try
@@ -62,9 +64,60 @@ namespace AlliancesPlugin.Alliances
                 Ready = true;
                 await Task.CompletedTask;
             };
+
+
             return Task.CompletedTask;
         }
+        public static Task RegisterAllianceBot(Alliance alliance, ulong channelId)
+        {
+            if (!allianceBots.ContainsKey(alliance.AllianceId))
+            {
+                DiscordClient bot;
+                try
+                {
 
+                    // Windows Vista - 8.1
+                    if (Environment.OSVersion.Platform.Equals(PlatformID.Win32NT) && Environment.OSVersion.Version.Major == 6)
+                    {
+                        bot = new DiscordClient(new DiscordConfiguration
+                        {
+                            Token = Encryption.DecryptString(alliance.AllianceId.ToString(), alliance.DiscordToken),
+                            TokenType = TokenType.Bot,
+                            WebSocketClientFactory = WebSocket4NetClient.CreateNew
+                        });
+                    }
+                    else
+                    {
+                        bot = new DiscordClient(new DiscordConfiguration
+                        {
+                            Token = Encryption.DecryptString(alliance.AllianceId.ToString(), alliance.DiscordToken),
+                            TokenType = TokenType.Bot
+                        });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    AlliancePlugin.Log.Error(ex);
+                    return Task.CompletedTask;
+                }
+
+                bot.ConnectAsync();
+
+                bot.MessageCreated += Discord_AllianceMessage;
+                game = new DiscordActivity();
+
+                bot.Ready += async e =>
+                {
+                    AllianceReady = true;
+                    await Task.CompletedTask;
+                };
+
+                allianceBots.Add(alliance.AllianceId, bot);
+                allianceChannels.Add(channelId, alliance.AllianceId);
+               
+            }
+            return Task.CompletedTask;
+        }
         public static void Stopdiscord()
         {
             if (Ready)
@@ -91,6 +144,11 @@ namespace AlliancesPlugin.Alliances
         private static async Task DisconnectDiscord()
         {
             Ready = false;
+            AllianceReady = false;
+            foreach (DiscordClient bot in allianceBots.Values)
+            {
+                bot?.DisconnectAsync();
+            }
             await Discord?.DisconnectAsync();
         }
 
@@ -112,6 +170,62 @@ namespace AlliancesPlugin.Alliances
             }
         }
 
+        public static void SendAllianceMessage(Alliance alliance, string prefix, string message)
+        {
+            if (AllianceReady && alliance.DiscordChannelId > 0)
+            {
+                DiscordChannel chann = Discord.GetChannelAsync(alliance.DiscordChannelId).Result;
+                DiscordClient bot = allianceBots[alliance.AllianceId];
+                if (bot == null)
+                {
+                    return;
+                }
+                botId = bot.SendMessageAsync(chann, "**" + prefix + "**: " + message.Replace(" /n", "\n")).Result.Author.Id;
+
+
+            }
+        }
+
+        public static bool AllianceHasBot(Guid id)
+        {
+            if (allianceBots.ContainsKey(id))
+                return true;
+            return false;
+        }
+        private static Task Discord_AllianceMessage(DSharpPlus.EventArgs.MessageCreateEventArgs e)
+        {
+            if (allianceChannels.ContainsKey(e.Channel.Id)){
+                if (e.Author.IsBot)
+                {
+                    String[] split = e.Message.Content.Split(':');
+                    int i = 0;
+                    StringBuilder message = new StringBuilder();
+                   foreach (String s in split)
+                    {
+                        if (i == 0)
+                        {
+                            i++;
+                            continue;
+                        }
+                        message.Append(s);
+                    }
+             
+                    AllianceChat.SendChatMessage(allianceChannels[e.Channel.Id], split[0].Replace("*", ""), message.ToString().TrimStart());
+                }
+                else
+                {
+                    if (String.IsNullOrEmpty(e.Guild.GetMemberAsync(e.Author.Id).Result.Nickname))
+                    {
+                        AllianceChat.SendChatMessage(allianceChannels[e.Channel.Id], e.Message.Author.Username, e.Message.Content);
+                    }
+                    else
+                    {
+                        AllianceChat.SendChatMessage(allianceChannels[e.Channel.Id], e.Guild.GetMemberAsync(e.Author.Id).Result.Nickname, e.Message.Content);
+                    }
+                }
+            }
+            return Task.CompletedTask;
+        }
         private static Task Discord_MessageCreated(DSharpPlus.EventArgs.MessageCreateEventArgs e)
         {
             foreach (KothConfig koth in AlliancePlugin.KOTHs)
