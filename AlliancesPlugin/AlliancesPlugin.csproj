@@ -217,6 +217,7 @@
     <Compile Include="Shipyard\ShipyardCommands.cs" />
     <Compile Include="Shipyard\ShipyardConfig.cs" />
     <Compile Include="Shipyard\UpgradeCost.cs" />
+    <Compile Include="Special Designation\DrillPatch.cs" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Connected Services\" />

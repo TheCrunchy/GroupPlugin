@@ -25,7 +25,7 @@ namespace AlliancesPlugin.Alliances
         public List<long> BlockedFactions = new List<long>();
         public Dictionary<ulong, String> otherTitles = new Dictionary<ulong, string>();
         public string DiscordToken = string.Empty;
-        public ulong DiscordChannelId = 1;
+        public ulong DiscordChannelId = 0;
         public List<String> enemies = new List<String>();
         public List<long> EnemyFactions = new List<long>();
 
