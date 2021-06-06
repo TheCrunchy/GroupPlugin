@@ -25,32 +25,8 @@ namespace AlliancesPlugin.Special_Designation.Mining
                             return true;
                         }
                     }
-                    if (holder.contract is Medium medium)
-                    {
-                        if (medium.subTypeId.Equals(MaterialName))
-                        {
-                            return true;
-                        }
-                        if (medium.subTypeIdTwo.Equals(MaterialName) && medium.HasSecondItem)
-                        {
-                            return true;
-                        }
-                    }
-                    if (holder.contract is Hard hard)
-                    {
-                        if (hard.subTypeId.Equals(MaterialName))
-                        {
-                            return true;
-                        }
-                        if (hard.subTypeIdTwo.Equals(MaterialName) && hard.HasSecondItem)
-                        {
-                            return true;
-                        }
-                        if (hard.subTypeIdThree.Equals(MaterialName) && hard.HasThirdItem)
-                        {
-                            return true;
-                        }
-                    }
+                   
+                    
                     return true;
                 }
             }
