@@ -326,8 +326,9 @@ namespace AlliancesPlugin
                     session.Managers.GetManager<IMultiplayerManagerBase>().PlayerJoined += AllianceChat.Login;
                     session.Managers.GetManager<IMultiplayerManagerBase>().PlayerLeft += AllianceChat.Logout;
                 }
-
-
+              
+               // MySession.Static.Config.
+              // MyMultiplayer.Static.SyncDistance
                 if (!Directory.Exists(path + "//JumpZones//"))
                 {
                     Directory.CreateDirectory(path + "//JumpZones//");
