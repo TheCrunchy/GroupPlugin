@@ -218,6 +218,10 @@
     <Compile Include="Shipyard\ShipyardConfig.cs" />
     <Compile Include="Shipyard\UpgradeCost.cs" />
     <Compile Include="Special Designation\DrillPatch.cs" />
+    <Compile Include="Special Designation\Mining\MiningCommands.cs" />
+    <Compile Include="Special Designation\Mining\MiningContract.cs" />
+    <Compile Include="Special Designation\Mining\ContractHolder.cs" />
+    <Compile Include="Special Designation\Mining\PlayerStorage.cs" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Connected Services\" />
