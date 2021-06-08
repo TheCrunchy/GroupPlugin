@@ -1356,9 +1356,10 @@ namespace AlliancesPlugin
 
                 if (DateTime.Now > NextUpdate)
                 {
-
-                    NextUpdate = DateTime.Now.AddMinutes(1);
-
+                    Log.Info("Doing alliance tasks");
+                    DateTime now = DateTime.Now;
+                    NextUpdate = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute + 1, 0, 0 ,DateTimeKind.Utc);
+                    
                     LoadAllAlliances();
                     LoadAllGates();
                    
