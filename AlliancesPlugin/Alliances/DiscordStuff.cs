@@ -210,7 +210,7 @@ namespace AlliancesPlugin.Alliances
                         message.Append(s);
                     }
              
-                    AllianceChat.SendChatMessage(allianceChannels[e.Channel.Id], split[0].Replace("*", ""), message.ToString().TrimStart());
+                    AllianceChat.SendChatMessage(allianceChannels[e.Channel.Id], split[0].Replace("*", ""), e.Message.Content.Replace(split[0] + " : ", "").TrimStart());
                 }
                 else
                 {

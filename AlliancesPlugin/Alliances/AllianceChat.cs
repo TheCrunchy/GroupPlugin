@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using Torch.API;
 using Torch.API.Managers;
 using VRage.Game;
+using VRage.Game.ModAPI;
 using VRageMath;
 
 namespace AlliancesPlugin.Alliances
@@ -68,34 +69,38 @@ namespace AlliancesPlugin.Alliances
             Alliance alliance = AlliancePlugin.GetAllianceNoLoading(allianceId);
             List<ulong> OtherMembers = new List<ulong>();
 
-            foreach (MyPlayer player in MySession.Static.Players.GetOnlinePlayers())
-            {
-                MyFaction fac = MySession.Static.Factions.TryGetPlayerFaction(player.Identity.IdentityId) as MyFaction;
-                if (fac != null)
-                {
-                    if (alliance.AllianceMembers.Contains(fac.FactionId))
-                    {
-                        OtherMembers.Add(player.Id.SteamId);
-                    }
-                }
 
-            }
             bool DiscordSent = false;
             if (toDiscord && DiscordStuff.AllianceHasBot(allianceId))
             {
                 try
                 {
                     DiscordStuff.SendAllianceMessage(alliance, prefix, message);
-                 DiscordSent = true;
+                    DiscordSent = true;
                 }
                 catch (Exception)
                 {
                 }
             }
-            foreach (ulong id in OtherMembers)
+           
+
+            if (!DiscordSent)
             {
-             if (!DiscordSent)
+                foreach (MyPlayer player in MySession.Static.Players.GetOnlinePlayers())
                 {
+                    MyFaction fac = MySession.Static.Factions.TryGetPlayerFaction(player.Identity.IdentityId) as MyFaction;
+                    if (fac != null)
+                    {
+                        if (alliance.AllianceMembers.Contains(fac.FactionId))
+                        {
+                            OtherMembers.Add(player.Id.SteamId);
+                        }
+                    }
+
+                }
+                foreach (ulong id in OtherMembers)
+                {
+
                     ShipyardCommands.SendMessage(prefix, message, new Color(66, 163, 237), (long)id);
                     MyGpsCollection gpscol = (MyGpsCollection)MyAPIGateway.Session?.GPS;
 
@@ -109,8 +114,8 @@ namespace AlliancesPlugin.Alliances
                         long idenId = MySession.Static.Players.TryGetIdentityId(id);
                         gpscol.SendAddGps(idenId, ref gpsRef);
                     }
-                }  
-          
+                }
+
             }
         }
         public static void SendChatMessage(Guid allianceId, string prefix, string message)
@@ -145,7 +150,11 @@ namespace AlliancesPlugin.Alliances
                     gpsRef.ShowOnHud = true;
 
                     long idenId = MySession.Static.Players.TryGetIdentityId(id);
-                    gpscol.SendAddGps(idenId, ref gpsRef);
+                    MyAPIGateway.Utilities.InvokeOnGameThread(() =>
+                    {
+                        gpscol.SendAddGps(idenId, ref gpsRef);
+                    });
+
                 }
             }
         }
@@ -159,17 +168,17 @@ namespace AlliancesPlugin.Alliances
             {
                 return;
             }
-        
+
             if (PeopleInAllianceChat.ContainsKey((ulong)msg.AuthorSteamId))
             {
 
 
                 consumed = true;
-                Guid allianceId = PeopleInAllianceChat[(ulong) msg.AuthorSteamId];
+                Guid allianceId = PeopleInAllianceChat[(ulong)msg.AuthorSteamId];
                 List<ulong> OtherMembers = new List<ulong>();
 
                 Alliance alliance = AlliancePlugin.GetAllianceNoLoading(allianceId);
-               foreach (MyPlayer player in MySession.Static.Players.GetOnlinePlayers())
+                foreach (MyPlayer player in MySession.Static.Players.GetOnlinePlayers())
                 {
                     MyFaction fac = MySession.Static.Factions.TryGetPlayerFaction(player.Identity.IdentityId) as MyFaction;
                     if (fac != null)
@@ -179,9 +188,9 @@ namespace AlliancesPlugin.Alliances
                             OtherMembers.Add(player.Id.SteamId);
                         }
                     }
-                
+
                 }
-                
+
                 // ShipyardCommands.SendMessage(msg.Author, "You are in alliance chat", Color.BlueViolet, (long)msg.AuthorSteamId);
                 SendChatMessage(allianceId, alliance.GetTitle((ulong)msg.AuthorSteamId) + " | " + msg.Author, msg.Message, true);
             }
@@ -194,20 +203,41 @@ namespace AlliancesPlugin.Alliances
         }
         public static void Login(IPlayer p)
         {
-            //if (p == null)
-            //{
-            //    return;
-            //}
-            ////  AlliancePlugin.Log.Info("Login?");
-            //MyIdentity id = AlliancePlugin.GetIdentityByNameOrId(p.SteamId.ToString());
-            //if (id == null)
-            //{
-            //    return;
-            //}
-            //   AlliancePlugin.Log.Info("got id");
+            if (p == null)
+            {
+                return;
+            }
+            MyIdentity id = AlliancePlugin.GetIdentityByNameOrId(p.SteamId.ToString());
+            if (id == null)
+            {
+                return;
+            }
+            IMyFaction playerFac = MySession.Static.Factions.GetPlayerFaction(id.IdentityId);
+            MyFaction arrr = MySession.Static.Factions.TryGetFactionByTag("arrr");
+            if (arrr != null)
+            {
+                if (playerFac != null && !MySession.Static.Factions.AreFactionsEnemies(arrr.FactionId, FacUtils.GetPlayersFaction(id.IdentityId).FactionId))
+                {
+                    Sandbox.Game.Multiplayer.MyFactionCollection.DeclareWar(playerFac.FactionId, arrr.FactionId);
+                }
+            }
 
+            MyFaction ACME = MySession.Static.Factions.TryGetFactionByTag("ACME");
+
+            if (ACME != null)
+            {
+                MySession.Static.Factions.SetReputationBetweenPlayerAndFaction(id.IdentityId, ACME.FactionId, 0);
+                MySession.Static.Factions.AddFactionPlayerReputation(id.IdentityId, ACME.FactionId, 0);
+            }
+            MyFaction wolf = MySession.Static.Factions.TryGetFactionByTag("WOLF");
+            if (wolf != null)
+            {
+                if (playerFac != null && !MySession.Static.Factions.AreFactionsEnemies(wolf.FactionId, FacUtils.GetPlayersFaction(id.IdentityId).FactionId))
+                {
+                    Sandbox.Game.Multiplayer.MyFactionCollection.DeclareWar(playerFac.FactionId, wolf.FactionId);
+                }
+            }
         }
-
 
         public static void Logout(IPlayer p)
         {
