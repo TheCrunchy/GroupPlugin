@@ -182,7 +182,14 @@ namespace AlliancesPlugin.Alliances
                 }
                 botId = bot.SendMessageAsync(chann, "**" + prefix + "**: " + message.Replace(" /n", "\n")).Result.Author.Id;
 
-
+                if (LastMessageSent.ContainsKey(alliance.AllianceId))
+                {
+                    LastMessageSent[alliance.AllianceId] = "**" + prefix + "**: " + message.Replace(" /n", "\n");
+                }
+                else
+                {
+                    LastMessageSent.Add(alliance.AllianceId, "**" + prefix + "**: " + message.Replace(" /n", "\n"));
+                }
             }
         }
 
@@ -192,11 +199,17 @@ namespace AlliancesPlugin.Alliances
                 return true;
             return false;
         }
+        public static Dictionary<Guid, string> LastMessageSent = new Dictionary<Guid, string>();
         private static Task Discord_AllianceMessage(DSharpPlus.EventArgs.MessageCreateEventArgs e)
         {
             if (allianceChannels.ContainsKey(e.Channel.Id)){
                 if (e.Author.IsBot)
                 {
+                    if (LastMessageSent.ContainsKey(allianceChannels[e.Channel.Id])){
+                        if (LastMessageSent[allianceChannels[e.Channel.Id]].Equals(e.Message.Content)){
+                            return Task.CompletedTask;
+                        }
+                    }
                     String[] split = e.Message.Content.Split(':');
                     int i = 0;
                     StringBuilder message = new StringBuilder();

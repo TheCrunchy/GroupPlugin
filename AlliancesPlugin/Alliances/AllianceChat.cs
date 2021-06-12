@@ -70,13 +70,12 @@ namespace AlliancesPlugin.Alliances
             List<ulong> OtherMembers = new List<ulong>();
 
 
-            bool DiscordSent = false;
+          
             if (toDiscord && DiscordStuff.AllianceHasBot(allianceId))
             {
                 try
                 {
                     DiscordStuff.SendAllianceMessage(alliance, prefix, message);
-                    DiscordSent = true;
                 }
                 catch (Exception)
                 {
@@ -84,8 +83,7 @@ namespace AlliancesPlugin.Alliances
             }
            
 
-            if (!DiscordSent)
-            {
+           
                 foreach (MyPlayer player in MySession.Static.Players.GetOnlinePlayers())
                 {
                     MyFaction fac = MySession.Static.Factions.TryGetPlayerFaction(player.Identity.IdentityId) as MyFaction;
@@ -116,7 +114,7 @@ namespace AlliancesPlugin.Alliances
                     }
                 }
 
-            }
+            
         }
         public static void SendChatMessage(Guid allianceId, string prefix, string message)
         {

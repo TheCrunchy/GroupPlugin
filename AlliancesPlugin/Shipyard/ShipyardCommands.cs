@@ -72,6 +72,8 @@ namespace AlliancesPlugin.Shipyard
         }
         private static Logger _log = LogManager.GetCurrentClassLogger();
 
+
+        //i cant remember if i even use this anymore
         //adapted from https://steamcommunity.com/sharedfiles/filedetails/?id=1840862148 with permission
         private Int64 priceWorth(MyCubeBlockDefinition.Component component)
         {
@@ -122,6 +124,8 @@ namespace AlliancesPlugin.Shipyard
             costs.setCredits(creditCosts);
             return costs;
         }
+
+
         [Command("adminlog", "View the queue")]
         [Permission(MyPromoteLevel.Admin)]
         public void ShipyardAdminInfo(string tag)
