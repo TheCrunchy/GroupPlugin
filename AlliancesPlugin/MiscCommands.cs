@@ -16,7 +16,7 @@ namespace AlliancesPlugin
     class MiscCommands : CommandModule
     {
         public static Dictionary<long, DateTime> distressCooldowns = new Dictionary<long, DateTime>();
-
+        public static Dictionary<long, int> distressAmounts = new Dictionary<long, int>();
         [Command("distress", "distress signals")]
         [Permission(MyPromoteLevel.None)]
         public void distress(string reason = "")
@@ -68,7 +68,15 @@ namespace AlliancesPlugin
             Alliance alliance = AlliancePlugin.GetAllianceNoLoading(fac);
             if (alliance != null)
             {
-                AllianceChat.SendChatMessage(alliance.AllianceId, "Distress Signal", CreateGps(Context.Player.Character.GetPosition(), Color.Yellow, 600, Context.Player.Character.DisplayName, reason).ToString(), true);
+                if (distressAmounts.ContainsKey(Context.Player.IdentityId)) {
+                    distressAmounts[Context.Player.IdentityId] += 1;
+                    AllianceChat.SendChatMessage(alliance.AllianceId, "Distress Signal", CreateGps(Context.Player.Character.GetPosition(), Color.Yellow, 600, Context.Player.Character.DisplayName + " " + distressAmounts[Context.Player.IdentityId], reason).ToString(), true);
+                }
+                else {
+                    AllianceChat.SendChatMessage(alliance.AllianceId, "Distress Signal", CreateGps(Context.Player.Character.GetPosition(), Color.Yellow, 600, Context.Player.Character.DisplayName, reason).ToString(), true);
+                    distressAmounts.Add(Context.Player.IdentityId, 1);
+                }
+          
             }
         }
         private MyGps CreateGps(Vector3D Position, Color gpsColor, int seconds, String Nation, String Reason)
