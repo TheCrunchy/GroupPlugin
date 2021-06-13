@@ -23,11 +23,11 @@ using VRageMath;
 namespace AlliancesPlugin.Alliances
 {
     [Category("alliance")]
-    public class Commands : CommandModule
+    public class AllianceCommands : CommandModule
     {
         public static Dictionary<long, DateTime> cooldowns = new Dictionary<long, DateTime>();
 
-        public string GetCooldownMessage(DateTime time)
+        public static string GetCooldownMessage(DateTime time)
         {
             var diff = time.Subtract(DateTime.Now);
             string output = String.Format("{0} Seconds", diff.Seconds) + " until command can be used.";
@@ -95,63 +95,7 @@ namespace AlliancesPlugin.Alliances
                 Context.Respond("You dont have an alliance.");
             }
         }
-        public static Dictionary<long, DateTime> distressCooldowns = new Dictionary<long, DateTime>();
-
-        [Command("distress", "distress signals")]
-        [Permission(MyPromoteLevel.None)]
-        public void distress(string reason = "")
-        {
-
-
-            if (Context.Player == null)
-            {
-                Context.Respond("no no console no distress");
-                return;
-            }
-
-
-            IMyFaction playerFac = FacUtils.GetPlayersFaction(Context.Player.Identity.IdentityId);
-            if (playerFac == null)
-            {
-                Context.Respond("You dont have a faction.");
-                return;
-            }
-            if (reason != "")
-            {
-                reason = Context.RawArgs;
-            }
-            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
-            if (fac == null)
-            {
-                Context.Respond("A faction is required to use alliance features.");
-                return;
-
-            }
-         
-            if (distressCooldowns.TryGetValue(Context.Player.IdentityId, out DateTime time))
-            {
-                if (DateTime.Now < time)
-                {
-                    Context.Respond(GetCooldownMessage(time));
-                    return;
-                }
-                else
-                {
-                    distressCooldowns[Context.Player.IdentityId] = DateTime.Now.AddSeconds(30);
-                }
-            }
-            else
-            {
-                distressCooldowns.Add(Context.Player.IdentityId, DateTime.Now.AddSeconds(30));
-                
-            }
-            Alliance alliance = AlliancePlugin.GetAllianceNoLoading(fac);
-            if (alliance != null)
-            {
-                AllianceChat.SendChatMessage(alliance.AllianceId, "Distress Signal", CreateGps(Context.Player.Character.GetPosition(), Color.Yellow, 600, Context.Player.Character.DisplayName, reason).ToString(), true);
-            }
-        }
-
+     
 
         [Command("admindistress", "admindistress signals")]
         [Permission(MyPromoteLevel.Admin)]

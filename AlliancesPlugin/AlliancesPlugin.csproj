@@ -184,6 +184,7 @@
     <Compile Include="Alliances\Database.cs" />
     <Compile Include="Alliances\DiscordStuff.cs" />
     <Compile Include="Alliances\Encryption.cs" />
+    <Compile Include="MiscCommands.cs" />
     <Compile Include="Alliances\RankPermissions.cs" />
     <Compile Include="Alliances\StorePatchTaxes.cs" />
     <Compile Include="Alliances\VoteType.cs" />
