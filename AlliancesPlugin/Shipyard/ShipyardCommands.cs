@@ -996,7 +996,10 @@ namespace AlliancesPlugin.Shipyard
                         }
                         if (GridManager.LoadGrid(System.IO.Path.Combine(AlliancePlugin.path + "\\ShipyardData\\" + alliance.AllianceId + "\\") + item.name + ".xml", Context.Player.GetPosition(), false, Context.Player.SteamUserId, item.name))
                         {
-                            AlliancePlugin.BackupGridMethod(GridManager.GetObjectBuilders(AlliancePlugin.path + "\\ShipyardData\\" + alliance.AllianceId + "\\" + item.name + ".xml"), Context.Player.IdentityId);
+                            if (AlliancePlugin.GridBackupInstalled)
+                            {
+                                AlliancePlugin.BackupGridMethod(GridManager.GetObjectBuilders(AlliancePlugin.path + "\\ShipyardData\\" + alliance.AllianceId + "\\" + item.name + ".xml"), Context.Player.IdentityId);
+                            }
                             PrintLog log = queue.GetLog(alliance);
                             PrintLogItem newLog = new PrintLogItem();
                             newLog.Claimed = true;

@@ -203,7 +203,7 @@ namespace AlliancesPlugin.Alliances
                             AlliancePlugin.SaveAllianceData(alliance);
                             AlliancePlugin.FactionsInAlliances.Remove(fac.FactionId);
                             AlliancePlugin.FactionsInAlliances.Add(fac.FactionId, alliance.name);
-
+                            AllianceChat.SendChatMessage(alliance.AllianceId, "Alliance", fac.Tag + " has joined the alliance!", true);
                         }
                         else
                         {
@@ -643,6 +643,44 @@ namespace AlliancesPlugin.Alliances
                 Context.Respond("Cannot find alliance, maybe wait a minute and try again.");
             }
         }
+        [Command("forceadd", "invite a faction to alliance")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void AllianceForceAdd(string tag)
+        {
+            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
+            if (fac == null)
+            {
+                Context.Respond("Only factions can be in alliances.");
+                return;
+            }
+            IMyFaction fac2 = MySession.Static.Factions.TryGetFactionByTag(tag);
+            if (fac2 == null)
+            {
+                Context.Respond("Cant find that faction.");
+                return;
+            }
+
+            Alliance alliance = AlliancePlugin.GetAlliance(fac);
+            if (alliance != null)
+            {
+                if (alliance.HasPermissionToInvite(Context.Player.SteamUserId))
+                {
+                    alliance.SendInvite(fac2.FactionId);
+                    alliance.ForceAddMember(fac2.FactionId);
+                    AlliancePlugin.SaveAllianceData(alliance);
+
+                    Context.Respond("Invite sent, they can join using !alliance join " + alliance.name);
+                }
+                else
+                {
+                    Context.Respond("You dont have permission to send invites.");
+                }
+            }
+            else
+            {
+                Context.Respond("Cannot find alliance, maybe wait a minute and try again.");
+            }
+        }
 
         [Command("invite", "invite a faction to alliance")]
         [Permission(MyPromoteLevel.None)]
@@ -668,7 +706,7 @@ namespace AlliancesPlugin.Alliances
                 {
                     alliance.SendInvite(fac2.FactionId);
                     AlliancePlugin.SaveAllianceData(alliance);
-
+                    AllianceChat.SendChatMessage(alliance.AllianceId, "Alliance", fac2.Tag + " was invited to the alliance!", true);
                     Context.Respond("Invite sent, they can join using !alliance join " + alliance.name);
                 }
                 else
@@ -783,6 +821,7 @@ namespace AlliancesPlugin.Alliances
                     }
 
                 }
+                AllianceChat.SendChatMessage(alliance.AllianceId, "Alliance", fac.Tag + " has left the alliance!", true);
                 alliance.AllianceMembers.Remove(fac.FactionId);
                 foreach (MyFactionMember m in fac.Members.Values)
                 {
@@ -840,6 +879,7 @@ namespace AlliancesPlugin.Alliances
                                 {
                                     MyFactionCollection.DeclareWar(member.FactionId, fac2.FactionId);
                                     MySession.Static.Factions.SetReputationBetweenFactions(id, fac2.FactionId, -1500);
+                                    AllianceChat.SendChatMessage(alliance.AllianceId, "Alliance", fac2.Tag + " was kicked from the alliance!", true);
                                     foreach (MyFactionMember m in member.Members.Values)
                                     {
                                         AllianceChat.PeopleInAllianceChat.Remove(MySession.Static.Players.TryGetSteamId(m.PlayerId));
@@ -1161,6 +1201,7 @@ namespace AlliancesPlugin.Alliances
                             Context.Respond("Paying " + idsToPay.Count + " " + String.Format("{0:n0}", amount / idsToPay.Count) + " SC each.");
                             alliance.PayDividend(amount, idsToPay, Context.Player.SteamUserId);
                             AlliancePlugin.SaveAllianceData(alliance);
+               
                         }
                         else
                         {
@@ -1820,6 +1861,7 @@ namespace AlliancesPlugin.Alliances
                 Context.Respond("Name does not validate, try again.");
                 return;
             }
+           
             if (AlliancePlugin.AllAlliances.ContainsKey(name))
             {
                 Context.Respond("Alliance with that name already exists.");

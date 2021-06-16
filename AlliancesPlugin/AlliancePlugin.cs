@@ -1379,8 +1379,7 @@ namespace AlliancesPlugin
                 DoTaxStuff();
 
             }
-            if (ticks % 32 == 0)
-            {
+      
 
                 if (DateTime.Now > NextUpdate)
                 {
@@ -1395,16 +1394,19 @@ namespace AlliancesPlugin
 
                     OrganisePlayers();
                 }
+            if (ticks % 32 == 0)
+            {
                 if (config.JumpGatesEnabled)
                 {
                     DoJumpGateStuff();
                 }
+            }
                 if (config.KothEnabled)
                 {
                     DoKothStuff();
                 }
 
-            }
+            
         }
         public static MyCubeGrid GetLootboxGrid(Vector3 position, KothConfig config)
         {

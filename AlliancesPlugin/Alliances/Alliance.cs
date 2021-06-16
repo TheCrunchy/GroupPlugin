@@ -11,6 +11,7 @@ using VRage.Game.ModAPI;
 using AlliancesPlugin.Hangar;
 using AlliancesPlugin.Shipyard;
 using AlliancesPlugin.JumpGates;
+using VRage.Game;
 
 namespace AlliancesPlugin.Alliances
 {
@@ -396,8 +397,9 @@ namespace AlliancesPlugin.Alliances
             AlliancePlugin.sendChange?.Invoke(null, MethodInput);
             object[] MethodInput2 = new object[] { change2, SecondId, firstId, 0L };
             AlliancePlugin.sendChange?.Invoke(null, MethodInput2);
+ 
         }
-
+      
         public void ForceFriendlies()
         {
             foreach (long id in AllianceMembers)
@@ -414,6 +416,7 @@ namespace AlliancesPlugin.Alliances
                             {
                                 MySession.Static.Factions.SetReputationBetweenFactions(id, id2, 1500);
                                 DoFriendlyUpdate(id, id2);
+                              
                             }
                         }
                     }
@@ -468,6 +471,7 @@ namespace AlliancesPlugin.Alliances
             {
                 AllianceMembers.Add(id);
             }
+            ForceFriendlies();
         }
         public void SendInvite(long id)
         {
