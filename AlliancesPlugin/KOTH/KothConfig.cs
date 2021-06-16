@@ -16,6 +16,7 @@ namespace AlliancesPlugin.KOTH
         public string RewardTypeId = "Ingot";
         public string RewardSubTypeId = "Iron";
         public int RewardAmount = 1;
+        public long SpaceMoneyReward = 0;
         public Boolean enabled = false;
 
         public string KothBuildingOwner = "BOB";
@@ -25,6 +26,7 @@ namespace AlliancesPlugin.KOTH
         public int amountCaptured = 0;
         public int MinutesBeforeCaptureStarts = 10;
         public int CaptureRadiusInMetre = 20;
+        public Boolean DoCaptureBlockHalfLootTime = false;
         public int SecondsBetweenCoreSpawn = 180;
         public int SecondsBetweenCaptureCheck = 60;
         public int PointsPerCap = 10;

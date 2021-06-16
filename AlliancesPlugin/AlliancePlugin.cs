@@ -33,6 +33,7 @@ using AlliancesPlugin.KOTH;
 using AlliancesPlugin.Hangar;
 using AlliancesPlugin.Shipyard;
 using AlliancesPlugin.JumpGates;
+using VRage.Utils;
 
 namespace AlliancesPlugin
 {
@@ -326,9 +327,9 @@ namespace AlliancesPlugin
                     session.Managers.GetManager<IMultiplayerManagerBase>().PlayerJoined += AllianceChat.Login;
                     session.Managers.GetManager<IMultiplayerManagerBase>().PlayerLeft += AllianceChat.Logout;
                 }
-              
-               // MySession.Static.Config.
-              // MyMultiplayer.Static.SyncDistance
+
+                // MySession.Static.Config.
+                // MyMultiplayer.Static.SyncDistance
                 if (!Directory.Exists(path + "//JumpZones//"))
                 {
                     Directory.CreateDirectory(path + "//JumpZones//");
@@ -477,7 +478,7 @@ namespace AlliancesPlugin
 
                 LoadAllAlliances();
                 LoadAllGates();
-               
+
                 DiscordStuff.RegisterDiscord();
                 //        DatabaseForBank bank = new DatabaseForBank();
                 //    bank.CreateTable(bank.CreateConnection());
@@ -974,11 +975,15 @@ namespace AlliancesPlugin
                                 }
                                 else
                                 {
-                                    capturingNation = GetNationTag(fac).AllianceId;
-                                    if (!hasActiveCaptureBlock)
+                                    Alliance alliance = GetNationTag(fac);
+                                    if (alliance != null)
                                     {
-                                        Log.Info("Checking for a capture block");
-                                        hasActiveCaptureBlock = DoesGridHaveCaptureBlock(grid, config);
+                                        capturingNation = alliance.AllianceId;
+                                        if (!hasActiveCaptureBlock)
+                                        {
+                                            Log.Info("Checking for a capture block");
+                                            hasActiveCaptureBlock = DoesGridHaveCaptureBlock(grid, config);
+                                        }
                                     }
                                 }
 
@@ -1013,7 +1018,11 @@ namespace AlliancesPlugin
                                     }
                                     else
                                     {
-                                        capturingNation = GetNationTag(fac).AllianceId;
+                                        Alliance alliance = GetNationTag(fac);
+                                        if (alliance != null)
+                                        {
+                                            capturingNation = GetNationTag(fac).AllianceId;
+                                        }
                                     }
                                 }
                                 else
@@ -1024,16 +1033,26 @@ namespace AlliancesPlugin
                             }
                         }
 
-                        if (entitiesInCapPoint == 0 && config.IsDenialPoint)
-                        {
-                            if (denials.TryGetValue(config.DeniedKoth, out DenialPoint den))
-                            {
-                                den.RemoveCap(config.KothName);
-                                SaveKothConfig(config.KothName, config);
-                            }
-                        }
+
                         if (DateTime.Now >= config.nextCaptureAvailable)
                         {
+                            //this errors, i think this is only for client side mods? 
+                            // MatrixD matrix = MatrixD.CreateWorld(position);
+
+                            // Color color = Color.Gray;
+                            //if (matrix != null)
+                            // {
+                            //     MySimpleObjectDraw.DrawTransparentSphere(ref matrix, (float) config.CaptureRadiusInMetre, ref color, MySimpleObjectRasterizer.Solid, 20);
+                            // }
+
+                            if (entitiesInCapPoint == 0 && config.IsDenialPoint)
+                            {
+                                if (denials.TryGetValue(config.DeniedKoth, out DenialPoint den))
+                                {
+                                    den.RemoveCap(config.KothName);
+                                    SaveKothConfig(config.KothName, config);
+                                }
+                            }
                             if (!contested && !config.CaptureStarted && capturingNation != Guid.Empty)
                             {
                                 if (!capturingNation.Equals(config.owner))
@@ -1280,7 +1299,7 @@ namespace AlliancesPlugin
                             if (config.owner != Guid.Empty)
                             {
 
-                                if (hasCap)
+                                if (hasCap && config.DoCaptureBlockHalfLootTime)
                                 {
                                     Log.Info("The owner has an active block so reducing time between spawning");
                                     if (lootgrid != null)
@@ -1288,14 +1307,19 @@ namespace AlliancesPlugin
                                         SpawnCores(lootgrid, config);
 
                                     }
-
+                                 
                                     config.nextCoreSpawn = DateTime.Now.AddSeconds(config.SecondsBetweenCoreSpawn / 2);
                                     SendChatMessage("Spawning loot!");
                                     Alliance alliance = GetAlliance(config.owner);
                                     if (alliance != null)
                                     {
                                         alliance.CurrentMetaPoints += config.MetaPointsPerCapWithBonus;
+                                        if (config.SpaceMoneyReward > 0)
+                                        {
+                                            DatabaseForBank.AddToBalance(alliance, config.SpaceMoneyReward);
+                                        }
                                         SaveAllianceData(alliance);
+                                   
                                     }
                                     SaveKothConfig(config.KothName, config);
                                 }
@@ -1313,6 +1337,10 @@ namespace AlliancesPlugin
                                     if (alliance != null)
                                     {
                                         alliance.CurrentMetaPoints += config.MetaPointsPerCapWithBonus;
+                                        if (config.SpaceMoneyReward > 0)
+                                        {
+                                            DatabaseForBank.AddToBalance(alliance, config.SpaceMoneyReward);
+                                        }
                                         SaveAllianceData(alliance);
                                     }
                                     SaveKothConfig(config.KothName, config);
@@ -1358,13 +1386,13 @@ namespace AlliancesPlugin
                 {
                     Log.Info("Doing alliance tasks");
                     DateTime now = DateTime.Now;
-                    NextUpdate = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute + 1, 0, 0 ,DateTimeKind.Utc);
-                    
+                    NextUpdate = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute + 1, 0, 0, DateTimeKind.Utc);
+
                     LoadAllAlliances();
                     LoadAllGates();
-                   
+
                     LoadAllJumpZones();
-           
+
                     OrganisePlayers();
                 }
                 if (config.JumpGatesEnabled)
