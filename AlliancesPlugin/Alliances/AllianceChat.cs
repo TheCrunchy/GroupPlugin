@@ -94,7 +94,6 @@ namespace AlliancesPlugin.Alliances
                             OtherMembers.Add(player.Id.SteamId);
                         }
                     }
-
                 }
                 foreach (ulong id in OtherMembers)
                 {
@@ -171,24 +170,28 @@ namespace AlliancesPlugin.Alliances
             {
 
 
+    
+                MyIdentity identity = AlliancePlugin.TryGetIdentity(msg.AuthorSteamId.ToString());
+                if (identity == null)
+                {
+                    return;
+                }
+                MyFaction fac = MySession.Static.Factions.GetPlayerFaction(identity.IdentityId);
+                if (fac == null)
+                {
+                    PeopleInAllianceChat.Remove((ulong)msg.AuthorSteamId);
+                    return;
+                }
+                if (AlliancePlugin.GetAllianceNoLoading(fac) == null)
+                {
+                    PeopleInAllianceChat.Remove((ulong)msg.AuthorSteamId);
+                    return;
+                }
                 consumed = true;
                 Guid allianceId = PeopleInAllianceChat[(ulong)msg.AuthorSteamId];
                 List<ulong> OtherMembers = new List<ulong>();
 
                 Alliance alliance = AlliancePlugin.GetAllianceNoLoading(allianceId);
-                foreach (MyPlayer player in MySession.Static.Players.GetOnlinePlayers())
-                {
-                    MyFaction fac = MySession.Static.Factions.TryGetPlayerFaction(player.Identity.IdentityId) as MyFaction;
-                    if (fac != null)
-                    {
-                        if (alliance.AllianceMembers.Contains(fac.FactionId))
-                        {
-                            OtherMembers.Add(player.Id.SteamId);
-                        }
-                    }
-
-                }
-
                 // ShipyardCommands.SendMessage(msg.Author, "You are in alliance chat", Color.BlueViolet, (long)msg.AuthorSteamId);
                 SendChatMessage(allianceId, alliance.GetTitle((ulong)msg.AuthorSteamId) + " | " + msg.Author, msg.Message, true);
             }

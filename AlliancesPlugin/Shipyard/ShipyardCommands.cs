@@ -864,7 +864,7 @@ namespace AlliancesPlugin.Shipyard
             }
             Context.Respond("Purged " + purged + " claimed grids.");
         }
-        [Command("claim", "Claim a print")]
+        [Command("fee", "change the fee")]
         [Permission(MyPromoteLevel.None)]
         public void ChangeFee(string inputAmount)
         {
@@ -996,6 +996,7 @@ namespace AlliancesPlugin.Shipyard
                         }
                         if (GridManager.LoadGrid(System.IO.Path.Combine(AlliancePlugin.path + "\\ShipyardData\\" + alliance.AllianceId + "\\") + item.name + ".xml", Context.Player.GetPosition(), false, Context.Player.SteamUserId, item.name))
                         {
+                            AlliancePlugin.BackupGridMethod(GridManager.GetObjectBuilders(AlliancePlugin.path + "\\ShipyardData\\" + alliance.AllianceId + "\\" + item.name + ".xml"), Context.Player.IdentityId);
                             PrintLog log = queue.GetLog(alliance);
                             PrintLogItem newLog = new PrintLogItem();
                             newLog.Claimed = true;

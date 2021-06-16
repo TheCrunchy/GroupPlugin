@@ -525,17 +525,10 @@ namespace AlliancesPlugin.Alliances
             }
             if (Invites.Contains(fac.FactionId))
             {
-
-                foreach (long id in AllianceMembers)
-                {
-                    IMyFaction allianceMember = MySession.Static.Factions.TryGetFactionById(id);
-                    if (allianceMember != null)
-                    {
-                        DoFriendlyUpdate(fac.FactionId, allianceMember.FactionId);
-                        MySession.Static.Factions.SetReputationBetweenFactions(fac.FactionId, allianceMember.FactionId, 1500);
-                    }
-                }
+                Invites.Remove(fac.FactionId);
+                AllianceMembers.Remove(fac.FactionId);
                 AllianceMembers.Add(fac.FactionId);
+                ForceFriendlies();
                 return true;
             }
             else

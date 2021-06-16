@@ -149,6 +149,20 @@ namespace AlliancesPlugin.Alliances
 
             return gps;
         }
+        [Command("list", "list all alliance")]
+        [Permission(MyPromoteLevel.None)]
+        public void AllianceList()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            foreach (string name in AlliancePlugin.AllAlliances.Keys)
+            {
+                sb.AppendLine(name);
+            }
+
+            DialogMessage m = new DialogMessage("Alliance List", "", sb.ToString());
+            ModCommunication.SendMessageTo(m, Context.Player.SteamUserId);
+        }
         [Command("join", "join an alliance")]
         [Permission(MyPromoteLevel.None)]
         public void AllianceJoin(string name)
@@ -187,7 +201,7 @@ namespace AlliancesPlugin.Alliances
                         {
                             Context.Respond("Joined alliance!");
                             AlliancePlugin.SaveAllianceData(alliance);
-                            alliance.ForceFriendlies();
+                            AlliancePlugin.FactionsInAlliances.Remove(fac.FactionId);
                             AlliancePlugin.FactionsInAlliances.Add(fac.FactionId, alliance.name);
 
                         }
@@ -770,6 +784,10 @@ namespace AlliancesPlugin.Alliances
 
                 }
                 alliance.AllianceMembers.Remove(fac.FactionId);
+                foreach (MyFactionMember m in fac.Members.Values)
+                {
+                    AllianceChat.PeopleInAllianceChat.Remove(MySession.Static.Players.TryGetSteamId(m.PlayerId));
+                }
                 AlliancePlugin.SaveAllianceData(alliance);
 
             }
@@ -822,6 +840,10 @@ namespace AlliancesPlugin.Alliances
                                 {
                                     MyFactionCollection.DeclareWar(member.FactionId, fac2.FactionId);
                                     MySession.Static.Factions.SetReputationBetweenFactions(id, fac2.FactionId, -1500);
+                                    foreach (MyFactionMember m in member.Members.Values)
+                                    {
+                                        AllianceChat.PeopleInAllianceChat.Remove(MySession.Static.Players.TryGetSteamId(m.PlayerId));
+                                    }
                                 }
                             }
                         }
@@ -1552,15 +1574,14 @@ namespace AlliancesPlugin.Alliances
             }
 
             Alliance alliance = AlliancePlugin.GetAlliance(fac);
-
+            if (AllianceChat.PeopleInAllianceChat.ContainsKey(Context.Player.SteamUserId))
+            {
+                AllianceChat.PeopleInAllianceChat.Remove(Context.Player.SteamUserId);
+                Context.Respond("Leaving alliance chat.", Color.Red);
+                return;
+            }
             if (alliance != null)
             {
-                if (AllianceChat.PeopleInAllianceChat.ContainsKey(Context.Player.SteamUserId))
-                {
-                    AllianceChat.PeopleInAllianceChat.Remove(Context.Player.SteamUserId);
-                    Context.Respond("Leaving alliance chat.", Color.Red);
-                }
-                else
                 {
                     AllianceChat.PeopleInAllianceChat.Add(Context.Player.SteamUserId, alliance.AllianceId);
                     Context.Respond("Entering alliance chat.", Color.Cyan);

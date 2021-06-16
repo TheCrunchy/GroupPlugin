@@ -15,6 +15,7 @@ Misc
 !alliance log <input>- show the log for moneys with optional time format input eg "MM-dd-yyyy"
 !alliance description <input> - changes the description
 !alliance chat - toggle alliance chat
+!alliance list - output all alliance names
 
 Bank
 !alliance deposit <amount> - deposit money, anyone can do it
