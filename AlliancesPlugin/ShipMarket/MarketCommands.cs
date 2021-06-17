@@ -417,6 +417,7 @@ namespace AlliancesPlugin.ShipMarket
                 {
                     Context.Respond("Run command again within 20 seconds to confirm. Target grid name is " + item.Name + " Sold by " + AlliancePlugin.GetPlayerName(item.SellerSteamId));
                     confirmations.Add(Context.Player.IdentityId, DateTime.Now.AddSeconds(20));
+                    Context.Respond("It costs " + String.Format("{0:n0}", item.Price) + " SC.");
                 }
             }
             else
