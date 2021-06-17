@@ -20,7 +20,19 @@ namespace AlliancesPlugin.KOTH
             AlliancePlugin.LoadConfig();
             Context.Respond("Reloaded");
         }
+        [Command("toggle", "enable or disable a koth")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void ToggleKoth(string name)
+        {
+            foreach (KothConfig koth in AlliancePlugin.KOTHs)
+            {
+                if (koth.KothName.Equals(name))
+                {
+                    koth.enabled = !koth.enabled;
+                }
 
+            }
+        }
         [Command("unlock", "unlock koth")]
         [Permission(MyPromoteLevel.Admin)]
         public void UnlockKoth(string name, string allianceName = "")

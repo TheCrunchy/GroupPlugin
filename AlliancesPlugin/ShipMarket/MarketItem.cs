@@ -50,11 +50,11 @@ namespace AlliancesPlugin.ShipMarket
         }
         public ItemStatus Status;
         public DateTime soldAt;
-        public MarketItem(List<MyCubeGrid> grids, string name, long price, ulong SteamId, List<String> tags)
+        public ulong Buyer;
+        public void Setup(List<MyCubeGrid> grids, string name, long price, ulong SteamId)
         {
             Status = ItemStatus.Listed;
             this.Name = name;
-            GridTags = tags;
             this.Price = price;
             foreach (MyCubeGrid grid in grids)
             {

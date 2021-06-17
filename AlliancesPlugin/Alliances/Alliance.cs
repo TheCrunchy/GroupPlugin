@@ -297,7 +297,8 @@ namespace AlliancesPlugin.Alliances
                 {
                     perms.Append(level.ToString() + ", ");
                 }
-                sb.AppendLine(customs.Key + "Permissions : " + perms.ToString());
+                sb.AppendLine("");
+                sb.AppendLine(customs.Key + " Permissions : " + perms.ToString());
                 sb.AppendLine(customs.Key + " tax rate : " + CustomRankPermissions[customs.Key].taxRate * 100 + "%");
             }
 

@@ -749,7 +749,10 @@ namespace AlliancesPlugin.Hangar
 
                         foreach (MyCubeGrid grid in grids)
                         {
-                            grid.Close();
+                            if (grid != null)
+                            {
+                                grid.Close();
+                            }
                         }
                     }
                 }

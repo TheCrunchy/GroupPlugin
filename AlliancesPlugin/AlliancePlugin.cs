@@ -34,6 +34,7 @@ using AlliancesPlugin.Hangar;
 using AlliancesPlugin.Shipyard;
 using AlliancesPlugin.JumpGates;
 using VRage.Utils;
+using AlliancesPlugin.ShipMarket;
 
 namespace AlliancesPlugin
 {
@@ -105,6 +106,22 @@ namespace AlliancesPlugin
             {
                 Directory.CreateDirectory(path + "//JumpGates//");
             }
+            if (!Directory.Exists(path + "//ShipMarket//"))
+            {
+                Directory.CreateDirectory(path + "//ShipMarket//");
+            }
+            if (!Directory.Exists(path + "//ShipMarket//ForSale//"))
+            {
+                Directory.CreateDirectory(path + "//ShipMarket//ForSale//");
+            }
+            if (!Directory.Exists(path + "//ShipMarket//Sold//"))
+            {
+                Directory.CreateDirectory(path + "//ShipMarket//Sold//");
+            }
+            if (!Directory.Exists(path + "//ShipMarket//Grids//"))
+            {
+                Directory.CreateDirectory(path + "//ShipMarket//Grids//");
+            }
             TorchBase = Torch;
             LoadAllAlliances();
             LoadAllGates();
@@ -141,14 +158,7 @@ namespace AlliancesPlugin
             }
             var folder2 = "";
             Directory.CreateDirectory(folder);
-            if (config.StoragePath.Equals("default"))
-            {
                 folder2 = Path.Combine(StoragePath + "//Alliances//KOTH//");
-            }
-            else
-            {
-                folder2 = config.StoragePath + "//KOTH//";
-            }
             Directory.CreateDirectory(folder2);
             if (config.StoragePath.Equals("default"))
             {
@@ -178,7 +188,7 @@ namespace AlliancesPlugin
             FileUtils utils = new FileUtils();
             config = utils.ReadFromXmlFile<Config>(basePath + "\\Alliances.xml");
             KOTHs.Clear();
-            foreach (String s in Directory.GetFiles(path + "//KOTH//"))
+            foreach (String s in Directory.GetFiles(basePath + "//Alliances//KOTH//"))
             {
 
 
@@ -342,9 +352,13 @@ namespace AlliancesPlugin
                 //    {
                 //     File.Create(path + "//bank.db");
                 // }
-                if (!File.Exists(path + "//KOTH//example.xml"))
+                if (!Directory.Exists(basePath + "//Alliances"))
                 {
-                    utils.WriteToXmlFile<KothConfig>(path + "//KOTH//example.xml", new KothConfig(), false);
+                    Directory.CreateDirectory(basePath + "//Alliances//");
+                }
+                if (!File.Exists(basePath + "//Alliances//KOTH//example.xml"))
+                {
+                    utils.WriteToXmlFile<KothConfig>(basePath + "//KOTH//example.xml", new KothConfig(), false);
                 }
                 if (!Directory.Exists(path + "//ShipyardUpgrades//"))
                 {
@@ -466,7 +480,7 @@ namespace AlliancesPlugin
                     ReloadShipyard();
                 }
 
-                foreach (String s in Directory.GetFiles(path + "//KOTH//"))
+                foreach (String s in Directory.GetFiles(basePath + "//Alliances//KOTH//"))
                 {
 
 
@@ -971,7 +985,6 @@ namespace AlliancesPlugin
 
                                     Log.Info("Contested faction " + fac.Tag + " " + capturingNation);
                                     contested = true;
-
                                 }
                                 else
                                 {
@@ -993,45 +1006,44 @@ namespace AlliancesPlugin
 
                                 Log.Info("Contested no faction");
                                 contested = true;
-                                break;
                             }
                         }
 
-                        if (!contested)
-                        {
-                            //now check characters
-                            foreach (MyCharacter character in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCharacter>())
-                            {
-                                if (character.MarkedForClose)
-                                    continue;
+                        //if (!contested)
+                        //{
+                        //    //now check characters
+                        //    foreach (MyCharacter character in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCharacter>())
+                        //    {
+                        //        if (character.MarkedForClose)
+                        //            continue;
 
-                                entitiesInCapPoint++;
-                                IMyFaction fac = MySession.Static.Factions.GetPlayerFaction(character.GetPlayerIdentityId());
-                                if (fac != null)
-                                {
-                                    float distance = Vector3.Distance(position, character.PositionComp.GetPosition());
-                                    if (IsContested(fac, config, capturingNation) && capturingNation != Guid.Empty)
-                                    {
-                                        Log.Info("Contested character");
-                                        contested = true;
-                                        break;
-                                    }
-                                    else
-                                    {
-                                        Alliance alliance = GetNationTag(fac);
-                                        if (alliance != null)
-                                        {
-                                            capturingNation = GetNationTag(fac).AllianceId;
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    Log.Info("Contested character");
-                                    contested = true;
-                                }
-                            }
-                        }
+                        //        entitiesInCapPoint++;
+                        //        IMyFaction fac = MySession.Static.Factions.GetPlayerFaction(character.GetPlayerIdentityId());
+                        //        if (fac != null)
+                        //        {
+                        //            float distance = Vector3.Distance(position, character.PositionComp.GetPosition());
+                        //            if (IsContested(fac, config, capturingNation) && capturingNation != Guid.Empty)
+                        //            {
+                        //                Log.Info("Contested character");
+                        //                contested = true;
+                        //                break;
+                        //            }
+                        //            else
+                        //            {
+                        //                Alliance alliance = GetNationTag(fac);
+                        //                if (alliance != null)
+                        //                {
+                        //                    capturingNation = GetNationTag(fac).AllianceId;
+                        //                }
+                        //            }
+                        //        }
+                        //        else
+                        //        {
+                        //            Log.Info("Contested character");
+                        //            contested = true;
+                        //        }
+                        //    }
+                        //}
 
 
                         if (DateTime.Now >= config.nextCaptureAvailable)
@@ -1094,7 +1106,7 @@ namespace AlliancesPlugin
                                                 Log.Info("Locking because no active cap block");
 
                                                 config.capturingNation = Guid.Empty;
-                                                config.nextCaptureAvailable = DateTime.Now.AddHours(1);
+                                                config.nextCaptureAvailable = DateTime.Now.AddHours(config.hourCooldownAfterFail);
                                                 //broadcast that its locked
                                                 config.amountCaptured = 0;
                                                 config.CaptureStarted = false;
@@ -1136,7 +1148,7 @@ namespace AlliancesPlugin
 
                                                     locked = true;
                                                     config.nextCaptureAvailable = DateTime.Now.AddHours(config.hoursToLockAfterCap);
-                                                    config.capturingNation = capturingNation;
+                                                    config.capturingNation = Guid.Empty;
                                                     config.owner = capturingNation;
                                                     config.amountCaptured = 0;
                                                     config.CaptureStarted = false;
@@ -1166,6 +1178,7 @@ namespace AlliancesPlugin
                                                         Log.Error("Cant do discord message for koth.");
                                                         SendChatMessage(config.KothName + " capture progress " + config.amountCaptured + " out of " + config.PointsToCap + " by " + GetAllianceNoLoading(capturingNation).name);
                                                     }
+                                                    continue;
                                                     //         config.nextBroadcast = DateTime.Now.AddMinutes(config.MinsPerCaptureBroadcast);
                                                     //  }
                                                 }
@@ -1205,12 +1218,12 @@ namespace AlliancesPlugin
                                     {
                                         Log.Info("Locking because no active cap block");
                                         config.capturingNation = Guid.Empty;
-                                        config.nextCaptureAvailable = DateTime.Now.AddHours(1);
+                                        config.nextCaptureAvailable = DateTime.Now.AddHours(config.hourCooldownAfterFail);
                                         config.CaptureStarted = false;
                                         //broadcast that its locked
 
                                         config.amountCaptured = 0;
-                                        SendChatMessage("Locked because capture blocks are dead");
+                                     //   SendChatMessage("Locked because capture blocks are dead");
 
                                         try
                                         {
@@ -1219,27 +1232,23 @@ namespace AlliancesPlugin
                                         catch (Exception)
                                         {
                                             Log.Error("Cant do discord message for koth.");
-
+                                            SendChatMessage(config.KothName + " Locked, Capture blocks are missing or destroyed. Locked for " + config.hourCooldownAfterFail + " hours");
                                         }
                                     }
                                     if (contested && config.CaptureStarted)
                                     {
                                         Log.Info("Its contested or the fuckers trying to cap have no nation");
                                         //send contested message
-                                        SendChatMessage("Contested or unaff trying to cap");
+                                      //  SendChatMessage("Contested");
                                         try
                                         {
                                             DiscordStuff.SendMessageToDiscord(config.KothName + " Capture point contested!", config);
                                         }
                                         catch (Exception)
                                         {
-
+                                            SendChatMessage(config.KothName + " Capture point contested!");
                                             Log.Error("Cant do discord message for koth.");
                                         }
-                                    }
-                                    else
-                                    {
-                                        SendChatMessage("Not contested, no cap block, no capping nation");
                                     }
                                 }
                             }
@@ -1307,9 +1316,9 @@ namespace AlliancesPlugin
                                         SpawnCores(lootgrid, config);
 
                                     }
-                                 
+
                                     config.nextCoreSpawn = DateTime.Now.AddSeconds(config.SecondsBetweenCoreSpawn / 2);
-                                    SendChatMessage("Spawning loot!");
+                                    SendChatMessage(config.KothName + " Spawning loot!");
                                     Alliance alliance = GetAlliance(config.owner);
                                     if (alliance != null)
                                     {
@@ -1319,7 +1328,7 @@ namespace AlliancesPlugin
                                             DatabaseForBank.AddToBalance(alliance, config.SpaceMoneyReward);
                                         }
                                         SaveAllianceData(alliance);
-                                   
+
                                     }
                                     SaveKothConfig(config.KothName, config);
                                 }
@@ -1331,7 +1340,7 @@ namespace AlliancesPlugin
                                         SpawnCores(lootgrid, config);
 
                                     }
-                                    SendChatMessage("Spawning loot!");
+                                    SendChatMessage(config.KothName + " Spawning loot!");
                                     config.nextCoreSpawn = DateTime.Now.AddSeconds(config.SecondsBetweenCoreSpawn);
                                     Alliance alliance = GetAlliance(config.owner);
                                     if (alliance != null)
@@ -1376,37 +1385,111 @@ namespace AlliancesPlugin
             ticks++;
             if (ticks % 512 == 0)
             {
-                DoTaxStuff();
+                try
+                {
+                    DoTaxStuff();
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex);
+                }
 
             }
-      
-
-                if (DateTime.Now > NextUpdate)
-                {
-                    Log.Info("Doing alliance tasks");
-                    DateTime now = DateTime.Now;
-                    NextUpdate = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute + 1, 0, 0, DateTimeKind.Utc);
-
-                    LoadAllAlliances();
-                    LoadAllGates();
-
-                    LoadAllJumpZones();
-
-                    OrganisePlayers();
-                }
-            if (ticks % 32 == 0)
+            try
             {
-                if (config.JumpGatesEnabled)
-                {
-                    DoJumpGateStuff();
-                }
-            }
                 if (config.KothEnabled)
                 {
                     DoKothStuff();
                 }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+            }
 
-            
+            if (DateTime.Now > NextUpdate)
+            {
+                Log.Info("Doing alliance tasks");
+                DateTime now = DateTime.Now;
+                try
+                {
+                    if (now.Minute == 59 || now.Minute == 60)
+                    {
+                        NextUpdate = new DateTime(now.Year, now.Month, now.Day, now.Hour, 0, 0, 0, DateTimeKind.Utc);
+                    }
+                    else
+                    {
+                        NextUpdate = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute + 1, 0, 0, DateTimeKind.Utc);
+                    }
+                }
+                catch (Exception)
+                {
+                    NextUpdate = now.AddSeconds(60);
+                }
+                try
+                {
+                   MarketCommands.list.RefreshList();
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex);
+                }
+
+                try
+                {
+                    LoadAllAlliances();
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex);
+                }
+                try
+                {
+                    LoadAllGates();
+                }
+                catch (Exception ex)
+                {
+
+                    Log.Error(ex);
+                }
+
+                try
+                {
+                    LoadAllJumpZones();
+
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex);
+                }
+
+                try
+                {
+                    OrganisePlayers();
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex);
+
+                }
+            }
+            if (ticks % 32 == 0)
+            {
+                if (config.JumpGatesEnabled)
+                {
+                    try
+                    {
+                        DoJumpGateStuff();
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex);
+                    }
+                }
+            }
+   
+
+
         }
         public static MyCubeGrid GetLootboxGrid(Vector3 position, KothConfig config)
         {
@@ -1491,7 +1574,7 @@ namespace AlliancesPlugin
         public static KothConfig SaveKothConfig(String name, KothConfig config)
         {
             FileUtils utils = new FileUtils();
-            utils.WriteToXmlFile<KothConfig>(path + "//KOTH//" + name + ".xml", config);
+            utils.WriteToXmlFile<KothConfig>(basePath + "//Alliances//KOTH//" + name + ".xml", config);
 
             return config;
         }
