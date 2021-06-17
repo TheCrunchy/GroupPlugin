@@ -193,7 +193,16 @@ namespace AlliancesPlugin
 
 
                 KothConfig koth = utils.ReadFromXmlFile<KothConfig>(s);
-
+                DateTime now = DateTime.Now;
+                if (now.Minute == 59 || now.Minute == 60)
+                {
+                    koth.nextCaptureInterval = new DateTime(now.Year, now.Month, now.Day, now.Hour + 1, 0, 0, 0, DateTimeKind.Utc);
+                }
+                else
+                {
+                    koth.nextCaptureInterval = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute + 1, 0, 0, DateTimeKind.Utc);
+                }
+               
                 KOTHs.Add(koth);
             }
 
@@ -1415,7 +1424,7 @@ namespace AlliancesPlugin
                 {
                     if (now.Minute == 59 || now.Minute == 60)
                     {
-                        NextUpdate = new DateTime(now.Year, now.Month, now.Day, now.Hour, 0, 0, 0, DateTimeKind.Utc);
+                        NextUpdate = new DateTime(now.Year, now.Month, now.Day, now.Hour + 1, 0, 0, 0, DateTimeKind.Utc);
                     }
                     else
                     {

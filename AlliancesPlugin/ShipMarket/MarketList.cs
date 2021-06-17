@@ -64,22 +64,19 @@ namespace AlliancesPlugin.ShipMarket
 
         public Boolean AddItem(MarketItem item)
         {
-            if (!items.ContainsKey(count += 1))
+            bool added = false;
+            int attempt = count +=1;
+            while (!added)
             {
-                items.Add(count += 1, item);
-                count += 1;
-                return true;
-            }
-            else
-            {
-                if (!items.ContainsKey(count += 2))
+                if (!items.ContainsKey(attempt))
                 {
-                    items.Add(count += 2, item);
-                    count += 2;
+                    items.Add(attempt, item);
+                    count = attempt;
                     return true;
                 }
-
+                attempt++;
             }
+          
             return false;
         }
         public Boolean RemoveItem(int item)

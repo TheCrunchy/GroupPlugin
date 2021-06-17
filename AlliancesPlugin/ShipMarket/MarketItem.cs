@@ -17,13 +17,13 @@ namespace AlliancesPlugin.ShipMarket
         public Guid ItemId = System.Guid.NewGuid();
         public long Price;
         public Dictionary<String, Dictionary<String, int>> CountsOfBlocks = new Dictionary<String, Dictionary<String, int>>();
-        public Dictionary<MyDefinitionId, MyFixedPoint> Cargo = new Dictionary<MyDefinitionId, MyFixedPoint>();
+        public Dictionary<string, MyFixedPoint> Cargo = new Dictionary<string, MyFixedPoint>();
         public string Name;
         public List<String> GridTags;
         public int PCU;
         public string Description;
         public int BlockCount;
-        public float GridMass;
+       public float GridMass;
 
         public void AddTag(string tag)
         {
@@ -56,15 +56,18 @@ namespace AlliancesPlugin.ShipMarket
             Status = ItemStatus.Listed;
             this.Name = name;
             this.Price = price;
+            this.SellerSteamId = SteamId;
+            this.Description = "Not set.";
             foreach (MyCubeGrid grid in grids)
             {
                 this.PCU += grid.BlocksPCU;
                 this.BlockCount += grid.BlocksCount;
-                this.GridMass += grid.Mass;
+               this.GridMass += grid.Mass;
                 foreach (MyCubeBlock block in grid.GetFatBlocks())
                 {
- 
-                    AddToBlockCounts(block.DefinitionId.Value.TypeId.ToString(), block.DefinitionId.Value.SubtypeName);
+                    
+                        AddToBlockCounts(block.BlockDefinition.Id.TypeId.ToString().Replace("MyObjectBuilder_", ""), block.BlockDefinition.Id.SubtypeName);
+                    
                     if (block.HasInventory)
                     {
                         List<MyPhysicalInventoryItem> items = new List<MyPhysicalInventoryItem>();
@@ -89,20 +92,20 @@ namespace AlliancesPlugin.ShipMarket
         }
         public void AddToCargo(MyDefinitionId id, MyFixedPoint amount)
         {
-            if (Cargo.ContainsKey(id))
+            if (Cargo.ContainsKey(id.ToString()))
             {
-                Cargo[id] += amount;
+                Cargo[id.ToString()] += amount;
             }
             else
             {
-                Cargo.Add(id, amount);
+                Cargo.Add(id.ToString(), amount);
             }
         }
         public void AddToBlockCounts(string type, string subtype)
         {
             if (CountsOfBlocks.TryGetValue(type, out Dictionary<String, int> counts))
             {
-                if (CountsOfBlocks.ContainsKey(subtype))
+                if (counts.ContainsKey(subtype))
                 {
                     //     blockCounts.Remove(type);
                     //     blockCounts.Add(type, value++);
