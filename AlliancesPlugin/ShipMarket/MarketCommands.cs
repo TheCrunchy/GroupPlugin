@@ -166,6 +166,7 @@ namespace AlliancesPlugin.ShipMarket
                         if (!grids.Contains(grid))
                         {
                          
+                        
                             foreach (MySurvivalKit block in grid.GetFatBlocks().OfType<MySurvivalKit>())
                             {
                                 block.CustomData = "Custom Data was cleared.";
@@ -218,7 +219,7 @@ namespace AlliancesPlugin.ShipMarket
             }
         }
 
-        [Command("add tag", "add a tag to the item listing")]
+        [Command("remove tag", "add a tag to the item listing")]
         [Permission(MyPromoteLevel.Admin)]
         public void RemoveTag(int number, string tag)
         {

@@ -77,3 +77,15 @@ Admin gate commands
 !jumpgate toggle gatename - toggles a gate on/off
 
 !jumpzone reload - reload the configs for jump exclusion zones
+
+
+Shipmarket
+!market view - view everything in the market
+!market search input
+!market info number - view detailed info on the target grid
+!market buy number - buy that grid
+!market sell price name - put the grid you are looking at on the market if you own it
+!market end id - cancel the listing and paste the grid in its original position
+!market add tag id tags - add tags to the grid
+!market remove tag id tag - remove tags from the grid
+!market description id description - change the items description
