@@ -89,3 +89,4 @@ Shipmarket
 !market add tag id tags - add tags to the grid
 !market remove tag id tag - remove tags from the grid
 !market description id description - change the items description
+!market me - get ids of your grids in market
