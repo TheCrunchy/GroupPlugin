@@ -176,6 +176,7 @@ namespace AlliancesPlugin.Alliances
                 }
                 else
                 {
+                    cooldowns.Remove(Context.Player.IdentityId);
                     cooldowns.Add(Context.Player.IdentityId, DateTime.Now.AddSeconds(60));
                 }
             }
@@ -190,6 +191,7 @@ namespace AlliancesPlugin.Alliances
                 Context.Respond("Only factions can join alliances");
                 return;
             }
+            //name = Context.RawArgs;
             if (fac.IsLeader(Context.Player.IdentityId) || fac.IsFounder(Context.Player.IdentityId))
             {
                 Alliance alliance = AlliancePlugin.GetAlliance(name);
@@ -204,6 +206,7 @@ namespace AlliancesPlugin.Alliances
                             AlliancePlugin.FactionsInAlliances.Remove(fac.FactionId);
                             AlliancePlugin.FactionsInAlliances.Add(fac.FactionId, alliance.name);
                             AllianceChat.SendChatMessage(alliance.AllianceId, "Alliance", fac.Tag + " has joined the alliance!", true);
+                            cooldowns.Remove(Context.Player.IdentityId);
                         }
                         else
                         {

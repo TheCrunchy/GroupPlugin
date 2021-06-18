@@ -392,6 +392,7 @@ namespace AlliancesPlugin.ShipMarket
                             item.soldAt = DateTime.Now;
                             item.Status = ItemStatus.Sold;
                             Context.Respond("The grid should appear near you.");
+                            confirmations.Remove(Context.Player.IdentityId);
                             if (!Directory.Exists(AlliancePlugin.path + "//ShipMarket//Sold//" + item.SellerSteamId))
                             {
                                 Directory.CreateDirectory(AlliancePlugin.path + "//ShipMarket//Sold//" + item.SellerSteamId);

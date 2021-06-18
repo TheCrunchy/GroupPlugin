@@ -367,7 +367,7 @@ namespace AlliancesPlugin
                 }
                 if (!File.Exists(basePath + "//Alliances//KOTH//example.xml"))
                 {
-                    utils.WriteToXmlFile<KothConfig>(basePath + "//KOTH//example.xml", new KothConfig(), false);
+                    utils.WriteToXmlFile<KothConfig>(basePath + "//Alliances//KOTH//example.xml", new KothConfig(), false);
                 }
                 if (!Directory.Exists(path + "//ShipyardUpgrades//"))
                 {
