@@ -23,7 +23,7 @@ namespace AlliancesPlugin.Alliances
         public static bool Ready { get; set; } = false;
         public static DiscordClient Discord { get; set; }
         public static List<ulong> ChannelIds = new List<ulong>();
-        private static Dictionary<Guid, DiscordClient> allianceBots = new Dictionary<Guid, DiscordClient>();
+        public static Dictionary<Guid, DiscordClient> allianceBots = new Dictionary<Guid, DiscordClient>();
         private static Dictionary<ulong, Guid> allianceChannels = new Dictionary<ulong, Guid>();
         public static Task RegisterDiscord()
         {
@@ -48,7 +48,8 @@ namespace AlliancesPlugin.Alliances
                     });
                 }
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 AlliancePlugin.Log.Error(ex);
                 Ready = false;
                 return Task.CompletedTask;
@@ -94,6 +95,7 @@ namespace AlliancesPlugin.Alliances
                             TokenType = TokenType.Bot
                         });
                     }
+          
                 }
                 catch (Exception ex)
                 {
@@ -109,12 +111,14 @@ namespace AlliancesPlugin.Alliances
                 bot.Ready += async e =>
                 {
                     AllianceReady = true;
+            
                     await Task.CompletedTask;
                 };
 
+                allianceBots.Remove(alliance.AllianceId);
+                allianceChannels.Remove(alliance.DiscordChannelId);
                 allianceBots.Add(alliance.AllianceId, bot);
                 allianceChannels.Add(channelId, alliance.AllianceId);
-               
             }
             return Task.CompletedTask;
         }
@@ -174,8 +178,9 @@ namespace AlliancesPlugin.Alliances
         {
             if (AllianceReady && alliance.DiscordChannelId > 0)
             {
-                DiscordChannel chann = Discord.GetChannelAsync(alliance.DiscordChannelId).Result;
+               
                 DiscordClient bot = allianceBots[alliance.AllianceId];
+                DiscordChannel chann = bot.GetChannelAsync(alliance.DiscordChannelId).Result;
                 if (bot == null)
                 {
                     return;
@@ -202,18 +207,21 @@ namespace AlliancesPlugin.Alliances
         public static Dictionary<Guid, string> LastMessageSent = new Dictionary<Guid, string>();
         private static Task Discord_AllianceMessage(DSharpPlus.EventArgs.MessageCreateEventArgs e)
         {
-            if (allianceChannels.ContainsKey(e.Channel.Id)){
+            if (allianceChannels.ContainsKey(e.Channel.Id))
+            {
                 if (e.Author.IsBot)
                 {
-                    if (LastMessageSent.ContainsKey(allianceChannels[e.Channel.Id])){
-                        if (LastMessageSent[allianceChannels[e.Channel.Id]].Equals(e.Message.Content)){
+                    if (LastMessageSent.ContainsKey(allianceChannels[e.Channel.Id]))
+                    {
+                        if (LastMessageSent[allianceChannels[e.Channel.Id]].Equals(e.Message.Content))
+                        {
                             return Task.CompletedTask;
                         }
                     }
                     String[] split = e.Message.Content.Split(':');
                     int i = 0;
                     StringBuilder message = new StringBuilder();
-                   foreach (String s in split)
+                    foreach (String s in split)
                     {
                         if (i == 0)
                         {
@@ -222,7 +230,7 @@ namespace AlliancesPlugin.Alliances
                         }
                         message.Append(s);
                     }
-             
+
                     AllianceChat.SendChatMessage(allianceChannels[e.Channel.Id], split[0].Replace("*", ""), e.Message.Content.Replace(split[0] + " : ", "").TrimStart());
                 }
                 else
@@ -250,7 +258,7 @@ namespace AlliancesPlugin.Alliances
                         ShipyardCommands.SendMessage(e.Author.Username, e.Message.Content, Color.LightGreen, 0L);
                     }
                 }
-             
+
             }
             return Task.CompletedTask;
         }

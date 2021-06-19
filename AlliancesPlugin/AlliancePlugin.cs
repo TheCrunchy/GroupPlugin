@@ -614,12 +614,30 @@ namespace AlliancesPlugin
                 {
                     Log.Error(ex);
                 }
+                Log.Info("Registering bots");
                 foreach (Alliance alliance in AllAlliances.Values)
                 {
                     alliance.ForceFriendlies();
                     alliance.ForceEnemies();
-                    if (alliance.DiscordChannelId > 0 && !String.IsNullOrEmpty(alliance.DiscordToken))
+                    if (alliance.DiscordChannelId > 0 && !String.IsNullOrEmpty(alliance.DiscordToken) && TorchState == TorchSessionState.Loaded)
                     {
+                      //  Log.Info(Encryption.DecryptString(alliance.AllianceId.ToString(), alliance.DiscordToken).Length);
+                       
+                        try
+                        {
+                            if (Encryption.DecryptString(alliance.AllianceId.ToString(), alliance.DiscordToken).Length != 59)
+                            {
+                                Log.Error("Invalid bot token for " + alliance.AllianceId);
+                                continue;
+                            }
+                 
+                        }
+                        catch (Exception ex)
+                        {
+                          //  Log.Error(ex);
+                            Log.Error("Invalid bot token for " + alliance.AllianceId);
+                            continue;
+                        }
                         DiscordStuff.RegisterAllianceBot(alliance, alliance.DiscordChannelId);
                     }
                 }

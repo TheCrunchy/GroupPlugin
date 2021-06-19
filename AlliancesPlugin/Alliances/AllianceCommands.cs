@@ -52,7 +52,9 @@ namespace AlliancesPlugin.Alliances
                     string encrypted = Encryption.EncryptString(alliance.AllianceId.ToString(), token);
                     alliance.DiscordToken = encrypted;
                     AlliancePlugin.SaveAllianceData(alliance);
-                    Context.Respond("Added token! If the channel Id is also set the bot should start working in a couple minutes.");
+                    DiscordStuff.allianceBots.Remove(alliance.AllianceId);
+                    
+                    Context.Respond("Added token! If the channel Id is also set the bot should start working after next server restart.");
                 }
                 else
                 {
@@ -80,10 +82,19 @@ namespace AlliancesPlugin.Alliances
             {
                 if (alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
                 {
-                   
-                    alliance.DiscordChannelId = ulong.Parse(channel);
+
+                    try
+                    {
+                        alliance.DiscordChannelId = ulong.Parse(channel);
+                    }
+                    catch (Exception)
+                    {
+                        Context.Respond("Cannot parse that number.");
+                        Context.Respond("Example usage - !alliance channel 785562535494549505");
+                        return;
+                    }
                     AlliancePlugin.SaveAllianceData(alliance);
-                    Context.Respond("Added Channel Id! If the token is also set the bot should start working in a couple minutes.");
+                    Context.Respond("Added Channel Id! If the token is also set the bot should start working after next server restart.");
                 }
                 else
                 {
