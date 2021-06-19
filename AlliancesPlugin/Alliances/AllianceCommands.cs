@@ -72,7 +72,7 @@ namespace AlliancesPlugin.Alliances
         }
         [Command("chatcolor", "change the alliance chat color")]
         [Permission(MyPromoteLevel.None)]
-        public void AllianceColor(float r, float g, float b)
+        public void AllianceColor(int r, int g, int b)
         {
             MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
             if (fac == null)
@@ -85,7 +85,9 @@ namespace AlliancesPlugin.Alliances
             {
                 if (alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
                 {
-                    alliance.ChatColor = new Color(r, g, b);
+                    alliance.r = r;
+                    alliance.g = g;
+                    alliance.b = b;
                     AlliancePlugin.SaveAllianceData(alliance);
 
                     Context.Respond("Color updated!");
