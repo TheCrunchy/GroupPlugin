@@ -43,7 +43,11 @@ namespace AlliancesPlugin.Alliances
                 Context.Respond("Only factions can be in alliances.");
                 return;
             }
-
+            if (token.Length != 59)
+            {
+                Context.Respond("Token not a valid length!");
+                return;
+            }
             Alliance alliance = AlliancePlugin.GetAlliance(fac);
             if (alliance != null)
             {
@@ -55,6 +59,36 @@ namespace AlliancesPlugin.Alliances
                     DiscordStuff.allianceBots.Remove(alliance.AllianceId);
                     
                     Context.Respond("Added token! If the channel Id is also set the bot should start working after next server restart.");
+                }
+                else
+                {
+                    Context.Respond("Only the supreme leader can set the bot token.");
+                }
+            }
+            else
+            {
+                Context.Respond("You dont have an alliance.");
+            }
+        }
+        [Command("chatcolor", "change the alliance chat color")]
+        [Permission(MyPromoteLevel.None)]
+        public void AllianceColor(float r, float g, float b)
+        {
+            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
+            if (fac == null)
+            {
+                Context.Respond("Only factions can be in alliances.");
+                return;
+            }
+            Alliance alliance = AlliancePlugin.GetAlliance(fac);
+            if (alliance != null)
+            {
+                if (alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
+                {
+                    alliance.ChatColor = new Color(r, g, b);
+                    AlliancePlugin.SaveAllianceData(alliance);
+
+                    Context.Respond("Color updated!");
                 }
                 else
                 {

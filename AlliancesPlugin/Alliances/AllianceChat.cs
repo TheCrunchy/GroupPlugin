@@ -98,7 +98,7 @@ namespace AlliancesPlugin.Alliances
                 foreach (ulong id in OtherMembers)
                 {
 
-                    ShipyardCommands.SendMessage(prefix, message, new Color(66, 163, 237), (long)id);
+                    ShipyardCommands.SendMessage(prefix, message, alliance.ChatColor, (long)id);
                     MyGpsCollection gpscol = (MyGpsCollection)MyAPIGateway.Session?.GPS;
 
                     if (ScanChat(message, null) != null)
@@ -136,7 +136,7 @@ namespace AlliancesPlugin.Alliances
             foreach (ulong id in OtherMembers)
             {
 
-                ShipyardCommands.SendMessage(prefix, message, new Color(66, 163, 237), (long)id);
+                ShipyardCommands.SendMessage(prefix, message, alliance.ChatColor, (long)id);
                 MyGpsCollection gpscol = (MyGpsCollection)MyAPIGateway.Session?.GPS;
 
                 if (ScanChat(message, null) != null)

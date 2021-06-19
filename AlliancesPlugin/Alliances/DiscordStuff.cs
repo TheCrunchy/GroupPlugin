@@ -102,7 +102,7 @@ namespace AlliancesPlugin.Alliances
                     AlliancePlugin.Log.Error(ex);
                     return Task.CompletedTask;
                 }
-
+                
                 bot.ConnectAsync();
 
                 bot.MessageCreated += Discord_AllianceMessage;

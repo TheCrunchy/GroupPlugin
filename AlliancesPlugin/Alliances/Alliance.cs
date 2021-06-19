@@ -12,6 +12,8 @@ using AlliancesPlugin.Hangar;
 using AlliancesPlugin.Shipyard;
 using AlliancesPlugin.JumpGates;
 using VRage.Game;
+using System.Numerics;
+using VRageMath;
 
 namespace AlliancesPlugin.Alliances
 {
@@ -47,6 +49,8 @@ namespace AlliancesPlugin.Alliances
 
         public bool ElectionCycle = false;
         public long ShipyardFee = 25000000;
+        public Color ChatColor = new Color(66, 163, 237);
+
         public Boolean HasAccess(ulong id, AccessLevel level)
         {
             if (SupremeLeader == id)
