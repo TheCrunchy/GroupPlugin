@@ -26,7 +26,7 @@ namespace AlliancesPlugin
         }
         public static void takeMoney(long walletID, Int64 amount)
         {
-            if (getBalance(walletID) > amount)
+            if (getBalance(walletID) >= amount)
             {
                 amount = amount * -1;
                 MyBankingSystem.ChangeBalance(walletID, amount);

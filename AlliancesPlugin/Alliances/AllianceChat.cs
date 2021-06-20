@@ -104,7 +104,7 @@ namespace AlliancesPlugin.Alliances
             prefix = prefix.Replace(":", "");
             Alliance alliance = AlliancePlugin.GetAllianceNoLoading(allianceId);
             List<ulong> OtherMembers = new List<ulong>();
-
+            message = message.Replace("@", "");
 
             log.Info(allianceId.ToString() + " : " + alliance.name + " : " + prefix + " " + message);
             if (toDiscord && DiscordStuff.AllianceHasBot(allianceId))
