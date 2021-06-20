@@ -182,7 +182,13 @@ namespace AlliancesPlugin.Alliances
 
                             collection.Update(bank);
                         }
-
+                        foreach (KeyValuePair<long, float> tax in key.Value)
+                        {
+                            if (EconUtils.getBalance(tax.Key) >= tax.Value)
+                            {
+                                EconUtils.takeMoney(tax.Key, (long)tax.Value);
+                            }
+                        }
 
                     }
                 }

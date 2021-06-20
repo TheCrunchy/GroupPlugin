@@ -939,19 +939,9 @@ namespace AlliancesPlugin
                     }
                 }
             }
-            if (DatabaseForBank.Taxes(taxes))
-            {
-                foreach (Dictionary<long, float> tax in taxes.Values)
-                {
-                   foreach (KeyValuePair<long, float> t in tax)
-                    {
-                        if (EconUtils.getBalance(t.Key) >= t.Value)
-                        {
-                            EconUtils.takeMoney(t.Key, (long) t.Value);
-                        }
-                    }
-                }
-            }
+
+            DatabaseForBank.Taxes(taxes));
+
             foreach (long id in Processed)
             {
                 TaxesToBeProcessed.Remove(id);
