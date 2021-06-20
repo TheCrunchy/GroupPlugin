@@ -185,16 +185,7 @@ namespace AlliancesPlugin.Alliances
                 {
                     return;
                 }
-                botId = bot.SendMessageAsync(chann, "**" + prefix + "**: " + message.Replace(" /n", "\n")).Result.Author.Id;
-
-                if (LastMessageSent.ContainsKey(alliance.AllianceId))
-                {
-                    LastMessageSent[alliance.AllianceId] = "**" + prefix + "**: " + message.Replace(" /n", "\n");
-                }
-                else
-                {
-                    LastMessageSent.Add(alliance.AllianceId, "**" + prefix + "**: " + message.Replace(" /n", "\n"));
-                }
+                botId = bot.SendMessageAsync(chann, "**" + prefix + "**:" + message.Replace(" /n", "\n")).Result.Author.Id;
             }
         }
 
@@ -211,13 +202,13 @@ namespace AlliancesPlugin.Alliances
             {
                 if (e.Author.IsBot)
                 {
-                    if (LastMessageSent.ContainsKey(allianceChannels[e.Channel.Id]))
-                    {
-                        if (LastMessageSent[allianceChannels[e.Channel.Id]].Equals(e.Message.Content))
-                        {
-                            return Task.CompletedTask;
-                        }
-                    }
+                    //if (LastMessageSent.ContainsKey(allianceChannels[e.Channel.Id]))
+                    //{
+                    //    if (LastMessageSent[allianceChannels[e.Channel.Id]].Equals(e.Message.Content))
+                    //    {
+                    //        return Task.CompletedTask;
+                    //    }
+                    //}
                     String[] split = e.Message.Content.Split(':');
                     int i = 0;
                     StringBuilder message = new StringBuilder();

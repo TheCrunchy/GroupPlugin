@@ -1334,7 +1334,13 @@ namespace AlliancesPlugin
                             }
                             if (config.owner != Guid.Empty)
                             {
-
+                                if (config.RequireCaptureBlockForLootGen)
+                                {
+                                    if (!hasCap)
+                                    {
+                                        continue;
+                                    }
+                                }
                                 if (hasCap && config.DoCaptureBlockHalfLootTime)
                                 {
                                     Log.Info("The owner has an active block so reducing time between spawning");
