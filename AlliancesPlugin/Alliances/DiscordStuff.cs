@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using VRageMath;
 using AlliancesPlugin.KOTH;
 using AlliancesPlugin.Shipyard;
+using Sandbox.Engine.Multiplayer;
 
 namespace AlliancesPlugin.Alliances
 {
@@ -185,7 +186,16 @@ namespace AlliancesPlugin.Alliances
                 {
                     return;
                 }
-                botId = bot.SendMessageAsync(chann, "**" + prefix + "**:" + message.Replace(" /n", "\n")).Result.Author.Id;
+                if (MyMultiplayer.Static.WorldName.Contains("SENDS"))
+                {
+                    string world = MyMultiplayer.Static.WorldName.Replace("SENDS", "");
+                    botId = bot.SendMessageAsync(chann, "**[" + world + "] " + prefix + "**: " + message.Replace(" /n", "\n")).Result.Author.Id;
+                }
+                else
+                {
+                    botId = bot.SendMessageAsync(chann, "**" + prefix + "**: " + message.Replace(" /n", "\n")).Result.Author.Id;
+                }
+              
             }
         }
 
@@ -221,17 +231,19 @@ namespace AlliancesPlugin.Alliances
                         }
                         message.Append(s);
                     }
-                    AllianceChat.SendChatMessageFromDiscord(allianceChannels[e.Channel.Id],split[0].Replace("**", ""), message.ToString(), 0);
+                    StringBuilder newMessage = new StringBuilder();
+                    string output = e.Message.Content.Substring(e.Message.Content.IndexOf(':') + 1);
+                    AllianceChat.SendChatMessageFromDiscord(allianceChannels[e.Channel.Id],split[0].Replace("**", ""), output.Replace("**","").Trim(), 0);
                 }
                 else
                 {
                     if (String.IsNullOrEmpty(e.Guild.GetMemberAsync(e.Author.Id).Result.Nickname))
                     {
-                        AllianceChat.SendChatMessageFromDiscord(allianceChannels[e.Channel.Id], e.Message.Author.Username, e.Message.Content, e.Author.Id);
+                        AllianceChat.SendChatMessageFromDiscord(allianceChannels[e.Channel.Id], e.Message.Author.Username, e.Message.Content.Trim(), e.Author.Id);
                     }
                     else
                     {
-                        AllianceChat.SendChatMessageFromDiscord(allianceChannels[e.Channel.Id], e.Guild.GetMemberAsync(e.Author.Id).Result.Nickname, e.Message.Content, e.Author.Id);
+                        AllianceChat.SendChatMessageFromDiscord(allianceChannels[e.Channel.Id], e.Guild.GetMemberAsync(e.Author.Id).Result.Nickname, e.Message.Content.Trim(), e.Author.Id);
                     }
                 }
             }

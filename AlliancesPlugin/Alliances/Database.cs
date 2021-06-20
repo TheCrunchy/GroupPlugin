@@ -41,7 +41,7 @@ namespace AlliancesPlugin.Alliances
         //    conn.Close();
         //    AlliancePlugin.Log.Info("Successfully connected to database!");
         //}
-        public static String connectionString = "Filename=" + AlliancePlugin.path + "//bank.db;Connection=Shared;Upgrade=True;";
+        public static String connectionString = "Filename=" + AlliancePlugin.path + "//bank.db;Connection=shared;Upgrade=True;";
         public static Boolean CreateAllianceBank(Alliance alliance)
         {
          //   if (!File.Exists(AlliancePlugin.path + "//bank.db"))
@@ -150,7 +150,51 @@ namespace AlliancesPlugin.Alliances
             //AlliancePlugin.Log.Info("Paid shipyard fee " + id);
             //return true;
         }
+        public static Boolean Taxes(Dictionary<Guid, Dictionary<long, float>> taxes)
+        {
+            try
+            {
+                using (var db = new LiteDatabase(connectionString))
+                {
+                    var collection = db.GetCollection<BankData>("BankData");
+                    foreach (KeyValuePair<Guid, Dictionary<long, float>> key in taxes)
+                    {
+                       long amount = 0;
+                        foreach (float f in key.Value.Values)
+                        {
+                            amount += (long)f;
+                        }
+                      
+                        var bank = collection.FindById(key.Key);
+                        if (bank == null)
+                        {
+                            bank = new BankData
+                            {
+                                Id = key.Key,
+                                balance = amount
+                            };
+                            collection.Insert(bank);
 
+                        }
+                        else
+                        {
+                            bank.balance += amount;
+
+                            collection.Update(bank);
+                        }
+
+
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                AlliancePlugin.Log.Error("Error with taxes");
+                AlliancePlugin.Log.Error(ex);
+                return false;
+            }
+            return true;
+        }
         public static Boolean AddToBalance(Alliance alliance, long amount)
         {
             try
@@ -254,7 +298,7 @@ namespace AlliancesPlugin.Alliances
             }
             catch (Exception ex)
             {
-                AlliancePlugin.Log.Error("Error with adding shipyard fee to bank");
+                AlliancePlugin.Log.Error("Error with getting balance");
                 AlliancePlugin.Log.Error(ex);
                 return 0;
             }

@@ -158,7 +158,7 @@ namespace AlliancesPlugin
             }
             var folder2 = "";
             Directory.CreateDirectory(folder);
-                folder2 = Path.Combine(StoragePath + "//Alliances//KOTH//");
+            folder2 = Path.Combine(StoragePath + "//Alliances//KOTH//");
             Directory.CreateDirectory(folder2);
             if (config.StoragePath.Equals("default"))
             {
@@ -202,7 +202,7 @@ namespace AlliancesPlugin
                 {
                     koth.nextCaptureInterval = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute + 1, 0, 0, DateTimeKind.Utc);
                 }
-               
+
                 KOTHs.Add(koth);
             }
 
@@ -621,8 +621,8 @@ namespace AlliancesPlugin
                     alliance.ForceEnemies();
                     if (alliance.DiscordChannelId > 0 && !String.IsNullOrEmpty(alliance.DiscordToken) && TorchState == TorchSessionState.Loaded)
                     {
-                      //  Log.Info(Encryption.DecryptString(alliance.AllianceId.ToString(), alliance.DiscordToken).Length);
-                       
+                        //  Log.Info(Encryption.DecryptString(alliance.AllianceId.ToString(), alliance.DiscordToken).Length);
+
                         try
                         {
                             if (Encryption.DecryptString(alliance.AllianceId.ToString(), alliance.DiscordToken).Length != 59)
@@ -630,11 +630,11 @@ namespace AlliancesPlugin
                                 Log.Error("Invalid bot token for " + alliance.AllianceId);
                                 continue;
                             }
-                 
+
                         }
                         catch (Exception ex)
                         {
-                          //  Log.Error(ex);
+                            //  Log.Error(ex);
                             Log.Error("Invalid bot token for " + alliance.AllianceId);
                             continue;
                         }
@@ -904,9 +904,9 @@ namespace AlliancesPlugin
         public void DoTaxStuff()
         {
             List<long> Processed = new List<long>();
+            Dictionary<Guid, Dictionary<long, float>> taxes = new Dictionary<Guid, Dictionary<long, float>>();
             foreach (long id in TaxesToBeProcessed.Keys)
             {
-
 
                 if (MySession.Static.Factions.TryGetPlayerFaction(id) != null)
                 {
@@ -923,35 +923,33 @@ namespace AlliancesPlugin
                             float tax = TaxesToBeProcessed[id] * alliance.GetTaxRate(MySession.Static.Players.TryGetSteamId(id));
                             if (EconUtils.getBalance(id) >= tax)
                             {
-                                if (DatabaseForBank.AddToBalance(alliance, (long)tax))
-                                {
-
-                                    EconUtils.takeMoney(id, (long)tax);
-
-                                    alliance.DepositTax((long)tax, MySession.Static.Players.TryGetSteamId(id));
-                                    SaveAllianceData(alliance);
-                                    Processed.Add(id);
+                                if (taxes.ContainsKey(alliance.AllianceId)){
+                                    taxes[alliance.AllianceId].Remove(id);
+                                    taxes[alliance.AllianceId].Add(id, tax);
                                 }
                                 else
                                 {
-
-                                    Processed.Add(id);
+                                    Dictionary<long, float> temp = new Dictionary<long, float>();
+                                    temp.Add(id, tax);
+                                    taxes.Add(alliance.AllianceId, temp);
                                 }
                             }
-                            else
-                            {
-                                Processed.Add(id);
-                            }
+                            Processed.Add(id);
                         }
                     }
-                    else
-                    {
-                        Processed.Add(id);
-                    }
                 }
-                else
+            }
+            if (DatabaseForBank.Taxes(taxes))
+            {
+                foreach (Dictionary<long, float> tax in taxes.Values)
                 {
-                    Processed.Add(id);
+                   foreach (KeyValuePair<long, float> t in tax)
+                    {
+                        if (EconUtils.getBalance(t.Key) >= t.Value)
+                        {
+                            EconUtils.takeMoney(t.Key, (long) t.Value);
+                        }
+                    }
                 }
             }
             foreach (long id in Processed)
@@ -959,6 +957,65 @@ namespace AlliancesPlugin
                 TaxesToBeProcessed.Remove(id);
             }
         }
+        //public void DoTaxStuff()
+        //{
+
+        //    List<long> Processed = new List<long>();
+        //    foreach (long id in TaxesToBeProcessed.Keys)
+        //    {
+
+
+        //        if (MySession.Static.Factions.TryGetPlayerFaction(id) != null)
+        //        {
+
+        //            Alliance alliance = GetAllianceNoLoading(MySession.Static.Factions.TryGetPlayerFaction(id) as MyFaction);
+        //            if (alliance != null)
+        //            {
+
+        //                alliance = GetAlliance(alliance.name);
+
+        //                if (alliance.GetTaxRate(MySession.Static.Players.TryGetSteamId(id)) > 0)
+        //                {
+
+        //                    float tax = TaxesToBeProcessed[id] * alliance.GetTaxRate(MySession.Static.Players.TryGetSteamId(id));
+        //                    if (EconUtils.getBalance(id) >= tax)
+        //                    {
+        //                        if (DatabaseForBank.AddToBalance(alliance, (long)tax))
+        //                        {
+
+        //                            EconUtils.takeMoney(id, (long)tax);
+
+        //                            alliance.DepositTax((long)tax, MySession.Static.Players.TryGetSteamId(id));
+        //                            SaveAllianceData(alliance);
+        //                            Processed.Add(id);
+        //                        }
+        //                        else
+        //                        {
+
+        //                            Processed.Add(id);
+        //                        }
+        //                    }
+        //                    else
+        //                    {
+        //                        Processed.Add(id);
+        //                    }
+        //                }
+        //            }
+        //            else
+        //            {
+        //                Processed.Add(id);
+        //            }
+        //        }
+        //        else
+        //        {
+        //            Processed.Add(id);
+        //        }
+        //    }
+        //    foreach (long id in Processed)
+        //    {
+        //        TaxesToBeProcessed.Remove(id);
+        //    }
+        //}
         public void DoKothStuff()
         {
             try
@@ -1250,7 +1307,7 @@ namespace AlliancesPlugin
                                         //broadcast that its locked
 
                                         config.amountCaptured = 0;
-                                     //   SendChatMessage("Locked because capture blocks are dead");
+                                        //   SendChatMessage("Locked because capture blocks are dead");
 
                                         try
                                         {
@@ -1266,7 +1323,7 @@ namespace AlliancesPlugin
                                     {
                                         Log.Info("Its contested or the fuckers trying to cap have no nation");
                                         //send contested message
-                                      //  SendChatMessage("Contested");
+                                        //  SendChatMessage("Contested");
                                         try
                                         {
                                             DiscordStuff.SendMessageToDiscord(config.KothName + " Capture point contested!", config);
@@ -1461,7 +1518,7 @@ namespace AlliancesPlugin
                 }
                 try
                 {
-                   MarketCommands.list.RefreshList();
+                    MarketCommands.list.RefreshList();
                 }
                 catch (Exception ex)
                 {
@@ -1520,7 +1577,7 @@ namespace AlliancesPlugin
                     }
                 }
             }
-   
+
 
 
         }
