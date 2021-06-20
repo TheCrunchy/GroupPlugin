@@ -230,18 +230,17 @@ namespace AlliancesPlugin.Alliances
                         }
                         message.Append(s);
                     }
-
-                    AllianceChat.SendChatMessage(allianceChannels[e.Channel.Id], split[0].Replace("*", ""), e.Message.Content.Replace(split[0] + " : ", "").TrimStart());
+                    AllianceChat.SendChatMessageFromDiscord(allianceChannels[e.Channel.Id],split[0].Replace("**", ""), message.ToString(), 0);
                 }
                 else
                 {
                     if (String.IsNullOrEmpty(e.Guild.GetMemberAsync(e.Author.Id).Result.Nickname))
                     {
-                        AllianceChat.SendChatMessage(allianceChannels[e.Channel.Id], e.Message.Author.Username, e.Message.Content);
+                        AllianceChat.SendChatMessageFromDiscord(allianceChannels[e.Channel.Id], e.Message.Author.Username, e.Message.Content, e.Author.Id);
                     }
                     else
                     {
-                        AllianceChat.SendChatMessage(allianceChannels[e.Channel.Id], e.Guild.GetMemberAsync(e.Author.Id).Result.Nickname, e.Message.Content);
+                        AllianceChat.SendChatMessageFromDiscord(allianceChannels[e.Channel.Id], e.Guild.GetMemberAsync(e.Author.Id).Result.Nickname, e.Message.Content, e.Author.Id);
                     }
                 }
             }

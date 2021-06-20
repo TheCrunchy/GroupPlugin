@@ -15,6 +15,7 @@ Misc
 !alliance log <input>- show the log for moneys with optional time format input eg "MM-dd-yyyy"
 !alliance description <input> - changes the description
 !alliance chat - toggle alliance chat
+!al chat - shorter toggle
 !alliance list - output all alliance names
 Linking alliance chat to discord
 https://github.com/reactiflux/discord-irc/wiki/Creating-a-discord-bot-&-getting-a-token 

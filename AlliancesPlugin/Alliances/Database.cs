@@ -41,7 +41,7 @@ namespace AlliancesPlugin.Alliances
         //    conn.Close();
         //    AlliancePlugin.Log.Info("Successfully connected to database!");
         //}
-        public static String connectionString = "Filename=" + AlliancePlugin.path + "//bank.db;Connection=Direct;Upgrade=True;";
+        public static String connectionString = "Filename=" + AlliancePlugin.path + "//bank.db;Connection=Shared;Upgrade=True;";
         public static Boolean CreateAllianceBank(Alliance alliance)
         {
          //   if (!File.Exists(AlliancePlugin.path + "//bank.db"))

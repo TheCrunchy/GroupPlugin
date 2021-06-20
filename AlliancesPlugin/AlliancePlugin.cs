@@ -331,7 +331,7 @@ namespace AlliancesPlugin
             }
             if (state == TorchSessionState.Loaded)
             {
-
+                AllianceChat.ApplyLogging();
                 InitPluginDependencies(Torch.Managers.GetManager<PluginManager>());
                 TorchState = TorchSessionState.Loaded;
                 _chatmanager = Torch.CurrentSession.Managers.GetManager<ChatManagerServer>();

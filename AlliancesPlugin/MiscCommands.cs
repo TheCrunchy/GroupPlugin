@@ -79,6 +79,37 @@ namespace AlliancesPlugin
           
             }
         }
+
+        [Command("al chat", "toggle alliance chat")]
+        [Permission(MyPromoteLevel.None)]
+        public void DoAllianceChat(string message = "")
+        {
+            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
+            if (fac == null)
+            {
+                Context.Respond("Only factions can be in alliances.");
+                return;
+            }
+
+            Alliance alliance = AlliancePlugin.GetAlliance(fac);
+            if (AllianceChat.PeopleInAllianceChat.ContainsKey(Context.Player.SteamUserId))
+            {
+                AllianceChat.PeopleInAllianceChat.Remove(Context.Player.SteamUserId);
+                Context.Respond("Leaving alliance chat.", Color.Red);
+                return;
+            }
+            if (alliance != null)
+            {
+                {
+                    AllianceChat.PeopleInAllianceChat.Add(Context.Player.SteamUserId, alliance.AllianceId);
+                    Context.Respond("Entering alliance chat.", Color.Cyan);
+                }
+            }
+            else
+            {
+                Context.Respond("You must be in an alliance to use alliance chat.");
+            }
+        }
         private MyGps CreateGps(Vector3D Position, Color gpsColor, int seconds, String Nation, String Reason)
         {
 
@@ -99,5 +130,6 @@ namespace AlliancesPlugin
             return gps;
         }
     }
+   
 
 }

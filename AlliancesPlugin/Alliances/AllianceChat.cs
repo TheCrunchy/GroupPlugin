@@ -1,4 +1,7 @@
 ﻿using AlliancesPlugin.Shipyard;
+using NLog;
+using NLog.Config;
+using NLog.Targets;
 using Sandbox.Game.Entities;
 using Sandbox.Game.Multiplayer;
 using Sandbox.Game.Screens.Helpers;
@@ -21,6 +24,39 @@ namespace AlliancesPlugin.Alliances
 {
     public static class AllianceChat
     {
+        public static Logger log = LogManager.GetLogger("AllianceChat");
+        public static void ApplyLogging()
+        {
+
+            var rules = LogManager.Configuration.LoggingRules;
+
+            for (int i = rules.Count - 1; i >= 0; i--)
+            {
+
+                var rule = rules[i];
+
+                if (rule.LoggerNamePattern == "AllianceChat")
+                    rules.RemoveAt(i);
+            }
+
+
+
+            var logTarget = new FileTarget
+            {
+                FileName = "Logs/AllianceChat-" + DateTime.Now.Day + "-" + DateTime.Now.Month + "-" + DateTime.Now.Year + ".txt",
+                Layout = "${var:logStamp} ${var:logContent}"
+            };
+
+            var logRule = new LoggingRule("AllianceChat", LogLevel.Debug, logTarget)
+            {
+                Final = true
+            };
+
+            rules.Insert(0, logRule);
+
+            LogManager.Configuration.Reload();
+        }
+
         public static MyGps ScanChat(string input, string desc = null)
         {
 
@@ -70,20 +106,20 @@ namespace AlliancesPlugin.Alliances
             List<ulong> OtherMembers = new List<ulong>();
 
 
-          
+            log.Info(allianceId.ToString() + " : " + alliance.name + " : " + prefix + " " + message);
             if (toDiscord && DiscordStuff.AllianceHasBot(allianceId))
             {
                 try
                 {
                     DiscordStuff.SendAllianceMessage(alliance, prefix, message);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    AlliancePlugin.Log.Error(ex);
                 }
             }
-           
-
-           
+            else
+            {
                 foreach (MyPlayer player in MySession.Static.Players.GetOnlinePlayers())
                 {
                     MyFaction fac = MySession.Static.Factions.TryGetPlayerFaction(player.Identity.IdentityId) as MyFaction;
@@ -112,12 +148,17 @@ namespace AlliancesPlugin.Alliances
                         gpscol.SendAddGps(idenId, ref gpsRef);
                     }
                 }
+            }
+
+
+       
+       
 
             
         }
-        public static void SendChatMessage(Guid allianceId, string prefix, string message)
+        public static void SendChatMessageFromDiscord(Guid allianceId, string prefix, string message, ulong discordId = 0)
         {
-
+            log.Info(allianceId.ToString() + " : " + prefix + " " + message);
             Alliance alliance = AlliancePlugin.GetAllianceNoLoading(allianceId);
             List<ulong> OtherMembers = new List<ulong>();
 
@@ -132,6 +173,14 @@ namespace AlliancesPlugin.Alliances
                     }
                 }
 
+            }
+            if (discordId > 0)
+            {
+                log.Info(allianceId.ToString() + " : " + alliance.name + " : " + prefix + " " + message + " discord id " + discordId);
+            }
+            else
+            {
+                log.Info(allianceId.ToString() + " : " + alliance.name + " : " + prefix + " " + message + " the bot");
             }
             foreach (ulong id in OtherMembers)
             {
