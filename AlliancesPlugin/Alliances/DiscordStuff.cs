@@ -10,6 +10,7 @@ using VRageMath;
 using AlliancesPlugin.KOTH;
 using AlliancesPlugin.Shipyard;
 using Sandbox.Engine.Multiplayer;
+using Sandbox.Game.World;
 
 namespace AlliancesPlugin.Alliances
 {
@@ -186,9 +187,10 @@ namespace AlliancesPlugin.Alliances
                 {
                     return;
                 }
-                if (MyMultiplayer.Static.WorldName.Contains("SENDS"))
+                if (MyMultiplayer.Static.HostName != null && MyMultiplayer.Static.HostName.Contains("SENDS"))
                 {
-                    string world = MyMultiplayer.Static.WorldName.Replace("SENDS", "");
+                    string world = MyMultiplayer.Static.HostName.Replace("SENDS", "");
+                    
                     botId = bot.SendMessageAsync(chann, "**[" + world + "] " + prefix + "**: " + message.Replace(" /n", "\n")).Result.Author.Id;
                 }
                 else

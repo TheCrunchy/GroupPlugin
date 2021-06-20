@@ -10,6 +10,7 @@ using VRage.Game.ModAPI;
 using AlliancesPlugin.Alliances;
 using Sandbox.Game.Screens.Helpers;
 using VRageMath;
+using System.IO;
 
 namespace AlliancesPlugin
 {
@@ -79,9 +80,7 @@ namespace AlliancesPlugin
           
             }
         }
-
-        [Command("al chat", "toggle alliance chat")]
-        [Permission(MyPromoteLevel.None)]
+        FileUtils utils = new FileUtils();
         public void DoAllianceChat(string message = "")
         {
             MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
@@ -90,19 +89,32 @@ namespace AlliancesPlugin
                 Context.Respond("Only factions can be in alliances.");
                 return;
             }
+            PlayerData data;
+            if (File.Exists(AlliancePlugin.path + "//PlayerData//" + Context.Player.SteamUserId + ".xml"))
+            {
 
+                data = utils.ReadFromXmlFile<PlayerData>(AlliancePlugin.path + "//PlayerData//" + Context.Player.SteamUserId + ".xml");
+            }
+            else
+            {
+                data = new PlayerData();
+            }
             Alliance alliance = AlliancePlugin.GetAlliance(fac);
             if (AllianceChat.PeopleInAllianceChat.ContainsKey(Context.Player.SteamUserId))
             {
+                data.InAllianceChat = false;
                 AllianceChat.PeopleInAllianceChat.Remove(Context.Player.SteamUserId);
                 Context.Respond("Leaving alliance chat.", Color.Red);
+                utils.WriteToXmlFile<PlayerData>(AlliancePlugin.path + "//PlayerData//" + Context.Player.SteamUserId + ".xml", data);
                 return;
             }
             if (alliance != null)
             {
                 {
+                    data.InAllianceChat = true;
                     AllianceChat.PeopleInAllianceChat.Add(Context.Player.SteamUserId, alliance.AllianceId);
                     Context.Respond("Entering alliance chat.", Color.Cyan);
+                    utils.WriteToXmlFile<PlayerData>(AlliancePlugin.path + "//PlayerData//" + Context.Player.SteamUserId + ".xml", data);
                 }
             }
             else

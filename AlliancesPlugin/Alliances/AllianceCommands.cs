@@ -1653,6 +1653,7 @@ namespace AlliancesPlugin.Alliances
             }
 
         }
+        FileUtils utils = new FileUtils();
         [Command("chat", "toggle alliance chat")]
         [Permission(MyPromoteLevel.None)]
         public void DoAllianceChat(string message = "")
@@ -1663,19 +1664,32 @@ namespace AlliancesPlugin.Alliances
                 Context.Respond("Only factions can be in alliances.");
                 return;
             }
+            PlayerData data;
+            if (File.Exists(AlliancePlugin.path + "//PlayerData//" + Context.Player.SteamUserId + ".xml"))
+            {
 
-            Alliance alliance = AlliancePlugin.GetAlliance(fac);
+                data = utils.ReadFromXmlFile<PlayerData>(AlliancePlugin.path + "//PlayerData//" + Context.Player.SteamUserId + ".xml");
+            }
+            else
+            {
+                data = new PlayerData();
+            }
+                Alliance alliance = AlliancePlugin.GetAlliance(fac);
             if (AllianceChat.PeopleInAllianceChat.ContainsKey(Context.Player.SteamUserId))
             {
+                data.InAllianceChat = false;
                 AllianceChat.PeopleInAllianceChat.Remove(Context.Player.SteamUserId);
                 Context.Respond("Leaving alliance chat.", Color.Red);
+                utils.WriteToXmlFile<PlayerData>(AlliancePlugin.path + "//PlayerData//" + Context.Player.SteamUserId + ".xml", data);
                 return;
             }
             if (alliance != null)
             {
                 {
+                    data.InAllianceChat = true;
                     AllianceChat.PeopleInAllianceChat.Add(Context.Player.SteamUserId, alliance.AllianceId);
                     Context.Respond("Entering alliance chat.", Color.Cyan);
+                    utils.WriteToXmlFile<PlayerData>(AlliancePlugin.path + "//PlayerData//" + Context.Player.SteamUserId + ".xml", data);
                 }
             }
             else

@@ -106,6 +106,10 @@ namespace AlliancesPlugin
             {
                 Directory.CreateDirectory(path + "//JumpGates//");
             }
+            if (!Directory.Exists(path + "//PlayerData//"))
+            {
+                Directory.CreateDirectory(path + "//PlayerData//");
+            }
             if (!Directory.Exists(path + "//ShipMarket//"))
             {
                 Directory.CreateDirectory(path + "//ShipMarket//");
@@ -940,7 +944,7 @@ namespace AlliancesPlugin
                 }
             }
 
-            DatabaseForBank.Taxes(taxes));
+            DatabaseForBank.Taxes(taxes);
 
             foreach (long id in Processed)
             {

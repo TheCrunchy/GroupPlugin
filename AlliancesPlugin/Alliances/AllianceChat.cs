@@ -10,6 +10,7 @@ using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -251,6 +252,7 @@ namespace AlliancesPlugin.Alliances
 
 
         }
+       public static FileUtils utils = new FileUtils();
         public static void Login(IPlayer p)
         {
             if (p == null)
@@ -271,7 +273,7 @@ namespace AlliancesPlugin.Alliances
                     Sandbox.Game.Multiplayer.MyFactionCollection.DeclareWar(playerFac.FactionId, arrr.FactionId);
                 }
             }
-
+     
             MyFaction ACME = MySession.Static.Factions.TryGetFactionByTag("ACME");
 
             if (ACME != null)
@@ -285,6 +287,18 @@ namespace AlliancesPlugin.Alliances
                 if (playerFac != null && !MySession.Static.Factions.AreFactionsEnemies(wolf.FactionId, FacUtils.GetPlayersFaction(id.IdentityId).FactionId))
                 {
                     Sandbox.Game.Multiplayer.MyFactionCollection.DeclareWar(playerFac.FactionId, wolf.FactionId);
+                }
+            }
+            if (File.Exists(AlliancePlugin.path + "//PlayerData//" + p.SteamId + ".xml"))
+            {
+                PlayerData data = utils.ReadFromXmlFile<PlayerData>(AlliancePlugin.path + "//PlayerData//" + p.SteamId + ".xml");
+                if (data.InAllianceChat)
+                {
+                    if (AlliancePlugin.GetAllianceNoLoading(playerFac as MyFaction) != null)
+                    {
+                        PeopleInAllianceChat.Remove(p.SteamId);
+                        PeopleInAllianceChat.Add(p.SteamId, AlliancePlugin.GetAllianceNoLoading(playerFac as MyFaction).AllianceId);
+                    }
                 }
             }
         }
