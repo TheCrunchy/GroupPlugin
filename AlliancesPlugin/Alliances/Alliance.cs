@@ -52,7 +52,8 @@ namespace AlliancesPlugin.Alliances
         public int r = 66;
         public int g = 163;
         public int b = 237;
-
+        public int failedUpkeep = 0;
+        
         public Boolean HasAccess(ulong id, AccessLevel level)
         {
             if (SupremeLeader == id)
@@ -120,6 +121,25 @@ namespace AlliancesPlugin.Alliances
          
 
             return "";
+        }
+        public string OutputMembers()
+        {
+
+            StringBuilder sb = new StringBuilder();
+            foreach (long id in AllianceMembers)
+            {
+                IMyFaction fac = MySession.Static.Factions.TryGetFactionById(id);
+                if (fac != null)
+                {
+                    sb.AppendLine(fac.Tag);
+                  foreach (KeyValuePair<long, MyFactionMember> member in fac.Members)
+                    {
+                        sb.AppendLine(AlliancePlugin.GetPlayerName(MySession.Static.Players.TryGetSteamId(member.Value.PlayerId)));
+                    }
+                    sb.AppendLine("");
+                }
+            }
+            return sb.ToString();
         }
         public HangarData LoadHangar()
         {
@@ -287,6 +307,33 @@ namespace AlliancesPlugin.Alliances
             sb.AppendLine("");
             bankBalance = DatabaseForBank.GetBalance(AllianceId);
             sb.AppendLine("Bank Balance : " + String.Format("{0:n0}", bankBalance) + " SC.");
+            float upkeep = 0;
+            upkeep += AlliancePlugin.config.BaseUpkeepFee;
+         foreach (long id in AllianceMembers)
+            {
+                MyFaction fac = MySession.Static.Factions.TryGetFactionById(id) as MyFaction;
+                if (fac != null)
+                {
+                    upkeep += AlliancePlugin.config.BaseUpkeepFee * AlliancePlugin.config.PercentPerFac;
+                    upkeep += AlliancePlugin.config.FeePerMember * fac.Members.Count;
+                }
+            }
+            foreach (JumpGate gate in AlliancePlugin.AllGates.Values)
+            {
+                if (gate.OwnerAlliance == AllianceId)
+                {
+                    upkeep += gate.upkeep;
+                }
+            }
+            if (this.hasUnlockedHangar)
+            {
+                upkeep += AlliancePlugin.config.HangarUpkeep;
+            }
+            if (this.hasUnlockedShipyard)
+            {
+                upkeep += AlliancePlugin.config.ShipyardUpkeep;
+            }
+            sb.AppendLine("Expected Upkeep Value :" + (long) upkeep);
             sb.AppendLine("");
             sb.AppendLine("Meta Points : " + String.Format("{0:n0}", CurrentMetaPoints));
             sb.AppendLine("");
@@ -336,7 +383,6 @@ namespace AlliancesPlugin.Alliances
             {
                 sb.AppendLine(key.Value.ToString());
             }
-            sb.AppendLine("");
             otherTitlesDic.Clear();
             foreach (KeyValuePair<ulong, String> titles in otherTitles)
             {

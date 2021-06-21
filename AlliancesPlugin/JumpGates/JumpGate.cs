@@ -20,6 +20,7 @@ namespace AlliancesPlugin.JumpGates
         public Guid OwnerAlliance;
         public string LinkedKoth = "";
         public long fee = 0;
+        public long upkeep = 100000000;
         public void Save()
         {
             utils.WriteToJsonFile<JumpGate>(AlliancePlugin.path + "//JumpGates//" + GateId + ".json", this);

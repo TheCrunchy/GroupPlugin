@@ -13,5 +13,9 @@ namespace AlliancesPlugin.Special_Designation
         public int minimunAmount;
         public int maximumAmount;
         public int reputationGain;
+        public int minimumRepToTake = 0;
+        public int maximumRepToTake = 0;
+        public string GpsToDeliverTo;
+        public long price;
     }
 }

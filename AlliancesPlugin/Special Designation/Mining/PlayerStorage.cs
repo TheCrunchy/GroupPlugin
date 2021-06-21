@@ -37,13 +37,13 @@ namespace AlliancesPlugin.Special_Designation
         {
             foreach (ContractHolder holder in MiningContracts.Values)
             {
-                if (Vector3.Distance(holder.GetMiningArea(), position) <= holder.MiningRadius)
-                {
-                    if (holder.contract.subTypeId.Equals(MaterialName))
-                    {
+             //   if (Vector3.Distance(holder.GetMiningArea(), position) <= holder.MiningRadius)
+             //   {
+              //      if (holder.contract.subTypeId.Equals(MaterialName))
+               //     {
                         return true;
-                    }
-                }
+              //      }
+              //  }
             }
             return false;
         }

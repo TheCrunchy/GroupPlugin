@@ -57,7 +57,7 @@ namespace AlliancesPlugin.Alliances
                     alliance.DiscordToken = encrypted;
                     AlliancePlugin.SaveAllianceData(alliance);
                     DiscordStuff.allianceBots.Remove(alliance.AllianceId);
-                    
+
                     Context.Respond("Added token! If the channel Id is also set the bot should start working after next server restart.");
                 }
                 else
@@ -142,7 +142,7 @@ namespace AlliancesPlugin.Alliances
                 Context.Respond("You dont have an alliance.");
             }
         }
-     
+
 
         [Command("admindistress", "admindistress signals")]
         [Permission(MyPromoteLevel.Admin)]
@@ -161,7 +161,7 @@ namespace AlliancesPlugin.Alliances
             }
             if (message.Equals(""))
             {
-                message= "Distress signal detected. Unable to identify.";
+                message = "Distress signal detected. Unable to identify.";
             }
 
             MyGps gps = CreateGps(Context.Player.Character.PositionComp.GetPosition(), Color.Purple, 600, name, "");
@@ -386,7 +386,7 @@ namespace AlliancesPlugin.Alliances
                         }
                     }
                 }
-               
+
                 else
                 {
                     Context.Respond("You dont have permission.");
@@ -801,7 +801,44 @@ namespace AlliancesPlugin.Alliances
                 Context.Respond("Alliance does not have enough points.");
             }
         }
+        [Command("members", "output members")]
+        [Permission(MyPromoteLevel.None)]
+        public void AllianceMembers()
+        {
+            Boolean console = false;
+            if (Context.Player == null)
+            {
+                console = true;
+            }
+            Alliance alliance = null;
 
+            if (MySession.Static.Factions.TryGetPlayerFaction(Context.Player.IdentityId) != null)
+            {
+                alliance = AlliancePlugin.GetAllianceNoLoading(MySession.Static.Factions.TryGetPlayerFaction(Context.Player.IdentityId) as MyFaction);
+
+
+            }
+            else
+            {
+                Context.Respond("You must be in an alliance to use alliance commands.");
+            }
+
+
+            if (alliance == null)
+            {
+                Context.Respond("You are not a member of an alliance.");
+                return;
+            }
+            if (!console)
+            {
+                DialogMessage m = new DialogMessage("Alliance Info", alliance.name, alliance.OutputMembers());
+                ModCommunication.SendMessageTo(m, Context.Player.SteamUserId);
+            }
+            else
+            {
+                Context.Respond("Alliance Info" + " " + alliance.name + alliance.OutputAlliance());
+            }
+        }
         [Command("info", "output info about an alliance")]
         [Permission(MyPromoteLevel.None)]
         public void AllianceInfo(string name = "")
@@ -1251,7 +1288,7 @@ namespace AlliancesPlugin.Alliances
                             Context.Respond("Paying " + idsToPay.Count + " " + String.Format("{0:n0}", amount / idsToPay.Count) + " SC each.");
                             alliance.PayDividend(amount, idsToPay, Context.Player.SteamUserId);
                             AlliancePlugin.SaveAllianceData(alliance);
-               
+
                         }
                         else
                         {
@@ -1658,12 +1695,12 @@ namespace AlliancesPlugin.Alliances
         [Permission(MyPromoteLevel.None)]
         public void DoDebug()
         {
-              if (Context.Player.SteamUserId == 76561198045390854)
+            if (Context.Player.SteamUserId == 76561198045390854)
             {
                 DiscordStuff.debugMode = !DiscordStuff.debugMode;
                 Context.Respond("toggled to " + DiscordStuff.debugMode);
             }
-              else
+            else
             {
                 Context.Respond("You no Crunch, no debug for you");
             }
@@ -1689,7 +1726,7 @@ namespace AlliancesPlugin.Alliances
             {
                 data = new PlayerData();
             }
-                Alliance alliance = AlliancePlugin.GetAlliance(fac);
+            Alliance alliance = AlliancePlugin.GetAlliance(fac);
             if (AllianceChat.PeopleInAllianceChat.ContainsKey(Context.Player.SteamUserId))
             {
                 data.InAllianceChat = false;
@@ -1940,7 +1977,7 @@ namespace AlliancesPlugin.Alliances
                 Context.Respond("Name does not validate, try again.");
                 return;
             }
-           
+
             if (AlliancePlugin.AllAlliances.ContainsKey(name))
             {
                 Context.Respond("Alliance with that name already exists.");
