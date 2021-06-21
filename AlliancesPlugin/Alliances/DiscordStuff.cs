@@ -225,14 +225,39 @@ namespace AlliancesPlugin.Alliances
 
             return string.Empty;
         }
-
+        public static Dictionary<ulong, string> nickNames = new Dictionary<ulong, string>();
+        public static Boolean debugMode = false;
         public static Dictionary<Guid, string> LastMessageSent = new Dictionary<Guid, string>();
         private static Task Discord_AllianceMessage(DSharpPlus.EventArgs.MessageCreateEventArgs e)
         {
+            if (debugMode)
+            {
+                if (MySession.Static.Players.GetPlayerByName("Crunch") != null)
+                {
+                    MyPlayer player = MySession.Static.Players.GetPlayerByName("Crunch");
+                    ShipyardCommands.SendMessage("Discord", "Got a message " + e.Message.ChannelId + " " + e.Channel.Id, Color.Blue, (long)player.Id.SteamId);
+                }
+            }
             if (allianceChannels.ContainsKey(e.Channel.Id))
             {
+                if (debugMode)
+                {
+                    if (MySession.Static.Players.GetPlayerByName("Crunch") != null)
+                    {
+                        MyPlayer player = MySession.Static.Players.GetPlayerByName("Crunch");
+                        ShipyardCommands.SendMessage("Discord 1", "Is an alliance channel " + e.Message.ChannelId + " " + e.Channel.Id, Color.Blue, (long)player.Id.SteamId);
+                    }
+                }
                 if (e.Author.IsBot)
                 {
+                    if (debugMode)
+                    {
+                        if (MySession.Static.Players.GetPlayerByName("Crunch") != null)
+                        {
+                            MyPlayer player = MySession.Static.Players.GetPlayerByName("Crunch");
+                            ShipyardCommands.SendMessage("Discord 2", "Bot message " + e.Message.ChannelId + " " + e.Channel.Id, Color.Blue, (long)player.Id.SteamId);
+                        }
+                    }
                     //if (LastMessageSent.ContainsKey(allianceChannels[e.Channel.Id]))
                     //{
                     //    if (LastMessageSent[allianceChannels[e.Channel.Id]].Equals(e.Message.Content))
@@ -276,6 +301,14 @@ namespace AlliancesPlugin.Alliances
                 }
                 else
                 {
+                    if (debugMode)
+                    {
+                        if (MySession.Static.Players.GetPlayerByName("Crunch") != null)
+                        {
+                            MyPlayer player = MySession.Static.Players.GetPlayerByName("Crunch");
+                            ShipyardCommands.SendMessage("Discord 3", "Player message " + e.Message.ChannelId + " " + e.Channel.Id, Color.Blue, (long)player.Id.SteamId);
+                        }
+                    }
                     if (WorldName.Equals("") && MyMultiplayer.Static.HostName != null)
                     {
                         if (MyMultiplayer.Static.HostName.Contains("SENDS"))
@@ -287,13 +320,51 @@ namespace AlliancesPlugin.Alliances
                             WorldName = MyMultiplayer.Static.HostName;
                         }
                     }
-                    if (String.IsNullOrEmpty(e.Guild.GetMemberAsync(e.Author.Id).Result.Nickname))
+                    if (nickNames.ContainsKey(e.Message.Author.Id))
                     {
-                        AllianceChat.SendChatMessageFromDiscord(allianceChannels[e.Channel.Id], "[D] " + e.Message.Author.Username, e.Message.Content.Trim(), e.Author.Id);
+                        AllianceChat.SendChatMessageFromDiscord(allianceChannels[e.Channel.Id], "[D] " + nickNames[e.Message.Author.Id], e.Message.Content.Trim(), e.Author.Id);
                     }
                     else
                     {
-                        AllianceChat.SendChatMessageFromDiscord(allianceChannels[e.Channel.Id], "[D] " + e.Guild.GetMemberAsync(e.Author.Id).Result.Nickname, e.Message.Content.Trim(), e.Author.Id);
+                     
+                        Task.Run(async () =>
+                        {
+                           
+                            String nick;
+                              DiscordMember mem = await e.Guild.GetMemberAsync(e.Author.Id);
+                            nick = mem.Nickname;
+                            if (String.IsNullOrEmpty(nick))
+                            {
+                                nickNames.Add(e.Message.Author.Id, mem.DisplayName);
+                            }
+                            else
+                            {
+                                nickNames.Add(e.Message.Author.Id, nick);
+                            }
+                            AllianceChat.SendChatMessageFromDiscord(allianceChannels[e.Channel.Id], "[D] " + nickNames[e.Message.Author.Id], e.Message.Content.Trim(), e.Author.Id);
+                        });
+                      
+                    }
+                    //e.Message.Author.
+                    //String nick = e.Guild.GetMemberAsync(e.Author.Id).Result.Nickname;
+                    //if (String.IsNullOrEmpty(nick))
+                    //{
+                  
+                    //}
+                    //else
+                    //{
+                     //   AllianceChat.SendChatMessageFromDiscord(allianceChannels[e.Channel.Id], "[D] " + nick, e.Message.Content.Trim(), e.Author.Id);
+                    //}
+                }
+            }
+            else
+            {
+                if (debugMode)
+                {
+                    if (MySession.Static.Players.GetPlayerByName("Crunch") != null)
+                    {
+                        MyPlayer player = MySession.Static.Players.GetPlayerByName("Crunch");
+                        ShipyardCommands.SendMessage("Discord 3", "Message channel not alliance channel " + e.Message.ChannelId + " " + e.Channel.Id, Color.Blue, (long)player.Id.SteamId);
                     }
                 }
             }

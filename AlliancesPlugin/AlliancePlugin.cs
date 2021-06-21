@@ -1230,6 +1230,14 @@ namespace AlliancesPlugin
                                                     config.owner = capturingNation;
                                                     config.amountCaptured = 0;
                                                     config.CaptureStarted = false;
+                                                    foreach (JumpGate gate in AllGates.Values)
+                                                    {
+                                                        if (gate.LinkedKoth.Equals(config.KothName))
+                                                        {
+                                                            gate.OwnerAlliance = config.owner;
+                                                            gate.Save();
+                                                        }
+                                                    }
                                                     try
                                                     {
                                                         DiscordStuff.SendMessageToDiscord(GetAllianceNoLoading(capturingNation).name + " has captured " + config.KothName + ". It is now locked for " + config.hoursToLockAfterCap + " hours.", config);

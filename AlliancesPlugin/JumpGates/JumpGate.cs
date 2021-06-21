@@ -18,6 +18,7 @@ namespace AlliancesPlugin.JumpGates
         public int RadiusToJump = 75;
         private FileUtils utils = new FileUtils();
         public Guid OwnerAlliance;
+        public string LinkedKoth = "";
         public long fee = 0;
         public void Save()
         {

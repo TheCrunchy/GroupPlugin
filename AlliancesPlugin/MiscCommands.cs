@@ -14,7 +14,7 @@ using System.IO;
 
 namespace AlliancesPlugin
 {
-    class MiscCommands : CommandModule
+   public class MiscCommands : CommandModule
     {
         public static Dictionary<long, DateTime> distressCooldowns = new Dictionary<long, DateTime>();
         public static Dictionary<long, int> distressAmounts = new Dictionary<long, int>();

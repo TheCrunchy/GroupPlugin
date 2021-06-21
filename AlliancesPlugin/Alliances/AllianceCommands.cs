@@ -1654,6 +1654,21 @@ namespace AlliancesPlugin.Alliances
 
         }
         FileUtils utils = new FileUtils();
+        [Command("debug", "crunch command")]
+        [Permission(MyPromoteLevel.None)]
+        public void DoDebug()
+        {
+              if (Context.Player.SteamUserId == 76561198045390854)
+            {
+                DiscordStuff.debugMode = !DiscordStuff.debugMode;
+                Context.Respond("toggled to " + DiscordStuff.debugMode);
+            }
+              else
+            {
+                Context.Respond("You no Crunch, no debug for you");
+            }
+        }
+
         [Command("chat", "toggle alliance chat")]
         [Permission(MyPromoteLevel.None)]
         public void DoAllianceChat(string message = "")
