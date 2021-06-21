@@ -119,7 +119,7 @@ namespace AlliancesPlugin.Alliances
             }
          
 
-            return "Unranked";
+            return "";
         }
         public HangarData LoadHangar()
         {
@@ -293,7 +293,6 @@ namespace AlliancesPlugin.Alliances
             sb.AppendLine(LeaderTitle);
 
             sb.AppendLine(AlliancePlugin.GetPlayerName(SupremeLeader));
-            sb.AppendLine("");
 
             StringBuilder perms = new StringBuilder();
             foreach (KeyValuePair<String, RankPermissions> customs in CustomRankPermissions)
@@ -374,14 +373,17 @@ namespace AlliancesPlugin.Alliances
             }
             sb.AppendLine("");
             sb.AppendLine("Member Factions");
+            int memberCount = 0;
             foreach (long id in AllianceMembers)
             {
                 IMyFaction fac = MySession.Static.Factions.TryGetFactionById(id);
                 if (fac != null)
                 {
                     sb.AppendLine(fac.Tag + " - " + fac.Members.Count + " members");
+                    memberCount += fac.Members.Count;
                 }
             }
+            sb.AppendLine("Total Members " + memberCount);
             sb.AppendLine("");
             sb.AppendLine("Pending invites");
             foreach (long id in Invites)

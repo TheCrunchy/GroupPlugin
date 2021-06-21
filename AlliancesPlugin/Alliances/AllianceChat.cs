@@ -119,8 +119,7 @@ namespace AlliancesPlugin.Alliances
                     AlliancePlugin.Log.Error(ex);
                 }
             }
-            else
-            {
+     
                 foreach (MyPlayer player in MySession.Static.Players.GetOnlinePlayers())
                 {
                     MyFaction fac = MySession.Static.Factions.TryGetPlayerFaction(player.Identity.IdentityId) as MyFaction;
@@ -148,7 +147,7 @@ namespace AlliancesPlugin.Alliances
                         long idenId = MySession.Static.Players.TryGetIdentityId(id);
                         gpscol.SendAddGps(idenId, ref gpsRef);
                     }
-                }
+                
             }
 
 
@@ -243,7 +242,14 @@ namespace AlliancesPlugin.Alliances
 
                 Alliance alliance = AlliancePlugin.GetAllianceNoLoading(allianceId);
                 // ShipyardCommands.SendMessage(msg.Author, "You are in alliance chat", Color.BlueViolet, (long)msg.AuthorSteamId);
-                SendChatMessage(allianceId, alliance.GetTitle((ulong)msg.AuthorSteamId) + " | " + msg.Author, msg.Message, true);
+                if (alliance.GetTitle((ulong)msg.AuthorSteamId).Equals("")){
+                    SendChatMessage(allianceId, msg.Author, msg.Message, true);
+                }
+                else
+                {
+                    SendChatMessage(allianceId, alliance.GetTitle((ulong)msg.AuthorSteamId) + " | " + msg.Author, msg.Message, true);
+                }
+              
             }
             else
             {

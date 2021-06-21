@@ -1,4 +1,5 @@
 ﻿using LiteDB;
+using Sandbox.Game.World;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -159,9 +160,12 @@ namespace AlliancesPlugin.Alliances
                     var collection = db.GetCollection<BankData>("BankData");
                     foreach (KeyValuePair<Guid, Dictionary<long, float>> key in taxes)
                     {
+                        Alliance alliance = AlliancePlugin.GetAlliance(key.Key);
+
                        long amount = 0;
                         foreach (float f in key.Value.Values)
                         {
+                           
                             amount += (long)f;
                         }
                       
@@ -186,9 +190,12 @@ namespace AlliancesPlugin.Alliances
                         {
                             if (EconUtils.getBalance(tax.Key) >= tax.Value)
                             {
-                                EconUtils.takeMoney(tax.Key, (long)tax.Value);
+                                alliance.DepositTax((long)tax.Value, MySession.Static.Players.TryGetSteamId(tax.Key));
+
+                               EconUtils.takeMoney(tax.Key, (long)tax.Value);
                             }
                         }
+                        AlliancePlugin.SaveAllianceData(alliance);
 
                     }
                 }

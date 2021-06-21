@@ -97,14 +97,14 @@ namespace AlliancesPlugin.Alliances
                             TokenType = TokenType.Bot
                         });
                     }
-          
+
                 }
                 catch (Exception ex)
                 {
                     AlliancePlugin.Log.Error(ex);
                     return Task.CompletedTask;
                 }
-                
+
                 bot.ConnectAsync();
 
                 bot.MessageCreated += Discord_AllianceMessage;
@@ -113,7 +113,7 @@ namespace AlliancesPlugin.Alliances
                 bot.Ready += async e =>
                 {
                     AllianceReady = true;
-            
+
                     await Task.CompletedTask;
                 };
 
@@ -146,7 +146,7 @@ namespace AlliancesPlugin.Alliances
             }
         }
 
-
+        private static string WorldName = "";
         private static async Task DisconnectDiscord()
         {
             Ready = false;
@@ -180,24 +180,27 @@ namespace AlliancesPlugin.Alliances
         {
             if (AllianceReady && alliance.DiscordChannelId > 0)
             {
-               
+
                 DiscordClient bot = allianceBots[alliance.AllianceId];
                 DiscordChannel chann = bot.GetChannelAsync(alliance.DiscordChannelId).Result;
                 if (bot == null)
                 {
                     return;
                 }
-                if (MyMultiplayer.Static.HostName != null && MyMultiplayer.Static.HostName.Contains("SENDS"))
+                if (WorldName.Equals("") && MyMultiplayer.Static.HostName != null)
                 {
-                    string world = MyMultiplayer.Static.HostName.Replace("SENDS", "");
-                    
-                    botId = bot.SendMessageAsync(chann, "**[" + world + "] " + prefix + "**: " + message.Replace(" /n", "\n")).Result.Author.Id;
+                    if (MyMultiplayer.Static.HostName.Contains("SENDS"))
+                    {
+                        WorldName = MyMultiplayer.Static.HostName.Replace("SENDS", "");
+                    }
+                    else
+                    {
+                        WorldName = MyMultiplayer.Static.HostName;
+                    }
                 }
-                else
-                {
-                    botId = bot.SendMessageAsync(chann, "**" + prefix + "**: " + message.Replace(" /n", "\n")).Result.Author.Id;
-                }
-              
+
+                botId = bot.SendMessageAsync(chann, "**[" + WorldName + "] " + prefix + "**: " + message.Replace(" /n", "\n")).Result.Author.Id;
+
             }
         }
 
@@ -207,6 +210,22 @@ namespace AlliancesPlugin.Alliances
                 return true;
             return false;
         }
+
+        public static string GetStringBetweenCharacters(string input, char charFrom, char charTo)
+        {
+            int posFrom = input.IndexOf(charFrom);
+            if (posFrom != -1) //if found char
+            {
+                int posTo = input.IndexOf(charTo, posFrom + 1);
+                if (posTo != -1) //if found char
+                {
+                    return input.Substring(posFrom + 1, posTo - posFrom - 1);
+                }
+            }
+
+            return string.Empty;
+        }
+
         public static Dictionary<Guid, string> LastMessageSent = new Dictionary<Guid, string>();
         private static Task Discord_AllianceMessage(DSharpPlus.EventArgs.MessageCreateEventArgs e)
         {
@@ -223,29 +242,58 @@ namespace AlliancesPlugin.Alliances
                     //}
                     String[] split = e.Message.Content.Split(':');
                     int i = 0;
-                    StringBuilder message = new StringBuilder();
-                    foreach (String s in split)
+                    if (WorldName.Equals("") && MyMultiplayer.Static.HostName != null)
                     {
-                        if (i == 0)
+                        if (MyMultiplayer.Static.HostName.Contains("SENDS"))
                         {
-                            i++;
-                            continue;
+                            WorldName = MyMultiplayer.Static.HostName.Replace("SENDS", "");
                         }
-                        message.Append(s);
+                        else
+                        {
+                            WorldName = MyMultiplayer.Static.HostName;
+                        }
                     }
-                    StringBuilder newMessage = new StringBuilder();
-                    string output = e.Message.Content.Substring(e.Message.Content.IndexOf(':') + 1);
-                    AllianceChat.SendChatMessageFromDiscord(allianceChannels[e.Channel.Id],split[0].Replace("**", ""), output.Replace("**","").Trim(), 0);
+                  
+                        String exclusionBeforeFormat = GetStringBetweenCharacters(split[0], '[', ']');
+                    if (!exclusionBeforeFormat.Contains(WorldName))
+                    {
+
+                   
+                    StringBuilder message = new StringBuilder();
+                        foreach (String s in split)
+                        {
+                            if (i == 0)
+                            {
+                                i++;
+                                continue;
+                            }
+                            message.Append(s);
+                        }
+                        StringBuilder newMessage = new StringBuilder();
+                        string output = e.Message.Content.Substring(e.Message.Content.IndexOf(':') + 1);
+                        AllianceChat.SendChatMessageFromDiscord(allianceChannels[e.Channel.Id], split[0].Replace("**", ""), output.Replace("**", "").Trim(), 0);
+                    }
                 }
                 else
                 {
+                    if (WorldName.Equals("") && MyMultiplayer.Static.HostName != null)
+                    {
+                        if (MyMultiplayer.Static.HostName.Contains("SENDS"))
+                        {
+                            WorldName = MyMultiplayer.Static.HostName.Replace("SENDS", "");
+                        }
+                        else
+                        {
+                            WorldName = MyMultiplayer.Static.HostName;
+                        }
+                    }
                     if (String.IsNullOrEmpty(e.Guild.GetMemberAsync(e.Author.Id).Result.Nickname))
                     {
-                        AllianceChat.SendChatMessageFromDiscord(allianceChannels[e.Channel.Id], e.Message.Author.Username, e.Message.Content.Trim(), e.Author.Id);
+                        AllianceChat.SendChatMessageFromDiscord(allianceChannels[e.Channel.Id], "[D] " + e.Message.Author.Username, e.Message.Content.Trim(), e.Author.Id);
                     }
                     else
                     {
-                        AllianceChat.SendChatMessageFromDiscord(allianceChannels[e.Channel.Id], e.Guild.GetMemberAsync(e.Author.Id).Result.Nickname, e.Message.Content.Trim(), e.Author.Id);
+                        AllianceChat.SendChatMessageFromDiscord(allianceChannels[e.Channel.Id], "[D] " + e.Guild.GetMemberAsync(e.Author.Id).Result.Nickname, e.Message.Content.Trim(), e.Author.Id);
                     }
                 }
             }

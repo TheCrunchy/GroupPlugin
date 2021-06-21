@@ -81,6 +81,8 @@ namespace AlliancesPlugin
             }
         }
         FileUtils utils = new FileUtils();
+        [Command("al chat", "toggle alliance chat")]
+        [Permission(MyPromoteLevel.None)]
         public void DoAllianceChat(string message = "")
         {
             MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
