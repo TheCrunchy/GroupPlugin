@@ -41,6 +41,10 @@ Permission system and titles
 !alliance change leader <NewLeaderName> - changes the supreme leader of the alliance to the target
 !alliance tax <rankname> <taxrate> - Change the tax rate for a rank, maximum of 10%
 
+Admin commands
+!alliance takemoney name amount
+!alliance addmoney name amount
+
 Shipyard stuff
 !shipyard restore tag filename targetplayer - Example !shipyard restore fre "Fighter2021-05-1216-32-48-094" Crunch
 !shipyard purge - deletes the files of claimed grids

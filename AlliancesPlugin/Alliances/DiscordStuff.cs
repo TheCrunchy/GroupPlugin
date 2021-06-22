@@ -29,38 +29,51 @@ namespace AlliancesPlugin.Alliances
         private static Dictionary<ulong, Guid> allianceChannels = new Dictionary<ulong, Guid>();
         public static Task RegisterDiscord()
         {
-            try
+            if (!Ready)
             {
-                // Windows Vista - 8.1
-                if (Environment.OSVersion.Platform.Equals(PlatformID.Win32NT) && Environment.OSVersion.Version.Major == 6)
-                {
-                    Discord = new DiscordClient(new DiscordConfiguration
-                    {
-                        Token = AlliancePlugin.config.DiscordBotToken,
-                        TokenType = TokenType.Bot,
-                        WebSocketClientFactory = WebSocket4NetClient.CreateNew
-                    });
-                }
-                else
-                {
-                    Discord = new DiscordClient(new DiscordConfiguration
-                    {
-                        Token = AlliancePlugin.config.DiscordBotToken,
-                        TokenType = TokenType.Bot
-                    });
-                }
-            }
-            catch (Exception ex)
-            {
-                AlliancePlugin.Log.Error(ex);
-                Ready = false;
-                return Task.CompletedTask;
-            }
 
-            Task.Run(async () =>
-            {
-               await Discord.ConnectAsync();
 
+                try
+                {
+                    // Windows Vista - 8.1
+                    if (Environment.OSVersion.Platform.Equals(PlatformID.Win32NT) && Environment.OSVersion.Version.Major == 6)
+                    {
+                        Discord = new DiscordClient(new DiscordConfiguration
+                        {
+                            Token = AlliancePlugin.config.DiscordBotToken,
+                            TokenType = TokenType.Bot,
+                            WebSocketClientFactory = WebSocket4NetClient.CreateNew,
+                            AutoReconnect = true
+                        });
+                    }
+                    else
+                    {
+                        Discord = new DiscordClient(new DiscordConfiguration
+                        {
+                            Token = AlliancePlugin.config.DiscordBotToken,
+                            TokenType = TokenType.Bot,
+                            AutoReconnect = true
+                        });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    AlliancePlugin.Log.Error(ex);
+                    Ready = false;
+                    return Task.CompletedTask;
+                }
+
+
+
+                try
+                {
+                    Discord.ConnectAsync();
+                }
+                catch (Exception)
+                {
+                    return Task.CompletedTask;
+
+                }
                 Discord.MessageCreated += Discord_MessageCreated;
                 game = new DiscordActivity();
 
@@ -70,10 +83,10 @@ namespace AlliancesPlugin.Alliances
                     await Task.CompletedTask;
                 };
 
-            });
-    
 
 
+
+            }
             return Task.CompletedTask;
         }
         public static Task RegisterAllianceBot(Alliance alliance, ulong channelId)
@@ -91,7 +104,8 @@ namespace AlliancesPlugin.Alliances
                         {
                             Token = Encryption.DecryptString(alliance.AllianceId.ToString(), alliance.DiscordToken),
                             TokenType = TokenType.Bot,
-                            WebSocketClientFactory = WebSocket4NetClient.CreateNew
+                            WebSocketClientFactory = WebSocket4NetClient.CreateNew,
+                            AutoReconnect = true
                         });
                     }
                     else
@@ -99,7 +113,8 @@ namespace AlliancesPlugin.Alliances
                         bot = new DiscordClient(new DiscordConfiguration
                         {
                             Token = Encryption.DecryptString(alliance.AllianceId.ToString(), alliance.DiscordToken),
-                            TokenType = TokenType.Bot
+                            TokenType = TokenType.Bot,
+                            AutoReconnect = true
                         });
                     }
 
@@ -109,13 +124,17 @@ namespace AlliancesPlugin.Alliances
                     AlliancePlugin.Log.Error(ex);
                     return Task.CompletedTask;
                 }
-                Task.Run(async () =>
+
+
+                try
                 {
-                    if (!allianceBots.ContainsKey(alliance.AllianceId))
-                    {
-
-
-                        await bot.ConnectAsync();
+                    bot.ConnectAsync();
+                }
+                catch (Exception)
+                {
+                    return Task.CompletedTask;
+                  
+                }
                         if (!allianceBots.ContainsKey(alliance.AllianceId))
                         {
                             bot.MessageCreated += Discord_AllianceMessage;
@@ -133,8 +152,7 @@ namespace AlliancesPlugin.Alliances
                             allianceBots.Add(alliance.AllianceId, bot);
                             allianceChannels.Add(channelId, alliance.AllianceId);
                         }
-                    }
-                });
+        
  
             }
             return Task.CompletedTask;
@@ -207,11 +225,20 @@ namespace AlliancesPlugin.Alliances
                 {
                     if (MyMultiplayer.Static.HostName.Contains("SENDS"))
                     {
+                       
                         WorldName = MyMultiplayer.Static.HostName.Replace("SENDS", "");
                     }
                     else
                     {
-                        WorldName = MyMultiplayer.Static.HostName;
+                       if (MyMultiplayer.Static.HostName.Equals("Sigma Draconis Lobby"))
+                        {
+                            WorldName = "01";
+                        }
+                       else
+                        {
+                            WorldName = MyMultiplayer.Static.HostName;
+                        }
+                      
                     }
                 }
                 try
@@ -308,7 +335,14 @@ namespace AlliancesPlugin.Alliances
                         }
                         else
                         {
-                            WorldName = MyMultiplayer.Static.HostName;
+                            if (MyMultiplayer.Static.HostName.Equals("Sigma Draconis Lobby"))
+                            {
+                                WorldName = "01";
+                            }
+                            else
+                            {
+                                WorldName = MyMultiplayer.Static.HostName;
+                            }
                         }
                     }
                   
@@ -350,7 +384,14 @@ namespace AlliancesPlugin.Alliances
                         }
                         else
                         {
-                            WorldName = MyMultiplayer.Static.HostName;
+                            if (MyMultiplayer.Static.HostName.Equals("Sigma Draconis Lobby"))
+                            {
+                                WorldName = "01";
+                            }
+                            else
+                            {
+                                WorldName = MyMultiplayer.Static.HostName;
+                            }
                         }
                     }
                     if (debugMode)

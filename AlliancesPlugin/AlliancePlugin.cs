@@ -923,8 +923,9 @@ namespace AlliancesPlugin
 
                         if (alliance.GetTaxRate(MySession.Static.Players.TryGetSteamId(id)) > 0)
                         {
-
+                       
                             float tax = TaxesToBeProcessed[id] * alliance.GetTaxRate(MySession.Static.Players.TryGetSteamId(id));
+                            Log.Info(TaxesToBeProcessed[id] + " " + tax + " " + alliance.GetTaxRate(MySession.Static.Players.TryGetSteamId(id)));
                             if (EconUtils.getBalance(id) >= tax)
                             {
                                 if (taxes.ContainsKey(alliance.AllianceId))
@@ -1536,6 +1537,7 @@ namespace AlliancesPlugin
 
             if (DateTime.Now > NextUpdate)
             {
+                DiscordStuff.RegisterDiscord();
                 Log.Info("Doing alliance tasks");
                 DateTime now = DateTime.Now;
                 //try

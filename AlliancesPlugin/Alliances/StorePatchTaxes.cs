@@ -42,7 +42,7 @@ namespace AlliancesPlugin.Alliances
 
             ctx.GetPattern(update).Suffixes.Add(storePatch);
             ctx.GetPattern(update2).Prefixes.Add(storePatch2);
-            ctx.GetPattern(update3).Prefixes.Add(storePatch3);
+           ctx.GetPattern(update3).Prefixes.Add(storePatch3);
         }
 
         public static Dictionary<long, long> Ids = new Dictionary<long, long>();
@@ -80,11 +80,11 @@ namespace AlliancesPlugin.Alliances
 
                 if (AlliancePlugin.TaxesToBeProcessed.ContainsKey(Ids[id]))
                 {
-                    AlliancePlugin.TaxesToBeProcessed[Ids[id]] += price * amount;
+                    AlliancePlugin.TaxesToBeProcessed[Ids[id]] += price;
                 }
                 else
                 {
-                    AlliancePlugin.TaxesToBeProcessed.Add(Ids[id], price * amount);
+                    AlliancePlugin.TaxesToBeProcessed.Add(Ids[id], price);
                 }
               
             }

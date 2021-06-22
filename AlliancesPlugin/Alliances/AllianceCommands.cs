@@ -1,4 +1,5 @@
 ﻿using AlliancesPlugin.Shipyard;
+using Newtonsoft.Json;
 using Sandbox.Engine.Multiplayer;
 using Sandbox.Game.GameSystems.BankingAndCurrency;
 using Sandbox.Game.Multiplayer;
@@ -838,6 +839,102 @@ namespace AlliancesPlugin.Alliances
             {
                 Context.Respond("Alliance Info" + " " + alliance.name + alliance.OutputAlliance());
             }
+        }
+        [Command("dude", "output info for dude")]
+        [Permission(MyPromoteLevel.None)]
+        public void AllianceDude()
+        {
+
+
+            Alliance alliance = null;
+
+            if (MySession.Static.Factions.TryGetPlayerFaction(Context.Player.IdentityId) != null)
+            {
+                alliance = AlliancePlugin.GetAlliance(MySession.Static.Factions.TryGetPlayerFaction(Context.Player.IdentityId) as MyFaction);
+
+
+            }
+            else
+            {
+                Context.Respond("Must be a member of a faction.");
+                return;
+            }
+
+            if (alliance == null)
+            {
+                Context.Respond("Could not find that alliance.");
+                return;
+            }
+            DialogMessage m = new DialogMessage("Alliance Info", alliance.name, JsonConvert.SerializeObject(alliance) + " /n" + );
+            ModCommunication.SendMessageTo(m, Context.Player.SteamUserId);
+        }
+        [Command("takemoney", "output info about an alliance")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void AllianceRemoveMoney(string name, string inputAmount)
+        {
+          
+            Alliance alliance = null;
+
+                alliance = AlliancePlugin.GetAllianceNoLoading(name);
+           
+            if (alliance == null)
+            {
+                Context.Respond("Could not find that alliance.");
+                return;
+            }
+            Int64 amount;
+            inputAmount = inputAmount.Replace(",", "");
+            inputAmount = inputAmount.Replace(".", "");
+            inputAmount = inputAmount.Replace(" ", "");
+            try
+            {
+                amount = Int64.Parse(inputAmount);
+            }
+            catch (Exception)
+            {
+                Context.Respond("Error parsing amount", Color.Red, "Bank Man");
+                return;
+            }
+            if (amount < 0 || amount == 0)
+            {
+                Context.Respond("Must be a positive amount", Color.Red, "Bank Man");
+                return;
+            }
+            DatabaseForBank.RemoveFromBalance(alliance, amount);
+        }
+        [Command("addmoney", "output info about an alliance")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void AllianceAddMoney(string name, string inputAmount)
+        {
+
+            Alliance alliance = null;
+
+            alliance = AlliancePlugin.GetAllianceNoLoading(name);
+
+            if (alliance == null)
+            {
+                Context.Respond("Could not find that alliance.");
+                return;
+            }
+            Int64 amount;
+            inputAmount = inputAmount.Replace(",", "");
+            inputAmount = inputAmount.Replace(".", "");
+            inputAmount = inputAmount.Replace(" ", "");
+            try
+            {
+                amount = Int64.Parse(inputAmount);
+            }
+            catch (Exception)
+            {
+                Context.Respond("Error parsing amount", Color.Red, "Bank Man");
+                return;
+            }
+            if (amount < 0 || amount == 0)
+            {
+                Context.Respond("Must be a positive amount", Color.Red, "Bank Man");
+                return;
+            }
+            DatabaseForBank.AddToBalance(alliance, amount);
         }
         [Command("info", "output info about an alliance")]
         [Permission(MyPromoteLevel.None)]

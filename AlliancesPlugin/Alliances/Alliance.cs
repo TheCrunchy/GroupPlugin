@@ -85,15 +85,6 @@ namespace AlliancesPlugin.Alliances
         }
         public float GetTaxRate(ulong id)
         {
-         
-            if (SupremeLeader == id)
-            {
-                return 0;
-            }
-            if (HasAccess(id, AccessLevel.TaxExempt))
-            {
-                return 0;
-            }
             if (PlayersCustomRank.ContainsKey(id))
             {
                 if (CustomRankPermissions.ContainsKey(PlayersCustomRank[id]))
@@ -101,6 +92,15 @@ namespace AlliancesPlugin.Alliances
                     return CustomRankPermissions[PlayersCustomRank[id]].taxRate;
                 }
             }
+            if (SupremeLeader == id)
+            {
+                return 0.1f;
+            }
+            if (HasAccess(id, AccessLevel.TaxExempt))
+            {
+                return 0;
+            }
+        
 
             return UnrankedPerms.taxRate;
         }
