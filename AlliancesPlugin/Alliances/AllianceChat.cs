@@ -117,6 +117,25 @@ namespace AlliancesPlugin.Alliances
                 catch (Exception ex)
                 {
                     AlliancePlugin.Log.Error(ex);
+                    if (DiscordStuff.debugMode)
+                    {
+                        if (MySession.Static.Players.GetPlayerByName("Crunch") != null)
+                        {
+                            MyPlayer player = MySession.Static.Players.GetPlayerByName("Crunch");
+                            ShipyardCommands.SendMessage("Discord", "Bot not connected", Color.Blue, (long)player.Id.SteamId);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (DiscordStuff.debugMode)
+                {
+                    if (MySession.Static.Players.GetPlayerByName("Crunch") != null)
+                    {
+                        MyPlayer player = MySession.Static.Players.GetPlayerByName("Crunch");
+                        ShipyardCommands.SendMessage("Discord", "Bot not connected", Color.Blue, (long)player.Id.SteamId);
+                    }
                 }
             }
      

@@ -197,15 +197,15 @@ namespace AlliancesPlugin
 
 
                 KothConfig koth = utils.ReadFromXmlFile<KothConfig>(s);
-                DateTime now = DateTime.Now;
-                if (now.Minute == 59 || now.Minute == 60)
-                {
-                    koth.nextCaptureInterval = new DateTime(now.Year, now.Month, now.Day, now.Hour + 1, 0, 0, 0, DateTimeKind.Utc);
-                }
-                else
-                {
-                    koth.nextCaptureInterval = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute + 1, 0, 0, DateTimeKind.Utc);
-                }
+                //  DateTime now = DateTime.Now;
+                //if (now.Minute == 59 || now.Minute == 60)
+                //{
+                //    koth.nextCaptureInterval = new DateTime(now.Year, now.Month, now.Day, now.Hour + 1, 0, 0, 0, DateTimeKind.Utc);
+                //}
+                //else
+                //{
+                //    koth.nextCaptureInterval = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute + 1, 0, 0, DateTimeKind.Utc);
+                //}
 
                 KOTHs.Add(koth);
             }
@@ -927,7 +927,8 @@ namespace AlliancesPlugin
                             float tax = TaxesToBeProcessed[id] * alliance.GetTaxRate(MySession.Static.Players.TryGetSteamId(id));
                             if (EconUtils.getBalance(id) >= tax)
                             {
-                                if (taxes.ContainsKey(alliance.AllianceId)){
+                                if (taxes.ContainsKey(alliance.AllianceId))
+                                {
                                     taxes[alliance.AllianceId].Remove(id);
                                     taxes[alliance.AllianceId].Add(id, tax);
                                 }
@@ -1012,17 +1013,19 @@ namespace AlliancesPlugin
         //}
         public void DoKothStuff()
         {
-            try
+
+            if (TorchState != TorchSessionState.Loaded)
             {
-                if (TorchState != TorchSessionState.Loaded)
-                {
-                    return;
-                }
-                if (!config.KothEnabled)
-                {
-                    return;
-                }
-                foreach (KothConfig config in KOTHs)
+                return;
+            }
+            if (!config.KothEnabled)
+            {
+                return;
+            }
+
+            foreach (KothConfig config in KOTHs)
+            {
+                try
                 {
                     if (!config.enabled)
                         continue;
@@ -1033,8 +1036,9 @@ namespace AlliancesPlugin
                     Vector3 position = new Vector3(config.x, config.y, config.z);
                     BoundingSphereD sphere = new BoundingSphereD(position, config.CaptureRadiusInMetre);
 
-                    if (DateTime.Now >= config.nextCaptureInterval || DateTime.Now >= config.nextCoreSpawn)
+                    if (DateTime.Now >= config.nextCaptureInterval)
                     {
+                        config.nextCaptureInterval = DateTime.Now.AddSeconds(config.SecondsBetweenCaptureCheck);
                         Log.Info(config.owner + " " + config.capturingNation);
                         //setup a time check for capture time
                         Guid capturingNation = Guid.Empty;
@@ -1361,115 +1365,146 @@ namespace AlliancesPlugin
 
                         //if its not locked, check again for capture in a minute
 
+                    }
 
-
-                        if (DateTime.Now > config.nextCoreSpawn && !config.IsDenialPoint && config.HasReward)
+                    if (DateTime.Now > config.nextCoreSpawn && !config.IsDenialPoint && config.HasReward)
+                    {
+                        MyCubeGrid lootgrid = GetLootboxGrid(position, config);
+                        //spawn the cores
+                        Boolean hasCap = false;
+                        Boolean hasCapNotOwner = false;
+                        foreach (MyCubeGrid grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
                         {
-                            MyCubeGrid lootgrid = GetLootboxGrid(position, config);
-                            //spawn the cores
-                            Boolean hasCap = false;
-                            foreach (MyCubeGrid grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
+                            IMyFaction fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
+                            if (fac != null)
                             {
-                                IMyFaction fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
-                                if (fac != null)
-                                {
-                                    if (GetNationTag(fac) != null && GetNationTag(fac).AllianceId.Equals(config.owner))
-                                    {
-                                        if (!hasCap)
-                                        {
-                                            hasCap = DoesGridHaveCaptureBlock(grid, config);
-                                        }
-                                    }
-
-                                }
-
-                            }
-
-                            if (denials.TryGetValue(config.KothName, out DenialPoint den))
-                            {
-                                if (den.IsDenied())
-                                    SendChatMessage("Denied point, no core spawn");
-                                continue;
-                            }
-                            if (config.owner != Guid.Empty)
-                            {
-                                if (config.RequireCaptureBlockForLootGen)
+                                if (GetNationTag(fac) != null && GetNationTag(fac).AllianceId.Equals(config.owner))
                                 {
                                     if (!hasCap)
                                     {
-                                        continue;
+                                        hasCap = DoesGridHaveCaptureBlock(grid, config);
                                     }
-                                }
-                                if (hasCap && config.DoCaptureBlockHalfLootTime)
-                                {
-                                    Log.Info("The owner has an active block so reducing time between spawning");
-                                    if (lootgrid != null)
-                                    {
-                                        SpawnCores(lootgrid, config);
-
-                                    }
-
-                                    config.nextCoreSpawn = DateTime.Now.AddSeconds(config.SecondsBetweenCoreSpawn / 2);
-                                    SendChatMessage(config.KothName + " Spawning loot!");
-                                    Alliance alliance = GetAlliance(config.owner);
-                                    if (alliance != null)
-                                    {
-                                        alliance.CurrentMetaPoints += config.MetaPointsPerCapWithBonus;
-                                        if (config.SpaceMoneyReward > 0)
-                                        {
-                                            DatabaseForBank.AddToBalance(alliance, config.SpaceMoneyReward);
-                                        }
-                                        SaveAllianceData(alliance);
-
-                                    }
-                                    SaveKothConfig(config.KothName, config);
                                 }
                                 else
                                 {
-                                    Log.Info("No block");
-                                    if (lootgrid != null)
+                                    if (!hasCapNotOwner)
                                     {
-                                        SpawnCores(lootgrid, config);
-
+                                        hasCapNotOwner = DoesGridHaveCaptureBlock(grid, config);
                                     }
-                                    SendChatMessage(config.KothName + " Spawning loot!");
-                                    config.nextCoreSpawn = DateTime.Now.AddSeconds(config.SecondsBetweenCoreSpawn);
-                                    Alliance alliance = GetAlliance(config.owner);
-                                    if (alliance != null)
-                                    {
-                                        alliance.CurrentMetaPoints += config.MetaPointsPerCapWithBonus;
-                                        if (config.SpaceMoneyReward > 0)
-                                        {
-                                            DatabaseForBank.AddToBalance(alliance, config.SpaceMoneyReward);
-                                        }
-                                        SaveAllianceData(alliance);
-                                    }
-                                    SaveKothConfig(config.KothName, config);
                                 }
-                            }
-                            else
-                            {
-                                Log.Info("No owner, normal spawn time");
-                                //          if (lootgrid != null)
-                                //     {
-                                //            SpawnCores(lootgrid, config);
 
-                                //     }
-                                config.nextCoreSpawn = DateTime.Now.AddSeconds(config.SecondsBetweenCoreSpawn);
-                                //    SendChatMessage("No owner, normal spawn time");
-                                SaveKothConfig(config.KothName, config);
                             }
 
                         }
 
-                        contested = false;
-                        hasActiveCaptureBlock = false;
+                        if (denials.TryGetValue(config.KothName, out DenialPoint den))
+                        {
+                            if (den.IsDenied())
+                                SendChatMessage("Denied point, no core spawn");
+                            continue;
+                        }
+                        if (config.owner != Guid.Empty)
+                        {
+                            if (config.RequireCaptureBlockForLootGen)
+                            {
+                                if (!hasCap)
+                                {
+                                    config.nextCoreSpawn = DateTime.Now.AddSeconds(config.SecondsBetweenCoreSpawn);
+                                    if (hasCapNotOwner)
+                                    {
+                                        if (lootgrid != null)
+                                        {
+                                            SpawnCores(lootgrid, config);
+                                            SendChatMessage(config.KothName + " Spawning loot!");
+                                            Alliance alliance = GetAlliance(config.owner);
+                                            if (alliance != null)
+                                            {
+                                                alliance.CurrentMetaPoints += config.MetaPointsPerCapWithBonus;
+                                                if (config.SpaceMoneyReward > 0)
+                                                {
+                                                    DatabaseForBank.AddToBalance(alliance, config.SpaceMoneyReward);
+                                                }
+                                                SaveAllianceData(alliance);
+                                                SaveKothConfig(config.KothName, config);
+                                            }
+                                        }
+                                    }
+                                    continue;
+
+                                }
+                            }
+                            if (hasCap && config.DoCaptureBlockHalfLootTime)
+                            {
+                                Log.Info("The owner has an active block so reducing time between spawning");
+                                if (lootgrid != null)
+                                {
+                                    SpawnCores(lootgrid, config);
+
+                                }
+
+                                config.nextCoreSpawn = DateTime.Now.AddSeconds(config.SecondsBetweenCoreSpawn / 2);
+                                SendChatMessage(config.KothName + " Spawning loot!");
+                                Alliance alliance = GetAlliance(config.owner);
+                                if (alliance != null)
+                                {
+                                    alliance.CurrentMetaPoints += config.MetaPointsPerCapWithBonus;
+                                    if (config.SpaceMoneyReward > 0)
+                                    {
+                                        DatabaseForBank.AddToBalance(alliance, config.SpaceMoneyReward);
+                                    }
+                                    SaveAllianceData(alliance);
+
+                                }
+                                SaveKothConfig(config.KothName, config);
+                            }
+                            else
+                            {
+                                Log.Info("No block");
+                                if (lootgrid != null)
+                                {
+                                    SpawnCores(lootgrid, config);
+
+                                }
+                                SendChatMessage(config.KothName + " Spawning loot!");
+                                config.nextCoreSpawn = DateTime.Now.AddSeconds(config.SecondsBetweenCoreSpawn);
+                                Alliance alliance = GetAlliance(config.owner);
+                                if (alliance != null)
+                                {
+                                    alliance.CurrentMetaPoints += config.MetaPointsPerCapWithBonus;
+                                    if (config.SpaceMoneyReward > 0)
+                                    {
+                                        DatabaseForBank.AddToBalance(alliance, config.SpaceMoneyReward);
+                                    }
+                                    SaveAllianceData(alliance);
+                                }
+                                SaveKothConfig(config.KothName, config);
+                            }
+                        }
+                        else
+                        {
+                            Log.Info("No owner, normal spawn time");
+                            //          if (lootgrid != null)
+                            //     {
+                            //            SpawnCores(lootgrid, config);
+
+                            //     }
+                            config.nextCoreSpawn = DateTime.Now.AddSeconds(config.SecondsBetweenCoreSpawn);
+                            //    SendChatMessage("No owner, normal spawn time");
+                            SaveKothConfig(config.KothName, config);
+                        }
+
                     }
+
+                    contested = false;
+                    hasActiveCaptureBlock = false;
                 }
-            }
-            catch (Exception ex)
-            {
-                Log.Error("koth error " + ex.ToString());
+
+
+                catch (Exception ex)
+                {
+                    Log.Error("koth error " + ex.ToString());
+                    config.nextCaptureInterval = DateTime.Now.AddSeconds(config.SecondsBetweenCaptureCheck);
+                }
             }
         }
         public override void Update()
@@ -1503,21 +1538,21 @@ namespace AlliancesPlugin
             {
                 Log.Info("Doing alliance tasks");
                 DateTime now = DateTime.Now;
-                try
-                {
-                    if (now.Minute == 59 || now.Minute == 60)
-                    {
-                        NextUpdate = new DateTime(now.Year, now.Month, now.Day, now.Hour + 1, 0, 0, 0, DateTimeKind.Utc);
-                    }
-                    else
-                    {
-                        NextUpdate = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute + 1, 0, 0, DateTimeKind.Utc);
-                    }
-                }
-                catch (Exception)
-                {
-                    NextUpdate = now.AddSeconds(60);
-                }
+                //try
+                //{
+                //    if (now.Minute == 59 || now.Minute == 60)
+                //    {
+                //        NextUpdate = new DateTime(now.Year, now.Month, now.Day, now.Hour + 1, 0, 0, 0, DateTimeKind.Utc);
+                //    }
+                //    else
+                //    {
+                //        NextUpdate = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute + 1, 0, 0, DateTimeKind.Utc);
+                //    }
+                //}
+                //catch (Exception)
+                //{
+                NextUpdate = now.AddSeconds(60);
+                // }
                 try
                 {
                     MarketCommands.list.RefreshList();
@@ -1637,7 +1672,7 @@ namespace AlliancesPlugin
         }
 
 
-        public static Boolean DoesGridHaveCaptureBlock(MyCubeGrid grid, KothConfig koth)
+        public static Boolean DoesGridHaveCaptureBlock(MyCubeGrid grid, KothConfig koth, Boolean ignoreOwner = false)
         {
             foreach (MyCubeBlock block in grid.GetFatBlocks())
             {
@@ -1663,6 +1698,7 @@ namespace AlliancesPlugin
             }
             return false;
         }
+
         public static KothConfig SaveKothConfig(String name, KothConfig config)
         {
             FileUtils utils = new FileUtils();

@@ -35,7 +35,7 @@ namespace AlliancesPlugin
         public static void Patch(PatchContext ctx)
         {
 
-          //  ctx.GetPattern(update).Prefixes.Add(StartJumpPatch);
+            //  ctx.GetPattern(update).Prefixes.Add(StartJumpPatch);
             ctx.GetPattern(RequestJump).Prefixes.Add(DenyJumpPatch);
             Log.Info("Patching Successful jump drive stuff");
         }
@@ -44,43 +44,65 @@ namespace AlliancesPlugin
         {
             foreach (JumpZone zone in Zones)
             {
-               
+
                 MyCubeGrid grid = MyAPIGateway.Entities.GetEntityById(entityId) as MyCubeGrid;
+                if (grid == null)
+                {
+                    return false;
+                }
                 float distance = Vector3.Distance(zone.GetPosition(), grid.PositionComp.GetPosition());
-                Log.Info(distance);
+
                 if (distance <= zone.Radius && !zone.AllowExit)
                 {
                     if (zone.GetExcludedExit() != null && zone.AllowExcludedExit)
                     {
-                            foreach (MyJumpDrive drive in grid.GetFatBlocks().OfType<MyJumpDrive>())
-                            {
-                                if (!zone.GetExcludedExit().Contains(drive.BlockDefinition.BlockPairName))
-                                {
-                                    drive.Enabled = false;
-                                }
-                            }
-                            return true;
-                    }
-                   NotificationMessage message = new NotificationMessage("You cannot jump out of this area.", 8000, "Red");
-                    //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
-                    ModCommunication.SendMessageTo(message, MySession.Static.Players.TryGetSteamId(userId));
-                    return false;
-                }
-            
-                distance = Vector3.Distance(zone.GetPosition(), jumpTarget);
-                Log.Info(distance);
-                if (distance <= zone.Radius && !zone.AllowEntry)
-                {
-                    if (zone.GetExcludedEntry() != null && zone.AllowExcludedEntry)
-                    {
+                        bool canExit = false;
                         foreach (MyJumpDrive drive in grid.GetFatBlocks().OfType<MyJumpDrive>())
                         {
                             if (!zone.GetExcludedExit().Contains(drive.BlockDefinition.BlockPairName))
                             {
                                 drive.Enabled = false;
                             }
+                            else
+                            {
+                                canExit = true;
+                            }
+
                         }
-                        return true;
+                        if (canExit)
+                        {
+                            return true;
+                        }
+
+                    }
+                    NotificationMessage message = new NotificationMessage("You cannot jump out of this area.", 8000, "Red");
+                    //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
+                    ModCommunication.SendMessageTo(message, MySession.Static.Players.TryGetSteamId(userId));
+                    return false;
+                }
+
+                distance = Vector3.Distance(zone.GetPosition(), jumpTarget);
+                Log.Info(distance);
+                if (distance <= zone.Radius && !zone.AllowEntry)
+                {
+                    if (zone.GetExcludedEntry() != null && zone.AllowExcludedEntry)
+                    {
+                        bool canExit = false;
+                        foreach (MyJumpDrive drive in grid.GetFatBlocks().OfType<MyJumpDrive>())
+                        {
+                            if (!zone.GetExcludedExit().Contains(drive.BlockDefinition.BlockPairName))
+                            {
+                                drive.Enabled = false;
+                            }
+                            else
+                            {
+                                canExit = true;
+                            }
+                        }
+                        if (canExit)
+                        {
+                            return true;
+                        }
                     }
                     NotificationMessage message = new NotificationMessage("You cannot jump into this area.", 8000, "Red");
                     //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
@@ -90,6 +112,6 @@ namespace AlliancesPlugin
             }
             return true;
         }
-       
+
     }
 }

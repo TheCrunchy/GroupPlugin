@@ -57,16 +57,21 @@ namespace AlliancesPlugin.Alliances
                 return Task.CompletedTask;
             }
 
-            Discord.ConnectAsync();
-
-            Discord.MessageCreated += Discord_MessageCreated;
-            game = new DiscordActivity();
-
-            Discord.Ready += async e =>
+            Task.Run(async () =>
             {
-                Ready = true;
-                await Task.CompletedTask;
-            };
+               await Discord.ConnectAsync();
+
+                Discord.MessageCreated += Discord_MessageCreated;
+                game = new DiscordActivity();
+
+                Discord.Ready += async e =>
+                {
+                    Ready = true;
+                    await Task.CompletedTask;
+                };
+
+            });
+    
 
 
             return Task.CompletedTask;
@@ -104,23 +109,33 @@ namespace AlliancesPlugin.Alliances
                     AlliancePlugin.Log.Error(ex);
                     return Task.CompletedTask;
                 }
-
-                bot.ConnectAsync();
-
-                bot.MessageCreated += Discord_AllianceMessage;
-                game = new DiscordActivity();
-
-                bot.Ready += async e =>
+                Task.Run(async () =>
                 {
-                    AllianceReady = true;
+                    if (!allianceBots.ContainsKey(alliance.AllianceId))
+                    {
 
-                    await Task.CompletedTask;
-                };
 
-                allianceBots.Remove(alliance.AllianceId);
-                allianceChannels.Remove(alliance.DiscordChannelId);
-                allianceBots.Add(alliance.AllianceId, bot);
-                allianceChannels.Add(channelId, alliance.AllianceId);
+                        await bot.ConnectAsync();
+                        if (!allianceBots.ContainsKey(alliance.AllianceId))
+                        {
+                            bot.MessageCreated += Discord_AllianceMessage;
+                            game = new DiscordActivity();
+
+                            bot.Ready += async e =>
+                            {
+                                AllianceReady = true;
+
+                                await Task.CompletedTask;
+                            };
+
+                            allianceBots.Remove(alliance.AllianceId);
+                            allianceChannels.Remove(alliance.DiscordChannelId);
+                            allianceBots.Add(alliance.AllianceId, bot);
+                            allianceChannels.Add(channelId, alliance.AllianceId);
+                        }
+                    }
+                });
+ 
             }
             return Task.CompletedTask;
         }
@@ -175,6 +190,7 @@ namespace AlliancesPlugin.Alliances
                 }
             }
         }
+        private static int attempt = 0;
 
         public static void SendAllianceMessage(Alliance alliance, string prefix, string message)
         {
@@ -198,9 +214,26 @@ namespace AlliancesPlugin.Alliances
                         WorldName = MyMultiplayer.Static.HostName;
                     }
                 }
-
-                botId = bot.SendMessageAsync(chann, "**[" + WorldName + "] " + prefix + "**: " + message.Replace(" /n", "\n")).Result.Author.Id;
-
+                try
+                {
+                    botId = bot.SendMessageAsync(chann, "**[" + WorldName + "] " + prefix + "**: " + message.Replace(" /n", "\n")).Result.Author.Id;
+                }
+                catch (DSharpPlus.Exceptions.RateLimitException)
+                {
+                    if (attempt <= 5)
+                    {
+                       attempt++;
+                        SendAllianceMessage(alliance, prefix, message);
+                        attempt = 0;
+                    }
+                    else {
+                        attempt = 0;
+                    }
+                }
+                catch (System.Net.Http.HttpRequestException)
+                {
+                    AllianceChat.SendChatMessageFromDiscord(alliance.AllianceId, "Bot", "Failed to send message.", 0);
+                }
             }
         }
 
