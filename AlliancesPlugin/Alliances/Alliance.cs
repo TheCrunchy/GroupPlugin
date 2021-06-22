@@ -333,7 +333,7 @@ namespace AlliancesPlugin.Alliances
             {
                 upkeep += AlliancePlugin.config.ShipyardUpkeep;
             }
-            sb.AppendLine("Expected Upkeep Value :" + (long) upkeep);
+            sb.AppendLine("Expected Upkeep Value :" + String.Format("{0:n0}",(long) upkeep) + " SC.");
             sb.AppendLine("");
             sb.AppendLine("Meta Points : " + String.Format("{0:n0}", CurrentMetaPoints));
             sb.AppendLine("");
