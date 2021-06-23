@@ -162,6 +162,10 @@ namespace AlliancesPlugin.Hangar
                 {
                     s.Replace(" ", "");
                 }
+                if (split[0].ToLower().Contains("metapoints"))
+                {
+                    cost.MetaPointCost += int.Parse(split[1]);
+                }
                 if (split[0].ToLower().Contains("money"))
                 {
                     cost.MoneyRequired += int.Parse(split[1]);
@@ -248,9 +252,12 @@ namespace AlliancesPlugin.Hangar
                     {
                         if (cost.MoneyRequired > 0)
                         {
-                            ShipyardCommands.SendMessage("[Alliance Hangar]", "SC Cost for next speed upgrade " + String.Format("{0:n0}", cost.MoneyRequired), Color.Cyan, (long)Context.Player.SteamUserId);
+                            ShipyardCommands.SendMessage("[Alliance Hangar]", "SC Cost for next slot upgrade " + String.Format("{0:n0}", cost.MoneyRequired), Color.Cyan, (long)Context.Player.SteamUserId);
                         }
-
+                        if (cost.MetaPointCost > 0)
+                        {
+                            ShipyardCommands.SendMessage("[Alliance Hangar]", "Metapoint cost for next slot upgrade " + cost.MetaPointCost, Color.Cyan, (long)Context.Player.SteamUserId);
+                        }
                         sb.AppendLine("Items required.");
                         foreach (KeyValuePair<MyDefinitionId, int> id in cost.itemsRequired)
                         {
@@ -318,13 +325,23 @@ namespace AlliancesPlugin.Hangar
                     }
                     if (cost != null)
                     {
-
+                        if (cost.MetaPointCost > 0)
+                        {
+                          
+                            if (alliance.CurrentMetaPoints < cost.MetaPointCost)
+                            {
+                                Context.Respond("Cannot afford the meta point cost of " + cost.MetaPointCost);
+                                return;
+                            }
+                        }
                         if (cost.MoneyRequired > 0)
                         {
+
                             if (EconUtils.getBalance(Context.Player.IdentityId) >= cost.MoneyRequired)
                             {
                                 if (ShipyardCommands.ConsumeComponents(invents, cost.itemsRequired, Context.Player.SteamUserId))
                                 {
+                                    alliance.CurrentMetaPoints -= cost.MetaPointCost;
                                     EconUtils.takeMoney(Context.Player.IdentityId, cost.MoneyRequired);
                                     hangar.SlotsAmount = (int)cost.NewLevel;
                                     hangar.SlotUpgradeNum++;
@@ -342,6 +359,7 @@ namespace AlliancesPlugin.Hangar
                         {
                             if (ShipyardCommands.ConsumeComponents(invents, cost.itemsRequired, Context.Player.SteamUserId))
                             {
+                                alliance.CurrentMetaPoints -= cost.MetaPointCost;
                                 hangar.SlotsAmount = (int)cost.NewLevel;
                                 hangar.SlotUpgradeNum++;
                                 hangar.SaveHangar(alliance);
@@ -436,13 +454,21 @@ namespace AlliancesPlugin.Hangar
                 cost = ShipyardCommands.LoadUnlockCost(AlliancePlugin.path + "//HangarUnlockCost.txt");
                 if (cost != null)
                 {
-
+                    if (cost.MetaPointCost > 0)
+                    {
+                        if (alliance.CurrentMetaPoints < cost.MetaPointCost)
+                        {
+                            Context.Respond("Cannot afford the meta point cost of " + cost.MetaPointCost);
+                            return;
+                        }
+                    }
                     if (cost.MoneyRequired > 0)
                     {
                         if (EconUtils.getBalance(Context.Player.IdentityId) >= cost.MoneyRequired)
                         {
                             if (ShipyardCommands.ConsumeComponents(invents, cost.itemsRequired, Context.Player.SteamUserId))
                             {
+                                alliance.CurrentMetaPoints -= cost.MetaPointCost;
                                 EconUtils.takeMoney(Context.Player.IdentityId, cost.MoneyRequired);
                                 alliance.hasUnlockedHangar = true;
                                 HangarData hangar = alliance.LoadHangar();
@@ -461,6 +487,7 @@ namespace AlliancesPlugin.Hangar
                     {
                         if (ShipyardCommands.ConsumeComponents(invents, cost.itemsRequired, Context.Player.SteamUserId))
                         {
+                            alliance.CurrentMetaPoints -= cost.MetaPointCost;
                             alliance.hasUnlockedHangar = true;
                             HangarData hangar = alliance.LoadHangar();
 

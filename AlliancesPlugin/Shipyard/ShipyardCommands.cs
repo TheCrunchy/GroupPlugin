@@ -278,6 +278,10 @@ namespace AlliancesPlugin.Shipyard
                 {
                     s.Replace(" ", "");
                 }
+                if (split[0].ToLower().Contains("metapoints"))
+                {
+                    cost.MetaPointCost += int.Parse(split[1]);
+                }
                 if (split[0].ToLower().Contains("money"))
                 {
                     cost.MoneyRequired += int.Parse(split[1]);
@@ -330,6 +334,10 @@ namespace AlliancesPlugin.Shipyard
                 foreach (String s in split)
                 {
                     s.Replace(" ", "");
+                }
+                if (split[0].ToLower().Contains("metapoints"))
+                {
+                    cost.MetaPointCost += int.Parse(split[1]);
                 }
                 if (split[0].ToLower().Contains("money"))
                 {
@@ -435,13 +443,21 @@ namespace AlliancesPlugin.Shipyard
                     cost = LoadUnlockCost(AlliancePlugin.path + "//ShipyardUnlockCost.txt");
                     if (cost != null)
                     {
-
+                        if (cost.MetaPointCost > 0)
+                        {
+                            if (alliance.CurrentMetaPoints < cost.MetaPointCost)
+                            {
+                                Context.Respond("Cannot afford the meta point cost of " + cost.MetaPointCost);
+                                return;
+                            }
+                        }
                         if (cost.MoneyRequired > 0)
                         {
                             if (EconUtils.getBalance(Context.Player.IdentityId) >= cost.MoneyRequired)
                             {
                                 if (ConsumeComponents(invents, cost.itemsRequired, Context.Player.SteamUserId))
                                 {
+                                    alliance.CurrentMetaPoints -= cost.MetaPointCost;
                                     EconUtils.takeMoney(Context.Player.IdentityId, cost.MoneyRequired);
                                     alliance.hasUnlockedShipyard = true;
                                     queue.upgradeSlots = 1;
@@ -462,6 +478,7 @@ namespace AlliancesPlugin.Shipyard
                             {
                                 alliance.hasUnlockedShipyard = true;
                                 queue.upgradeSlots = 1;
+                                alliance.CurrentMetaPoints -= cost.MetaPointCost;
                                 alliance.SavePrintQueue(queue);
                                 AlliancePlugin.SaveAllianceData(alliance);
                             }
@@ -549,7 +566,13 @@ namespace AlliancesPlugin.Shipyard
                                 {
                                     SendMessage("[Shipyard]", "SC Cost for next speed upgrade " + String.Format("{0:n0}", cost.MoneyRequired), Color.Cyan, (long)Context.Player.SteamUserId);
                                 }
-
+                                if (cost.MetaPointCost > 0)
+                                {
+                                    
+                                        SendMessage("[Shipyard]", "Metapoint cost for next speed upgrade " + cost.MetaPointCost, Color.Cyan, (long)Context.Player.SteamUserId);
+                                  
+                                    
+                                }
                                 sb.AppendLine("Items required.");
                                 foreach (KeyValuePair<MyDefinitionId, int> id in cost.itemsRequired)
                                 {
@@ -584,9 +607,15 @@ namespace AlliancesPlugin.Shipyard
                             {
                                 if (cost.MoneyRequired > 0)
                                 {
-                                    SendMessage("[Shipyard]", "SC Cost for next speed upgrade " + String.Format("{0:n0}", cost.MoneyRequired), Color.Cyan, (long)Context.Player.SteamUserId);
+                                    SendMessage("[Shipyard]", "SC Cost for next slot upgrade " + String.Format("{0:n0}", cost.MoneyRequired), Color.Cyan, (long)Context.Player.SteamUserId);
                                 }
+                                if (cost.MetaPointCost > 0)
+                                {
 
+                                    SendMessage("[Shipyard]", "Metapoint cost for next slot upgrade " + cost.MetaPointCost, Color.Cyan, (long)Context.Player.SteamUserId);
+                                    
+
+                                }
                                 sb.AppendLine("Items required.");
                                 foreach (KeyValuePair<MyDefinitionId, int> id in cost.itemsRequired)
                                 {
@@ -671,17 +700,26 @@ namespace AlliancesPlugin.Shipyard
                             }
                             if (cost != null)
                             {
-
+                                if (cost.MetaPointCost > 0)
+                                {
+                                    if (alliance.CurrentMetaPoints < cost.MetaPointCost)
+                                    {
+                                        Context.Respond("Cannot afford the meta point cost of " + cost.MetaPointCost);
+                                        return;
+                                    }
+                                }
                                 if (cost.MoneyRequired > 0)
                                 {
                                     if (EconUtils.getBalance(Context.Player.IdentityId) >= cost.MoneyRequired)
                                     {
                                         if (ConsumeComponents(invents, cost.itemsRequired, Context.Player.SteamUserId))
                                         {
+                                            alliance.CurrentMetaPoints -= cost.MetaPointCost;
                                             EconUtils.takeMoney(Context.Player.IdentityId, cost.MoneyRequired);
                                             queue.upgradeSpeed = (float)cost.NewLevel;
                                             queue.SpeedUpgrade++;
                                             alliance.SavePrintQueue(queue);
+                                            AlliancePlugin.SaveAllianceData(alliance);
                                             SendMessage("[Shipyard]", "Upgrading speed decrease. You were charged: " + String.Format("{0:n0}", cost.MoneyRequired), Color.Green, (long)Context.Player.SteamUserId);
                                         }
                                     }
@@ -694,10 +732,11 @@ namespace AlliancesPlugin.Shipyard
                                 {
                                     if (ConsumeComponents(invents, cost.itemsRequired, Context.Player.SteamUserId))
                                     {
+                                        alliance.CurrentMetaPoints -= cost.MetaPointCost;
                                         queue.upgradeSpeed = (float)cost.NewLevel;
                                         queue.SpeedUpgrade++;
                                         alliance.SavePrintQueue(queue);
-
+                                        AlliancePlugin.SaveAllianceData(alliance);
                                     }
                                 }
                             }
@@ -725,17 +764,28 @@ namespace AlliancesPlugin.Shipyard
                             }
                             if (cost != null)
                             {
-
+                                if (cost.MetaPointCost > 0)
+                                {
+                                    if (alliance.CurrentMetaPoints < cost.MetaPointCost)
+                                    {
+                                        Context.Respond("Cannot afford the meta point cost of " + cost.MetaPointCost);
+                                        return;
+                                    }
+                                }
                                 if (cost.MoneyRequired > 0)
                                 {
                                     if (EconUtils.getBalance(Context.Player.IdentityId) >= cost.MoneyRequired)
                                     {
                                         if (ConsumeComponents(invents, cost.itemsRequired, Context.Player.SteamUserId))
                                         {
+                                            alliance.CurrentMetaPoints -= cost.MetaPointCost;
+                            
+                                           
                                             EconUtils.takeMoney(Context.Player.IdentityId, cost.MoneyRequired);
                                             queue.upgradeSlots = (int)cost.NewLevel;
                                             queue.SlotsUpgrade++;
                                             alliance.SavePrintQueue(queue);
+                                            AlliancePlugin.SaveAllianceData(alliance);
                                             SendMessage("[Shipyard]", "Upgrading speed decrease. You were charged: " + String.Format("{0:n0}", cost.MoneyRequired), Color.Green, (long)Context.Player.SteamUserId);
                                         }
                                     }
@@ -748,9 +798,11 @@ namespace AlliancesPlugin.Shipyard
                                 {
                                     if (ConsumeComponents(invents, cost.itemsRequired, Context.Player.SteamUserId))
                                     {
+                                        alliance.CurrentMetaPoints -= cost.MetaPointCost;
                                         queue.upgradeSlots = (int)cost.NewLevel;
                                         alliance.SavePrintQueue(queue);
                                         queue.SlotsUpgrade++;
+                                        AlliancePlugin.SaveAllianceData(alliance);
                                     }
                                 }
                             }

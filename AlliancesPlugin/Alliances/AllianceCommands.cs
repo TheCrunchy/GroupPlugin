@@ -865,7 +865,7 @@ namespace AlliancesPlugin.Alliances
                 Context.Respond("Could not find that alliance.");
                 return;
             }
-            DialogMessage m = new DialogMessage("Alliance Info", alliance.name, JsonConvert.SerializeObject(alliance) + " /n" + );
+            DialogMessage m = new DialogMessage("Alliance Info", alliance.name, JsonConvert.SerializeObject(alliance));
             ModCommunication.SendMessageTo(m, Context.Player.SteamUserId);
         }
         [Command("takemoney", "output info about an alliance")]

@@ -14,5 +14,6 @@ namespace AlliancesPlugin.Shipyard
         public string type;
         public long MoneyRequired = 0;
         public double NewLevel = 1;
+        public int MetaPointCost = 0;
     }
 }

@@ -390,6 +390,7 @@ namespace AlliancesPlugin
                     output.AppendLine("TypeId,SubtypeId,Amount");
                     output.AppendLine("MyObjectBuilder_Ingot,Uranium,5000");
                     output.AppendLine("Money,500000000");
+                    output.AppendLine("MetaPoints,50");
                     File.WriteAllText(path + "//ShipyardUpgrades//SpeedUpgrade1.txt", output.ToString());
 
                 }
@@ -400,6 +401,7 @@ namespace AlliancesPlugin
                     output.AppendLine("TypeId,SubtypeId,Amount");
                     output.AppendLine("MyObjectBuilder_Ingot,Uranium,5000");
                     output.AppendLine("Money,500000000");
+                    output.AppendLine("MetaPoints,50");
                     File.WriteAllText(path + "//HangarUnlockCost.txt", output.ToString());
 
                 }
@@ -440,6 +442,7 @@ namespace AlliancesPlugin
                     output.AppendLine("TypeId,SubtypeId,Amount");
                     output.AppendLine("MyObjectBuilder_Ingot,Uranium,5000");
                     output.AppendLine("Money,500000000");
+                    output.AppendLine("MetaPoints,50");
                     File.WriteAllText(path + "//HangarUpgrades//SlotUpgrade1.txt", output.ToString());
 
                 }
@@ -450,6 +453,7 @@ namespace AlliancesPlugin
                     output.AppendLine("TypeId,SubtypeId,Amount");
                     output.AppendLine("MyObjectBuilder_Ingot,Uranium,5000");
                     output.AppendLine("Money,500000000");
+                    output.AppendLine("MetaPoints,50");
                     File.WriteAllText(path + "//ShipyardUnlockCost.txt", output.ToString());
 
                 }
@@ -461,6 +465,7 @@ namespace AlliancesPlugin
                     output.AppendLine("TypeId,SubtypeId,Amount");
                     output.AppendLine("MyObjectBuilder_Ingot,Uranium,5000");
                     output.AppendLine("Money,500000000");
+                    output.AppendLine("MetaPoints,50");
                     File.WriteAllText(path + "//ShipyardUpgrades//SlotUpgrade1.txt", output.ToString());
 
                 }
@@ -1235,6 +1240,31 @@ namespace AlliancesPlugin
                                                     config.owner = capturingNation;
                                                     config.amountCaptured = 0;
                                                     config.CaptureStarted = false;
+                                                    Alliance alliance = GetAllianceNoLoading(config.owner);
+                                                    if (config.EditTerritoryFile)
+                                                    {
+                                                        if (File.Exists(config.TerritoryFilePath))
+                                                        {
+                                                            String[] line;
+                                                            line = File.ReadAllLines(config.TerritoryFilePath);
+                                                            
+                                                            for (int i = 0; i < line.Length; i++)
+                                                            {
+                                                                if (line[i].Contains("[Name"))
+                                                                {
+                                                                    String[] split = line[i].Split(':');
+                                                                    line[i] = split[0] + ":" + alliance.name + "]";
+
+                                                                }
+                                                            }
+                                                            StringBuilder sb = new StringBuilder();
+                                                            foreach (string s in line)
+                                                            {
+                                                                sb.Append(s);
+                                                            }
+                                                            File.WriteAllText(config.TerritoryFilePath, sb.ToString());
+                                                        }
+                                                    }
                                                     foreach (JumpGate gate in AllGates.Values)
                                                     {
                                                         if (gate.LinkedKoth.Equals(config.KothName))

@@ -19,7 +19,8 @@ namespace AlliancesPlugin.KOTH
         public int RewardAmount = 1;
         public long SpaceMoneyReward = 0;
         public Boolean enabled = false;
-
+        public Boolean EditTerritoryFile = false;
+        public string TerritoryFilePath = "";
         public string KothBuildingOwner = "BOB";
         public long LootboxGridEntityId = 0;
         public string LootBoxTerminalName = "LOOT BOX";
