@@ -1,4 +1,6 @@
 ﻿using NLog;
+using NLog.Config;
+using NLog.Targets;
 using Sandbox.Game.Entities;
 using Sandbox.Game.GameSystems;
 using Sandbox.Game.World;
@@ -20,9 +22,40 @@ namespace AlliancesPlugin
     public static class JumpPatch
     {
         public static List<JumpZone> Zones = new List<JumpZone>();
-        public static readonly Logger Log = LogManager.GetCurrentClassLogger();
+    
+
+        public static Logger Log = LogManager.GetLogger("JumpLog");
+        public static void ApplyLogging()
+        {
+
+            var rules = LogManager.Configuration.LoggingRules;
+
+            for (int i = rules.Count - 1; i >= 0; i--)
+            {
+
+                var rule = rules[i];
+
+                if (rule.LoggerNamePattern == "JumpLog")
+                    rules.RemoveAt(i);
+            }
 
 
+
+            var logTarget = new FileTarget
+            {
+                FileName = "Logs/JumpLog-" + DateTime.Now.Day + "-" + DateTime.Now.Month + "-" + DateTime.Now.Year + ".txt",
+                Layout = "${var:logStamp} ${var:logContent}"
+            };
+
+            var logRule = new LoggingRule("JumpLog", LogLevel.Debug, logTarget)
+            {
+                Final = true
+            };
+
+            rules.Insert(0, logRule);
+
+            LogManager.Configuration.Reload();
+        }
 
 
         internal static readonly MethodInfo RequestJump =
@@ -38,18 +71,22 @@ namespace AlliancesPlugin
             //  ctx.GetPattern(update).Prefixes.Add(StartJumpPatch);
             ctx.GetPattern(RequestJump).Prefixes.Add(DenyJumpPatch);
             Log.Info("Patching Successful jump drive stuff");
+            ApplyLogging();
         }
 
         public static bool PatchRequestJump(long entityId, Vector3D jumpTarget, long userId)
         {
+            MyCubeGrid grid = MyAPIGateway.Entities.GetEntityById(entityId) as MyCubeGrid;
+
+            if (grid == null)
+            {
+                return false;
+            }
+            Log.Info(FacUtils.GetOwner(grid) + " grid owner id, requested by " + userId);
             foreach (JumpZone zone in Zones)
             {
 
-                MyCubeGrid grid = MyAPIGateway.Entities.GetEntityById(entityId) as MyCubeGrid;
-                if (grid == null)
-                {
-                    return false;
-                }
+               
                 float distance = Vector3.Distance(zone.GetPosition(), grid.PositionComp.GetPosition());
 
                 if (distance <= zone.Radius && !zone.AllowExit)
