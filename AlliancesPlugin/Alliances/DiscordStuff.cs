@@ -76,7 +76,7 @@ namespace AlliancesPlugin.Alliances
                 }
                 Discord.MessageCreated += Discord_MessageCreated;
                 game = new DiscordActivity();
-
+               
                 Discord.Ready += async e =>
                 {
                     Ready = true;
@@ -91,7 +91,7 @@ namespace AlliancesPlugin.Alliances
         }
         public static Task RegisterAllianceBot(Alliance alliance, ulong channelId)
         {
-            if (!allianceBots.ContainsKey(alliance.AllianceId))
+            if (!allianceBots.ContainsKey(alliance.AllianceId) && Ready)
             {
                 DiscordClient bot;
                 try
@@ -133,27 +133,28 @@ namespace AlliancesPlugin.Alliances
                 catch (Exception)
                 {
                     return Task.CompletedTask;
-                  
-                }
-                        if (!allianceBots.ContainsKey(alliance.AllianceId))
-                        {
-                            bot.MessageCreated += Discord_AllianceMessage;
-                            game = new DiscordActivity();
 
-                            bot.Ready += async e =>
+                }
+                if (!allianceBots.ContainsKey(alliance.AllianceId))
+                {
+                    bot.MessageCreated += Discord_AllianceMessage;
+                   
+            
+
+                    bot.Ready += async e =>
                             {
                                 AllianceReady = true;
-
+                                allianceBots.Remove(alliance.AllianceId);
+                                allianceChannels.Remove(alliance.DiscordChannelId);
+                                allianceBots.Add(alliance.AllianceId, bot);
+                                allianceChannels.Add(channelId, alliance.AllianceId);
                                 await Task.CompletedTask;
                             };
 
-                            allianceBots.Remove(alliance.AllianceId);
-                            allianceChannels.Remove(alliance.DiscordChannelId);
-                            allianceBots.Add(alliance.AllianceId, bot);
-                            allianceChannels.Add(channelId, alliance.AllianceId);
-                        }
-        
- 
+
+                }
+
+
             }
             return Task.CompletedTask;
         }
@@ -212,7 +213,7 @@ namespace AlliancesPlugin.Alliances
 
         public static void SendAllianceMessage(Alliance alliance, string prefix, string message)
         {
-            if (AllianceReady && alliance.DiscordChannelId > 0)
+            if (AllianceHasBot(alliance.AllianceId) && alliance.DiscordChannelId > 0)
             {
 
                 DiscordClient bot = allianceBots[alliance.AllianceId];
@@ -225,20 +226,20 @@ namespace AlliancesPlugin.Alliances
                 {
                     if (MyMultiplayer.Static.HostName.Contains("SENDS"))
                     {
-                       
+
                         WorldName = MyMultiplayer.Static.HostName.Replace("SENDS", "");
                     }
                     else
                     {
-                       if (MyMultiplayer.Static.HostName.Equals("Sigma Draconis Lobby"))
+                        if (MyMultiplayer.Static.HostName.Equals("Sigma Draconis Lobby"))
                         {
                             WorldName = "01";
                         }
-                       else
+                        else
                         {
                             WorldName = MyMultiplayer.Static.HostName;
                         }
-                      
+
                     }
                 }
                 try
@@ -249,17 +250,40 @@ namespace AlliancesPlugin.Alliances
                 {
                     if (attempt <= 5)
                     {
-                       attempt++;
+                        attempt++;
                         SendAllianceMessage(alliance, prefix, message);
                         attempt = 0;
                     }
-                    else {
+                    else
+                    {
                         attempt = 0;
                     }
                 }
                 catch (System.Net.Http.HttpRequestException)
                 {
                     AllianceChat.SendChatMessageFromDiscord(alliance.AllianceId, "Bot", "Failed to send message.", 0);
+                }
+                catch (Exception ex)
+                {
+                    if (debugMode)
+                    {
+                        if (MySession.Static.Players.GetPlayerByName("Crunch") != null)
+                        {
+                            MyPlayer player = MySession.Static.Players.GetPlayerByName("Crunch");
+                            ShipyardCommands.SendMessage("Discord", "" + ex.ToString(), Color.Blue, (long)player.Id.SteamId);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (debugMode)
+                {
+                    if (MySession.Static.Players.GetPlayerByName("Crunch") != null)
+                    {
+                        MyPlayer player = MySession.Static.Players.GetPlayerByName("Crunch");
+                        ShipyardCommands.SendMessage("Discord", "doesnt have bot or channel id is 0", Color.Blue, (long)player.Id.SteamId);
+                    }
                 }
             }
         }
@@ -345,13 +369,13 @@ namespace AlliancesPlugin.Alliances
                             }
                         }
                     }
-                  
-                        String exclusionBeforeFormat = GetStringBetweenCharacters(split[0], '[', ']');
+
+                    String exclusionBeforeFormat = GetStringBetweenCharacters(split[0], '[', ']');
                     if (!exclusionBeforeFormat.Contains(WorldName))
                     {
 
-                   
-                    StringBuilder message = new StringBuilder();
+
+                        StringBuilder message = new StringBuilder();
                         foreach (String s in split)
                         {
                             if (i == 0)
@@ -412,7 +436,7 @@ namespace AlliancesPlugin.Alliances
                     //            ShipyardCommands.SendMessage("Discord 5", "Player message 2", Color.Blue, (long)player.Id.SteamId);
                     //        }
                     //    }
-                       AllianceChat.SendChatMessageFromDiscord(allianceChannels[e.Channel.Id], "[D] " + e.Message.Author.Username, e.Message.Content.Trim(), e.Author.Id);
+                    AllianceChat.SendChatMessageFromDiscord(allianceChannels[e.Channel.Id], "[D] " + e.Message.Author.Username, e.Message.Content.Trim(), e.Author.Id);
                     //}
                     //else
                     //{
@@ -426,7 +450,7 @@ namespace AlliancesPlugin.Alliances
                     //    }
                     //    Task.Run(async () =>
                     //    {
-                           
+
                     //        String nick;
                     //          DiscordMember mem = await e.Guild.GetMemberAsync(e.Author.Id);
                     //        nick = mem.Nickname;
@@ -440,17 +464,17 @@ namespace AlliancesPlugin.Alliances
                     //        }
                     //        AllianceChat.SendChatMessageFromDiscord(allianceChannels[e.Channel.Id], "[D] " + nickNames[e.Message.Author.Id], e.Message.Content.Trim(), e.Author.Id);
                     //    });
-                      
+
                     //}
                     //e.Message.Author.
                     //String nick = e.Guild.GetMemberAsync(e.Author.Id).Result.Nickname;
                     //if (String.IsNullOrEmpty(nick))
                     //{
-                  
+
                     //}
                     //else
                     //{
-                     //   AllianceChat.SendChatMessageFromDiscord(allianceChannels[e.Channel.Id], "[D] " + nick, e.Message.Content.Trim(), e.Author.Id);
+                    //   AllianceChat.SendChatMessageFromDiscord(allianceChannels[e.Channel.Id], "[D] " + nick, e.Message.Content.Trim(), e.Author.Id);
                     //}
                 }
             }

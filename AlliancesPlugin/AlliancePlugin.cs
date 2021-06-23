@@ -623,7 +623,7 @@ namespace AlliancesPlugin
                 {
                     Log.Error(ex);
                 }
-                Log.Info("Registering bots");
+              //  Log.Info("Registering bots");
                 foreach (Alliance alliance in AllAlliances.Values)
                 {
                     alliance.ForceFriendlies();
@@ -930,7 +930,7 @@ namespace AlliancesPlugin
                         {
 
                             float tax = TaxesToBeProcessed[id] * alliance.GetTaxRate(MySession.Static.Players.TryGetSteamId(id));
-                            Log.Info(TaxesToBeProcessed[id] + " " + tax + " " + alliance.GetTaxRate(MySession.Static.Players.TryGetSteamId(id)));
+                      //      Log.Info(TaxesToBeProcessed[id] + " " + tax + " " + alliance.GetTaxRate(MySession.Static.Players.TryGetSteamId(id)));
                             if (EconUtils.getBalance(id) >= tax)
                             {
                                 if (taxes.ContainsKey(alliance.AllianceId))
@@ -1059,7 +1059,7 @@ namespace AlliancesPlugin
                     if (DateTime.Now >= config.nextCaptureInterval)
                     {
                         config.nextCaptureInterval = DateTime.Now.AddSeconds(config.SecondsBetweenCaptureCheck);
-                        Log.Info(config.owner + " " + config.capturingNation);
+                        //Log.Info(config.owner + " " + config.capturingNation);
                         //setup a time check for capture time
                         Guid capturingNation = Guid.Empty;
                         if (config.capturingNation != Guid.Empty)
@@ -1085,7 +1085,7 @@ namespace AlliancesPlugin
                                 if (IsContested(fac, config, capturingNation) && capturingNation != Guid.Empty)
                                 {
 
-                                    Log.Info("Contested faction " + fac.Tag + " " + capturingNation);
+                                  //  Log.Info("Contested faction " + fac.Tag + " " + capturingNation);
                                     contested = true;
                                 }
                                 else
@@ -1096,7 +1096,7 @@ namespace AlliancesPlugin
                                         capturingNation = alliance.AllianceId;
                                         if (!hasActiveCaptureBlock)
                                         {
-                                            Log.Info("Checking for a capture block");
+                                          //  Log.Info("Checking for a capture block");
                                             hasActiveCaptureBlock = DoesGridHaveCaptureBlock(grid, config);
                                         }
                                     }
@@ -1106,7 +1106,7 @@ namespace AlliancesPlugin
                             if (fac == null)
                             {
 
-                                Log.Info("Contested no faction");
+                              //  Log.Info("Contested no faction");
                                 contested = true;
                             }
                         }
@@ -1175,7 +1175,7 @@ namespace AlliancesPlugin
                                     {
                                         config.CaptureStarted = true;
                                         config.nextCaptureAvailable = DateTime.Now.AddMinutes(config.MinutesBeforeCaptureStarts);
-                                        Log.Info("Can cap in 10 minutes");
+                                      //  Log.Info("Can cap in 10 minutes");
                                         config.capturingNation = capturingNation;
                                         SendChatMessage("Can cap in however many minutes");
 
@@ -1246,7 +1246,7 @@ namespace AlliancesPlugin
                                                 if (config.amountCaptured >= config.PointsToCap)
                                                 {
                                                     //lock
-                                                    Log.Info("Locking because points went over the threshold");
+                                            //        Log.Info("Locking because points went over the threshold");
 
                                                     locked = true;
                                                     config.nextCaptureAvailable = DateTime.Now.AddHours(config.hoursToLockAfterCap);
@@ -1322,7 +1322,7 @@ namespace AlliancesPlugin
                                         }
                                         else
                                         {
-                                            Log.Info("Locking because the capturing nation changed");
+                                          //  Log.Info("Locking because the capturing nation changed");
                                             config.capturingNation = Guid.Empty;
                                             config.CaptureStarted = false;
                                             config.unlockTime = DateTime.Now.AddHours(config.hourCooldownAfterFail);
@@ -1489,7 +1489,7 @@ namespace AlliancesPlugin
                             }
                             if (hasCap && config.DoCaptureBlockHalfLootTime)
                             {
-                                Log.Info("The owner has an active block so reducing time between spawning");
+                              //  Log.Info("The owner has an active block so reducing time between spawning");
                                 if (lootgrid != null)
                                 {
                                     SpawnCores(lootgrid, config);
@@ -1513,7 +1513,7 @@ namespace AlliancesPlugin
                             }
                             else
                             {
-                                Log.Info("No block");
+                             //  Log.Info("No block");
                                 if (lootgrid != null)
                                 {
                                     SpawnCores(lootgrid, config);
@@ -1536,7 +1536,7 @@ namespace AlliancesPlugin
                         }
                         else
                         {
-                            Log.Info("No owner, normal spawn time");
+                        //    Log.Info("No owner, normal spawn time");
                             //          if (lootgrid != null)
                             //     {
                             //            SpawnCores(lootgrid, config);
@@ -1710,14 +1710,14 @@ namespace AlliancesPlugin
                 Sandbox.ModAPI.IMyTerminalBlock block = gridTerminalSys.GetBlockWithName(config.LootBoxTerminalName);
                 if (block != null && rewardItem != null)
                 {
-                    Log.Info("Should spawn item");
+                 //   Log.Info("Should spawn item");
                     MyItemType itemType = new MyInventoryItemFilter(rewardItem.TypeId + "/" + rewardItem.SubtypeName).ItemType;
                     block.GetInventory().AddItems((MyFixedPoint)config.RewardAmount, (MyObjectBuilder_PhysicalObject)MyObjectBuilderSerializer.CreateNewObject(rewardItem));
 
                 }
                 else
                 {
-                    Log.Info("Cant spawn item");
+                  //  Log.Info("Cant spawn item");
                 }
                 return;
             }
