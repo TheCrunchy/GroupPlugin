@@ -53,6 +53,7 @@ namespace AlliancesPlugin.KOTH
         public DateTime nextCaptureInterval = DateTime.Now;
         public DateTime nextCoreSpawn = DateTime.Now;
         public DateTime nextBroadcast = DateTime.Now;
+        public DateTime unlockTime = DateTime.Now;
         public Boolean CaptureStarted = false;
 
         public Boolean IsDenialPoint = false;

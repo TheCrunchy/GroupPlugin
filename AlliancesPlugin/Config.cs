@@ -25,5 +25,7 @@ namespace AlliancesPlugin
         public long FeePerMember = 10000000;
         public long ShipyardUpkeep = 100000000;
         public long HangarUpkeep = 100000000;
+        public Boolean RepLogging = true;
+        public Boolean ReputationPatch = true;
     }
 }

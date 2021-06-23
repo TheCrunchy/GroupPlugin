@@ -928,7 +928,7 @@ namespace AlliancesPlugin
 
                         if (alliance.GetTaxRate(MySession.Static.Players.TryGetSteamId(id)) > 0)
                         {
-                       
+
                             float tax = TaxesToBeProcessed[id] * alliance.GetTaxRate(MySession.Static.Players.TryGetSteamId(id));
                             Log.Info(TaxesToBeProcessed[id] + " " + tax + " " + alliance.GetTaxRate(MySession.Static.Players.TryGetSteamId(id)));
                             if (EconUtils.getBalance(id) >= tax)
@@ -1041,7 +1041,21 @@ namespace AlliancesPlugin
                     // Log.Info("We capping?");
                     Vector3 position = new Vector3(config.x, config.y, config.z);
                     BoundingSphereD sphere = new BoundingSphereD(position, config.CaptureRadiusInMetre);
+                    if (DateTime.Now >= config.unlockTime)
+                    {
+                        config.unlockTime = DateTime.Now.AddYears(1);
 
+                        try
+                        {
+                            DiscordStuff.SendMessageToDiscord(config.KothName + " Is now unlocked! ", config);
+                        }
+                        catch (Exception)
+                        {
+                            Log.Error("Cant do discord message for koth.");
+                            SendChatMessage(config.KothName + " Is now unlocked! ");
+                        }
+
+                    }
                     if (DateTime.Now >= config.nextCaptureInterval)
                     {
                         config.nextCaptureInterval = DateTime.Now.AddSeconds(config.SecondsBetweenCaptureCheck);
@@ -1065,7 +1079,7 @@ namespace AlliancesPlugin
                                 continue;
 
                             IMyFaction fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
-                            if (fac != null && !fac.Tag.Equals(config.KothBuildingOwner))
+                            if (fac != null && !fac.Tag.Equals(config.KothBuildingOwner) && fac.Tag.Length == 3)
                             {
                                 entitiesInCapPoint++;
                                 if (IsContested(fac, config, capturingNation) && capturingNation != Guid.Empty)
@@ -1181,24 +1195,24 @@ namespace AlliancesPlugin
                             {
                                 if (!contested && capturingNation != Guid.Empty)
                                 {
-                                    Log.Info("Got to the capping check and not contested");
+                                  //  Log.Info("Got to the capping check and not contested");
                                     if (DateTime.Now >= config.nextCaptureAvailable && config.CaptureStarted)
                                     {
 
                                         if (config.capturingNation.Equals(capturingNation) && !config.capturingNation.Equals(""))
                                         {
 
-                                            Log.Info("Is the same nation as whats capping");
+                                          //  Log.Info("Is the same nation as whats capping");
                                             if (!hasActiveCaptureBlock)
                                             {
-                                                Log.Info("Locking because no active cap block");
+                                               // Log.Info("Locking because no active cap block");
 
                                                 config.capturingNation = Guid.Empty;
                                                 config.nextCaptureAvailable = DateTime.Now.AddHours(config.hourCooldownAfterFail);
                                                 //broadcast that its locked
                                                 config.amountCaptured = 0;
                                                 config.CaptureStarted = false;
-
+                                                config.unlockTime = DateTime.Now.AddHours(config.hourCooldownAfterFail);
                                                 try
                                                 {
                                                     DiscordStuff.SendMessageToDiscord(config.KothName + " Locked, Capture blocks are missing or destroyed. Locked for " + config.hourCooldownAfterFail + " hours", config);
@@ -1240,6 +1254,7 @@ namespace AlliancesPlugin
                                                     config.owner = capturingNation;
                                                     config.amountCaptured = 0;
                                                     config.CaptureStarted = false;
+                                                    config.unlockTime = DateTime.Now.AddHours(config.hoursToLockAfterCap);
                                                     Alliance alliance = GetAllianceNoLoading(config.owner);
                                                     if (config.EditTerritoryFile)
                                                     {
@@ -1247,7 +1262,7 @@ namespace AlliancesPlugin
                                                         {
                                                             String[] line;
                                                             line = File.ReadAllLines(config.TerritoryFilePath);
-                                                            
+
                                                             for (int i = 0; i < line.Length; i++)
                                                             {
                                                                 if (line[i].Contains("[Name"))
@@ -1310,6 +1325,7 @@ namespace AlliancesPlugin
                                             Log.Info("Locking because the capturing nation changed");
                                             config.capturingNation = Guid.Empty;
                                             config.CaptureStarted = false;
+                                            config.unlockTime = DateTime.Now.AddHours(config.hourCooldownAfterFail);
                                             config.nextCaptureAvailable = DateTime.Now.AddHours(config.hourCooldownAfterFail);
                                             //broadcast that its locked
                                             SendChatMessage("Locked because capturing nation has changed.");
@@ -1330,14 +1346,14 @@ namespace AlliancesPlugin
                                     {
 
                                         SendChatMessage("Waiting to cap");
-                                        Log.Info("Waiting to cap");
+                                    //    Log.Info("Waiting to cap");
                                     }
                                 }
                                 else
                                 {
                                     if (!hasActiveCaptureBlock && config.CaptureStarted)
                                     {
-                                        Log.Info("Locking because no active cap block");
+                                       // Log.Info("Locking because no active cap block");
                                         config.capturingNation = Guid.Empty;
                                         config.nextCaptureAvailable = DateTime.Now.AddHours(config.hourCooldownAfterFail);
                                         config.CaptureStarted = false;
@@ -1345,7 +1361,7 @@ namespace AlliancesPlugin
 
                                         config.amountCaptured = 0;
                                         //   SendChatMessage("Locked because capture blocks are dead");
-
+                                        config.unlockTime = DateTime.Now.AddHours(config.hourCooldownAfterFail);
                                         try
                                         {
                                             DiscordStuff.SendMessageToDiscord(config.KothName + " Locked, Capture blocks are missing or destroyed. Locked for " + config.hourCooldownAfterFail + " hours", config);
@@ -1358,7 +1374,7 @@ namespace AlliancesPlugin
                                     }
                                     if (contested && config.CaptureStarted)
                                     {
-                                        Log.Info("Its contested or the fuckers trying to cap have no nation");
+                                     //   Log.Info("Its contested or the fuckers trying to cap have no nation");
                                         //send contested message
                                         //  SendChatMessage("Contested");
                                         try
@@ -1407,6 +1423,13 @@ namespace AlliancesPlugin
                         foreach (MyCubeGrid grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
                         {
                             IMyFaction fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
+                            if (fac != null)
+                            {
+                                if (fac.Tag == config.KothBuildingOwner || fac.Tag.Length > 3)
+                                {
+                                    continue;
+                                }
+                            }
                             if (fac != null)
                             {
                                 if (GetNationTag(fac) != null && GetNationTag(fac).AllianceId.Equals(config.owner))
