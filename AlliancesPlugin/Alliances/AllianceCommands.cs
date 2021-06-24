@@ -253,7 +253,7 @@ namespace AlliancesPlugin.Alliances
                             AlliancePlugin.SaveAllianceData(alliance);
                             AlliancePlugin.FactionsInAlliances.Remove(fac.FactionId);
                             AlliancePlugin.FactionsInAlliances.Add(fac.FactionId, alliance.name);
-                            AllianceChat.SendChatMessage(alliance.AllianceId, "Alliance", fac.Tag + " has joined the alliance!", true);
+                            AllianceChat.SendChatMessage(alliance.AllianceId, "Alliance", fac.Tag + " has joined the alliance!", true, 0);
                             cooldowns.Remove(Context.Player.IdentityId);
                         }
                         else
@@ -757,7 +757,7 @@ namespace AlliancesPlugin.Alliances
                 {
                     alliance.SendInvite(fac2.FactionId);
                     AlliancePlugin.SaveAllianceData(alliance);
-                    AllianceChat.SendChatMessage(alliance.AllianceId, "Alliance", fac2.Tag + " was invited to the alliance!", true);
+                    AllianceChat.SendChatMessage(alliance.AllianceId, "Alliance", fac2.Tag + " was invited to the alliance!", true, 0);
                     Context.Respond("Invite sent, they can join using !alliance join " + alliance.name);
                 }
                 else
@@ -1005,7 +1005,7 @@ namespace AlliancesPlugin.Alliances
                     }
 
                 }
-                AllianceChat.SendChatMessage(alliance.AllianceId, "Alliance", fac.Tag + " has left the alliance!", true);
+                AllianceChat.SendChatMessage(alliance.AllianceId, "Alliance", fac.Tag + " has left the alliance!", true, 0);
                 alliance.AllianceMembers.Remove(fac.FactionId);
                 foreach (MyFactionMember m in fac.Members.Values)
                 {
@@ -1063,7 +1063,7 @@ namespace AlliancesPlugin.Alliances
                                 {
                                     MyFactionCollection.DeclareWar(member.FactionId, fac2.FactionId);
                                     MySession.Static.Factions.SetReputationBetweenFactions(id, fac2.FactionId, -1500);
-                                    AllianceChat.SendChatMessage(alliance.AllianceId, "Alliance", fac2.Tag + " was kicked from the alliance!", true);
+                                    AllianceChat.SendChatMessage(alliance.AllianceId, "Alliance", fac2.Tag + " was kicked from the alliance!", true, 0);
                                     foreach (MyFactionMember m in member.Members.Values)
                                     {
                                         AllianceChat.PeopleInAllianceChat.Remove(MySession.Static.Players.TryGetSteamId(m.PlayerId));

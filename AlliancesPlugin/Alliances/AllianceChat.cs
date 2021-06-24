@@ -100,7 +100,7 @@ namespace AlliancesPlugin.Alliances
         }
 
         public static Dictionary<ulong, Guid> PeopleInAllianceChat = new Dictionary<ulong, Guid>();
-        public static void SendChatMessage(Guid allianceId, string prefix, string message, bool toDiscord)
+        public static void SendChatMessage(Guid allianceId, string prefix, string message, bool toDiscord, long playerId)
         {
             prefix = prefix.Replace(":", "");
             Alliance alliance = AlliancePlugin.GetAllianceNoLoading(allianceId);
@@ -141,6 +141,11 @@ namespace AlliancesPlugin.Alliances
      
                 foreach (MyPlayer player in MySession.Static.Players.GetOnlinePlayers())
                 {
+                if (player.Identity.IdentityId == playerId)
+                {
+                    ShipyardCommands.SendMessage("Alliance chat", "You are in alliance chat.", new Color(alliance.r, alliance.g, alliance.b), (long)player.Id.SteamId);
+                    continue;
+                }
                     MyFaction fac = MySession.Static.Factions.TryGetPlayerFaction(player.Identity.IdentityId) as MyFaction;
                     if (fac != null)
                     {
@@ -150,6 +155,7 @@ namespace AlliancesPlugin.Alliances
                         }
                     }
                 }
+
                 foreach (ulong id in OtherMembers)
                 {
 
@@ -262,11 +268,12 @@ namespace AlliancesPlugin.Alliances
                 Alliance alliance = AlliancePlugin.GetAllianceNoLoading(allianceId);
                 // ShipyardCommands.SendMessage(msg.Author, "You are in alliance chat", Color.BlueViolet, (long)msg.AuthorSteamId);
                 if (alliance.GetTitle((ulong)msg.AuthorSteamId).Equals("")){
-                    SendChatMessage(allianceId, msg.Author, msg.Message, true);
+                    SendChatMessage(allianceId, msg.Author, msg.Message, true, identity.IdentityId);
+       
                 }
                 else
                 {
-                    SendChatMessage(allianceId, alliance.GetTitle((ulong)msg.AuthorSteamId) + " | " + msg.Author, msg.Message, true);
+                    SendChatMessage(allianceId, alliance.GetTitle((ulong)msg.AuthorSteamId) + " | " + msg.Author, msg.Message, true, identity.IdentityId);
                 }
               
             }

@@ -1789,7 +1789,15 @@ namespace AlliancesPlugin
 
                         if (block is Sandbox.ModAPI.IMyBeacon beacon)
                         {
-                            beacon.Radius = koth.captureBlockBroadcastDistance;
+                            if (beacon.Radius < koth.captureBlockBroadcastDistance)
+                            {
+                                return false;
+                            }
+                            else
+                            {
+                                return true;
+                            }
+                         
                         }
 
                         return true;
