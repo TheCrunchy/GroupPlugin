@@ -511,7 +511,43 @@ namespace AlliancesPlugin
                 LoadAllAlliances();
                 LoadAllGates();
 
-                DiscordStuff.RegisterDiscord();
+                
+                    DiscordStuff.RegisterDiscord();
+              
+                foreach (Alliance alliance in AllAlliances.Values)
+                {
+                    alliance.ForceFriendlies();
+                    alliance.ForceEnemies();
+                    if (alliance.DiscordChannelId > 0 && !String.IsNullOrEmpty(alliance.DiscordToken) && TorchState == TorchSessionState.Loaded)
+                    {
+                        //  Log.Info(Encryption.DecryptString(alliance.AllianceId.ToString(), alliance.DiscordToken).Length);
+
+                        try
+                        {
+                            if (Encryption.DecryptString(alliance.AllianceId.ToString(), alliance.DiscordToken).Length != 59)
+                            {
+                                Log.Error("Invalid bot token for " + alliance.AllianceId);
+                                continue;
+                            }
+
+                        }
+                        catch (Exception ex)
+                        {
+                            //  Log.Error(ex);
+                            Log.Error("Invalid bot token for " + alliance.AllianceId);
+                            continue;
+                        }
+                        //    if (!botsTried.Contains(alliance.AllianceId))
+                        //    {
+                        //   botsTried.Add(alliance.AllianceId);
+                        Log.Info("Registering bot for " + alliance.AllianceId);
+                        DiscordStuff.RegisterAllianceBot(alliance, alliance.DiscordChannelId);
+                        
+
+
+
+                    }
+                }
                 //        DatabaseForBank bank = new DatabaseForBank();
                 //    bank.CreateTable(bank.CreateConnection());
             }
@@ -623,7 +659,7 @@ namespace AlliancesPlugin
                 {
                     Log.Error(ex);
                 }
-              //  Log.Info("Registering bots");
+                //  Log.Info("Registering bots");
                 foreach (Alliance alliance in AllAlliances.Values)
                 {
                     alliance.ForceFriendlies();
@@ -647,14 +683,21 @@ namespace AlliancesPlugin
                             Log.Error("Invalid bot token for " + alliance.AllianceId);
                             continue;
                         }
-                        
-                        DiscordStuff.RegisterAllianceBot(alliance, alliance.DiscordChannelId);
+                        //    if (!botsTried.Contains(alliance.AllianceId))
+                        //    {
+                        //   botsTried.Add(alliance.AllianceId);
+                        //    DiscordStuff.RegisterAllianceBot(alliance, alliance.DiscordChannelId);
+
+
+
+
                     }
                 }
 
             }
         }
-   
+
+
         public static void LoadAllGates()
         {
             FileUtils jsonStuff = new FileUtils();
@@ -932,7 +975,7 @@ namespace AlliancesPlugin
                         {
 
                             float tax = TaxesToBeProcessed[id] * alliance.GetTaxRate(MySession.Static.Players.TryGetSteamId(id));
-                      //      Log.Info(TaxesToBeProcessed[id] + " " + tax + " " + alliance.GetTaxRate(MySession.Static.Players.TryGetSteamId(id)));
+                            //      Log.Info(TaxesToBeProcessed[id] + " " + tax + " " + alliance.GetTaxRate(MySession.Static.Players.TryGetSteamId(id)));
                             if (EconUtils.getBalance(id) >= tax)
                             {
                                 if (taxes.ContainsKey(alliance.AllianceId))
@@ -1087,7 +1130,7 @@ namespace AlliancesPlugin
                                 if (IsContested(fac, config, capturingNation) && capturingNation != Guid.Empty)
                                 {
 
-                                  //  Log.Info("Contested faction " + fac.Tag + " " + capturingNation);
+                                    //  Log.Info("Contested faction " + fac.Tag + " " + capturingNation);
                                     contested = true;
                                 }
                                 else
@@ -1098,7 +1141,7 @@ namespace AlliancesPlugin
                                         capturingNation = alliance.AllianceId;
                                         if (!hasActiveCaptureBlock)
                                         {
-                                          //  Log.Info("Checking for a capture block");
+                                            //  Log.Info("Checking for a capture block");
                                             hasActiveCaptureBlock = DoesGridHaveCaptureBlock(grid, config);
                                         }
                                     }
@@ -1108,7 +1151,7 @@ namespace AlliancesPlugin
                             if (fac == null)
                             {
 
-                              //  Log.Info("Contested no faction");
+                                //  Log.Info("Contested no faction");
                                 contested = true;
                             }
                         }
@@ -1177,7 +1220,7 @@ namespace AlliancesPlugin
                                     {
                                         config.CaptureStarted = true;
                                         config.nextCaptureAvailable = DateTime.Now.AddMinutes(config.MinutesBeforeCaptureStarts);
-                                      //  Log.Info("Can cap in 10 minutes");
+                                        //  Log.Info("Can cap in 10 minutes");
                                         config.capturingNation = capturingNation;
                                         SendChatMessage("Can cap in however many minutes");
 
@@ -1197,17 +1240,17 @@ namespace AlliancesPlugin
                             {
                                 if (!contested && capturingNation != Guid.Empty)
                                 {
-                                  //  Log.Info("Got to the capping check and not contested");
+                                    //  Log.Info("Got to the capping check and not contested");
                                     if (DateTime.Now >= config.nextCaptureAvailable && config.CaptureStarted)
                                     {
 
                                         if (config.capturingNation.Equals(capturingNation) && !config.capturingNation.Equals(""))
                                         {
 
-                                          //  Log.Info("Is the same nation as whats capping");
+                                            //  Log.Info("Is the same nation as whats capping");
                                             if (!hasActiveCaptureBlock)
                                             {
-                                               // Log.Info("Locking because no active cap block");
+                                                // Log.Info("Locking because no active cap block");
 
                                                 config.capturingNation = Guid.Empty;
                                                 config.nextCaptureAvailable = DateTime.Now.AddHours(config.hourCooldownAfterFail);
@@ -1248,7 +1291,7 @@ namespace AlliancesPlugin
                                                 if (config.amountCaptured >= config.PointsToCap)
                                                 {
                                                     //lock
-                                            //        Log.Info("Locking because points went over the threshold");
+                                                    //        Log.Info("Locking because points went over the threshold");
 
                                                     locked = true;
                                                     config.nextCaptureAvailable = DateTime.Now.AddHours(config.hoursToLockAfterCap);
@@ -1324,7 +1367,7 @@ namespace AlliancesPlugin
                                         }
                                         else
                                         {
-                                          //  Log.Info("Locking because the capturing nation changed");
+                                            //  Log.Info("Locking because the capturing nation changed");
                                             config.capturingNation = Guid.Empty;
                                             config.CaptureStarted = false;
                                             config.unlockTime = DateTime.Now.AddHours(config.hourCooldownAfterFail);
@@ -1348,14 +1391,14 @@ namespace AlliancesPlugin
                                     {
 
                                         SendChatMessage("Waiting to cap");
-                                    //    Log.Info("Waiting to cap");
+                                        //    Log.Info("Waiting to cap");
                                     }
                                 }
                                 else
                                 {
                                     if (!hasActiveCaptureBlock && config.CaptureStarted)
                                     {
-                                       // Log.Info("Locking because no active cap block");
+                                        // Log.Info("Locking because no active cap block");
                                         config.capturingNation = Guid.Empty;
                                         config.nextCaptureAvailable = DateTime.Now.AddHours(config.hourCooldownAfterFail);
                                         config.CaptureStarted = false;
@@ -1376,7 +1419,7 @@ namespace AlliancesPlugin
                                     }
                                     if (contested && config.CaptureStarted)
                                     {
-                                     //   Log.Info("Its contested or the fuckers trying to cap have no nation");
+                                        //   Log.Info("Its contested or the fuckers trying to cap have no nation");
                                         //send contested message
                                         //  SendChatMessage("Contested");
                                         try
@@ -1491,7 +1534,7 @@ namespace AlliancesPlugin
                             }
                             if (hasCap && config.DoCaptureBlockHalfLootTime)
                             {
-                              //  Log.Info("The owner has an active block so reducing time between spawning");
+                                //  Log.Info("The owner has an active block so reducing time between spawning");
                                 if (lootgrid != null)
                                 {
                                     SpawnCores(lootgrid, config);
@@ -1515,7 +1558,7 @@ namespace AlliancesPlugin
                             }
                             else
                             {
-                             //  Log.Info("No block");
+                                //  Log.Info("No block");
                                 if (lootgrid != null)
                                 {
                                     SpawnCores(lootgrid, config);
@@ -1538,7 +1581,7 @@ namespace AlliancesPlugin
                         }
                         else
                         {
-                        //    Log.Info("No owner, normal spawn time");
+                            //    Log.Info("No owner, normal spawn time");
                             //          if (lootgrid != null)
                             //     {
                             //            SpawnCores(lootgrid, config);
@@ -1712,14 +1755,14 @@ namespace AlliancesPlugin
                 Sandbox.ModAPI.IMyTerminalBlock block = gridTerminalSys.GetBlockWithName(config.LootBoxTerminalName);
                 if (block != null && rewardItem != null)
                 {
-                 //   Log.Info("Should spawn item");
+                    //   Log.Info("Should spawn item");
                     MyItemType itemType = new MyInventoryItemFilter(rewardItem.TypeId + "/" + rewardItem.SubtypeName).ItemType;
                     block.GetInventory().AddItems((MyFixedPoint)config.RewardAmount, (MyObjectBuilder_PhysicalObject)MyObjectBuilderSerializer.CreateNewObject(rewardItem));
 
                 }
                 else
                 {
-                  //  Log.Info("Cant spawn item");
+                    //  Log.Info("Cant spawn item");
                 }
                 return;
             }

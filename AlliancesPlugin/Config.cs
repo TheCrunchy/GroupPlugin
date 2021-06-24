@@ -20,6 +20,7 @@ namespace AlliancesPlugin
         public int JumPGateMaximumOffset = 1000;
         public int MaximumGateFee = 10000000;
         public string DiscordBotToken = "bob";
+        public ulong DiscordChannelId = 1;
         public long BaseUpkeepFee = 100000000;
         public float PercentPerFac = 0.10f;
         public long FeePerMember = 10000000;
@@ -27,5 +28,6 @@ namespace AlliancesPlugin
         public long HangarUpkeep = 100000000;
         public Boolean RepLogging = true;
         public Boolean ReputationPatch = true;
+
     }
 }

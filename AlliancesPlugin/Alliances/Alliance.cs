@@ -83,6 +83,7 @@ namespace AlliancesPlugin.Alliances
         
             return false;
         }
+        
         public float GetTaxRate(ulong id)
         {
             if (PlayersCustomRank.ContainsKey(id))

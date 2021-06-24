@@ -89,13 +89,14 @@ namespace AlliancesPlugin.Alliances
             }
             return;
         }
-
+        public static List<Guid> registered = new List<Guid>();
         
         public static async Task RegisterAllianceBot(Alliance alliance, ulong channelId)
         {
-            if (!allianceBots.ContainsKey(alliance.AllianceId) && Ready)
+            if (!allianceBots.ContainsKey(alliance.AllianceId))
             {
                 DiscordClient bot;
+          
                 try
                 {
 
@@ -124,18 +125,20 @@ namespace AlliancesPlugin.Alliances
                 catch (Exception ex)
                 {
                     AlliancePlugin.Log.Error(ex);
+            
                     return;
                 }
 
-
+           
                 try
                 {
                     await bot.ConnectAsync();
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    AlliancePlugin.Log.Error(ex);
+                 
                     return;
-
                 }
                 if (!allianceBots.ContainsKey(alliance.AllianceId))
                 {
@@ -147,8 +150,9 @@ namespace AlliancesPlugin.Alliances
                             {
                                 AllianceReady = true;
                                 allianceBots.Remove(alliance.AllianceId);
-                                allianceChannels.Remove(alliance.DiscordChannelId);
                                 allianceBots.Add(alliance.AllianceId, bot);
+                                allianceChannels.Remove(alliance.DiscordChannelId);
+                      
                                 allianceChannels.Add(channelId, alliance.AllianceId);
                                 await Task.CompletedTask;
                             };
@@ -219,6 +223,7 @@ namespace AlliancesPlugin.Alliances
             {
 
                 DiscordClient bot = allianceBots[alliance.AllianceId];
+
                 DiscordChannel chann = bot.GetChannelAsync(alliance.DiscordChannelId).Result;
                 if (bot == null)
                 {
