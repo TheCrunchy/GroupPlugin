@@ -647,12 +647,14 @@ namespace AlliancesPlugin
                             Log.Error("Invalid bot token for " + alliance.AllianceId);
                             continue;
                         }
+                        
                         DiscordStuff.RegisterAllianceBot(alliance, alliance.DiscordChannelId);
                     }
                 }
 
             }
         }
+   
         public static void LoadAllGates()
         {
             FileUtils jsonStuff = new FileUtils();

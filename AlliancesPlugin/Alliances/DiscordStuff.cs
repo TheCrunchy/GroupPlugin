@@ -27,7 +27,7 @@ namespace AlliancesPlugin.Alliances
         public static List<ulong> ChannelIds = new List<ulong>();
         public static Dictionary<Guid, DiscordClient> allianceBots = new Dictionary<Guid, DiscordClient>();
         private static Dictionary<ulong, Guid> allianceChannels = new Dictionary<ulong, Guid>();
-        public static Task RegisterDiscord()
+        public static async Task RegisterDiscord()
         {
             if (!Ready)
             {
@@ -60,18 +60,18 @@ namespace AlliancesPlugin.Alliances
                 {
                     AlliancePlugin.Log.Error(ex);
                     Ready = false;
-                    return Task.CompletedTask;
+                    return;
                 }
 
 
 
                 try
                 {
-                    Discord.ConnectAsync();
+                   await Discord.ConnectAsync();
                 }
                 catch (Exception)
                 {
-                    return Task.CompletedTask;
+                    return;
 
                 }
                 Discord.MessageCreated += Discord_MessageCreated;
@@ -87,9 +87,11 @@ namespace AlliancesPlugin.Alliances
 
 
             }
-            return Task.CompletedTask;
+            return;
         }
-        public static Task RegisterAllianceBot(Alliance alliance, ulong channelId)
+
+        
+        public static async Task RegisterAllianceBot(Alliance alliance, ulong channelId)
         {
             if (!allianceBots.ContainsKey(alliance.AllianceId) && Ready)
             {
@@ -122,17 +124,17 @@ namespace AlliancesPlugin.Alliances
                 catch (Exception ex)
                 {
                     AlliancePlugin.Log.Error(ex);
-                    return Task.CompletedTask;
+                    return;
                 }
 
 
                 try
                 {
-                    bot.ConnectAsync();
+                    await bot.ConnectAsync();
                 }
                 catch (Exception)
                 {
-                    return Task.CompletedTask;
+                    return;
 
                 }
                 if (!allianceBots.ContainsKey(alliance.AllianceId))
@@ -156,7 +158,7 @@ namespace AlliancesPlugin.Alliances
 
 
             }
-            return Task.CompletedTask;
+            return;
         }
         public static void Stopdiscord()
         {
