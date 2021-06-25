@@ -48,7 +48,6 @@ namespace AlliancesPlugin.KOTH
         public DateTime nextCaptureAvailable = DateTime.Now;
         public Boolean doChatMessages = true;
         public Boolean doDiscordMessages = true;
-        public ulong DiscordChannelId = 1;
 
         public DateTime nextCaptureInterval = DateTime.Now;
         public DateTime nextCoreSpawn = DateTime.Now;

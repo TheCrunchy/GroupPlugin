@@ -200,9 +200,9 @@ namespace AlliancesPlugin.Alliances
 
         public static void SendMessageToDiscord(string message, KothConfig config)
         {
-            if (Ready && config.DiscordChannelId > 0 && config.doDiscordMessages)
+            if (Ready && AlliancePlugin.config.DiscordChannelId > 0 && config.doDiscordMessages)
             {
-                DiscordChannel chann = Discord.GetChannelAsync(config.DiscordChannelId).Result;
+                DiscordChannel chann = Discord.GetChannelAsync(AlliancePlugin.config.DiscordChannelId).Result;
                 botId = Discord.SendMessageAsync(chann, message.Replace("/n", "\n")).Result.Author.Id;
 
 
@@ -500,9 +500,8 @@ namespace AlliancesPlugin.Alliances
         }
         private static Task Discord_MessageCreated(DSharpPlus.EventArgs.MessageCreateEventArgs e)
         {
-            foreach (KothConfig koth in AlliancePlugin.KOTHs)
-            {
-                if (koth.DiscordChannelId == e.Channel.Id)
+          
+                if (AlliancePlugin.config.DiscordChannelId == e.Channel.Id)
                 {
                     if (e.Author.IsBot)
                     {
@@ -510,7 +509,7 @@ namespace AlliancesPlugin.Alliances
                     }
                 }
 
-            }
+            
             return Task.CompletedTask;
         }
 

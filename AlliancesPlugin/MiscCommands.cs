@@ -20,7 +20,7 @@ namespace AlliancesPlugin
    public class MiscCommands : CommandModule
     {
         public static Dictionary<long, DateTime> distressCooldowns = new Dictionary<long, DateTime>();
-        public static Dictionary<long, int> distressAmounts = new Dictionary<long, int>();
+        public int distressCount = 0;
         [Command("distress", "distress signals")]
         [Permission(MyPromoteLevel.None)]
         public void distress(string reason = "")
@@ -72,14 +72,9 @@ namespace AlliancesPlugin
             Alliance alliance = AlliancePlugin.GetAllianceNoLoading(fac);
             if (alliance != null)
             {
-                if (distressAmounts.ContainsKey(Context.Player.IdentityId)) {
-                    distressAmounts[Context.Player.IdentityId] += 1;
-                    AllianceChat.SendChatMessage(alliance.AllianceId, "Distress Signal", CreateGps(Context.Player.Character.GetPosition(), Color.Yellow, 600, Context.Player.Character.DisplayName + " " + distressAmounts[Context.Player.IdentityId], reason).ToString(), true, 0);
-                }
-                else {
-                    AllianceChat.SendChatMessage(alliance.AllianceId, "Distress Signal", CreateGps(Context.Player.Character.GetPosition(), Color.Yellow, 600, Context.Player.Character.DisplayName, reason).ToString(), true, 0);
-                    distressAmounts.Add(Context.Player.IdentityId, 1);
-                }
+                distressCount++;
+                    AllianceChat.SendChatMessage(alliance.AllianceId, "Distress Signal", CreateGps(Context.Player.Character.GetPosition(), Color.Yellow, 600, distressCount.ToString(), reason).ToString(), true, 0);
+             
           
             }
         }
@@ -342,9 +337,9 @@ namespace AlliancesPlugin
            
             foreach (KeyValuePair<String, String> keys in alliances)
             {
-                sb.Append("\n " + keys.Key);
-                sb.Append(keys.Value);
-
+                sb.AppendLine("");
+                sb.AppendLine(keys.Key);
+                sb.AppendLine(keys.Value);
             }
             sb.Append("\n At War");
             foreach (KeyValuePair<String, String> keys in tagsAndNames)

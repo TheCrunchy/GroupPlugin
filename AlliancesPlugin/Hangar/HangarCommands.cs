@@ -555,7 +555,7 @@ namespace AlliancesPlugin.Hangar
                 }
                 else
                 {
-                    cooldowns.Add(Context.Player.IdentityId, DateTime.Now.AddSeconds(60));
+                    cooldowns[Context.Player.IdentityId] = DateTime.Now.AddSeconds(60);
                 }
             }
             else
@@ -665,7 +665,7 @@ namespace AlliancesPlugin.Hangar
                 }
                 else
                 {
-                    cooldowns.Add(Context.Player.IdentityId, DateTime.Now.AddSeconds(60));
+                    cooldowns[Context.Player.IdentityId] = DateTime.Now.AddSeconds(60);
                 }
             }
             else
