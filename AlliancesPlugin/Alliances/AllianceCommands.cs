@@ -409,12 +409,11 @@ namespace AlliancesPlugin.Alliances
                 return;
             }
             Alliance alliance = AlliancePlugin.GetAlliance(fac);
-            AccessLevel level = StringToAccessLevel(permission);
-            if (level == AccessLevel.UnableToParse)
-            {
+            if (!Enum.TryParse(permission, out AccessLevel level)) { 
                 Context.Respond("Unable to read that permission, you can change, HangarSave, HangarLoad, HangarLoadOther, Kick, Invite, ShipyardStart, ShipyardClaim, ShipyardClaimOther, DividendPay, BankWithdraw, PayFromBank, AddEnemy, RemoveEnemy, GrantLowerTitle, Vote, RecieveDividend, TaxExempt, ChangeTax, RevokeLowerTitle.");
                 return;
             }
+
             if (alliance != null)
             {
                 if (alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
@@ -626,8 +625,7 @@ namespace AlliancesPlugin.Alliances
                 return;
             }
             Alliance alliance = AlliancePlugin.GetAlliance(fac);
-            AccessLevel level = StringToAccessLevel(permission);
-            if (level == AccessLevel.UnableToParse)
+            if (!Enum.TryParse(permission, out AccessLevel level))
             {
                 Context.Respond("Unable to read that permission, you can change, HangarSave, HangarLoad, HangarLoadOther, Kick, Invite, ShipyardStart, ShipyardClaim, ShipyardClaimOther, DividendPay, BankWithdraw, PayFromBank, AddEnemy, RemoveEnemy, GrantLowerTitle, Vote, RecieveDividend, TaxExempt, ChangeTax, RevokeLowerTitle.");
                 return;
@@ -1894,6 +1892,10 @@ namespace AlliancesPlugin.Alliances
                         if (!alliance.PlayersCustomRank.ContainsKey(MySession.Static.Players.TryGetSteamId(id.IdentityId)))
                         {
                             alliance.PlayersCustomRank.Add(MySession.Static.Players.TryGetSteamId(id.IdentityId), Title);
+                        }
+                        else
+                        {
+                            alliance.PlayersCustomRank[MySession.Static.Players.TryGetSteamId(id.IdentityId)] = Title;
                         }
                         AlliancePlugin.SaveAllianceData(alliance);
 
