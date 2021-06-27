@@ -20,7 +20,7 @@ namespace AlliancesPlugin
    public class MiscCommands : CommandModule
     {
         public static Dictionary<long, DateTime> distressCooldowns = new Dictionary<long, DateTime>();
-        public int distressCount = 0;
+        public static int distressCount = 0;
         [Command("distress", "distress signals")]
         [Permission(MyPromoteLevel.None)]
         public void distress(string reason = "")
@@ -185,18 +185,18 @@ namespace AlliancesPlugin
                                 String temp = "";
                                 if (FacUtils.GetPlayersFaction(player.Identity.IdentityId).IsFounder(player.Identity.IdentityId))
                                 {
-                                    temp += "\n [" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName + " (Founder)";
+                                    temp += "[" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName + " (Founder)";
                                 }
                                 else
                                 {
                                     if (FacUtils.GetPlayersFaction(player.Identity.IdentityId).IsLeader(player.Identity.IdentityId))
                                     {
-                                        temp += "\n [" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName + " (Leader)";
+                                        temp += "[" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName + " (Leader)";
                                     }
 
                                     else
                                     {
-                                        temp += "\n [" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName;
+                                        temp += "[" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName;
                                     }
                                 }
 
@@ -337,9 +337,9 @@ namespace AlliancesPlugin
            
             foreach (KeyValuePair<String, String> keys in alliances)
             {
-                sb.AppendLine("");
                 sb.AppendLine(keys.Key);
                 sb.AppendLine(keys.Value);
+                sb.AppendLine("");
             }
             sb.Append("\n At War");
             foreach (KeyValuePair<String, String> keys in tagsAndNames)

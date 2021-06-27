@@ -35,6 +35,7 @@ using AlliancesPlugin.Shipyard;
 using AlliancesPlugin.JumpGates;
 using VRage.Utils;
 using AlliancesPlugin.ShipMarket;
+using Sandbox.Common.ObjectBuilders;
 
 namespace AlliancesPlugin
 {
@@ -335,6 +336,7 @@ namespace AlliancesPlugin
             }
             if (state == TorchSessionState.Loaded)
             {
+                DiscordStuff.RegisterDiscord();
                 AllianceChat.ApplyLogging();
                 InitPluginDependencies(Torch.Managers.GetManager<PluginManager>());
                 TorchState = TorchSessionState.Loaded;
@@ -1106,6 +1108,44 @@ namespace AlliancesPlugin
                         config.nextCaptureInterval = DateTime.Now.AddSeconds(config.SecondsBetweenCaptureCheck);
                         //Log.Info(config.owner + " " + config.capturingNation);
                         //setup a time check for capture time
+                        if (config.ShowSafeZone)
+                        {
+                            bool hasZone = false;
+                            MySafeZone yeet = null;
+                            BoundingSphereD sphere2 = new BoundingSphereD(position, config.CaptureRadiusInMetre + 15000);
+                            foreach (MySafeZone zone in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere2).OfType<MySafeZone>())
+                            {
+                                if (zone.Radius != (float)config.CaptureRadiusInMetre)
+                                {
+                                    hasZone = false;
+                                    yeet = zone;
+                                }
+                                else
+                                {
+                                    hasZone = true;
+                                }
+
+                            }
+                            if (yeet != null)
+                            {
+                                yeet.Close();
+                            }
+                            if (!hasZone)
+                            {
+                                MyObjectBuilder_SafeZone objectBuilderSafeZone = new MyObjectBuilder_SafeZone();
+                                objectBuilderSafeZone.PositionAndOrientation = new MyPositionAndOrientation?(new MyPositionAndOrientation(position, Vector3.Forward, Vector3.Up));
+                                objectBuilderSafeZone.PersistentFlags = MyPersistentEntityFlags2.InScene;
+                                objectBuilderSafeZone.Shape = MySafeZoneShape.Sphere;
+                                objectBuilderSafeZone.Radius = (float)config.CaptureRadiusInMetre;
+                                objectBuilderSafeZone.Enabled = false;
+                                objectBuilderSafeZone.DisplayName = config.KothName + " Radius";
+                                objectBuilderSafeZone.AccessTypeGrids = MySafeZoneAccess.Blacklist;
+                                objectBuilderSafeZone.AccessTypeFloatingObjects = MySafeZoneAccess.Blacklist;
+                                objectBuilderSafeZone.AccessTypeFactions = MySafeZoneAccess.Blacklist;
+                                objectBuilderSafeZone.AccessTypePlayers = MySafeZoneAccess.Blacklist;
+                                Sandbox.Game.Entities.MyEntities.CreateFromObjectBuilderAndAdd((MyObjectBuilder_EntityBase)objectBuilderSafeZone, true);
+                            }
+                        }
                         Guid capturingNation = Guid.Empty;
                         if (config.capturingNation != Guid.Empty)
                         {
@@ -1635,7 +1675,7 @@ namespace AlliancesPlugin
 
             if (DateTime.Now > NextUpdate)
             {
-                DiscordStuff.RegisterDiscord();
+             
                 Log.Info("Doing alliance tasks");
                 DateTime now = DateTime.Now;
                 //try
@@ -1789,7 +1829,7 @@ namespace AlliancesPlugin
 
                         if (block is Sandbox.ModAPI.IMyBeacon beacon)
                         {
-                            if (beacon.Radius < koth.captureBlockBroadcastDistance)
+                            if (beacon.Radius -1 < koth.captureBlockBroadcastDistance)
                             {
                                 return false;
                             }

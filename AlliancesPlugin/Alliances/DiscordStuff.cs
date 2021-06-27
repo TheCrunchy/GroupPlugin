@@ -143,17 +143,15 @@ namespace AlliancesPlugin.Alliances
                 if (!allianceBots.ContainsKey(alliance.AllianceId))
                 {
                     bot.MessageCreated += Discord_AllianceMessage;
-                   
-            
+
+                    allianceBots.Remove(alliance.AllianceId);
+                    allianceBots.Add(alliance.AllianceId, bot);
+                    allianceChannels.Remove(alliance.DiscordChannelId);
+
+                    allianceChannels.Add(channelId, alliance.AllianceId);
 
                     bot.Ready += async e =>
                             {
-                                AllianceReady = true;
-                                allianceBots.Remove(alliance.AllianceId);
-                                allianceBots.Add(alliance.AllianceId, bot);
-                                allianceChannels.Remove(alliance.DiscordChannelId);
-                      
-                                allianceChannels.Add(channelId, alliance.AllianceId);
                                 await Task.CompletedTask;
                             };
 
