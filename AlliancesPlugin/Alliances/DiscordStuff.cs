@@ -191,9 +191,9 @@ namespace AlliancesPlugin.Alliances
             AllianceReady = false;
             foreach (DiscordClient bot in allianceBots.Values)
             {
-                bot?.DisconnectAsync();
+            //    await bot?.DisconnectAsync();
             }
-            await Discord?.DisconnectAsync();
+         //   await Discord?.DisconnectAsync();
         }
 
         public static void SendMessageToDiscord(string message, KothConfig config)

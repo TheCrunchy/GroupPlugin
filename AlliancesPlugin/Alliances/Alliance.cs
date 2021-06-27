@@ -257,6 +257,19 @@ namespace AlliancesPlugin.Alliances
             log.log.Add(item);
             utils.WriteToJsonFile<BankLog>(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId + "//log.json", log);
         }
+        public void DepositKOTH(Int64 amount, ulong steamid)
+        {
+            bankBalance += amount;
+            BankLog log = GetLog();
+            BankLogItem item = new BankLogItem();
+            item.SteamId = steamid;
+            item.Amount = amount;
+            item.TimeClaimed = DateTime.Now;
+            item.Action = "koth";
+            item.BankAmount = bankBalance;
+            log.log.Add(item);
+            utils.WriteToJsonFile<BankLog>(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId + "//log.json", log);
+        }
         public void DepositTax(Int64 amount, ulong steamid)
         {
             bankBalance += amount;
@@ -545,6 +558,23 @@ namespace AlliancesPlugin.Alliances
                 Invites.Remove(id);
             }
 
+        }
+        public void RemoveTitle(ulong steamid, String title)
+        {
+            if (CustomRankPermissions.ContainsKey(title))
+            {
+                if (PlayersCustomRank.ContainsKey(steamid))
+                {
+                    PlayersCustomRank.Remove(steamid);
+                    return;
+                }
+             
+            }
+            if (otherTitles.ContainsKey(steamid))
+            {
+                otherTitles.Remove(steamid);
+                return;
+            }
         }
         public void SetTitle(ulong steamid, String title)
         {

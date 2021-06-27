@@ -409,7 +409,8 @@ namespace AlliancesPlugin.Alliances
                 return;
             }
             Alliance alliance = AlliancePlugin.GetAlliance(fac);
-            if (!Enum.TryParse(permission, out AccessLevel level)) { 
+            if (!Enum.TryParse(permission, out AccessLevel level))
+            {
                 Context.Respond("Unable to read that permission, you can change, HangarSave, HangarLoad, HangarLoadOther, Kick, Invite, ShipyardStart, ShipyardClaim, ShipyardClaimOther, DividendPay, BankWithdraw, PayFromBank, AddEnemy, RemoveEnemy, GrantLowerTitle, Vote, RecieveDividend, TaxExempt, ChangeTax, RevokeLowerTitle.");
                 return;
             }
@@ -870,11 +871,11 @@ namespace AlliancesPlugin.Alliances
         [Permission(MyPromoteLevel.Admin)]
         public void AllianceRemoveMoney(string name, string inputAmount)
         {
-          
+
             Alliance alliance = null;
 
-                alliance = AlliancePlugin.GetAllianceNoLoading(name);
-           
+            alliance = AlliancePlugin.GetAllianceNoLoading(name);
+
             if (alliance == null)
             {
                 Context.Respond("Could not find that alliance.");
@@ -1903,7 +1904,27 @@ namespace AlliancesPlugin.Alliances
                     }
                     else
                     {
-                        Context.Respond("Only the " + alliance.LeaderTitle + " can grant this title.");
+                        if (alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.GrantLowerTitle))
+                        {
+                            RankPermissions thisGuy = alliance.CustomRankPermissions[alliance.PlayersCustomRank[Context.Player.SteamUserId]];
+                            RankPermissions newTitle = alliance.CustomRankPermissions[Title];
+
+                            if (thisGuy.permissionLevel > newTitle.permissionLevel)
+                            {
+                                alliance.SetTitle(MySession.Static.Players.TryGetSteamId(id.IdentityId), Title);
+                                AlliancePlugin.SaveAllianceData(alliance);
+                            }
+                            else
+                            {
+                                Context.Respond("That rank is higher or same rank as you.");
+                            }
+
+
+                        }
+                        else
+                        {
+                            Context.Respond("No permission to grant titles.");
+                        }
                     }
                     return;
                 }
@@ -1911,20 +1932,8 @@ namespace AlliancesPlugin.Alliances
                 {
                     if (alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.GrantLowerTitle))
                     {
-                        RankPermissions thisGuy = alliance.CustomRankPermissions[alliance.PlayersCustomRank[Context.Player.SteamUserId]];
-                        RankPermissions newTitle = alliance.CustomRankPermissions[Title];
-
-                        if (thisGuy.permissionLevel > newTitle.permissionLevel)
-                        {
-                            alliance.SetTitle(MySession.Static.Players.TryGetSteamId(id.IdentityId), Title);
-                            AlliancePlugin.SaveAllianceData(alliance);
-                        }
-                        else
-                        {
-                            Context.Respond("That rank is higher or same rank as you.");
-                        }
-
-
+                        alliance.SetTitle(MySession.Static.Players.TryGetSteamId(id.IdentityId), Title);
+                        AlliancePlugin.SaveAllianceData(alliance);
                     }
                     else
                     {
@@ -1932,7 +1941,9 @@ namespace AlliancesPlugin.Alliances
                     }
                 }
             }
+
         }
+
 
         [Command("change leader", "change the leader of the alliance")]
         [Permission(MyPromoteLevel.None)]
@@ -2031,7 +2042,27 @@ namespace AlliancesPlugin.Alliances
                     }
                     else
                     {
-                        Context.Respond("Only the " + alliance.LeaderTitle + " can grant this title.");
+                        if (alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.RevokeLowerTitle))
+                        {
+                            RankPermissions thisGuy = alliance.CustomRankPermissions[alliance.PlayersCustomRank[Context.Player.SteamUserId]];
+                            RankPermissions newTitle = alliance.CustomRankPermissions[Title];
+
+                            if (thisGuy.permissionLevel > newTitle.permissionLevel)
+                            {
+                                alliance.RemoveTitle(MySession.Static.Players.TryGetSteamId(id.IdentityId), Title);
+                                AlliancePlugin.SaveAllianceData(alliance);
+                            }
+                            else
+                            {
+                                Context.Respond("That rank is higher or same rank as you.");
+                            }
+
+
+                        }
+                        else
+                        {
+                            Context.Respond("No permission to revoke titles.");
+                        }
                     }
                     return;
                 }
@@ -2039,18 +2070,10 @@ namespace AlliancesPlugin.Alliances
                 {
                     if (alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.RevokeLowerTitle))
                     {
-                        RankPermissions thisGuy = alliance.CustomRankPermissions[alliance.PlayersCustomRank[Context.Player.SteamUserId]];
-                        RankPermissions newTitle = alliance.CustomRankPermissions[Title];
 
-                        if (thisGuy.permissionLevel > newTitle.permissionLevel)
-                        {
-                            alliance.SetTitle(MySession.Static.Players.TryGetSteamId(id.IdentityId), Title);
-                            AlliancePlugin.SaveAllianceData(alliance);
-                        }
-                        else
-                        {
-                            Context.Respond("That rank is higher or same rank as you.");
-                        }
+                        alliance.RemoveTitle(MySession.Static.Players.TryGetSteamId(id.IdentityId), Title);
+                        AlliancePlugin.SaveAllianceData(alliance);
+
 
 
                     }

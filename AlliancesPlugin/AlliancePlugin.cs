@@ -1562,12 +1562,24 @@ namespace AlliancesPlugin
                                                 if (config.SpaceMoneyReward > 0)
                                                 {
                                                     DatabaseForBank.AddToBalance(alliance, config.SpaceMoneyReward);
+                                                    alliance.DepositKOTH(config.SpaceMoneyReward, 1);
                                                 }
                                                 SaveAllianceData(alliance);
                                                 SaveKothConfig(config.KothName, config);
                                             }
+                                           
                                         }
+                                        return;
                                     }
+                                    if (config.captureBlockNeedsToBroadcast)
+                                    {
+                                        SendChatMessage(config.KothName + "No loot spawn, No functional capture block set to " + config.captureBlockBroadcastDistance + " or higher.");
+                                    }
+                                    else
+                                    {
+                                        SendChatMessage(config.KothName + "No loot spawn, No functional capture block");
+                                    }
+                                   
                                     continue;
 
                                 }
@@ -1590,6 +1602,7 @@ namespace AlliancesPlugin
                                     if (config.SpaceMoneyReward > 0)
                                     {
                                         DatabaseForBank.AddToBalance(alliance, config.SpaceMoneyReward);
+                                        alliance.DepositKOTH(config.SpaceMoneyReward, 1);
                                     }
                                     SaveAllianceData(alliance);
 
@@ -1613,6 +1626,7 @@ namespace AlliancesPlugin
                                     if (config.SpaceMoneyReward > 0)
                                     {
                                         DatabaseForBank.AddToBalance(alliance, config.SpaceMoneyReward);
+                                        alliance.DepositKOTH(config.SpaceMoneyReward, 1);
                                     }
                                     SaveAllianceData(alliance);
                                 }

@@ -185,18 +185,18 @@ namespace AlliancesPlugin
                                 String temp = "";
                                 if (FacUtils.GetPlayersFaction(player.Identity.IdentityId).IsFounder(player.Identity.IdentityId))
                                 {
-                                    temp += "[" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName + " (Founder)";
+                                    temp += " [" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName + " (Founder)";
                                 }
                                 else
                                 {
                                     if (FacUtils.GetPlayersFaction(player.Identity.IdentityId).IsLeader(player.Identity.IdentityId))
                                     {
-                                        temp += "[" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName + " (Leader)";
+                                        temp += " [" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName + " (Leader)";
                                     }
 
                                     else
                                     {
-                                        temp += "[" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName;
+                                        temp += " [" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName;
                                     }
                                 }
 
@@ -341,7 +341,7 @@ namespace AlliancesPlugin
                 sb.AppendLine(keys.Value);
                 sb.AppendLine("");
             }
-            sb.Append("\n At War");
+            sb.Append("At War");
             foreach (KeyValuePair<String, String> keys in tagsAndNames)
             {
 

@@ -321,7 +321,7 @@ namespace AlliancesPlugin.Alliances
                     Sandbox.Game.Multiplayer.MyFactionCollection.DeclareWar(playerFac.FactionId, wolf.FactionId);
                 }
             }
-            if (File.Exists(AlliancePlugin.path + "//PlayerData//" + p.SteamId + ".xml"))
+            if (File.Exists(AlliancePlugin.path + "//PlayerData//" + p.SteamId + ".xml") && playerFac != null)
             {
                 PlayerData data = utils.ReadFromXmlFile<PlayerData>(AlliancePlugin.path + "//PlayerData//" + p.SteamId + ".xml");
                 if (data.InAllianceChat)
