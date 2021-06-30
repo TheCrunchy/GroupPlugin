@@ -867,6 +867,27 @@ namespace AlliancesPlugin.Alliances
             DialogMessage m = new DialogMessage("Alliance Info", alliance.name, JsonConvert.SerializeObject(alliance));
             ModCommunication.SendMessageTo(m, Context.Player.SteamUserId);
         }
+
+        [Command("upkeep", "output info about an alliance")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void DoAllUpkeep(string target)
+        {
+            if (target.ToLower().Equals("all"))
+            {
+                DatabaseForBank.DoUpkeepForAll();
+            
+            }
+            else
+            {
+                Alliance alliance = AlliancePlugin.GetAlliance(target);
+                if (alliance == null)
+                {
+                    Context.Respond("Could not find that alliance.");
+                    return;
+                }
+            }
+        }
+
         [Command("takemoney", "output info about an alliance")]
         [Permission(MyPromoteLevel.Admin)]
         public void AllianceRemoveMoney(string name, string inputAmount)
@@ -1054,15 +1075,16 @@ namespace AlliancesPlugin.Alliances
                         {
                             alliance.AllianceMembers.Remove(fac2.FactionId);
                             AlliancePlugin.SaveAllianceData(alliance);
-
+                            AllianceChat.SendChatMessage(alliance.AllianceId, "Alliance", fac2.Tag + " was kicked from the alliance!", true, 0);
                             foreach (long id in alliance.AllianceMembers)
                             {
+                              
                                 IMyFaction member = MySession.Static.Factions.TryGetFactionById(id);
                                 if (member != null)
                                 {
                                     MyFactionCollection.DeclareWar(member.FactionId, fac2.FactionId);
                                     MySession.Static.Factions.SetReputationBetweenFactions(id, fac2.FactionId, -1500);
-                                    AllianceChat.SendChatMessage(alliance.AllianceId, "Alliance", fac2.Tag + " was kicked from the alliance!", true, 0);
+                                  
                                     foreach (MyFactionMember m in member.Members.Values)
                                     {
                                         AllianceChat.PeopleInAllianceChat.Remove(MySession.Static.Players.TryGetSteamId(m.PlayerId));
@@ -1479,6 +1501,12 @@ namespace AlliancesPlugin.Alliances
             {
                 Context.Respond("New Name does not validate, try again.");
                 return;
+            }
+            if (name.ToLower().Equals("all"))
+            {
+                Context.Respond("Cannot use that name.");
+                return;
+
             }
             if (AlliancePlugin.AllAlliances.ContainsKey(name))
             {
@@ -2099,7 +2127,12 @@ namespace AlliancesPlugin.Alliances
                 Context.Respond("Name does not validate, try again.");
                 return;
             }
+            if (name.ToLower().Equals("all"))
+            {
+                Context.Respond("Cannot use that name.");
+                return;
 
+            }
             if (AlliancePlugin.AllAlliances.ContainsKey(name))
             {
                 Context.Respond("Alliance with that name already exists.");

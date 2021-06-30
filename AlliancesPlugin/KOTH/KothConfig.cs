@@ -40,9 +40,6 @@ namespace AlliancesPlugin.KOTH
         public Guid owner = Guid.Empty;
         public string captureBlockType = "Beacon";
         public string captureBlockSubtype = "LargeBlockBeacon";
-        public Boolean captureBlockNeedsToBeTurnedOn = true;
-        public Boolean captureBlockNeedsToBroadcast = true;
-        public int captureBlockBroadcastDistance = 10000;
         public int hourCooldownAfterFail = 1;
         public int hoursToLockAfterCap = 12;
 

@@ -67,7 +67,7 @@ namespace AlliancesPlugin.Alliances
 
                 try
                 {
-                   await Discord.ConnectAsync();
+                    await Discord.ConnectAsync();
                 }
                 catch (Exception)
                 {
@@ -76,7 +76,7 @@ namespace AlliancesPlugin.Alliances
                 }
                 Discord.MessageCreated += Discord_MessageCreated;
                 game = new DiscordActivity();
-               
+
                 Discord.Ready += async e =>
                 {
                     Ready = true;
@@ -90,13 +90,13 @@ namespace AlliancesPlugin.Alliances
             return;
         }
         public static List<Guid> registered = new List<Guid>();
-        
+
         public static async Task RegisterAllianceBot(Alliance alliance, ulong channelId)
         {
             if (!allianceBots.ContainsKey(alliance.AllianceId))
             {
                 DiscordClient bot;
-          
+
                 try
                 {
 
@@ -125,11 +125,11 @@ namespace AlliancesPlugin.Alliances
                 catch (Exception ex)
                 {
                     AlliancePlugin.Log.Error(ex);
-            
+
                     return;
                 }
 
-           
+
                 try
                 {
                     await bot.ConnectAsync();
@@ -137,7 +137,7 @@ namespace AlliancesPlugin.Alliances
                 catch (Exception ex)
                 {
                     AlliancePlugin.Log.Error(ex);
-                 
+
                     return;
                 }
                 if (!allianceBots.ContainsKey(alliance.AllianceId))
@@ -149,16 +149,7 @@ namespace AlliancesPlugin.Alliances
                     allianceChannels.Remove(alliance.DiscordChannelId);
 
                     allianceChannels.Add(channelId, alliance.AllianceId);
-
-                    bot.Ready += async e =>
-                            {
-                                await Task.CompletedTask;
-                            };
-
-
                 }
-
-
             }
             return;
         }
@@ -191,9 +182,9 @@ namespace AlliancesPlugin.Alliances
             AllianceReady = false;
             foreach (DiscordClient bot in allianceBots.Values)
             {
-            //    await bot?.DisconnectAsync();
+                //    await bot?.DisconnectAsync();
             }
-         //   await Discord?.DisconnectAsync();
+            //   await Discord?.DisconnectAsync();
         }
 
         public static void SendMessageToDiscord(string message, KothConfig config)
@@ -207,10 +198,7 @@ namespace AlliancesPlugin.Alliances
             }
             else
             {
-                if (config.doChatMessages)
-                {
-                    ShipyardCommands.SendMessage("Territory Capture", message, Color.LightGreen, 0L);
-                }
+                ShipyardCommands.SendMessage(config.KothName, message, Color.LightGreen, 0L);
             }
         }
         private static int attempt = 0;
@@ -498,16 +486,16 @@ namespace AlliancesPlugin.Alliances
         }
         private static Task Discord_MessageCreated(DSharpPlus.EventArgs.MessageCreateEventArgs e)
         {
-          
-                if (AlliancePlugin.config.DiscordChannelId == e.Channel.Id)
-                {
-                    if (e.Author.IsBot)
-                    {
-                        ShipyardCommands.SendMessage(e.Author.Username, e.Message.Content, Color.LightGreen, 0L);
-                    }
-                }
 
-            
+            if (AlliancePlugin.config.DiscordChannelId == e.Channel.Id)
+            {
+                if (e.Author.IsBot)
+                {
+                    ShipyardCommands.SendMessage(e.Author.Username, e.Message.Content, Color.LightGreen, 0L);
+                }
+            }
+
+
             return Task.CompletedTask;
         }
 

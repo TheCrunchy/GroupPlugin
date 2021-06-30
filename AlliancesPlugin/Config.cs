@@ -10,7 +10,7 @@ namespace AlliancesPlugin
     {
         public long PriceNewAlliance = 500000000;
         public string StoragePath = "default";
-
+        public Boolean AllowDiscord = true;
         public Boolean ShipyardEnabled = false;
         public Boolean HangarEnabled = false;
         public Boolean KothEnabled = false;
@@ -28,6 +28,6 @@ namespace AlliancesPlugin
         public long HangarUpkeep = 100000000;
         public Boolean RepLogging = true;
         public Boolean ReputationPatch = true;
-
+        public int UpkeepFailBeforeDelete = 3;
     }
 }

@@ -167,6 +167,11 @@ namespace AlliancesPlugin.Shipyard
                     Context.Respond("You are not a member of an alliance with an unlocked shipyard.");
                     return;
                 }
+                if (AlliancePlugin.HasFailedUpkeep(alliance))
+                {
+                    Context.Respond("Alliance failed to pay upkeep. Upgrades disabled.");
+                    return;
+                }
                 PrintQueue queue = alliance.LoadPrintQueue();
                 if (queue == null)
                 {
@@ -217,6 +222,11 @@ namespace AlliancesPlugin.Shipyard
                 if (alliance == null)
                 {
                     Context.Respond("You are not a member of an alliance with an unlocked shipyard.");
+                    return;
+                }
+                if (AlliancePlugin.HasFailedUpkeep(alliance))
+                {
+                    Context.Respond("Alliance failed to pay upkeep. Upgrades disabled.");
                     return;
                 }
                 PrintQueue queue = alliance.LoadPrintQueue();
@@ -385,6 +395,11 @@ namespace AlliancesPlugin.Shipyard
                     Context.Respond("You are not a member of an alliance with an unlocked shipyard.");
                     return;
                 }
+                if (AlliancePlugin.HasFailedUpkeep(alliance))
+                {
+                    Context.Respond("Alliance failed to pay upkeep. Upgrades disabled.");
+                    return;
+                }
                 PrintQueue queue = alliance.LoadPrintQueue();
                 if (queue == null)
                 {
@@ -518,6 +533,11 @@ namespace AlliancesPlugin.Shipyard
                 if (alliance == null)
                 {
                     Context.Respond("You are not a member of an alliance with an unlocked shipyard.");
+                    return;
+                }
+                if (AlliancePlugin.HasFailedUpkeep(alliance))
+                {
+                    Context.Respond("Alliance failed to pay upkeep. Upgrades disabled.");
                     return;
                 }
                 PrintQueue queue = alliance.LoadPrintQueue();
@@ -846,6 +866,11 @@ namespace AlliancesPlugin.Shipyard
                 Context.Respond("Target faction not member of alliance.");
                 return;
             }
+            if (AlliancePlugin.HasFailedUpkeep(alliance))
+            {
+                Context.Respond("Alliance failed to pay upkeep. Upgrades disabled.");
+                return;
+            }
             PrintQueue queue = alliance.LoadPrintQueue();
             if (queue == null)
             {
@@ -868,7 +893,7 @@ namespace AlliancesPlugin.Shipyard
                 Context.Respond("Cant find that file, are you using the full name including the timestamp?");
             }
         }
-        [Command("purge", "Admin force spawn a grid")]
+        [Command("purge", "delete data for grids that have been claimed")]
         [Permission(MyPromoteLevel.Admin)]
         public void PurgeClaimedPrints()
         {
@@ -962,6 +987,11 @@ namespace AlliancesPlugin.Shipyard
                     Context.Respond("Target faction not member of alliance.");
                     return;
                 }
+                if (AlliancePlugin.HasFailedUpkeep(alliance))
+                {
+                    Context.Respond("Alliance failed to pay upkeep. Upgrades disabled.");
+                    return;
+                }
                 if (alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.BankWithdraw))
                 {
                     alliance.ShipyardFee = amount;
@@ -1010,6 +1040,11 @@ namespace AlliancesPlugin.Shipyard
                 if (alliance == null)
                 {
                     Context.Respond("Target faction not member of alliance.");
+                    return;
+                }
+                if (AlliancePlugin.HasFailedUpkeep(alliance))
+                {
+                    Context.Respond("Alliance failed to pay upkeep. Upgrades disabled.");
                     return;
                 }
                 if (!alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.ShipyardClaim) && !alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.ShipyardClaimOther))
@@ -1245,6 +1280,11 @@ namespace AlliancesPlugin.Shipyard
             if (alliance == null)
             {
                 Context.Respond("Target faction not member of alliance.");
+                return;
+            }
+            if (AlliancePlugin.HasFailedUpkeep(alliance))
+            {
+                Context.Respond("Alliance failed to pay upkeep. Upgrades disabled.");
                 return;
             }
             if (!alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.ShipyardStart))

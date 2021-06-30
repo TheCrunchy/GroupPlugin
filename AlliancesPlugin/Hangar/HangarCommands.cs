@@ -58,6 +58,11 @@ namespace AlliancesPlugin.Hangar
                     Context.Respond("You are not a member of an alliance with an unlocked shipyard.");
                     return;
                 }
+                if (AlliancePlugin.HasFailedUpkeep(alliance))
+                {
+                    Context.Respond("Alliance failed to pay upkeep. Upgrades disabled.");
+                    return;
+                }
                 if (alliance.hasUnlockedHangar)
                 {
                     HangarData data = alliance.LoadHangar();
@@ -106,6 +111,11 @@ namespace AlliancesPlugin.Hangar
                 if (alliance == null)
                 {
                     Context.Respond("You are not a member of an alliance with an unlocked hangar.");
+                    return;
+                }
+                if (AlliancePlugin.HasFailedUpkeep(alliance))
+                {
+                    Context.Respond("Alliance failed to pay upkeep. Upgrades disabled.");
                     return;
                 }
                 if (alliance.hasUnlockedHangar)
@@ -223,7 +233,11 @@ namespace AlliancesPlugin.Hangar
                     Context.Respond("You are not a member of an alliance with an unlocked shipyard.");
                     return;
                 }
-
+                if (AlliancePlugin.HasFailedUpkeep(alliance))
+                {
+                    Context.Respond("Alliance failed to pay upkeep. Upgrades disabled.");
+                    return;
+                }
                 if (!alliance.hasUnlockedHangar)
                 {
                     ShipyardCommands.SendMessage("[Alliance Hangar]", "To unlock use !ah unlock", Color.Cyan, (long)Context.Player.SteamUserId);
@@ -233,7 +247,7 @@ namespace AlliancesPlugin.Hangar
                 UpgradeCost cost = new UpgradeCost();
                 if (!upgrade)
                 {
-                  
+
 
                     ShipyardCommands.SendMessage("[Alliance Hangar]", "To upgrade use !ah upgrade true ,while looking at an owned grid.", Color.Cyan, (long)Context.Player.SteamUserId);
                     StringBuilder sb = new StringBuilder();
@@ -327,7 +341,7 @@ namespace AlliancesPlugin.Hangar
                     {
                         if (cost.MetaPointCost > 0)
                         {
-                          
+
                             if (alliance.CurrentMetaPoints < cost.MetaPointCost)
                             {
                                 Context.Respond("Cannot afford the meta point cost of " + cost.MetaPointCost);
@@ -402,6 +416,11 @@ namespace AlliancesPlugin.Hangar
             if (alliance == null)
             {
                 Context.Respond("You are not a member of an alliance.");
+                return;
+            }
+            if (AlliancePlugin.HasFailedUpkeep(alliance))
+            {
+                Context.Respond("Alliance failed to pay upkeep. Upgrades disabled.");
                 return;
             }
             if (!alliance.hasUnlockedHangar)
@@ -574,6 +593,11 @@ namespace AlliancesPlugin.Hangar
                 Context.Respond("You are not a member of an alliance.");
                 return;
             }
+            if (AlliancePlugin.HasFailedUpkeep(alliance))
+            {
+                Context.Respond("Alliance failed to pay upkeep. Upgrades disabled.");
+                return;
+            }
             if (!alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.HangarLoad) && !alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.HangarLoadOther))
             {
                 Context.Respond("Current rank does not have access to hangar load.");
@@ -703,6 +727,11 @@ namespace AlliancesPlugin.Hangar
                 Context.Respond("You are not a member of an alliance.");
                 return;
             }
+            if (AlliancePlugin.HasFailedUpkeep(alliance))
+            {
+                Context.Respond("Alliance failed to pay upkeep. Upgrades disabled.");
+                return;
+            }
             if (!alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.HangarSave))
             {
                 Context.Respond("Current rank does not have access to hangar save.");
@@ -738,7 +767,7 @@ namespace AlliancesPlugin.Hangar
                                     proj.Clipboard.Clear();
                                 }
                                 grids.Add(grid);
-                      
+
                                 if (name == "")
                                 {
                                     name = grid.DisplayName;

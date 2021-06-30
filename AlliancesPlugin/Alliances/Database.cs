@@ -42,13 +42,83 @@ namespace AlliancesPlugin.Alliances
         //    conn.Close();
         //    AlliancePlugin.Log.Info("Successfully connected to database!");
         //}
+
+        public static void DoUpkeepForAll()
+        {
+            AlliancePlugin.LoadAllAlliancesForUpkeep();
+
+            try
+            {
+                using (var db = new LiteDatabase(connectionString))
+                {
+                    var collection = db.GetCollection<BankData>("BankData");
+                    foreach (Alliance alliance in AlliancePlugin.AllAlliances.Values)
+                    {
+                        var bank = collection.FindById(alliance.AllianceId);
+                        if (bank == null)
+                        {
+                            bank = new BankData
+                            {
+                                Id = alliance.AllianceId,
+                                balance = 1
+                          
+                            };
+                            collection.Insert(bank);
+                            alliance.failedUpkeep++;
+                            if (alliance.failedUpkeep >= AlliancePlugin.config.UpkeepFailBeforeDelete)
+                            {
+
+                            }
+
+                        }
+                        else
+                        {
+                           if (bank.balance >= alliance.GetUpkeep())
+                            {
+                                bank.balance -= alliance.GetUpkeep();
+                                collection.Update(bank);
+                                AllianceChat.SendChatMessage(alliance.AllianceId, "Upkeep", "Paying upkeep of " + String.Format("{0:n0}", alliance.GetUpkeep()) + " SC.", true, 0);
+                                alliance.Upkeep(alliance.GetUpkeep(), 1);
+                                alliance.bankBalance -= alliance.GetUpkeep();
+                                alliance.failedUpkeep = 0;
+                                AlliancePlugin.SaveAllianceData(alliance);
+                                
+                            }
+                           else
+                            {
+                                alliance.failedUpkeep++;
+                                if (alliance.failedUpkeep >= AlliancePlugin.config.UpkeepFailBeforeDelete)
+                                {
+                                    AllianceChat.SendChatMessage(alliance.AllianceId, "Upkeep", "Upkeep failed, met the threshold for delete. Deleting Alliance.", true, 0);
+                                    AlliancePlugin.AllAlliances.Remove(alliance.name);
+                                    File.Delete(AlliancePlugin.path + "//AllianceData//" + alliance.AllianceId + ".json");
+                                    foreach (long id in alliance.AllianceMembers)
+                                    {
+                                        AlliancePlugin.FactionsInAlliances.Remove(id);
+                                    }
+                                }
+                                else {
+                                    AllianceChat.SendChatMessage(alliance.AllianceId, "Upkeep", "Upkeep failed, Upgrades disabled.", true, 0);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                AlliancePlugin.Log.Error("Error for all upkeep");
+                AlliancePlugin.Log.Error(ex);
+                return;
+            }
+        }
         public static String connectionString = "Filename=" + AlliancePlugin.path + "//bank.db;Connection=shared;Upgrade=True;";
         public static Boolean CreateAllianceBank(Alliance alliance)
         {
-         //   if (!File.Exists(AlliancePlugin.path + "//bank.db"))
-          //  {
-          //      File.Create(AlliancePlugin.path + "//bank.db");
-          //  }
+            //   if (!File.Exists(AlliancePlugin.path + "//bank.db"))
+            //  {
+            //      File.Create(AlliancePlugin.path + "//bank.db");
+            //  }
             try
             {
                 using (var db = new LiteDatabase(connectionString))
@@ -117,8 +187,8 @@ namespace AlliancesPlugin.Alliances
 
                         collection.Update(bank);
                     }
-                 
-                    
+
+
                 }
 
             }
@@ -162,13 +232,13 @@ namespace AlliancesPlugin.Alliances
                     {
                         Alliance alliance = AlliancePlugin.GetAlliance(key.Key);
 
-                       long amount = 0;
+                        long amount = 0;
                         foreach (float f in key.Value.Values)
                         {
-                           
+
                             amount += (long)f;
                         }
-                      
+
                         var bank = collection.FindById(key.Key);
                         if (bank == null)
                         {
@@ -192,7 +262,7 @@ namespace AlliancesPlugin.Alliances
                             {
                                 alliance.DepositTax((long)tax.Value, MySession.Static.Players.TryGetSteamId(tax.Key));
 
-                               EconUtils.takeMoney(tax.Key, (long)tax.Value);
+                                EconUtils.takeMoney(tax.Key, (long)tax.Value);
                             }
                         }
                         AlliancePlugin.SaveAllianceData(alliance);
@@ -232,7 +302,7 @@ namespace AlliancesPlugin.Alliances
 
                         collection.Update(bank);
                     }
-                 
+
 
                 }
 

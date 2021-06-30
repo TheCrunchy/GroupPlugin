@@ -53,7 +53,36 @@ namespace AlliancesPlugin.Alliances
         public int g = 163;
         public int b = 237;
         public int failedUpkeep = 0;
-        
+        public long GetUpkeep()
+        {
+            float upkeep = 0;
+            upkeep += AlliancePlugin.config.BaseUpkeepFee;
+            foreach (long id in AllianceMembers)
+            {
+                MyFaction fac = MySession.Static.Factions.TryGetFactionById(id) as MyFaction;
+                if (fac != null)
+                {
+                    upkeep += AlliancePlugin.config.BaseUpkeepFee * AlliancePlugin.config.PercentPerFac;
+                    upkeep += AlliancePlugin.config.FeePerMember * fac.Members.Count;
+                }
+            }
+            foreach (JumpGate gate in AlliancePlugin.AllGates.Values)
+            {
+                if (gate.OwnerAlliance == AllianceId)
+                {
+                    upkeep += gate.upkeep;
+                }
+            }
+            if (this.hasUnlockedHangar)
+            {
+                upkeep += AlliancePlugin.config.HangarUpkeep;
+            }
+            if (this.hasUnlockedShipyard)
+            {
+                upkeep += AlliancePlugin.config.ShipyardUpkeep;
+            }
+            return (long) upkeep;
+        }
         public Boolean HasAccess(ulong id, AccessLevel level)
         {
             if (SupremeLeader == id)
@@ -270,6 +299,19 @@ namespace AlliancesPlugin.Alliances
             log.log.Add(item);
             utils.WriteToJsonFile<BankLog>(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId + "//log.json", log);
         }
+        public void Upkeep(Int64 amount, ulong steamid)
+        {
+            bankBalance -= amount;
+            BankLog log = GetLog();
+            BankLogItem item = new BankLogItem();
+            item.SteamId = steamid;
+            item.Amount = amount;
+            item.TimeClaimed = DateTime.Now;
+            item.Action = "upkeep";
+            item.BankAmount = bankBalance;
+            log.log.Add(item);
+            utils.WriteToJsonFile<BankLog>(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId + "//log.json", log);
+        }
         public void DepositTax(Int64 amount, ulong steamid)
         {
             bankBalance += amount;
@@ -283,6 +325,7 @@ namespace AlliancesPlugin.Alliances
             log.log.Add(item);
             utils.WriteToJsonFile<BankLog>(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId + "//log.json", log);
         }
+
         public void GateFee(Int64 amount, ulong steamid, string GateName)
         {
             bankBalance += amount;
@@ -321,6 +364,10 @@ namespace AlliancesPlugin.Alliances
             sb.AppendLine("");
             bankBalance = DatabaseForBank.GetBalance(AllianceId);
             sb.AppendLine("Bank Balance : " + String.Format("{0:n0}", bankBalance) + " SC.");
+            if (failedUpkeep > 0)
+            {
+                sb.AppendLine("Failed Upkeep : " + this.failedUpkeep + " Deleted at " + AlliancePlugin.config.UpkeepFailBeforeDelete);
+            }
             float upkeep = 0;
             upkeep += AlliancePlugin.config.BaseUpkeepFee;
          foreach (long id in AllianceMembers)

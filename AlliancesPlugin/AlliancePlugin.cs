@@ -333,10 +333,14 @@ namespace AlliancesPlugin
             if (state == TorchSessionState.Unloading)
             {
                 DiscordStuff.Stopdiscord();
+                TorchState = TorchSessionState.Unloading;
             }
             if (state == TorchSessionState.Loaded)
             {
-                DiscordStuff.RegisterDiscord();
+                if (config != null && config.AllowDiscord)
+                {
+                    DiscordStuff.RegisterDiscord();
+                }
                 AllianceChat.ApplyLogging();
                 InitPluginDependencies(Torch.Managers.GetManager<PluginManager>());
                 TorchState = TorchSessionState.Loaded;
@@ -513,9 +517,7 @@ namespace AlliancesPlugin
                 LoadAllAlliances();
                 LoadAllGates();
 
-                
-                    DiscordStuff.RegisterDiscord();
-              
+
                 foreach (Alliance alliance in AllAlliances.Values)
                 {
                     alliance.ForceFriendlies();
@@ -543,8 +545,9 @@ namespace AlliancesPlugin
                         //    {
                         //   botsTried.Add(alliance.AllianceId);
                         Log.Info("Registering bot for " + alliance.AllianceId);
-                        DiscordStuff.RegisterAllianceBot(alliance, alliance.DiscordChannelId);
-                        
+                        registerThese.Add(alliance.AllianceId, nextRegister.AddSeconds(15));
+
+
 
 
 
@@ -554,6 +557,9 @@ namespace AlliancesPlugin
                 //    bank.CreateTable(bank.CreateConnection());
             }
         }
+        public static DateTime nextRegister = DateTime.Now.AddSeconds(15);
+        public static Dictionary<Guid, DateTime> registerThese = new Dictionary<Guid, DateTime>();
+
         public static List<DeniedLocation> HangarDeniedLocations = new List<DeniedLocation>();
         public static void ReloadShipyard()
         {
@@ -622,6 +628,58 @@ namespace AlliancesPlugin
             }
 
         }
+        public static void LoadAllAlliancesForUpkeep()
+        {
+            FileUtils jsonStuff = new FileUtils();
+            try
+            {
+                AllAlliances.Clear();
+                FactionsInAlliances.Clear();
+                foreach (String s in Directory.GetFiles(path + "//AllianceData//"))
+                {
+
+                    Alliance alliance = jsonStuff.ReadFromJsonFile<Alliance>(s);
+                    if (AllAlliances.ContainsKey(alliance.name))
+                    {
+                        alliance.name += " DUPLICATE";
+                        AllAlliances.Add(alliance.name, alliance);
+
+                        foreach (long id in alliance.AllianceMembers)
+                        {
+                            if (!FactionsInAlliances.ContainsKey(id))
+                            {
+                                FactionsInAlliances.Add(id, alliance.name);
+                            }
+                        }
+                        SaveAllianceData(alliance);
+                    }
+                    else
+                    {
+                        AllAlliances.Add(alliance.name, alliance);
+                        foreach (long id in alliance.AllianceMembers)
+                        {
+                            if (!FactionsInAlliances.ContainsKey(id))
+                            {
+                                FactionsInAlliances.Add(id, alliance.name);
+                            }
+                        }
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+            }
+        }
+        public static Boolean HasFailedUpkeep(Alliance alliance)
+        {
+            if (alliance.failedUpkeep > 0)
+            {
+                return true;
+            }
+            return false;
+        }
         public void LoadAllAlliances()
         {
             if (TorchState == TorchSessionState.Loaded)
@@ -642,7 +700,10 @@ namespace AlliancesPlugin
 
                             foreach (long id in alliance.AllianceMembers)
                             {
-                                FactionsInAlliances.Add(id, alliance.name);
+                                if (!FactionsInAlliances.ContainsKey(id))
+                                {
+                                    FactionsInAlliances.Add(id, alliance.name);
+                                }
                             }
                             SaveAllianceData(alliance);
                         }
@@ -651,7 +712,10 @@ namespace AlliancesPlugin
                             AllAlliances.Add(alliance.name, alliance);
                             foreach (long id in alliance.AllianceMembers)
                             {
-                                FactionsInAlliances.Add(id, alliance.name);
+                                if (!FactionsInAlliances.ContainsKey(id))
+                                {
+                                    FactionsInAlliances.Add(id, alliance.name);
+                                }
                             }
                         }
 
@@ -720,7 +784,30 @@ namespace AlliancesPlugin
             }
 
         }
+        public static Boolean SendPlayerNotify(MyPlayer player, int milliseconds, string message, string color)
+        {
+            NotificationMessage message2 = new NotificationMessage();
+            if (messageCooldowns.ContainsKey(player.Identity.IdentityId))
+            {
+                if (DateTime.Now < messageCooldowns[player.Identity.IdentityId])
+                    return false;
 
+                message2 = new NotificationMessage(message, milliseconds, color);
+                //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
+
+                ModCommunication.SendMessageTo(message2, player.Id.SteamId);
+                messageCooldowns[player.Identity.IdentityId] = DateTime.Now.AddMilliseconds(milliseconds / 2);
+                return false;
+            }
+            else
+            {
+
+                message2 = new NotificationMessage(message, milliseconds, color);
+                ModCommunication.SendMessageTo(message2, player.Id.SteamId);
+                messageCooldowns.Add(player.Identity.IdentityId, DateTime.Now.AddMilliseconds(milliseconds / 2));
+                return false;
+            }
+        }
         public static Boolean DoFeeStuff(MyPlayer player, JumpGate gate)
         {
             if (gate.fee > 0)
@@ -728,52 +815,42 @@ namespace AlliancesPlugin
                 if (EconUtils.getBalance(player.Identity.IdentityId) >= gate.fee)
                 {
                     Alliance temp = null;
-                    foreach (Alliance alliance in AllAlliances.Values)
+                    if (gate.OwnerAlliance != Guid.Empty)
                     {
-                        if (alliance.AllianceId == gate.OwnerAlliance)
+                        temp = AlliancePlugin.GetAlliance(gate.OwnerAlliance);
+                        if (temp == null)
                         {
-                            if (DatabaseForBank.AddToBalance(alliance, gate.fee))
-                            {
-                                temp = LoadAllianceData(alliance.AllianceId);
-                                if (temp != null)
-                                {
-                                    temp.GateFee(gate.fee, player.Id.SteamId, gate.GateName);
-                                    EconUtils.takeMoney(player.Identity.IdentityId, gate.fee);
-                                    SaveAllianceData(temp);
-                                }
+                            return true;
+                        }
+                        if (AlliancePlugin.HasFailedUpkeep(temp))
+                        {
 
-                            }
+                            SendPlayerNotify(player, 1000, "Gate is disabled. Alliance failed upkeep.", "Red");
+                            return false;
                         }
                     }
+                    else
+                    {
+                        EconUtils.takeMoney(player.Identity.IdentityId, gate.fee);
+                        return true;
+                    }
+                    if (DatabaseForBank.AddToBalance(temp, gate.fee))
+                    {
+
+                        if (temp != null)
+                        {
+                            temp.GateFee(gate.fee, player.Id.SteamId, gate.GateName);
+                            EconUtils.takeMoney(player.Identity.IdentityId, gate.fee);
+                            SaveAllianceData(temp);
+                        }
+
+                    }
+
                     return true;
                 }
                 else
                 {
-                    NotificationMessage message2;
-                    if (messageCooldowns.ContainsKey(player.Identity.IdentityId))
-                    {
-                        if (DateTime.Now < messageCooldowns[player.Identity.IdentityId])
-                            return false;
-
-                        message2 = new NotificationMessage("It costs " + String.Format("{0:n0}", gate.fee) + " SC to jump.", 1000, "Red");
-                        //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
-
-                        ModCommunication.SendMessageTo(message2, player.Id.SteamId);
-                        messageCooldowns[player.Identity.IdentityId] = DateTime.Now.AddMilliseconds(500);
-                        return false;
-                    }
-                    else
-                    {
-
-
-                        message2 = new NotificationMessage("It costs " + String.Format("{0:n0}", gate.fee) + " SC to jump.", 1000, "Red");
-                        //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
-
-                        ModCommunication.SendMessageTo(message2, player.Id.SteamId);
-                        //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
-                        messageCooldowns.Add(player.Identity.IdentityId, DateTime.Now.AddMilliseconds(500));
-                        return false;
-                    }
+                    SendPlayerNotify(player, 1000, "It costs " + String.Format("{0:n0}", gate.fee) + " SC to jump.", "Red");
                     return false;
                 }
             }
@@ -784,39 +861,12 @@ namespace AlliancesPlugin
         public static Boolean DoFeeMessage(MyPlayer player, JumpGate gate, float Distance)
         {
             if (gate.fee > 0)
-
             {
-                NotificationMessage message;
-                NotificationMessage message2;
                 if (EconUtils.getBalance(player.Identity.IdentityId) >= gate.fee)
                 {
-                    if (messageCooldowns.ContainsKey(player.Identity.IdentityId))
-                    {
-                        if (DateTime.Now < messageCooldowns[player.Identity.IdentityId])
-                            return false;
-                        message = new NotificationMessage("You will jump in " + Distance + " meters", 1000, "Green");
-                        message2 = new NotificationMessage("It costs " + String.Format("{0:n0}", gate.fee) + " SC to jump.", 1000, "Green");
-                        //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
-                        ModCommunication.SendMessageTo(message, player.Id.SteamId);
-                        ModCommunication.SendMessageTo(message2, player.Id.SteamId);
-                        messageCooldowns[player.Identity.IdentityId] = DateTime.Now.AddMilliseconds(500);
-                        return true;
-                    }
-                    else
-                    {
-
-
-                        message = new NotificationMessage("You will jump in " + Distance + " meters", 1000, "Green");
-                        message2 = new NotificationMessage("It costs " + String.Format("{0:n0}", gate.fee) + " SC to jump.", 1000, "Green");
-                        //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
-                        ModCommunication.SendMessageTo(message, player.Id.SteamId);
-                        ModCommunication.SendMessageTo(message2, player.Id.SteamId);
-                        //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
-                        ModCommunication.SendMessageTo(message, player.Id.SteamId);
-                        // MyAPIGateway.Utilities.ShowNotification
-                        messageCooldowns.Add(player.Identity.IdentityId, DateTime.Now.AddMilliseconds(500));
-                        return true;
-                    }
+                    SendPlayerNotify(player, 1000, "You will jump in " + Distance + " meters", "Green");
+                    SendPlayerNotify(player, 1000, "It costs " + String.Format("{0:n0}", gate.fee) + " SC to jump.", "Green");
+                    return true;
                 }
             }
             return false;
@@ -886,38 +936,10 @@ namespace AlliancesPlugin
                         {
                             if (Distance <= 500)
                             {
-                                NotificationMessage message;
-                                if (messageCooldowns.ContainsKey(player.Identity.IdentityId))
-                                {
-
-                                    if (DateTime.Now < messageCooldowns[player.Identity.IdentityId])
-                                        continue;
-
-                                    if (DoFeeMessage(player, gate, Distance))
-                                        continue;
-
-                                    message = new NotificationMessage("You will jump in " + Distance + " meters", 1000, "Green");
-                                    //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
-                                    ModCommunication.SendMessageTo(message, player.Id.SteamId);
-                                    messageCooldowns[player.Identity.IdentityId] = DateTime.Now.AddMilliseconds(500);
-                                }
-
-                                else
-                                {
-                                    if (DoFeeMessage(player, gate, Distance))
-                                        continue;
-
-
-                                    message = new NotificationMessage("You will jump in " + Distance + " meters", 1000, "Green");
-                                    //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
-                                    ModCommunication.SendMessageTo(message, player.Id.SteamId);
-                                    messageCooldowns.Add(player.Identity.IdentityId, DateTime.Now.AddMilliseconds(500));
-                                }
+                                SendPlayerNotify(player, 1000, "You will jump in " + Distance + " meters", "Green");
                             }
                         }
                     }
-
-
                 }
             }
         }
@@ -1567,19 +1589,13 @@ namespace AlliancesPlugin
                                                 SaveAllianceData(alliance);
                                                 SaveKothConfig(config.KothName, config);
                                             }
-                                           
+
                                         }
                                         return;
                                     }
-                                    if (config.captureBlockNeedsToBroadcast)
-                                    {
-                                        SendChatMessage(config.KothName + "No loot spawn, No functional capture block set to " + config.captureBlockBroadcastDistance + " or higher.");
-                                    }
-                                    else
-                                    {
-                                        SendChatMessage(config.KothName + "No loot spawn, No functional capture block");
-                                    }
-                                   
+
+                                    SendChatMessage(config.KothName + "No loot spawn, No functional capture block");
+                                    
                                     continue;
 
                                 }
@@ -1673,7 +1689,29 @@ namespace AlliancesPlugin
                 {
                     Log.Error(ex);
                 }
+                if (config.AllowDiscord)
+                {
+                    Dictionary<Guid, DateTime> temp = new Dictionary<Guid, DateTime>();
+                    foreach (KeyValuePair<Guid, DateTime> keys in registerThese)
+                    {
+                        if (DateTime.Now > keys.Value)
+                        {
+                            Alliance alliance = GetAlliance(keys.Key);
+                            if (alliance != null)
+                            {
 
+                                DiscordStuff.RegisterAllianceBot(alliance, alliance.DiscordChannelId);
+                                temp.Add(alliance.AllianceId, DateTime.Now.AddMinutes(15));
+                                Log.Info("Connecting bot.");
+                            }
+
+                        }
+                    }
+                    foreach (KeyValuePair<Guid, DateTime> keys in temp)
+                    {
+                        registerThese[keys.Key] = keys.Value;
+                    }
+                }
             }
             try
             {
@@ -1687,9 +1725,9 @@ namespace AlliancesPlugin
                 Log.Error(ex);
             }
 
-            if (DateTime.Now > NextUpdate)
+            if (DateTime.Now > NextUpdate && TorchState == TorchSessionState.Loaded)
             {
-             
+
                 Log.Info("Doing alliance tasks");
                 DateTime now = DateTime.Now;
                 //try
@@ -1754,7 +1792,7 @@ namespace AlliancesPlugin
 
                 }
             }
-            if (ticks % 32 == 0)
+            if (ticks % 32 == 0 && TorchState == TorchSessionState.Loaded)
             {
                 if (config.JumpGatesEnabled)
                 {
@@ -1836,24 +1874,6 @@ namespace AlliancesPlugin
 
                     if (block.IsFunctional && block.IsWorking)
                     {
-                        if (block is Sandbox.ModAPI.IMyFunctionalBlock bl)
-                        {
-                            bl.Enabled = true;
-                        }
-
-                        if (block is Sandbox.ModAPI.IMyBeacon beacon)
-                        {
-                            if (beacon.Radius -1 < koth.captureBlockBroadcastDistance)
-                            {
-                                return false;
-                            }
-                            else
-                            {
-                                return true;
-                            }
-                         
-                        }
-
                         return true;
                     }
                 }

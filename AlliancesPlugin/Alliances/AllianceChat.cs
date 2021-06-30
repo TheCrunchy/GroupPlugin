@@ -122,7 +122,7 @@ namespace AlliancesPlugin.Alliances
                         if (MySession.Static.Players.GetPlayerByName("Crunch") != null)
                         {
                             MyPlayer player = MySession.Static.Players.GetPlayerByName("Crunch");
-                            ShipyardCommands.SendMessage("Discord", "Bot not connected", Color.Blue, (long)player.Id.SteamId);
+                            ShipyardCommands.SendMessage("Discord", "Bot not connected 1", Color.Blue, (long)player.Id.SteamId);
                         }
                     }
                 }
@@ -134,7 +134,7 @@ namespace AlliancesPlugin.Alliances
                     if (MySession.Static.Players.GetPlayerByName("Crunch") != null)
                     {
                         MyPlayer player = MySession.Static.Players.GetPlayerByName("Crunch");
-                        ShipyardCommands.SendMessage("Discord", "Bot not connected", Color.Blue, (long)player.Id.SteamId);
+                        ShipyardCommands.SendMessage("Discord", "Bot not connected 2", Color.Blue, (long)player.Id.SteamId);
                     }
                 }
             }
