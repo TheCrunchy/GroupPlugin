@@ -21,6 +21,10 @@ namespace AlliancesPlugin.JumpGates
         public string LinkedKoth = "";
         public long fee = 0;
         public long upkeep = 100000000;
+        public Boolean CanBeRented = false;
+        public int MetaPointRentCost = 100;
+        public DateTime NextRentAvailable = DateTime.Now;
+        public int DaysPerRent = 7;
         public void Save()
         {
             utils.WriteToJsonFile<JumpGate>(AlliancePlugin.path + "//JumpGates//" + GateId + ".json", this);

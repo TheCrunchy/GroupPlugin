@@ -774,6 +774,12 @@ namespace AlliancesPlugin
                 {
 
                     JumpGate gate = jsonStuff.ReadFromJsonFile<JumpGate>(s);
+                  
+                        if (gate.CanBeRented && DateTime.Now >= gate.NextRentAvailable)
+                        {
+                        gate.OwnerAlliance = Guid.Empty;
+                        }
+                    
                     AllGates.Add(gate.GateId, gate);
 
                 }

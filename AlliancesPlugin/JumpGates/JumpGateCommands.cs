@@ -159,12 +159,12 @@ namespace AlliancesPlugin.JumpGates
             Alliance alliance = AlliancePlugin.GetAlliance(fac);
             if (alliance == null)
             {
-                Context.Respond("Only members of an alliance may access a bank.");
+                Context.Respond("Only members of an alliance can set a gate fee.");
                 return;
             }
             if (alliance != null)
             {
-                if (alliance.SupremeLeader == Context.Player.SteamUserId)
+                if (alliance.SupremeLeader == Context.Player.SteamUserId || alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.PayFromBank))
                 {
                     JumpGate gate1 = null;
                     JumpGate gate2 = null;
@@ -202,6 +202,90 @@ namespace AlliancesPlugin.JumpGates
             }
 
         
+        }
+
+        [Command("rent", "rent a gate")]
+        [Permission(MyPromoteLevel.None)]
+        public void RentGate(string name)
+        {
+            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
+            if (fac == null)
+            {
+                Context.Respond("Only factions can be in alliances.");
+                return;
+            }
+            Alliance alliance = AlliancePlugin.GetAlliance(fac);
+            if (alliance == null)
+            {
+                Context.Respond("Only members of an alliance may rent a gate.");
+                return;
+            }
+            if (alliance != null)
+            {
+                if (alliance.SupremeLeader == Context.Player.SteamUserId || alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.PayFromBank))
+                {
+                    JumpGate gate1 = null;
+                    JumpGate gate2 = null;
+                    AlliancePlugin.LoadAllGates();
+                    foreach (JumpGate gate in AlliancePlugin.AllGates.Values)
+                    {
+                        if (gate.GateName.Equals(name) && gate.CanBeRented && DateTime.Now >= gate.NextRentAvailable)
+                        {
+                            gate1 = gate;
+                            gate2 = AlliancePlugin.AllGates[gate.TargetGateId];
+                            break;
+                        }
+                    }
+                    if (gate1 == null || gate2 == null)
+                    {
+                        Context.Respond("Could not find one of those gates.");
+                        return;
+                    }
+                    if (alliance.CurrentMetaPoints >= gate1.MetaPointRentCost)
+                    {
+                        alliance.CurrentMetaPoints -= gate1.MetaPointRentCost;
+                        gate1.OwnerAlliance = alliance.AllianceId;
+                        gate2.OwnerAlliance = alliance.AllianceId;
+                        gate1.NextRentAvailable = DateTime.Now.AddDays(gate1.DaysPerRent);
+                        gate2.NextRentAvailable = DateTime.Now.AddDays(gate1.DaysPerRent);
+                        AlliancePlugin.AllGates[gate1.GateId] = gate1;
+                        AlliancePlugin.AllGates[gate2.GateId] = gate2;
+                        gate1.Save();
+                        gate2.Save();
+                        Context.Respond("Successfully rented gate for " + gate1.DaysPerRent + " Days. Fees can now be set with !jumpgate fee <gateName> <amount>");
+                        Context.Respond("Gate names, " + gate1.GateName + ", " + gate2.GateName);
+                        AlliancePlugin.SaveAllianceData(alliance);
+                        return;
+                    }
+                    else
+                    {
+                        Context.Respond("Cannot afford the meta point cost of " + gate1.MetaPointRentCost);
+                        return;
+                    }
+                }
+                else
+                {
+                    Context.Respond("You dont have the rank to do this.");
+                }
+
+            }
+
+
+        }
+
+        [Command("rentable", "list all rentable gates")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void OutputRentableGates()
+        {
+            string response = "";
+            foreach (JumpGate gate in AlliancePlugin.AllGates.Values)
+            {
+             if (gate.CanBeRented && DateTime.Now >= gate.NextRentAvailable)
+                {
+                    response += "/n" + gate.GateName + " meta point cost " + gate.DaysPerRent;
+                }
+            }
+
         }
         [Command("list", "list all loaded gates")]
         [Permission(MyPromoteLevel.Admin)]
