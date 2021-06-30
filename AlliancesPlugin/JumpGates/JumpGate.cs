@@ -11,6 +11,8 @@ namespace AlliancesPlugin.JumpGates
     public class JumpGate
     {
         public Guid GateId = System.Guid.NewGuid();
+        public Boolean UseSafeZones = true;
+        public long SafeZoneEntityId = 1;
         public Guid TargetGateId;
         public Vector3 Position;
         public string GateName;
@@ -27,11 +29,11 @@ namespace AlliancesPlugin.JumpGates
         public int DaysPerRent = 7;
         public void Save()
         {
-            utils.WriteToJsonFile<JumpGate>(AlliancePlugin.path + "//JumpGates//" + GateId + ".json", this);
+            utils.WriteToXmlFile<JumpGate>(AlliancePlugin.path + "//JumpGates//" + GateId + ".xml", this);
         }
         public void Delete()
         {
-            File.Delete(AlliancePlugin.path + "//JumpGates//" + GateId + ".json");
+            File.Delete(AlliancePlugin.path + "//JumpGates//" + GateId + ".xml");
         }
     }
 }

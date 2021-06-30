@@ -9,6 +9,7 @@ namespace AlliancesPlugin.KOTH
     public class KothConfig
     {
         public Boolean ShowSafeZone = true;
+        public long SafeZoneId = 1;
         public double x = 100000;
         public double y = 100000;
         public double z = 100000;

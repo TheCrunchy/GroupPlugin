@@ -36,6 +36,8 @@ using AlliancesPlugin.JumpGates;
 using VRage.Utils;
 using AlliancesPlugin.ShipMarket;
 using Sandbox.Common.ObjectBuilders;
+using Sandbox.Game.GameSystems;
+using VRage.Game.Entity;
 
 namespace AlliancesPlugin
 {
@@ -766,20 +768,87 @@ namespace AlliancesPlugin
 
         public static void LoadAllGates()
         {
+            List<string> FilesToDelete = new List<string>();
             FileUtils jsonStuff = new FileUtils();
             try
             {
                 AllGates.Clear();
                 foreach (String s in Directory.GetFiles(path + "//JumpGates//"))
                 {
-
-                    JumpGate gate = jsonStuff.ReadFromJsonFile<JumpGate>(s);
+                    JumpGate gate;
+                    if (s.EndsWith(".json"))
+                    {
+                        FilesToDelete.Add(s);
+                         gate = jsonStuff.ReadFromJsonFile<JumpGate>(s);
+                    }
+                    else{
+                        gate = jsonStuff.ReadFromXmlFile<JumpGate>(s);
+                    }
                   
-                        if (gate.CanBeRented && DateTime.Now >= gate.NextRentAvailable)
-                        {
+
+                    if (gate.CanBeRented && DateTime.Now >= gate.NextRentAvailable)
+                    {
                         gate.OwnerAlliance = Guid.Empty;
+                    }
+                    if (gate.UseSafeZones)
+                    {
+                        MyEntity gateEntity = MyAPIGateway.Entities.GetEntityById(gate.SafeZoneEntityId) as MyEntity;
+                        if (gateEntity == null)
+                        {
+                            MyObjectBuilder_SafeZone objectBuilderSafeZone = new MyObjectBuilder_SafeZone();
+                            objectBuilderSafeZone.PositionAndOrientation = new MyPositionAndOrientation?(new MyPositionAndOrientation(gate.Position, Vector3.Forward, Vector3.Up));
+                            objectBuilderSafeZone.PersistentFlags = MyPersistentEntityFlags2.InScene;
+                            objectBuilderSafeZone.Shape = MySafeZoneShape.Sphere;
+                            objectBuilderSafeZone.Radius = (float)gate.RadiusToJump;
+                            objectBuilderSafeZone.Enabled = true;
+                            objectBuilderSafeZone.DisplayName = gate.GateName + " zone";
+                            objectBuilderSafeZone.ModelColor = Color.Green.ToVector3();
+                            
+                            objectBuilderSafeZone.AccessTypeGrids = MySafeZoneAccess.Blacklist;
+                            objectBuilderSafeZone.AccessTypeFloatingObjects = MySafeZoneAccess.Blacklist;
+                            objectBuilderSafeZone.AccessTypeFactions = MySafeZoneAccess.Blacklist;
+                            objectBuilderSafeZone.AccessTypePlayers = MySafeZoneAccess.Blacklist;
+                            MyEntity ent = Sandbox.Game.Entities.MyEntities.CreateFromObjectBuilderAndAdd((MyObjectBuilder_EntityBase)objectBuilderSafeZone, true);
+                            gate.SafeZoneEntityId = ent.EntityId;
+                            gate.Save();
                         }
-                    
+                        else
+                        {
+                            if (gateEntity is MySafeZone zone)
+                            {
+                                if (zone.Radius != (float)gate.RadiusToJump)
+                                {
+                                    zone.Radius = (float)gate.RadiusToJump;
+                                }
+                            }
+                            else
+                            {
+                                MyObjectBuilder_SafeZone objectBuilderSafeZone = new MyObjectBuilder_SafeZone();
+                                objectBuilderSafeZone.PositionAndOrientation = new MyPositionAndOrientation?(new MyPositionAndOrientation(gate.Position, Vector3.Forward, Vector3.Up));
+                                objectBuilderSafeZone.PersistentFlags = MyPersistentEntityFlags2.InScene;
+                                objectBuilderSafeZone.Shape = MySafeZoneShape.Sphere;
+                                objectBuilderSafeZone.Radius = (float)gate.RadiusToJump;
+                                objectBuilderSafeZone.Enabled = true;
+                                objectBuilderSafeZone.ModelColor = Color.Green.ToVector3();
+                                objectBuilderSafeZone.DisplayName = gate.GateName + " zone";
+                                objectBuilderSafeZone.AccessTypeGrids = MySafeZoneAccess.Blacklist;
+                                objectBuilderSafeZone.AccessTypeFloatingObjects = MySafeZoneAccess.Blacklist;
+                                objectBuilderSafeZone.AccessTypeFactions = MySafeZoneAccess.Blacklist;
+                                objectBuilderSafeZone.AccessTypePlayers = MySafeZoneAccess.Blacklist;
+                                MyEntity ent = Sandbox.Game.Entities.MyEntities.CreateFromObjectBuilderAndAdd((MyObjectBuilder_EntityBase)objectBuilderSafeZone, true);
+                                gate.SafeZoneEntityId = ent.EntityId;
+                                gate.Save();
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (MyAPIGateway.Entities.GetEntityById(gate.SafeZoneEntityId) != null && MyAPIGateway.Entities.GetEntityById(gate.SafeZoneEntityId) is MySafeZone zone)
+                        {
+                            zone.Close();
+                        }
+                    }
+
                     AllGates.Add(gate.GateId, gate);
 
                 }
@@ -788,7 +857,19 @@ namespace AlliancesPlugin
             {
                 Log.Error(ex.ToString());
             }
-
+            bool deleted = false;
+            foreach (String s in FilesToDelete)
+            {
+                File.Delete(s);
+                deleted = true;
+            }
+                if (deleted)
+            {
+                foreach (JumpGate gate in AllGates.Values)
+                {
+                    gate.Save();
+                }
+            }
         }
         public static Boolean SendPlayerNotify(MyPlayer player, int milliseconds, string message, string color)
         {
@@ -935,7 +1016,8 @@ namespace AlliancesPlugin
                                 break;
                             }
                             MatrixD worldMatrix = MatrixD.CreateWorld(newPosition.Value, controller.CubeGrid.WorldMatrix.Forward, controller.CubeGrid.WorldMatrix.Up);
-
+                            MyGridJumpDriveSystem system = new MyGridJumpDriveSystem(controller.CubeGrid);
+                            system.RequestJump("Gate", controller.CubeGrid.PositionComp.GetPosition(), player.Identity.IdentityId);
                             controller.CubeGrid.Teleport(worldMatrix);
                         }
                         else
@@ -1127,7 +1209,7 @@ namespace AlliancesPlugin
                         catch (Exception)
                         {
                             Log.Error("Cant do discord message for koth.");
-                            SendChatMessage(config.KothName + " Is now unlocked! ");
+                            SendChatMessage(config.KothName, "Is now unlocked!");
                         }
 
                     }
@@ -1140,8 +1222,7 @@ namespace AlliancesPlugin
                         {
                             bool hasZone = false;
                             MySafeZone yeet = null;
-                            BoundingSphereD sphere2 = new BoundingSphereD(position, config.CaptureRadiusInMetre + 15000);
-                            foreach (MySafeZone zone in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere2).OfType<MySafeZone>())
+                            if (MyAPIGateway.Entities.GetEntityById(config.SafeZoneId) != null && MyAPIGateway.Entities.GetEntityById(config.SafeZoneId) is MySafeZone zone)
                             {
                                 if (zone.Radius != (float)config.CaptureRadiusInMetre)
                                 {
@@ -1152,11 +1233,10 @@ namespace AlliancesPlugin
                                 {
                                     hasZone = true;
                                 }
-
-                            }
-                            if (yeet != null)
-                            {
-                                yeet.Close();
+                                if (yeet != null)
+                                {
+                                    yeet.Close();
+                                }
                             }
                             if (!hasZone)
                             {
@@ -1171,7 +1251,15 @@ namespace AlliancesPlugin
                                 objectBuilderSafeZone.AccessTypeFloatingObjects = MySafeZoneAccess.Blacklist;
                                 objectBuilderSafeZone.AccessTypeFactions = MySafeZoneAccess.Blacklist;
                                 objectBuilderSafeZone.AccessTypePlayers = MySafeZoneAccess.Blacklist;
-                                Sandbox.Game.Entities.MyEntities.CreateFromObjectBuilderAndAdd((MyObjectBuilder_EntityBase)objectBuilderSafeZone, true);
+                                MyEntity ent = Sandbox.Game.Entities.MyEntities.CreateFromObjectBuilderAndAdd((MyObjectBuilder_EntityBase)objectBuilderSafeZone, true);
+                                config.SafeZoneId = ent.EntityId;
+                            }
+                        }
+                        else
+                        {
+                            if (MyAPIGateway.Entities.GetEntityById(config.SafeZoneId) != null && MyAPIGateway.Entities.GetEntityById(config.SafeZoneId) is MySafeZone zone)
+                            {
+                                zone.Close();
                             }
                         }
                         Guid capturingNation = Guid.Empty;
@@ -1290,7 +1378,7 @@ namespace AlliancesPlugin
                                         config.nextCaptureAvailable = DateTime.Now.AddMinutes(config.MinutesBeforeCaptureStarts);
                                         //  Log.Info("Can cap in 10 minutes");
                                         config.capturingNation = capturingNation;
-                                        SendChatMessage("Can cap in however many minutes");
+                                        SendChatMessage(config.KothName, "Can cap in however many minutes");
 
                                         try
                                         {
@@ -1299,7 +1387,7 @@ namespace AlliancesPlugin
                                         catch (Exception)
                                         {
                                             Log.Error("Cant do discord message for koth.");
-                                            SendChatMessage(config.KothName + " Capture can begin in " + config.MinutesBeforeCaptureStarts + " minutes.");
+                                            SendChatMessage(config.KothName, "Capture can begin in " + config.MinutesBeforeCaptureStarts + " minutes.");
                                         }
                                     }
                                 }
@@ -1333,7 +1421,7 @@ namespace AlliancesPlugin
                                                 catch (Exception)
                                                 {
                                                     Log.Error("Cant do discord message for koth.");
-                                                    SendChatMessage(config.KothName + " Locked, Capture blocks are missing or destroyed. Locked for " + config.hourCooldownAfterFail + " hours");
+                                                    SendChatMessage(config.KothName, "Locked, Capture blocks are missing or destroyed. Locked for " + config.hourCooldownAfterFail + " hours");
                                                 }
                                             }
                                             else
@@ -1409,7 +1497,7 @@ namespace AlliancesPlugin
                                                     {
 
                                                         Log.Error("Cant do discord message for koth.");
-                                                        SendChatMessage(GetAllianceNoLoading(capturingNation).name + " has captured " + config.KothName + ". It is now locked for " + config.hoursToLockAfterCap + " hours.");
+                                                        SendChatMessage(config.KothName, GetAllianceNoLoading(capturingNation).name + " has captured " + config.KothName + ". It is now locked for " + config.hoursToLockAfterCap + " hours.");
                                                     }
                                                 }
                                                 else
@@ -1425,7 +1513,7 @@ namespace AlliancesPlugin
                                                     catch (Exception)
                                                     {
                                                         Log.Error("Cant do discord message for koth.");
-                                                        SendChatMessage(config.KothName + " capture progress " + config.amountCaptured + " out of " + config.PointsToCap + " by " + GetAllianceNoLoading(capturingNation).name);
+                                                        SendChatMessage(config.KothName, "capture progress " + config.amountCaptured + " out of " + config.PointsToCap + " by " + GetAllianceNoLoading(capturingNation).name);
                                                     }
                                                     continue;
                                                     //         config.nextBroadcast = DateTime.Now.AddMinutes(config.MinsPerCaptureBroadcast);
@@ -1441,7 +1529,7 @@ namespace AlliancesPlugin
                                             config.unlockTime = DateTime.Now.AddHours(config.hourCooldownAfterFail);
                                             config.nextCaptureAvailable = DateTime.Now.AddHours(config.hourCooldownAfterFail);
                                             //broadcast that its locked
-                                            SendChatMessage("Locked because capturing nation has changed.");
+                                            SendChatMessage(config.KothName, "Locked because capturing nation has changed.");
                                             config.amountCaptured = 0;
                                             try
                                             {
@@ -1451,14 +1539,14 @@ namespace AlliancesPlugin
                                             catch (Exception)
                                             {
                                                 Log.Error("Cant do discord message for koth.");
-                                                SendChatMessage(config.KothName + " Locked, Capturing alliance has changed. Locked for " + config.hourCooldownAfterFail + " hours");
+                                                SendChatMessage(config.KothName, "Locked, Capturing alliance has changed. Locked for " + config.hourCooldownAfterFail + " hours");
                                             }
                                         }
                                     }
                                     else
                                     {
 
-                                        SendChatMessage("Waiting to cap");
+                                        SendChatMessage(config.KothName, "Waiting to cap");
                                         //    Log.Info("Waiting to cap");
                                     }
                                 }
@@ -1482,7 +1570,7 @@ namespace AlliancesPlugin
                                         catch (Exception)
                                         {
                                             Log.Error("Cant do discord message for koth.");
-                                            SendChatMessage(config.KothName + " Locked, Capture blocks are missing or destroyed. Locked for " + config.hourCooldownAfterFail + " hours");
+                                            SendChatMessage(config.KothName, "Locked, Capture blocks are missing or destroyed. Locked for " + config.hourCooldownAfterFail + " hours");
                                         }
                                     }
                                     if (contested && config.CaptureStarted)
@@ -1496,7 +1584,7 @@ namespace AlliancesPlugin
                                         }
                                         catch (Exception)
                                         {
-                                            SendChatMessage(config.KothName + " Capture point contested!");
+                                            SendChatMessage(config.KothName, "Capture point contested!");
                                             Log.Error("Cant do discord message for koth.");
                                         }
                                     }
@@ -1512,7 +1600,7 @@ namespace AlliancesPlugin
                                 DateTime end = config.nextCaptureAvailable;
                                 var diff = end.Subtract(DateTime.Now);
                                 string time = String.Format("{0} Hours {1} Minutes {2} Seconds", diff.Hours, diff.Minutes, diff.Seconds);
-                                SendChatMessage("Capture can begin in " + time);
+                                SendChatMessage(config.KothName, "Capture can begin in " + time);
                             }
                         }
                         if (!locked)
@@ -1567,7 +1655,7 @@ namespace AlliancesPlugin
                         if (denials.TryGetValue(config.KothName, out DenialPoint den))
                         {
                             if (den.IsDenied())
-                                SendChatMessage("Denied point, no core spawn");
+                                SendChatMessage(config.KothName, "Denied point, no core spawn");
                             continue;
                         }
                         if (config.owner != Guid.Empty)
@@ -1582,7 +1670,7 @@ namespace AlliancesPlugin
                                         if (lootgrid != null)
                                         {
                                             SpawnCores(lootgrid, config);
-                                            SendChatMessage(config.KothName + " Spawning loot!");
+                                            SendChatMessage(config.KothName, "Spawning loot!");
                                             Alliance alliance = GetAlliance(config.owner);
                                             if (alliance != null)
                                             {
@@ -1600,8 +1688,8 @@ namespace AlliancesPlugin
                                         return;
                                     }
 
-                                    SendChatMessage(config.KothName + "No loot spawn, No functional capture block");
-                                    
+                                    SendChatMessage(config.KothName, "No loot spawn, No functional capture block");
+
                                     continue;
 
                                 }
@@ -1616,7 +1704,7 @@ namespace AlliancesPlugin
                                 }
 
                                 config.nextCoreSpawn = DateTime.Now.AddSeconds(config.SecondsBetweenCoreSpawn / 2);
-                                SendChatMessage(config.KothName + " Spawning loot!");
+                                SendChatMessage(config.KothName, "Spawning loot!");
                                 Alliance alliance = GetAlliance(config.owner);
                                 if (alliance != null)
                                 {
@@ -1639,7 +1727,7 @@ namespace AlliancesPlugin
                                     SpawnCores(lootgrid, config);
 
                                 }
-                                SendChatMessage(config.KothName + " Spawning loot!");
+                                SendChatMessage(config.KothName, "Spawning loot!");
                                 config.nextCoreSpawn = DateTime.Now.AddSeconds(config.SecondsBetweenCoreSpawn);
                                 Alliance alliance = GetAlliance(config.owner);
                                 if (alliance != null)
@@ -1926,11 +2014,11 @@ namespace AlliancesPlugin
             }
             return null;
         }
-        public static void SendChatMessage(String message, ulong steamID = 0)
+        public static void SendChatMessage(String prefix, String message, ulong steamID = 0)
         {
             Logger _chatLog = LogManager.GetLogger("Chat");
             ScriptedChatMsg scriptedChatMsg1 = new ScriptedChatMsg();
-            scriptedChatMsg1.Author = "KOTH";
+            scriptedChatMsg1.Author = prefix;
             scriptedChatMsg1.Text = message;
             scriptedChatMsg1.Font = "White";
             scriptedChatMsg1.Color = Color.OrangeRed;
