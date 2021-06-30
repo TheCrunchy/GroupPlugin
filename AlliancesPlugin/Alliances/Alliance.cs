@@ -68,7 +68,7 @@ namespace AlliancesPlugin.Alliances
             }
             foreach (JumpGate gate in AlliancePlugin.AllGates.Values)
             {
-                if (gate.OwnerAlliance == AllianceId)
+                if (gate.OwnerAlliance == AllianceId && !gate.CanBeRented)
                 {
                     upkeep += gate.upkeep;
                 }
@@ -368,33 +368,9 @@ namespace AlliancesPlugin.Alliances
             {
                 sb.AppendLine("Failed Upkeep : " + this.failedUpkeep + " Deleted at " + AlliancePlugin.config.UpkeepFailBeforeDelete);
             }
-            float upkeep = 0;
-            upkeep += AlliancePlugin.config.BaseUpkeepFee;
-         foreach (long id in AllianceMembers)
-            {
-                MyFaction fac = MySession.Static.Factions.TryGetFactionById(id) as MyFaction;
-                if (fac != null)
-                {
-                    upkeep += AlliancePlugin.config.BaseUpkeepFee * AlliancePlugin.config.PercentPerFac;
-                    upkeep += AlliancePlugin.config.FeePerMember * fac.Members.Count;
-                }
-            }
-            foreach (JumpGate gate in AlliancePlugin.AllGates.Values)
-            {
-                if (gate.OwnerAlliance == AllianceId)
-                {
-                    upkeep += gate.upkeep;
-                }
-            }
-            if (this.hasUnlockedHangar)
-            {
-                upkeep += AlliancePlugin.config.HangarUpkeep;
-            }
-            if (this.hasUnlockedShipyard)
-            {
-                upkeep += AlliancePlugin.config.ShipyardUpkeep;
-            }
-            sb.AppendLine("Expected Upkeep Value :" + String.Format("{0:n0}",(long) upkeep) + " SC.");
+            
+       
+            sb.AppendLine("Expected Upkeep Value :" + String.Format("{0:n0}", this.GetUpkeep()) + " SC.");
             sb.AppendLine("");
             sb.AppendLine("Meta Points : " + String.Format("{0:n0}", CurrentMetaPoints));
             sb.AppendLine("");
