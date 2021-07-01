@@ -1195,6 +1195,7 @@ namespace AlliancesPlugin
         //        TaxesToBeProcessed.Remove(id);
         //    }
         //}
+
         public void DoKothStuff()
         {
 
@@ -1243,6 +1244,13 @@ namespace AlliancesPlugin
                         {
                             bool hasZone = false;
                             MySafeZone yeet = null;
+                            BoundingSphereD sphere2 = new BoundingSphereD(position, config.CaptureRadiusInMetre + 1500);
+
+                         //       foreach (MySafeZone zonee in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere2).OfType<MySafeZone>())
+                           //     {
+                             //       zonee.Close();
+                            //    }
+                           
                             if (MyAPIGateway.Entities.GetEntityById(config.SafeZoneId) != null && MyAPIGateway.Entities.GetEntityById(config.SafeZoneId) is MySafeZone zone)
                             {
                                 if (zone.Radius != (float)config.CaptureRadiusInMetre)
@@ -1263,8 +1271,9 @@ namespace AlliancesPlugin
                                     objectBuilderSafeZone.AccessTypePlayers = zone.AccessTypePlayers;
                                     MyEntity ent = Sandbox.Game.Entities.MyEntities.CreateFromObjectBuilderAndAdd((MyObjectBuilder_EntityBase)objectBuilderSafeZone, true);
 
-
+                                    config.SafeZoneId = ent.EntityId;
                                     zone.Close();
+                                    hasZone = true;
                                 }
                                 else
                                 {
@@ -1285,7 +1294,7 @@ namespace AlliancesPlugin
                                 objectBuilderSafeZone.AccessTypeFloatingObjects = MySafeZoneAccess.Blacklist;
                                 objectBuilderSafeZone.AccessTypeFactions = MySafeZoneAccess.Blacklist;
                                 objectBuilderSafeZone.AccessTypePlayers = MySafeZoneAccess.Blacklist;
-                                
+
                                 MyEntity ent = Sandbox.Game.Entities.MyEntities.CreateFromObjectBuilderAndAdd((MyObjectBuilder_EntityBase)objectBuilderSafeZone, true);
                                 config.SafeZoneId = ent.EntityId;
                             }

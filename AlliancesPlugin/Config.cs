@@ -16,6 +16,7 @@ namespace AlliancesPlugin
         public Boolean KothEnabled = false;
         public int MaxHangarSlots = 10;
         public Boolean JumpGatesEnabled = false;
+        public int MaxHangarSlotPCU = 60000;
         public int JumpGateMinimumOffset = 200;
         public int JumPGateMaximumOffset = 500;
         public int MaximumGateFee = 10000000;

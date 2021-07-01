@@ -746,6 +746,7 @@ namespace AlliancesPlugin.Hangar
                     return;
                 }
                 string name = "";
+                int pcu = 0;
                 if (hangar.getAvailableSlot() > 0)
                 {
                     ConcurrentBag<MyGroups<MyCubeGrid, MyGridPhysicalGroupData>.Group> gridWithSubGrids = GridFinder.FindLookAtGridGroup(Context.Player.Character);
@@ -762,6 +763,7 @@ namespace AlliancesPlugin.Hangar
                                 continue;
                             if (FacUtils.IsOwnerOrFactionOwned(grid, Context.Player.IdentityId, true))
                             {
+                                pcu += grid.BlocksPCU;
                                 foreach (MyProjectorBase proj in grid.GetFatBlocks().OfType<MyProjectorBase>())
                                 {
                                     proj.Clipboard.Clear();
@@ -793,6 +795,11 @@ namespace AlliancesPlugin.Hangar
                     {
                         name = "Temporary Name";
 
+                    }
+                    if (pcu >= AlliancePlugin.config.MaxHangarSlotPCU)
+                    {
+                        Context.Respond("PCU is greater than the configured maximum");
+                        return;
                     }
                     bool result = hangar.SaveGridToHangar(name + "_" + string.Format("{0:yyyy-MM-dd_HH-mm-ss-fff}", DateTime.Now), Context.Player.SteamUserId, alliance, Context.Player.Character.PositionComp.GetPosition(), fac, grids, Context.Player.IdentityId);
                     if (!result)
