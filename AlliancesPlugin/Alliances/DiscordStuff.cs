@@ -27,7 +27,7 @@ namespace AlliancesPlugin.Alliances
         public static List<ulong> ChannelIds = new List<ulong>();
         public static Dictionary<Guid, DiscordClient> allianceBots = new Dictionary<Guid, DiscordClient>();
         private static Dictionary<ulong, Guid> allianceChannels = new Dictionary<ulong, Guid>();
-        public static async Task RegisterDiscord()
+        public static Task RegisterDiscord()
         {
             if (!Ready)
             {
@@ -60,18 +60,18 @@ namespace AlliancesPlugin.Alliances
                 {
                     AlliancePlugin.Log.Error(ex);
                     Ready = false;
-                    return;
+                    return Task.CompletedTask;
                 }
 
 
 
                 try
                 {
-                    await Discord.ConnectAsync();
+                   Discord.ConnectAsync();
                 }
                 catch (Exception)
                 {
-                    return;
+                  return  Task.CompletedTask;
 
                 }
                 Discord.MessageCreated += Discord_MessageCreated;
@@ -87,11 +87,11 @@ namespace AlliancesPlugin.Alliances
 
 
             }
-            return;
+            return Task.CompletedTask;
         }
         public static List<Guid> registered = new List<Guid>();
 
-        public static async Task RegisterAllianceBot(Alliance alliance, ulong channelId)
+        public static Task RegisterAllianceBot(Alliance alliance, ulong channelId)
         {
             if (!allianceBots.ContainsKey(alliance.AllianceId))
             {
@@ -126,19 +126,19 @@ namespace AlliancesPlugin.Alliances
                 {
                     AlliancePlugin.Log.Error(ex);
 
-                    return;
+                    return Task.CompletedTask;
                 }
 
 
                 try
                 {
-                    await bot.ConnectAsync();
+                    bot.ConnectAsync();
                 }
                 catch (Exception ex)
                 {
                     AlliancePlugin.Log.Error(ex);
 
-                    return;
+                    return Task.CompletedTask;
                 }
                 if (!allianceBots.ContainsKey(alliance.AllianceId))
                 {
@@ -151,17 +151,7 @@ namespace AlliancesPlugin.Alliances
                     allianceChannels.Add(channelId, alliance.AllianceId);
                 }
             }
-            return;
-        }
-        public static void Stopdiscord()
-        {
-            if (Ready)
-            {
-                RunGameTask(() =>
-                {
-                    DisconnectDiscord().ConfigureAwait(false).GetAwaiter().GetResult();
-                });
-            }
+           return Task.CompletedTask;
         }
         private static async void RunGameTask(Action obj)
         {
@@ -176,15 +166,15 @@ namespace AlliancesPlugin.Alliances
         }
 
         private static string WorldName = "";
-        private static async Task DisconnectDiscord()
+        public static void DisconnectDiscord()
         {
             Ready = false;
             AllianceReady = false;
             foreach (DiscordClient bot in allianceBots.Values)
             {
-                //    await bot?.DisconnectAsync();
+                bot.DisconnectAsync();
             }
-            //   await Discord?.DisconnectAsync();
+           Discord?.DisconnectAsync();
         }
 
         public static void SendMessageToDiscord(string message, KothConfig config)

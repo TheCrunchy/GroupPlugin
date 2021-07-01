@@ -336,7 +336,8 @@ namespace AlliancesPlugin
         {
             if (state == TorchSessionState.Unloading)
             {
-                DiscordStuff.Stopdiscord();
+               
+               //DiscordStuff.DisconnectDiscord();
                 TorchState = TorchSessionState.Unloading;
             }
             if (state == TorchSessionState.Loaded)
