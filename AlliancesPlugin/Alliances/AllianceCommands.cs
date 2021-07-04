@@ -461,9 +461,9 @@ namespace AlliancesPlugin.Alliances
                 Context.Respond("Cannot find alliance, maybe wait a minute and try again.");
             }
         }
-        [Command("view permissions", "set a players permissions")]
+        [Command("view permissions", "view the permissions")]
         [Permission(MyPromoteLevel.None)]
-        public void ViewPermissions(string playerName, string permission, Boolean enabled)
+        public void ViewPermissions()
         {
             MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
             if (fac == null)
@@ -868,14 +868,14 @@ namespace AlliancesPlugin.Alliances
             ModCommunication.SendMessageTo(m, Context.Player.SteamUserId);
         }
 
-        [Command("upkeep", "output info about an alliance")]
+        [Command("upkeep", "take upkeep moneys")]
         [Permission(MyPromoteLevel.Admin)]
         public void DoAllUpkeep(string target)
         {
             if (target.ToLower().Equals("all"))
             {
                 DatabaseForBank.DoUpkeepForAll();
-            
+                Context.Respond("Doing upkeep for all alliances.");
             }
             else
             {
@@ -1602,7 +1602,7 @@ namespace AlliancesPlugin.Alliances
         }
         [Command("log", "View the bank log")]
         [Permission(MyPromoteLevel.None)]
-        public void BankLog(string timeformat = "MM-dd-yyyy")
+        public void BankLog(string timeformat = "MM-dd-yyyy",bool ignoreKoth = false, int max = 100)
         {
 
             if (Context.Player != null)
@@ -1627,8 +1627,18 @@ namespace AlliancesPlugin.Alliances
                 BankLog log = alliance.GetLog();
                 StringBuilder sb = new StringBuilder();
                 log.log.Reverse();
+                int i = 0;
                 foreach (BankLogItem item in log.log)
                 {
+                    if (i > max)
+                    {
+                        break;
+                    }
+                    if (item.SteamId == 1 && ignoreKoth)
+                    {
+                        continue;
+                    }
+                    i++;
                     if (item.FactionPaid > 0)
                     {
                         IMyFaction fac = MySession.Static.Factions.TryGetFactionById(item.FactionPaid);

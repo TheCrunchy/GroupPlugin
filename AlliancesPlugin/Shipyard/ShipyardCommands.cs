@@ -568,7 +568,7 @@ namespace AlliancesPlugin.Shipyard
                                 Context.Respond("Cannot upgrade any further");
                                 return;
                             }
-                            Context.Respond(queue.SpeedUpgrade + " ");
+                           // Context.Respond(queue.SpeedUpgrade + " ");
 
                             try
                             {
@@ -806,7 +806,7 @@ namespace AlliancesPlugin.Shipyard
                                             queue.SlotsUpgrade++;
                                             alliance.SavePrintQueue(queue);
                                             AlliancePlugin.SaveAllianceData(alliance);
-                                            SendMessage("[Shipyard]", "Upgrading speed decrease. You were charged: " + String.Format("{0:n0}", cost.MoneyRequired), Color.Green, (long)Context.Player.SteamUserId);
+                                            SendMessage("[Shipyard]", "Upgrading slot increase. You were charged: " + String.Format("{0:n0}", cost.MoneyRequired), Color.Green, (long)Context.Player.SteamUserId);
                                         }
                                     }
                                     else

@@ -1305,39 +1305,41 @@ namespace AlliancesPlugin
                             MySafeZone yeet = null;
                             BoundingSphereD sphere2 = new BoundingSphereD(position, config.CaptureRadiusInMetre + 1500);
 
-                         //       foreach (MySafeZone zonee in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere2).OfType<MySafeZone>())
-                           //     {
-                             //       zonee.Close();
-                            //    }
-                           
+                            //foreach (MySafeZone zonee in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere2).OfType<MySafeZone>())
+                            //{
+                            //    zonee.Close();
+                            //}
+                            hasZone = true;
                             if (MyAPIGateway.Entities.GetEntityById(config.SafeZoneId) != null && MyAPIGateway.Entities.GetEntityById(config.SafeZoneId) is MySafeZone zone)
                             {
-                                if (zone.Radius != (float)config.CaptureRadiusInMetre)
-                                {
-                                    MyObjectBuilder_SafeZone objectBuilderSafeZone = new MyObjectBuilder_SafeZone();
-                                    objectBuilderSafeZone.PositionAndOrientation = new MyPositionAndOrientation?(new MyPositionAndOrientation(position, Vector3.Forward, Vector3.Up));
-                                    objectBuilderSafeZone.PersistentFlags = MyPersistentEntityFlags2.InScene;
-                                    objectBuilderSafeZone.Shape = zone.Shape;
-                                    objectBuilderSafeZone.Radius = (float)config.CaptureRadiusInMetre;
-                                    objectBuilderSafeZone.Enabled = zone.Enabled;
-                                    objectBuilderSafeZone.AllowedActions = zone.AllowedActions;
-                                    objectBuilderSafeZone.ModelColor = zone.ModelColor.ToVector3();
-                                    objectBuilderSafeZone.DisplayName = zone.DisplayName;
-                                    objectBuilderSafeZone.Texture = zone.CurrentTexture.String;
-                                    objectBuilderSafeZone.AccessTypeGrids = zone.AccessTypeGrids;
-                                    objectBuilderSafeZone.AccessTypeFloatingObjects = zone.AccessTypeFloatingObjects;
-                                    objectBuilderSafeZone.AccessTypeFactions = zone.AccessTypeFactions;
-                                    objectBuilderSafeZone.AccessTypePlayers = zone.AccessTypePlayers;
-                                    MyEntity ent = Sandbox.Game.Entities.MyEntities.CreateFromObjectBuilderAndAdd((MyObjectBuilder_EntityBase)objectBuilderSafeZone, true);
+                                zone.Close();
+                          
+                                //if (zone.Radius != (float)config.CaptureRadiusInMetre)
+                                //{
+                                //    MyObjectBuilder_SafeZone objectBuilderSafeZone = new MyObjectBuilder_SafeZone();
+                                //    objectBuilderSafeZone.PositionAndOrientation = new MyPositionAndOrientation?(new MyPositionAndOrientation(position, Vector3.Forward, Vector3.Up));
+                                //    objectBuilderSafeZone.PersistentFlags = MyPersistentEntityFlags2.InScene;
+                                //    objectBuilderSafeZone.Shape = zone.Shape;
+                                //    objectBuilderSafeZone.Radius = (float)config.CaptureRadiusInMetre;
+                                //    objectBuilderSafeZone.Enabled = zone.Enabled;
+                                //    objectBuilderSafeZone.AllowedActions = zone.AllowedActions;
+                                //    objectBuilderSafeZone.ModelColor = zone.ModelColor.ToVector3();
+                                //    objectBuilderSafeZone.DisplayName = zone.DisplayName;
+                                //    objectBuilderSafeZone.Texture = zone.CurrentTexture.String;
+                                //    objectBuilderSafeZone.AccessTypeGrids = zone.AccessTypeGrids;
+                                //    objectBuilderSafeZone.AccessTypeFloatingObjects = zone.AccessTypeFloatingObjects;
+                                //    objectBuilderSafeZone.AccessTypeFactions = zone.AccessTypeFactions;
+                                //    objectBuilderSafeZone.AccessTypePlayers = zone.AccessTypePlayers;
+                                //    MyEntity ent = Sandbox.Game.Entities.MyEntities.CreateFromObjectBuilderAndAdd((MyObjectBuilder_EntityBase)objectBuilderSafeZone, true);
 
-                                    config.SafeZoneId = ent.EntityId;
-                                    zone.Close();
-                                    hasZone = true;
-                                }
-                                else
-                                {
-                                    hasZone = true;
-                                }
+                                //    config.SafeZoneId = ent.EntityId;
+                                //    zone.Close();
+                                //    hasZone = true;
+                                //}
+                                //else
+                                //{
+                                //    hasZone = true;
+                                //}
                             }
                             if (!hasZone)
                             {
@@ -1490,7 +1492,7 @@ namespace AlliancesPlugin
                                         catch (Exception)
                                         {
                                             Log.Error("Cant do discord message for koth.");
-                                            SendChatMessage(config.KothName, "Capture can begin in " + config.MinutesBeforeCaptureStarts + " minutes.");
+                                            SendChatMessage(config.KothName, "Capture can begin in " + config.MinutesBeforeCaptureStarts + " minutes. By " + GetAllianceNoLoading(capturingNation).name);
                                         }
                                     }
                                 }
