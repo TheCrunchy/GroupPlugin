@@ -42,18 +42,20 @@ namespace AlliancesPlugin.Alliances
         //    conn.Close();
         //    AlliancePlugin.Log.Info("Successfully connected to database!");
         //}
-
-        public static void DoUpkeepForAll()
+        public static void DoUpkeepForOne(Alliance alliance)
         {
-            AlliancePlugin.LoadAllAlliancesForUpkeep();
+        
 
             try
             {
                 using (var db = new LiteDatabase(connectionString))
                 {
                     var collection = db.GetCollection<BankData>("BankData");
-                    foreach (Alliance alliance in AlliancePlugin.AllAlliances.Values)
-                    {
+
+                 
+                        FileUtils jsonStuff = new FileUtils();
+
+                        jsonStuff.WriteToJsonFile<Alliance>(AlliancePlugin.path + "//UpkeepBackups//" + alliance.AllianceId + ".json", alliance);
                         var bank = collection.FindById(alliance.AllianceId);
                         if (bank == null)
                         {
@@ -61,19 +63,31 @@ namespace AlliancesPlugin.Alliances
                             {
                                 Id = alliance.AllianceId,
                                 balance = 1
-                          
+
                             };
                             collection.Insert(bank);
                             alliance.failedUpkeep++;
                             if (alliance.failedUpkeep >= AlliancePlugin.config.UpkeepFailBeforeDelete)
                             {
 
+                                AllianceChat.SendChatMessage(alliance.AllianceId, "Upkeep", "Upkeep failed, met the threshold for delete. Deleting Alliance.", true, 0);
+                                AlliancePlugin.AllAlliances.Remove(alliance.name);
+                                File.Delete(AlliancePlugin.path + "//AllianceData//" + alliance.AllianceId + ".json");
+                                foreach (long id in alliance.AllianceMembers)
+                                {
+                                    AlliancePlugin.FactionsInAlliances.Remove(id);
+                                }
                             }
+                            else
+                            {
+                                AllianceChat.SendChatMessage(alliance.AllianceId, "Upkeep", "Upkeep failed, Upgrades disabled.", true, 0);
+                            }
+
 
                         }
                         else
                         {
-                           if (bank.balance >= alliance.GetUpkeep())
+                            if (bank.balance >= alliance.GetUpkeep())
                             {
                                 bank.balance -= alliance.GetUpkeep();
                                 collection.Update(bank);
@@ -82,9 +96,9 @@ namespace AlliancesPlugin.Alliances
                                 alliance.bankBalance -= alliance.GetUpkeep();
                                 alliance.failedUpkeep = 0;
                                 AlliancePlugin.SaveAllianceData(alliance);
-                                
+
                             }
-                           else
+                            else
                             {
                                 alliance.failedUpkeep++;
                                 if (alliance.failedUpkeep >= AlliancePlugin.config.UpkeepFailBeforeDelete)
@@ -97,7 +111,95 @@ namespace AlliancesPlugin.Alliances
                                         AlliancePlugin.FactionsInAlliances.Remove(id);
                                     }
                                 }
-                                else {
+                                else
+                                {
+                                    AllianceChat.SendChatMessage(alliance.AllianceId, "Upkeep", "Upkeep failed, Upgrades disabled.", true, 0);
+                                }
+                            }
+                        }
+                    }
+                
+            }
+            catch (Exception ex)
+            {
+                AlliancePlugin.Log.Error("Error for all upkeep");
+                AlliancePlugin.Log.Error(ex);
+                return;
+            }
+        }
+
+        public static void DoUpkeepForAll()
+        {
+            AlliancePlugin.LoadAllAlliancesForUpkeep();
+
+            try
+            {
+                using (var db = new LiteDatabase(connectionString))
+                {
+                    var collection = db.GetCollection<BankData>("BankData");
+
+                    foreach (Alliance alliance in AlliancePlugin.AllAlliances.Values)
+                    {
+                        FileUtils jsonStuff = new FileUtils();
+
+                        jsonStuff.WriteToJsonFile<Alliance>(AlliancePlugin.path + "//UpkeepBackups//" + alliance.AllianceId + ".json", alliance);
+                        var bank = collection.FindById(alliance.AllianceId);
+                        if (bank == null)
+                        {
+                            bank = new BankData
+                            {
+                                Id = alliance.AllianceId,
+                                balance = 1
+
+                            };
+                            collection.Insert(bank);
+                            alliance.failedUpkeep++;
+                            if (alliance.failedUpkeep >= AlliancePlugin.config.UpkeepFailBeforeDelete)
+                            {
+
+                                AllianceChat.SendChatMessage(alliance.AllianceId, "Upkeep", "Upkeep failed, met the threshold for delete. Deleting Alliance.", true, 0);
+                                AlliancePlugin.AllAlliances.Remove(alliance.name);
+                                File.Delete(AlliancePlugin.path + "//AllianceData//" + alliance.AllianceId + ".json");
+                                foreach (long id in alliance.AllianceMembers)
+                                {
+                                    AlliancePlugin.FactionsInAlliances.Remove(id);
+                                }
+                            }
+                            else
+                            {
+                                AllianceChat.SendChatMessage(alliance.AllianceId, "Upkeep", "Upkeep failed, Upgrades disabled.", true, 0);
+                            }
+
+
+                        }
+                        else
+                        {
+                            if (bank.balance >= alliance.GetUpkeep())
+                            {
+                                bank.balance -= alliance.GetUpkeep();
+                                collection.Update(bank);
+                                AllianceChat.SendChatMessage(alliance.AllianceId, "Upkeep", "Paying upkeep of " + String.Format("{0:n0}", alliance.GetUpkeep()) + " SC.", true, 0);
+                                alliance.Upkeep(alliance.GetUpkeep(), 1);
+                                alliance.bankBalance -= alliance.GetUpkeep();
+                                alliance.failedUpkeep = 0;
+                                AlliancePlugin.SaveAllianceData(alliance);
+
+                            }
+                            else
+                            {
+                                alliance.failedUpkeep++;
+                                if (alliance.failedUpkeep >= AlliancePlugin.config.UpkeepFailBeforeDelete)
+                                {
+                                    AllianceChat.SendChatMessage(alliance.AllianceId, "Upkeep", "Upkeep failed, met the threshold for delete. Deleting Alliance.", true, 0);
+                                    AlliancePlugin.AllAlliances.Remove(alliance.name);
+                                    File.Delete(AlliancePlugin.path + "//AllianceData//" + alliance.AllianceId + ".json");
+                                    foreach (long id in alliance.AllianceMembers)
+                                    {
+                                        AlliancePlugin.FactionsInAlliances.Remove(id);
+                                    }
+                                }
+                                else
+                                {
                                     AllianceChat.SendChatMessage(alliance.AllianceId, "Upkeep", "Upkeep failed, Upgrades disabled.", true, 0);
                                 }
                             }

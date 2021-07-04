@@ -885,6 +885,8 @@ namespace AlliancesPlugin.Alliances
                     Context.Respond("Could not find that alliance.");
                     return;
                 }
+                DatabaseForBank.DoUpkeepForOne(alliance);
+                Context.Respond("Upkeep done, if they paid it, idk");
             }
         }
 

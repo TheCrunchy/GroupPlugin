@@ -40,6 +40,9 @@ using Sandbox.Game.GameSystems;
 using VRage.Game.Entity;
 using VRage.Game.ObjectBuilders.Components;
 using VRage.Network;
+using Sandbox.Game.Screens.Helpers;
+using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace AlliancesPlugin
 {
@@ -330,7 +333,47 @@ namespace AlliancesPlugin
             Type FactionCollection = MySession.Static.Factions.GetType().Assembly.GetType("Sandbox.Game.Multiplayer.MyFactionCollection");
             sendChange = FactionCollection?.GetMethod("SendFactionChange", BindingFlags.NonPublic | BindingFlags.Static);
         }
+        private static List<Vector3> StationLocations = new List<Vector3>();
+        public static MyGps ScanChat(string input, string desc = null)
+        {
 
+            int num = 0;
+            bool flag = true;
+            MatchCollection matchCollection = Regex.Matches(input, "GPS:([^:]{0,32}):([\\d\\.-]*):([\\d\\.-]*):([\\d\\.-]*):");
+
+            Color color = new Color(117, 201, 241);
+            foreach (Match match in matchCollection)
+            {
+                string str = match.Groups[1].Value;
+                double x;
+                double y;
+                double z;
+                try
+                {
+                    x = Math.Round(double.Parse(match.Groups[2].Value, (IFormatProvider)CultureInfo.InvariantCulture), 2);
+                    y = Math.Round(double.Parse(match.Groups[3].Value, (IFormatProvider)CultureInfo.InvariantCulture), 2);
+                    z = Math.Round(double.Parse(match.Groups[4].Value, (IFormatProvider)CultureInfo.InvariantCulture), 2);
+                    if (flag)
+                        color = (Color)new ColorDefinitionRGBA(match.Groups[5].Value);
+                }
+                catch (SystemException ex)
+                {
+                    continue;
+                }
+                MyGps gps = new MyGps()
+                {
+                    Name = str,
+                    Description = desc,
+                    Coords = new Vector3D(x, y, z),
+                    GPSColor = color,
+                    ShowOnHud = false
+                };
+                gps.UpdateHash();
+
+                return gps;
+            }
+            return null;
+        }
         public static ChatManagerServer _chatmanager;
         private void SessionChanged(ITorchSession session, TorchSessionState state)
         {
@@ -345,6 +388,18 @@ namespace AlliancesPlugin
                 if (config != null && config.AllowDiscord)
                 {
                     DiscordStuff.RegisterDiscord();
+                }
+                if (System.IO.File.Exists(path + "//NoYeetStations.txt"))
+                {
+                    String[] line = File.ReadAllLines(path + "//NoYeetStations.txt");
+                    for (int i = 0; i < line.Length; i++)
+                    {
+                        if (ScanChat(line[i]) != null)
+                        {
+                            MyGps gpsRef = ScanChat(line[i]);
+                            StationLocations.Add(gpsRef.Coords);
+                        }
+                    }
                 }
                 AllianceChat.ApplyLogging();
                 InitPluginDependencies(Torch.Managers.GetManager<PluginManager>());
@@ -367,6 +422,10 @@ namespace AlliancesPlugin
                 if (!Directory.Exists(path + "//JumpZones//"))
                 {
                     Directory.CreateDirectory(path + "//JumpZones//");
+                }
+                if (!Directory.Exists(path + "//UpkeepBackups//"))
+                {
+                    Directory.CreateDirectory(path + "//UpkeepBackups//");
                 }
                 if (!File.Exists(path + "//JumpZones//example.xml"))
                 {

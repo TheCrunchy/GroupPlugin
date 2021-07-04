@@ -22,7 +22,7 @@ namespace AlliancesPlugin
     public static class JumpPatch
     {
         public static List<JumpZone> Zones = new List<JumpZone>();
-    
+       
 
         public static Logger Log = LogManager.GetLogger("JumpLog");
         public static void ApplyLogging()
@@ -76,6 +76,7 @@ namespace AlliancesPlugin
 
         public static bool PatchRequestJump(long entityId, Vector3D jumpTarget, long userId)
         {
+            
             MyCubeGrid grid = MyAPIGateway.Entities.GetEntityById(entityId) as MyCubeGrid;
 
             if (grid == null)

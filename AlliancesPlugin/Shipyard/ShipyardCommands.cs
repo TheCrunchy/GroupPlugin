@@ -1064,12 +1064,15 @@ namespace AlliancesPlugin.Shipyard
 
                 if (item.ownerSteam.Equals((long)Context.Player.SteamUserId) || alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.ShipyardClaimOther))
                 {
-
+               
                     DateTime start = item.startTime;
                     DateTime end = item.endTime;
-
+                    if (!item.ownerSteam.Equals((long)Context.Player.SteamUserId) && alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.ShipyardClaimOther)){
+                        end.AddDays(3);
+                    }
                     if (DateTime.Now > end)
                     {
+
                         if (AlliancePlugin.shipyardConfig.NearStartPointToClaim)
                         {
                             Vector3D position = new Vector3D(item.x, item.y, item.z);
@@ -1077,7 +1080,9 @@ namespace AlliancesPlugin.Shipyard
                             if (distance > 2000)
                             {
                                 Context.Respond("Must be within 2km of the start position.");
-                                MyAPIGateway.Session?.GPS.AddGps(Context.Player.Identity.IdentityId, item.GetGps());
+                                    MyAPIGateway.Session?.GPS.AddGps(Context.Player.Identity.IdentityId, item.GetGps());
+                                
+                              
                                 return;
                             }
                         }

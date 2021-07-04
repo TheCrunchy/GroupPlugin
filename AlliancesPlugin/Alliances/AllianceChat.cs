@@ -313,6 +313,13 @@ namespace AlliancesPlugin.Alliances
                 MySession.Static.Factions.SetReputationBetweenPlayerAndFaction(id.IdentityId, ACME.FactionId, 0);
                 MySession.Static.Factions.AddFactionPlayerReputation(id.IdentityId, ACME.FactionId, 0);
             }
+            MyFaction GAIA = MySession.Static.Factions.TryGetFactionByTag("GAIA");
+
+            if (GAIA != null)
+            {
+                MySession.Static.Factions.SetReputationBetweenPlayerAndFaction(id.IdentityId, GAIA.FactionId, 0);
+                MySession.Static.Factions.AddFactionPlayerReputation(id.IdentityId, GAIA.FactionId, 0);
+            }
             MyFaction wolf = MySession.Static.Factions.TryGetFactionByTag("WOLF");
             if (wolf != null)
             {
