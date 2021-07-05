@@ -1488,8 +1488,15 @@ namespace AlliancesPlugin.Shipyard
                 int upgradeLevel = queue.upgradeSlots;
 
                 double seconds;
-
-                seconds = gridCosts.BlockCount * printerConfig.SecondsPerBlock * queue.upgradeSpeed;
+                if (speedUpgrades[upgradeLevel] != null)
+                {
+                    seconds = gridCosts.BlockCount * printerConfig.SecondsPerBlock * speedUpgrades[upgradeLevel].NewLevel;
+                } 
+                else
+                {
+                    seconds = gridCosts.BlockCount * printerConfig.SecondsPerBlock * queue.upgradeSpeed;
+                }
+              
                 DateTime end = DateTime.Now.AddSeconds(seconds);
                 int fuel = 0;
                 if (printerConfig.FuelPerInterval > 0)
