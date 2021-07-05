@@ -225,7 +225,19 @@ namespace AlliancesPlugin.Alliances
             log.log.Add(item);
             utils.WriteToJsonFile<BankLog>(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId + "//log.json", log);
         }
-
+        public void PayShipyardFee(Int64 amount, ulong steamid)
+        {
+            bankBalance += amount;
+            BankLog log = GetLog();
+            BankLogItem item = new BankLogItem();
+            item.SteamId = steamid;
+            item.Amount = amount;
+            item.Action = "shipyard fee";
+            item.TimeClaimed = DateTime.Now;
+            item.BankAmount = bankBalance;
+            log.log.Add(item);
+            utils.WriteToJsonFile<BankLog>(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId + "//log.json", log);
+        }
         public void PayDividend(Int64 amount, List<long> ids, ulong steamid)
         {
             Int64 amountToPay = amount / ids.Count();

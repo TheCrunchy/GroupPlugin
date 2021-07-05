@@ -1254,7 +1254,7 @@ namespace AlliancesPlugin
         //        TaxesToBeProcessed.Remove(id);
         //    }
         //}
-
+        public static bool yeeted = false;
         public void DoKothStuff()
         {
 
@@ -1304,11 +1304,14 @@ namespace AlliancesPlugin
                             bool hasZone = false;
                             MySafeZone yeet = null;
                             BoundingSphereD sphere2 = new BoundingSphereD(position, config.CaptureRadiusInMetre + 1500);
-
-                            //foreach (MySafeZone zonee in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere2).OfType<MySafeZone>())
-                            //{
-                            //    zonee.Close();
-                            //}
+                            if (!yeeted)
+                            {
+                                foreach (MySafeZone zonee in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere2).OfType<MySafeZone>())
+                                {
+                                    zonee.Close();
+                                    yeeted = true;
+                                }
+                            }
                             hasZone = true;
                             if (MyAPIGateway.Entities.GetEntityById(config.SafeZoneId) != null && MyAPIGateway.Entities.GetEntityById(config.SafeZoneId) is MySafeZone zone)
                             {

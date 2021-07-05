@@ -271,6 +271,7 @@ namespace AlliancesPlugin.Alliances
             {
                 using (var db = new LiteDatabase(connectionString))
                 {
+                    alliance.PayShipyardFee(fee, id);
                     var collection = db.GetCollection<BankData>("BankData");
                     var bank = collection.FindById(alliance.AllianceId);
                     if (bank == null)

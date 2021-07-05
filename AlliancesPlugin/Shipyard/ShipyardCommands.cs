@@ -616,7 +616,7 @@ namespace AlliancesPlugin.Shipyard
 
                             try
                             {
-                                cost = speedUpgrades[queue.SlotsUpgrade += 1];
+                                cost = slotUpgrades[queue.SlotsUpgrade += 1];
                             }
                             catch (Exception)
                             {
@@ -775,7 +775,7 @@ namespace AlliancesPlugin.Shipyard
 
                             try
                             {
-                                cost = speedUpgrades[queue.SlotsUpgrade += 1];
+                                cost = slotUpgrades[queue.SlotsUpgrade += 1];
                             }
                             catch (Exception)
                             {
