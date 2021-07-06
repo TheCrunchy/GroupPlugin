@@ -185,11 +185,11 @@ namespace AlliancesPlugin.Shipyard
                 {
                     if (!item.Claimed)
                     {
-                        sb.AppendLine(item.TimeClaimed.ToString(timeformat) + ": " + MyMultiplayer.Static.GetMemberName(item.SteamId) + " Started " + item.Grid.Split('_')[0]);
+                        sb.AppendLine(item.TimeClaimed.ToString(timeformat) + ": " + AlliancePlugin.GetPlayerName(item.SteamId) + " Started " + item.Grid.Split('_')[0]);
                     }
                     else
                     {
-                        sb.AppendLine(item.TimeClaimed.ToString(timeformat) + ": " + MyMultiplayer.Static.GetMemberName(item.SteamId) + " Claimed " + item.Grid.Split('_')[0]);
+                        sb.AppendLine(item.TimeClaimed.ToString(timeformat) + ": " + AlliancePlugin.GetPlayerName(item.SteamId) + " Claimed " + item.Grid.Split('_')[0]);
                     }
                 }
                 DialogMessage m = new DialogMessage("Shipyard Log", alliance.name, sb.ToString());
@@ -236,7 +236,15 @@ namespace AlliancesPlugin.Shipyard
                     return;
                 }
                 SendMessage("[Shipyard]", "Shipyard slots: " + queue.upgradeSlots, Color.Cyan, (long)Context.Player.SteamUserId);
-                SendMessage("[Shipyard]", "Shipyard speed: blockCount * base speed * " + queue.upgradeSpeed, Color.Cyan, (long)Context.Player.SteamUserId);
+                if (speedUpgrades.ContainsKey(queue.SpeedUpgrade))
+                {
+                    SendMessage("[Shipyard]", "Shipyard speed: blockCount * base speed * " + speedUpgrades[queue.SpeedUpgrade].NewLevel, Color.Cyan, (long)Context.Player.SteamUserId);
+                }
+                else
+                {
+                    SendMessage("[Shipyard]", "Shipyard speed: blockCount * base speed * " + queue.upgradeSpeed, Color.Cyan, (long)Context.Player.SteamUserId);
+                }
+   
                 for (int i = 1; i <= queue.upgradeSlots; i++)
                 {
                     if (queue.getQueue().ContainsKey(i))
@@ -1485,10 +1493,10 @@ namespace AlliancesPlugin.Shipyard
                     return;
                 }
 
-                int upgradeLevel = queue.upgradeSlots;
+                int upgradeLevel = queue.SpeedUpgrade;
 
                 double seconds;
-                if (speedUpgrades[upgradeLevel] != null)
+                if (speedUpgrades.ContainsKey(upgradeLevel))
                 {
                     seconds = gridCosts.BlockCount * printerConfig.SecondsPerBlock * speedUpgrades[upgradeLevel].NewLevel;
                 } 

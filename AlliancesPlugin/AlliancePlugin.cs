@@ -380,7 +380,7 @@ namespace AlliancesPlugin
             if (state == TorchSessionState.Unloading)
             {
                
-               //DiscordStuff.DisconnectDiscord();
+              // DiscordStuff.DisconnectDiscord();
                 TorchState = TorchSessionState.Unloading;
             }
             if (state == TorchSessionState.Loaded)
@@ -1299,77 +1299,77 @@ namespace AlliancesPlugin
                         config.nextCaptureInterval = DateTime.Now.AddSeconds(config.SecondsBetweenCaptureCheck);
                         //Log.Info(config.owner + " " + config.capturingNation);
                         //setup a time check for capture time
-                        if (config.ShowSafeZone)
-                        {
-                            bool hasZone = false;
-                            MySafeZone yeet = null;
-                            BoundingSphereD sphere2 = new BoundingSphereD(position, config.CaptureRadiusInMetre + 1500);
-                            if (!yeeted)
-                            {
-                                foreach (MySafeZone zonee in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere2).OfType<MySafeZone>())
-                                {
-                                    zonee.Close();
-                                    yeeted = true;
-                                }
-                            }
-                            hasZone = true;
-                            if (MyAPIGateway.Entities.GetEntityById(config.SafeZoneId) != null && MyAPIGateway.Entities.GetEntityById(config.SafeZoneId) is MySafeZone zone)
-                            {
-                                zone.Close();
-                          
-                                //if (zone.Radius != (float)config.CaptureRadiusInMetre)
-                                //{
-                                //    MyObjectBuilder_SafeZone objectBuilderSafeZone = new MyObjectBuilder_SafeZone();
-                                //    objectBuilderSafeZone.PositionAndOrientation = new MyPositionAndOrientation?(new MyPositionAndOrientation(position, Vector3.Forward, Vector3.Up));
-                                //    objectBuilderSafeZone.PersistentFlags = MyPersistentEntityFlags2.InScene;
-                                //    objectBuilderSafeZone.Shape = zone.Shape;
-                                //    objectBuilderSafeZone.Radius = (float)config.CaptureRadiusInMetre;
-                                //    objectBuilderSafeZone.Enabled = zone.Enabled;
-                                //    objectBuilderSafeZone.AllowedActions = zone.AllowedActions;
-                                //    objectBuilderSafeZone.ModelColor = zone.ModelColor.ToVector3();
-                                //    objectBuilderSafeZone.DisplayName = zone.DisplayName;
-                                //    objectBuilderSafeZone.Texture = zone.CurrentTexture.String;
-                                //    objectBuilderSafeZone.AccessTypeGrids = zone.AccessTypeGrids;
-                                //    objectBuilderSafeZone.AccessTypeFloatingObjects = zone.AccessTypeFloatingObjects;
-                                //    objectBuilderSafeZone.AccessTypeFactions = zone.AccessTypeFactions;
-                                //    objectBuilderSafeZone.AccessTypePlayers = zone.AccessTypePlayers;
-                                //    MyEntity ent = Sandbox.Game.Entities.MyEntities.CreateFromObjectBuilderAndAdd((MyObjectBuilder_EntityBase)objectBuilderSafeZone, true);
+                        //if (config.ShowSafeZone)
+                        //{
+                        //    bool hasZone = false;
+                        //    MySafeZone yeet = null;
+                        //    BoundingSphereD sphere2 = new BoundingSphereD(position, config.CaptureRadiusInMetre + 1500);
+                        //    if (!yeeted)
+                        //    {
+                        //        foreach (MySafeZone zonee in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere2).OfType<MySafeZone>())
+                        //        {
+                        //            zonee.Close();
+                        //            yeeted = true;
+                        //        }
+                        //    }
+                        //    hasZone = true;
+                        //    if (MyAPIGateway.Entities.GetEntityById(config.SafeZoneId) != null && MyAPIGateway.Entities.GetEntityById(config.SafeZoneId) is MySafeZone zone)
+                        //    {
+                        //        zone.Close();
 
-                                //    config.SafeZoneId = ent.EntityId;
-                                //    zone.Close();
-                                //    hasZone = true;
-                                //}
-                                //else
-                                //{
-                                //    hasZone = true;
-                                //}
-                            }
-                            if (!hasZone)
-                            {
-                                MyObjectBuilder_SafeZone objectBuilderSafeZone = new MyObjectBuilder_SafeZone();
-                                objectBuilderSafeZone.PositionAndOrientation = new MyPositionAndOrientation?(new MyPositionAndOrientation(position, Vector3.Forward, Vector3.Up));
-                                objectBuilderSafeZone.PersistentFlags = MyPersistentEntityFlags2.InScene;
-                                objectBuilderSafeZone.Shape = MySafeZoneShape.Sphere;
-                                objectBuilderSafeZone.Radius = (float)config.CaptureRadiusInMetre;
-                                objectBuilderSafeZone.Enabled = false;
-                                objectBuilderSafeZone.AllowedActions = MySafeZoneAction.Drilling | MySafeZoneAction.Building | MySafeZoneAction.Damage | MySafeZoneAction.Grinding | MySafeZoneAction.Shooting | MySafeZoneAction.Welding | MySafeZoneAction.LandingGearLock;
-                                objectBuilderSafeZone.DisplayName = config.KothName + " Radius";
-                                objectBuilderSafeZone.AccessTypeGrids = MySafeZoneAccess.Blacklist;
-                                objectBuilderSafeZone.AccessTypeFloatingObjects = MySafeZoneAccess.Blacklist;
-                                objectBuilderSafeZone.AccessTypeFactions = MySafeZoneAccess.Blacklist;
-                                objectBuilderSafeZone.AccessTypePlayers = MySafeZoneAccess.Blacklist;
+                        //        if (zone.Radius != (float)config.CaptureRadiusInMetre)
+                        //        {
+                        //            MyObjectBuilder_SafeZone objectBuilderSafeZone = new MyObjectBuilder_SafeZone();
+                        //            objectBuilderSafeZone.PositionAndOrientation = new MyPositionAndOrientation?(new MyPositionAndOrientation(position, Vector3.Forward, Vector3.Up));
+                        //            objectBuilderSafeZone.PersistentFlags = MyPersistentEntityFlags2.InScene;
+                        //            objectBuilderSafeZone.Shape = zone.Shape;
+                        //            objectBuilderSafeZone.Radius = (float)config.CaptureRadiusInMetre;
+                        //            objectBuilderSafeZone.Enabled = zone.Enabled;
+                        //            objectBuilderSafeZone.AllowedActions = zone.AllowedActions;
+                        //            objectBuilderSafeZone.ModelColor = zone.ModelColor.ToVector3();
+                        //            objectBuilderSafeZone.DisplayName = zone.DisplayName;
+                        //            objectBuilderSafeZone.Texture = zone.CurrentTexture.String;
+                        //            objectBuilderSafeZone.AccessTypeGrids = zone.AccessTypeGrids;
+                        //            objectBuilderSafeZone.AccessTypeFloatingObjects = zone.AccessTypeFloatingObjects;
+                        //            objectBuilderSafeZone.AccessTypeFactions = zone.AccessTypeFactions;
+                        //            objectBuilderSafeZone.AccessTypePlayers = zone.AccessTypePlayers;
+                        //            MyEntity ent = Sandbox.Game.Entities.MyEntities.CreateFromObjectBuilderAndAdd((MyObjectBuilder_EntityBase)objectBuilderSafeZone, true);
 
-                                MyEntity ent = Sandbox.Game.Entities.MyEntities.CreateFromObjectBuilderAndAdd((MyObjectBuilder_EntityBase)objectBuilderSafeZone, true);
-                                config.SafeZoneId = ent.EntityId;
-                            }
-                        }
-                        else
-                        {
-                            if (MyAPIGateway.Entities.GetEntityById(config.SafeZoneId) != null && MyAPIGateway.Entities.GetEntityById(config.SafeZoneId) is MySafeZone zone)
-                            {
-                                zone.Close();
-                            }
-                        }
+                        //            config.SafeZoneId = ent.EntityId;
+                        //            zone.Close();
+                        //            hasZone = true;
+                        //        }
+                        //        else
+                        //        {
+                        //            hasZone = true;
+                        //        }
+                        //    }
+                        //    if (!hasZone)
+                        //    {
+                        //        MyObjectBuilder_SafeZone objectBuilderSafeZone = new MyObjectBuilder_SafeZone();
+                        //        objectBuilderSafeZone.PositionAndOrientation = new MyPositionAndOrientation?(new MyPositionAndOrientation(position, Vector3.Forward, Vector3.Up));
+                        //        objectBuilderSafeZone.PersistentFlags = MyPersistentEntityFlags2.InScene;
+                        //        objectBuilderSafeZone.Shape = MySafeZoneShape.Sphere;
+                        //        objectBuilderSafeZone.Radius = (float)config.CaptureRadiusInMetre;
+                        //        objectBuilderSafeZone.Enabled = false;
+                        //        objectBuilderSafeZone.AllowedActions = MySafeZoneAction.Drilling | MySafeZoneAction.Building | MySafeZoneAction.Damage | MySafeZoneAction.Grinding | MySafeZoneAction.Shooting | MySafeZoneAction.Welding | MySafeZoneAction.LandingGearLock;
+                        //        objectBuilderSafeZone.DisplayName = config.KothName + " Radius";
+                        //        objectBuilderSafeZone.AccessTypeGrids = MySafeZoneAccess.Blacklist;
+                        //        objectBuilderSafeZone.AccessTypeFloatingObjects = MySafeZoneAccess.Blacklist;
+                        //        objectBuilderSafeZone.AccessTypeFactions = MySafeZoneAccess.Blacklist;
+                        //        objectBuilderSafeZone.AccessTypePlayers = MySafeZoneAccess.Blacklist;
+
+                        //        MyEntity ent = Sandbox.Game.Entities.MyEntities.CreateFromObjectBuilderAndAdd((MyObjectBuilder_EntityBase)objectBuilderSafeZone, true);
+                        //        config.SafeZoneId = ent.EntityId;
+                        //    }
+                        //}
+                        //else
+                        //{
+                        //    if (MyAPIGateway.Entities.GetEntityById(config.SafeZoneId) != null && MyAPIGateway.Entities.GetEntityById(config.SafeZoneId) is MySafeZone zone)
+                        //    {
+                        //        zone.Close();
+                        //    }
+                        //}
                         Guid capturingNation = Guid.Empty;
                         if (config.capturingNation != Guid.Empty)
                         {
