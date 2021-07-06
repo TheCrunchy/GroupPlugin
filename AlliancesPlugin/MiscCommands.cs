@@ -19,6 +19,16 @@ namespace AlliancesPlugin
 {
    public class MiscCommands : CommandModule
     {
+        [Command("azazel", "enable koth because azazel")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void azazel()
+        {
+            AlliancePlugin.LoadConfig();
+            AlliancePlugin.config.KothEnabled = true;
+         
+            AlliancePlugin.saveConfig();
+            Context.Respond("KOTH is now enabled, at least it should be.");
+        }
         public static Dictionary<long, DateTime> distressCooldowns = new Dictionary<long, DateTime>();
         public static int distressCount = 0;
         [Command("distress", "distress signals")]
