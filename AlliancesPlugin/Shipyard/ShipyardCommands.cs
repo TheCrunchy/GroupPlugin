@@ -1580,7 +1580,17 @@ namespace AlliancesPlugin.Shipyard
                 {
                     Context.Respond("It also has a fee of " + String.Format("{0:n0} ", alliance.ShipyardFee) + " SC");
                 }
-                double seconds = gridCosts.BlockCount * printerConfig.SecondsPerBlock * queue.upgradeSpeed;
+                int upgradeLevel = queue.SpeedUpgrade;
+
+                double seconds;
+                if (speedUpgrades.ContainsKey(upgradeLevel))
+                {
+                    seconds = gridCosts.BlockCount * printerConfig.SecondsPerBlock * speedUpgrades[upgradeLevel].NewLevel;
+                }
+                else
+                {
+                    seconds = gridCosts.BlockCount * printerConfig.SecondsPerBlock * queue.upgradeSpeed;
+                }
                 DateTime end = DateTime.Now.AddSeconds(seconds);
                 int fuel = 0;
                 if (printerConfig.FuelPerInterval > 0)

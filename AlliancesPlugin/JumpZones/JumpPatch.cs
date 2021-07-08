@@ -23,7 +23,7 @@ namespace AlliancesPlugin
     {
         public static List<JumpZone> Zones = new List<JumpZone>();
        
-
+      
         public static Logger Log = LogManager.GetLogger("JumpLog");
         public static void ApplyLogging()
         {
@@ -83,7 +83,36 @@ namespace AlliancesPlugin
             {
                 return false;
             }
-            Log.Info(FacUtils.GetOwner(grid) + " grid owner id, requested by " + userId);
+         
+          
+            if (userId == 0)
+            {
+            
+                Log.Info("grid name " + grid.DisplayName);
+                Log.Info(FacUtils.GetOwner(grid) + " grid owner id, requested by 0, which is probably a hacker or some shit, these are the people online at the time");
+                StringBuilder players = new StringBuilder();
+                foreach (MyPlayer player in MySession.Static.Players.GetOnlinePlayers())
+                {
+                    if (player.Id != null && player.Id.SteamId != null && player.DisplayName != null)
+                    {
+                        players.AppendLine(player.Id.SteamId + " " + player.DisplayName);
+                    }
+                     else
+                    {
+                        players.AppendLine("Something null here, identity id " + player.Identity.IdentityId);
+                    }
+
+                }
+                Log.Info(players);
+                if (AlliancePlugin.config.DisableJumpsWithId0)
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                Log.Info(FacUtils.GetOwner(grid) + " grid owner id, requested by " + userId + " grid name " + grid.DisplayName);
+            }
             foreach (JumpZone zone in Zones)
             {
 
@@ -120,7 +149,7 @@ namespace AlliancesPlugin
                 }
 
                 distance = Vector3.Distance(zone.GetPosition(), jumpTarget);
-                Log.Info(distance);
+                
                 if (distance <= zone.Radius && !zone.AllowEntry)
                 {
                     if (zone.GetExcludedEntry() != null && zone.AllowExcludedEntry)

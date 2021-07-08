@@ -1490,7 +1490,7 @@ namespace AlliancesPlugin
 
                                         try
                                         {
-                                            DiscordStuff.SendMessageToDiscord(config.KothName + " Capture can begin in " + config.MinutesBeforeCaptureStarts + " minutes.", config);
+                                            DiscordStuff.SendMessageToDiscord(config.KothName + " Capture can begin in " + config.MinutesBeforeCaptureStarts + " minutes. By " + GetAllianceNoLoading(capturingNation).name, config);
                                         }
                                         catch (Exception)
                                         {
