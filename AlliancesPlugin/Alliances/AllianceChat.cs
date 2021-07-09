@@ -254,11 +254,14 @@ namespace AlliancesPlugin.Alliances
                 if (fac == null)
                 {
                     PeopleInAllianceChat.Remove((ulong)msg.AuthorSteamId);
+                    AlliancePlugin.SendChatMessage("Failsafe", "Faction null");
+                        
                     return;
                 }
                 if (AlliancePlugin.GetAllianceNoLoading(fac) == null)
                 {
                     PeopleInAllianceChat.Remove((ulong)msg.AuthorSteamId);
+                    AlliancePlugin.SendChatMessage("Failsafe", "Alliance null");
                     return;
                 }
                 consumed = true;

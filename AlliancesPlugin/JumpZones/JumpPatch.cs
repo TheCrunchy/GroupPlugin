@@ -106,6 +106,7 @@ namespace AlliancesPlugin
                 Log.Info(players);
                 if (AlliancePlugin.config.DisableJumpsWithId0)
                 {
+                    
                     return false;
                 }
             }

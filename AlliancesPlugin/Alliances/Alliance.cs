@@ -237,6 +237,7 @@ namespace AlliancesPlugin.Alliances
             item.BankAmount = bankBalance;
             log.log.Add(item);
             utils.WriteToJsonFile<BankLog>(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId + "//log.json", log);
+            AlliancePlugin.SaveAllianceData(this);
         }
         public void PayDividend(Int64 amount, List<long> ids, ulong steamid)
         {

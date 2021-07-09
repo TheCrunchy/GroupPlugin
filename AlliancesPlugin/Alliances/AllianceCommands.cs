@@ -250,9 +250,10 @@ namespace AlliancesPlugin.Alliances
                         if (alliance.JoinAlliance(fac))
                         {
                             Context.Respond("Joined alliance!");
-                            AlliancePlugin.SaveAllianceData(alliance);
+                     
                             AlliancePlugin.FactionsInAlliances.Remove(fac.FactionId);
                             AlliancePlugin.FactionsInAlliances.Add(fac.FactionId, alliance.name);
+                            AlliancePlugin.SaveAllianceData(alliance);
                             AllianceChat.SendChatMessage(alliance.AllianceId, "Alliance", fac.Tag + " has joined the alliance!", true, 0);
                             cooldowns.Remove(Context.Player.IdentityId);
                         }
@@ -872,7 +873,7 @@ namespace AlliancesPlugin.Alliances
         [Permission(MyPromoteLevel.Admin)]
         public void DoAllUpkeep(string target)
         {
-            if (target.ToLower().Equals("all"))
+            if (target.ToLower().Equals("all") || target.ToLower().Contains("all"))
             {
                 DatabaseForBank.DoUpkeepForAll();
                 Context.Respond("Doing upkeep for all alliances.");
