@@ -231,7 +231,12 @@ namespace AlliancesPlugin.Alliances
         }
         public static void DoChatMessage(TorchChatMessage msg, ref bool consumed)
         {
+         
             if (msg.AuthorSteamId == null)
+            {
+                return;
+            }
+            if (msg.Channel == Sandbox.Game.Gui.ChatChannel.Private || msg.Channel == Sandbox.Game.Gui.ChatChannel.Faction)
             {
                 return;
             }
@@ -239,12 +244,12 @@ namespace AlliancesPlugin.Alliances
             {
                 return;
             }
-
+            
             if (PeopleInAllianceChat.ContainsKey((ulong)msg.AuthorSteamId))
             {
 
 
-    
+                
                 MyIdentity identity = AlliancePlugin.TryGetIdentity(msg.AuthorSteamId.ToString());
                 if (identity == null)
                 {
@@ -253,9 +258,21 @@ namespace AlliancesPlugin.Alliances
                 MyFaction fac = MySession.Static.Factions.GetPlayerFaction(identity.IdentityId);
                 if (fac == null)
                 {
-                    PeopleInAllianceChat.Remove((ulong)msg.AuthorSteamId);
-                    AlliancePlugin.SendChatMessage("Failsafe", "Faction null");
-                        
+                    bool noFac = true;
+                    List<IMyIdentity> ids = AlliancePlugin.GetAllIdentitiesByNameOrId(msg.AuthorSteamId.ToString());
+                    foreach (IMyIdentity id in ids)
+                    {
+                        if (MySession.Static.Factions.GetPlayerFaction(id.IdentityId) != null)
+                        {
+                            noFac = false;
+                            fac = MySession.Static.Factions.GetPlayerFaction(id.IdentityId);
+                        }
+                    }
+                    if (noFac)
+                    {
+                        PeopleInAllianceChat.Remove((ulong)msg.AuthorSteamId);
+                        AlliancePlugin.SendChatMessage("Failsafe", "Faction null");
+                    }
                     return;
                 }
                 if (AlliancePlugin.GetAllianceNoLoading(fac) == null)

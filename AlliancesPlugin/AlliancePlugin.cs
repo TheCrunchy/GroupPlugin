@@ -826,7 +826,41 @@ namespace AlliancesPlugin
 
             }
         }
+        public static List<IMyIdentity> GetAllIdentitiesByNameOrId(string playerNameOrSteamId)
+        {
+            List<IMyIdentity> ids = new List<IMyIdentity>();
+            foreach (var identity in MySession.Static.Players.GetAllIdentities())
+            {
+                if (identity.DisplayName == playerNameOrSteamId)
+                {
+                    if (!ids.Contains(identity))
+                    {
+                        ids.Add(identity);
+                    }
+                }
+                if (ulong.TryParse(playerNameOrSteamId, out ulong steamId))
+                {
+                    ulong id = MySession.Static.Players.TryGetSteamId(identity.IdentityId);
+                    if (id == steamId)
+                    {
+                        if (!ids.Contains(identity))
+                        {
+                            ids.Add(identity);
+                        }
 
+                    }
+                    if (identity.IdentityId == (long)steamId)
+                    {
+                        if (!ids.Contains(identity))
+                        {
+                            ids.Add(identity);
+                        }
+                    }
+                }
+
+            }
+            return ids;
+        }
 
         public static void LoadAllGates()
         {

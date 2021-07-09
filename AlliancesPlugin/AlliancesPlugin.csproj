@@ -91,6 +91,9 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="0Harmony, Version=2.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Lib.Harmony.2.1.0\lib\net472\0Harmony.dll</HintPath>
+    </Reference>
     <Reference Include="DSharpPlus">
       <HintPath>..\DSharpPlus.dll</HintPath>
     </Reference>
@@ -185,6 +188,7 @@
     <Compile Include="Alliances\Database.cs" />
     <Compile Include="Alliances\DiscordStuff.cs" />
     <Compile Include="Alliances\Encryption.cs" />
+    <Compile Include="Alliances\MyPlayerPatch.cs" />
     <Compile Include="Alliances\PlayerData.cs" />
     <Compile Include="MiscCommands.cs" />
     <Compile Include="Alliances\RankPermissions.cs" />
