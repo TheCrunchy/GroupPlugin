@@ -229,6 +229,7 @@ namespace AlliancesPlugin.Alliances
                 }
             }
         }
+        public static Dictionary<ulong, long> IdentityIds = new Dictionary<ulong, long>();
         public static void DoChatMessage(TorchChatMessage msg, ref bool consumed)
         {
          
@@ -244,13 +245,17 @@ namespace AlliancesPlugin.Alliances
             {
                 return;
             }
-            
+
             if (PeopleInAllianceChat.ContainsKey((ulong)msg.AuthorSteamId))
             {
 
-
-                
-                MyIdentity identity = AlliancePlugin.TryGetIdentity(msg.AuthorSteamId.ToString());
+                MyIdentity identity;
+            if (IdentityIds.ContainsKey((ulong)msg.AuthorSteamId)){
+                    identity = MySession.Static.Players.TryGetIdentity(IdentityIds[(ulong)msg.AuthorSteamId]);
+                } else{
+                    identity = AlliancePlugin.GetIdentityByNameOrId(msg.AuthorSteamId.ToString());
+                }
+             
                 if (identity == null)
                 {
                     return;
@@ -259,15 +264,15 @@ namespace AlliancesPlugin.Alliances
                 if (fac == null)
                 {
                     bool noFac = true;
-                    List<IMyIdentity> ids = AlliancePlugin.GetAllIdentitiesByNameOrId(msg.AuthorSteamId.ToString());
-                    foreach (IMyIdentity id in ids)
+                    if (AlliancePlugin.GetIdentityByNameOrId(msg.Author) != null) 
                     {
-                        if (MySession.Static.Factions.GetPlayerFaction(id.IdentityId) != null)
+                        if (MySession.Static.Factions.GetPlayerFaction(AlliancePlugin.GetIdentityByNameOrId(msg.Author).IdentityId) != null)
                         {
                             noFac = false;
-                            fac = MySession.Static.Factions.GetPlayerFaction(id.IdentityId);
+                            fac = MySession.Static.Factions.GetPlayerFaction(AlliancePlugin.GetIdentityByNameOrId(msg.Author).IdentityId);
                         }
                     }
+                      
                     if (noFac)
                     {
                         PeopleInAllianceChat.Remove((ulong)msg.AuthorSteamId);
@@ -311,6 +316,7 @@ namespace AlliancesPlugin.Alliances
             {
                 return;
             }
+           
             MyIdentity id = AlliancePlugin.GetIdentityByNameOrId(p.SteamId.ToString());
             if (id == null)
             {

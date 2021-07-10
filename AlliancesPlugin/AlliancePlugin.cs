@@ -1912,8 +1912,19 @@ namespace AlliancesPlugin
                 }
             }
         }
+
+        public static List<JumpThing> jumpies = new List<JumpThing>();
         public override void Update()
         {
+
+            foreach (JumpThing thing in jumpies)
+            {
+                MyCubeGrid grid = MyAPIGateway.Entities.GetEntityById(thing.gridId) as MyCubeGrid;
+             //   grid.PositionComp.SetWorldMatrix(ref thing.matrix);
+                grid.Teleport(thing.matrix);
+       
+            }
+            jumpies.Clear();
             ticks++;
             if (ticks % 512 == 0)
             {

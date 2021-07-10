@@ -89,6 +89,12 @@ namespace AlliancesPlugin
             }
         }
         FileUtils utils = new FileUtils();
+        [Command("a", "toggle alliance chat")]
+        [Permission(MyPromoteLevel.None)]
+        public void DoAllianceChat2(string message = "")
+        {
+            DoAllianceChat(message);
+        }
         [Command("al chat", "toggle alliance chat")]
         [Permission(MyPromoteLevel.None)]
         public void DoAllianceChat(string message = "")
@@ -113,6 +119,7 @@ namespace AlliancesPlugin
             if (AllianceChat.PeopleInAllianceChat.ContainsKey(Context.Player.SteamUserId))
             {
                 data.InAllianceChat = false;
+                AllianceChat.IdentityIds.Remove(Context.Player.SteamUserId);
                 AllianceChat.PeopleInAllianceChat.Remove(Context.Player.SteamUserId);
                 Context.Respond("Leaving alliance chat.", Color.Red);
                 utils.WriteToXmlFile<PlayerData>(AlliancePlugin.path + "//PlayerData//" + Context.Player.SteamUserId + ".xml", data);
@@ -121,6 +128,8 @@ namespace AlliancesPlugin
             if (alliance != null)
             {
                 {
+                    AllianceChat.IdentityIds.Remove(Context.Player.SteamUserId);
+                    AllianceChat.IdentityIds.Add(Context.Player.SteamUserId, Context.Player.Identity.IdentityId);
                     data.InAllianceChat = true;
                     AllianceChat.PeopleInAllianceChat.Add(Context.Player.SteamUserId, alliance.AllianceId);
                     Context.Respond("Entering alliance chat.", Color.Cyan);
