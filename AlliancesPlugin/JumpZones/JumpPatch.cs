@@ -188,8 +188,7 @@ namespace AlliancesPlugin
                     return false;
                 }
             }
-
-            //JumpThing thing = new JumpThing();
+            JumpThing thing = new JumpThing();
             //MyCockpit controller = null;
             //foreach (MyCockpit cockpit in grid.GetFatBlocks().OfType<MyCockpit>())
             //{
@@ -211,10 +210,12 @@ namespace AlliancesPlugin
             //    thing.matrix = worldMatrix;
             //    thing.gridId = grid.EntityId;
             //    AlliancePlugin.jumpies.Add(thing);
+
+            //    Vector3D? newPosition = MyEntities.FindFreePlace(worldMatrix.Translation, (float)GridManager.FindBoundingSphere(controller.CubeGrid).Radius);
             //    return false;
 
-            //}
-            return true;
+                //}
+                return true;
         }
 
     }
