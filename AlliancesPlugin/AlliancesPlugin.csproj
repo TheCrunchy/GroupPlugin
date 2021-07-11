@@ -95,7 +95,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\0Harmony.dll</HintPath>
     </Reference>
-    <Reference Include="DSharpPlus">
+    <Reference Include="DSharpPlus, Version=4.0.0.635, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\DSharpPlus.dll</HintPath>
     </Reference>
     <Reference Include="DSharpPlus.WebSocket.WebSocket4Net">
