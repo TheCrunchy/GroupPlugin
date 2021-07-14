@@ -124,7 +124,7 @@ namespace AlliancesPlugin.Alliances
             }
             if (SupremeLeader == id)
             {
-                return 0.1f;
+                return 0;
             }
             if (HasAccess(id, AccessLevel.TaxExempt))
             {

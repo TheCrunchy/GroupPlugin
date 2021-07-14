@@ -1450,7 +1450,7 @@ namespace AlliancesPlugin
                             {
 
                                 //  Log.Info("Contested no faction");
-                                contested = true;
+                                contested = false;
                             }
                         }
 
@@ -1650,12 +1650,12 @@ namespace AlliancesPlugin
 
                                                     try
                                                     {
-                                                        DiscordStuff.SendMessageToDiscord(config.KothName + " capture progress " + config.amountCaptured + " out of " + config.PointsToCap + " by " + GetAllianceNoLoading(capturingNation).name, config);
+                                                        DiscordStuff.SendMessageToDiscord(config.KothName + " capture progress " + config.amountCaptured + " out of " + config.PointsToCap + " by " + GetAlliance(capturingNation).name, config);
                                                     }
                                                     catch (Exception)
                                                     {
                                                         Log.Error("Cant do discord message for koth.");
-                                                        SendChatMessage(config.KothName, "capture progress " + config.amountCaptured + " out of " + config.PointsToCap + " by " + GetAllianceNoLoading(capturingNation).name);
+                                                        SendChatMessage(config.KothName, "capture progress " + config.amountCaptured + " out of " + config.PointsToCap + " by " + GetAlliance(capturingNation).name);
                                                     }
                                                     continue;
                                                     //         config.nextBroadcast = DateTime.Now.AddMinutes(config.MinsPerCaptureBroadcast);
@@ -1728,6 +1728,12 @@ namespace AlliancesPlugin
                                         {
                                             SendChatMessage(config.KothName, "Capture point contested!");
                                             Log.Error("Cant do discord message for koth.");
+                                        }
+                                    } else
+                                    {
+                                        if (contested && !config.CaptureStarted)
+                                        {
+                                                SendChatMessage(config.KothName, " Capture point contested, Capture cannot begin!");
                                         }
                                     }
                                 }

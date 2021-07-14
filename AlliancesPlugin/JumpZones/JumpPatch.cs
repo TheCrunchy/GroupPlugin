@@ -16,6 +16,7 @@ using Torch.Managers.PatchManager;
 using Torch.Mod;
 using Torch.Mod.Messages;
 using VRageMath;
+using HarmonyLib;
 
 namespace AlliancesPlugin
 {
@@ -66,20 +67,33 @@ namespace AlliancesPlugin
         internal static readonly MethodInfo DenyJumpPatch =
             typeof(JumpPatch).GetMethod(nameof(PatchRequestJump), BindingFlags.Static | BindingFlags.Public) ??
             throw new Exception("Failed to find patch method");
-
+        //    internal static readonly MethodInfo DenyJumpPatch2 =
+        //typeof(JumpPatch).GetMethod(nameof(PatchRequestJump2), BindingFlags.Static | BindingFlags.Public) ??
+        //  throw new Exception("Failed to find patch method");
 
         public static void Patch(PatchContext ctx)
         {
 
             ctx.GetPattern(RequestJump).Prefixes.Add(DenyJumpPatch);
+          //  ctx.GetPattern(RequestJump).Suffixes.Add(DenyJumpPatch2);
             Log.Info("Patching Successful jump drive stuff");
             ApplyLogging();
         }
 
 
 
+        //public static void PatchRequestJump2(long entityId, Vector3D jumpTarget, long userId)
+        //{
+        //    MyCubeGrid grid = MyAPIGateway.Entities.GetEntityById(entityId) as MyCubeGrid;
 
-        public static bool PatchRequestJump(long entityId, Vector3D jumpTarget, long userId)
+        //    if (grid == null)
+        //    {
+        //        return;
+        //    }
+
+        //    Traverse.Create(grid.GridSystems.JumpSystem).Field("m_jumpTimeLeft").SetValue(3f);
+        //}
+            public static bool PatchRequestJump(long entityId, Vector3D jumpTarget, long userId)
         {
             MyCubeGrid grid = MyAPIGateway.Entities.GetEntityById(entityId) as MyCubeGrid;
 
@@ -87,8 +101,7 @@ namespace AlliancesPlugin
             {
                 return false;
             }
-     
-
+            
             //return false;
             if (userId == 0)
             {
@@ -188,7 +201,8 @@ namespace AlliancesPlugin
                     return false;
                 }
             }
-            JumpThing thing = new JumpThing();
+
+           
             //MyCockpit controller = null;
             //foreach (MyCockpit cockpit in grid.GetFatBlocks().OfType<MyCockpit>())
             //{
@@ -214,8 +228,8 @@ namespace AlliancesPlugin
             //    Vector3D? newPosition = MyEntities.FindFreePlace(worldMatrix.Translation, (float)GridManager.FindBoundingSphere(controller.CubeGrid).Radius);
             //    return false;
 
-                //}
-                return true;
+            //}
+            return true;
         }
 
     }

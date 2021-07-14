@@ -3,6 +3,7 @@ using NLog;
 using NLog.Config;
 using NLog.Targets;
 using Sandbox.Game.Entities;
+using Sandbox.Game.Entities.Cube;
 using Sandbox.Game.GameSystems;
 using Sandbox.Game.World;
 using Sandbox.ModAPI;
@@ -17,6 +18,7 @@ using Torch.Managers.PatchManager.MSIL;
 using Torch.Mod;
 using Torch.Mod.Messages;
 using VRage.Game;
+using VRage.Game.Gui;
 using VRage.Game.ModAPI;
 using VRageMath;
 using static HarmonyLib.AccessTools;
@@ -36,6 +38,38 @@ namespace AlliancesPlugin
         {
             DoPatching();
         }
+        //[HarmonyPatch(typeof(MyBeacon))]
+        //[HarmonyPatch("GetHudParams")]
+        //class BeaconPatch
+        //{
+        //    static void Postfix(bool allowBlink, ref List<MyHudEntityParams> __result, MyBeacon __instance)
+        //    {
+        //        AlliancePlugin.Log.Info("beacon");
+        //        if (__instance is MyBeacon beacon)
+        //        {
+        //            MyRadioBroadcaster broadcaster = (MyRadioBroadcaster) beacon.Components.Get<MyDataBroadcaster>();
+                 
+        //            if (beacon.IsWorking)
+        //            {
+        //                List<MyHudEntityParams> hudParams = __result;
+        //                StringBuilder hudText = new StringBuilder();
+        //                hudText.Append("DAVE");
+        //                if (hudText.Length > 0)
+        //                {
+        //                    StringBuilder text = hudParams[0].Text;
+        //                    text.Clear();
+        //                    text.Append("BOB");
+        //                    text.Append(".");
+        //                    text.Append((object)hudText);
+        //                }
+        //                __result = hudParams;
+        //            }
+
+        //            return;
+        //            // make sure you only skip if really necessary
+        //        }
+        //    }
+        //}
         [HarmonyPatch(typeof(MyPlayer))]
         [HarmonyPatch("GetRelationBetweenPlayers")]
         class PlayerPatch

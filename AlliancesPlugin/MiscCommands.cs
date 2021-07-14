@@ -29,6 +29,19 @@ namespace AlliancesPlugin
             AlliancePlugin.saveConfig();
             Context.Respond("KOTH is now enabled, at least it should be.");
         }
+
+        [Command("herpaderpa", "fucking around with faction tags")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void ChangeFacTag(string targetTag, string newtag)
+        {
+            Context.Respond("I dont recommend seriously using this.");
+            MyFaction fac = FacUtils.GetPlayersFaction(Context.Player.IdentityId) as MyFaction;
+            if (fac != null) 
+            {
+                fac.Tag = newtag;
+            }
+        }
+
         public static Dictionary<long, DateTime> distressCooldowns = new Dictionary<long, DateTime>();
         public static int distressCount = 0;
         [Command("distress", "distress signals")]
