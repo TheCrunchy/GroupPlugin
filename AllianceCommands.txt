@@ -13,6 +13,7 @@ Managing hostiles
 Misc
 !alliance info <name> - outputs alliance info, if no input, outputs your own alliance
 !alliance log <input>- show the log for moneys with optional time format input eg "MM-dd-yyyy"
+!alliance outputlog <max> - optional max, default is 100
 !alliance description <input> - changes the description
 !alliance chat - toggle alliance chat
 !al chat - shorter toggle

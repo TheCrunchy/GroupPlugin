@@ -11,6 +11,8 @@ using AlliancesPlugin.KOTH;
 using AlliancesPlugin.Shipyard;
 using Sandbox.Engine.Multiplayer;
 using Sandbox.Game.World;
+using System.IO;
+using VRage.Game.ModAPI;
 
 namespace AlliancesPlugin.Alliances
 {
@@ -271,6 +273,75 @@ namespace AlliancesPlugin.Alliances
             }
         }
 
+        public static void SendAllianceLog(Alliance alliance, int amount)
+        {
+            if (AllianceHasBot(alliance.AllianceId) && alliance.DiscordChannelId > 0)
+            {
+
+                DiscordClient bot = allianceBots[alliance.AllianceId];
+
+                DiscordChannel chann = bot.GetChannelAsync(alliance.DiscordChannelId).Result;
+                if (bot == null)
+                {
+                    return;
+                }
+
+                try
+                {
+                    BankLog log = alliance.GetLog();
+                    StringBuilder sb = new StringBuilder();
+                    log.log.Reverse();
+                    int i = 0;
+                    sb.AppendLine("Time,Player,Action,Faction/Player,Amount,NewBalance");
+                    foreach (BankLogItem item in log.log)
+                    {
+                        i++;
+                        if (i > amount)
+                        {
+                            break;
+                        }
+                        if (item.FactionPaid > 0)
+                        {
+                            IMyFaction fac = MySession.Static.Factions.TryGetFactionById(item.FactionPaid);
+                            if (fac != null)
+                            {
+                                sb.AppendLine(item.TimeClaimed.ToString() + "," + AlliancePlugin.GetPlayerName(item.SteamId) + "," + item.Action + "," + fac.Tag + " " + String.Format("{0:n0}", item.Amount) + "," + String.Format("{0:n0}", item.BankAmount));
+                            }
+                            else
+                            {
+                                sb.AppendLine(item.TimeClaimed.ToString() + "," + AlliancePlugin.GetPlayerName(item.SteamId) + "," + item.Action + " a now dead faction ," + String.Format("{0:n0}", item.Amount) + "," + String.Format("{0:n0}", item.BankAmount));
+                            }
+                            continue;
+                        }
+                        if (item.PlayerPaid > 0)
+                        {
+                            sb.AppendLine(item.TimeClaimed.ToString() + "," + AlliancePlugin.GetPlayerName(item.SteamId) + "," + item.Action + "," + AlliancePlugin.GetPlayerName(item.PlayerPaid) + ", " + String.Format("{0:n0}", item.Amount) + "," + String.Format("{0:n0}", item.BankAmount));
+                        }
+                        else
+                        {
+
+                            sb.AppendLine(item.TimeClaimed.ToString() + "," + AlliancePlugin.GetPlayerName(item.SteamId) + "," + item.Action + "," + String.Format("{0:n0}", item.Amount) + ", " + String.Format("{0:n0}", item.BankAmount));
+                        }
+                    }
+                 
+                    File.WriteAllText(AlliancePlugin.path + "//temp.txt", sb.ToString());
+                    FileStream stream = new FileStream(AlliancePlugin.path + "//temp.txt", FileMode.Open);
+                   
+                        chann.SendFileAsync("LOG.txt", stream);
+
+
+                }
+
+                catch (System.Net.Http.HttpRequestException)
+                {
+                    AllianceChat.SendChatMessageFromDiscord(alliance.AllianceId, "Bot", "Failed to send message.", 0);
+                }
+                catch (Exception ex)
+                {
+                   
+                }
+            }
+        }
         public static bool AllianceHasBot(Guid id)
         {
             if (allianceBots.ContainsKey(id))
@@ -354,7 +425,7 @@ namespace AlliancesPlugin.Alliances
                     }
 
                     String exclusionBeforeFormat = GetStringBetweenCharacters(split[0], '[', ']');
-                    if (!exclusionBeforeFormat.Contains(WorldName))
+                    if (!exclusionBeforeFormat.Contains(WorldName) || !exclusionBeforeFormat.Contains("LOG"))
                     {
 
 
