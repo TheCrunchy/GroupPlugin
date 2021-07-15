@@ -1603,7 +1603,7 @@ namespace AlliancesPlugin.Alliances
         }
         [Command("outputlog", "output the log to discord")]
         [Permission(MyPromoteLevel.None)]
-        public void BankLogOutput(int max = 100)
+        public void BankLogOutput(int max = 500)
         {
 
             if (Context.Player != null)
