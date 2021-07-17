@@ -114,6 +114,10 @@ namespace AlliancesPlugin
             {
                 Directory.CreateDirectory(path + "//JumpGates//");
             }
+            if (!Directory.Exists(path + "//Territories//"))
+            {
+                Directory.CreateDirectory(path + "//Territories//");
+            }
             if (!Directory.Exists(path + "//PlayerData//"))
             {
                 Directory.CreateDirectory(path + "//PlayerData//");
@@ -379,8 +383,8 @@ namespace AlliancesPlugin
         {
             if (state == TorchSessionState.Unloading)
             {
-               
-              // DiscordStuff.DisconnectDiscord();
+
+                // DiscordStuff.DisconnectDiscord();
                 TorchState = TorchSessionState.Unloading;
             }
             if (state == TorchSessionState.Loaded)
@@ -861,7 +865,23 @@ namespace AlliancesPlugin
             }
             return ids;
         }
+        public static void LoadAllTerritories()
+        {
+            Territories.Clear();
+            FileUtils jsonStuff = new FileUtils();
+            try
+            {
+                foreach (String s in Directory.GetFiles(path + "//Territories//"))
+                {
+                    Territory ter = jsonStuff.ReadFromXmlFile<Territory>(s);
+                    Territories.Add(ter.Id, ter);
+                }
+            }
+            catch (Exception ex)
+            {
 
+            }
+        }
         public static void LoadAllGates()
         {
             List<string> FilesToDelete = new List<string>();
@@ -875,12 +895,13 @@ namespace AlliancesPlugin
                     if (s.EndsWith(".json"))
                     {
                         FilesToDelete.Add(s);
-                         gate = jsonStuff.ReadFromJsonFile<JumpGate>(s);
+                        gate = jsonStuff.ReadFromJsonFile<JumpGate>(s);
                     }
-                    else{
+                    else
+                    {
                         gate = jsonStuff.ReadFromXmlFile<JumpGate>(s);
                     }
-                  
+
 
                     if (gate.CanBeRented && DateTime.Now >= gate.NextRentAvailable)
                     {
@@ -920,7 +941,7 @@ namespace AlliancesPlugin
                                     objectBuilderSafeZone.Shape = zone.Shape;
                                     objectBuilderSafeZone.Radius = (float)gate.RadiusToJump;
                                     objectBuilderSafeZone.Enabled = zone.Enabled;
-                                    objectBuilderSafeZone.AllowedActions =zone.AllowedActions;
+                                    objectBuilderSafeZone.AllowedActions = zone.AllowedActions;
                                     objectBuilderSafeZone.ModelColor = zone.ModelColor.ToVector3();
                                     objectBuilderSafeZone.DisplayName = zone.DisplayName;
                                     objectBuilderSafeZone.Texture = zone.CurrentTexture.String;
@@ -933,7 +954,7 @@ namespace AlliancesPlugin
                                     gate.Save();
 
                                     zone.Close();
-                                   
+
                                 }
                             }
                             else
@@ -979,7 +1000,7 @@ namespace AlliancesPlugin
                 File.Delete(s);
                 deleted = true;
             }
-                if (deleted)
+            if (deleted)
             {
                 foreach (JumpGate gate in AllGates.Values)
                 {
@@ -1599,28 +1620,33 @@ namespace AlliancesPlugin
                                                     config.CaptureStarted = false;
                                                     config.unlockTime = DateTime.Now.AddHours(config.hoursToLockAfterCap);
                                                     Alliance alliance = GetAllianceNoLoading(config.owner);
-                                                    if (config.EditTerritoryFile)
+                                                    if (config.HasTerritory)
                                                     {
-                                                        if (File.Exists(config.TerritoryFilePath))
+                                                       if (File.Exists(AlliancePlugin.path + "//Territories//" + config.LinkedTerritory + ".xml"))
                                                         {
-                                                            String[] line;
-                                                            line = File.ReadAllLines(config.TerritoryFilePath);
+                                                            Territory ter = utils.ReadFromXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + config.LinkedTerritory + ".xml");
+                                                            ter.Alliance = alliance.AllianceId;
+                                                            utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + config.LinkedTerritory + ".xml", ter);
 
-                                                            for (int i = 0; i < line.Length; i++)
+                                                            if (Territories.ContainsKey(ter.Id))
                                                             {
-                                                                if (line[i].Contains("[Name"))
-                                                                {
-                                                                    String[] split = line[i].Split(':');
-                                                                    line[i] = split[0] + ":" + alliance.name + "]";
-
-                                                                }
+                                                                Territories[ter.Id] = ter;
                                                             }
-                                                            StringBuilder sb = new StringBuilder();
-                                                            foreach (string s in line)
+                                                            else
                                                             {
-                                                                sb.Append(s);
+                                                                Territories.Add(ter.Id, ter);
                                                             }
-                                                            File.WriteAllText(config.TerritoryFilePath, sb.ToString());
+                                                        }
+                                                       else
+                                                        {
+                                                            Territory ter = new Territory();
+                                                            ter.Name = config.LinkedTerritory;
+                                                            ter.x = config.x;
+                                                            ter.y = config.y;
+                                                            ter.z = config.z;
+                                                            ter.Alliance = alliance.AllianceId;
+                                                            utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + config.LinkedTerritory + ".xml", ter);
+                                                            Territories.Add(ter.Id, ter);
                                                         }
                                                     }
                                                     foreach (JumpGate gate in AllGates.Values)
@@ -1729,11 +1755,12 @@ namespace AlliancesPlugin
                                             SendChatMessage(config.KothName, "Capture point contested!");
                                             Log.Error("Cant do discord message for koth.");
                                         }
-                                    } else
+                                    }
+                                    else
                                     {
                                         if (contested && !config.CaptureStarted)
                                         {
-                                                SendChatMessage(config.KothName, " Capture point contested, Capture cannot begin!");
+                                            SendChatMessage(config.KothName, " Capture point contested, Capture cannot begin!");
                                         }
                                     }
                                 }
@@ -1918,22 +1945,151 @@ namespace AlliancesPlugin
                 }
             }
         }
-
+        public static Dictionary<ulong, String> InCapRadius = new Dictionary<ulong, String>();
+        public static Dictionary<ulong, Guid> TerritoryInside = new Dictionary<ulong, Guid>();
         public static List<JumpThing> jumpies = new List<JumpThing>();
+        public static Dictionary<Guid, Territory> Territories = new Dictionary<Guid, Territory>();
+        public static Dictionary<long, DateTime> InTerritory = new Dictionary<long, DateTime>();
+        public static void SendEnterMessage(MyPlayer player, Territory ter)
+        {
+            Alliance alliance = null;
+         
+                alliance = AlliancePlugin.GetAllianceNoLoading(ter.Alliance);
+
+            NotificationMessage message2 = new NotificationMessage();
+            if (InTerritory.ContainsKey(player.Identity.IdentityId))
+            {
+                if (DateTime.Now < InTerritory[player.Identity.IdentityId])
+                    return;
+
+                message2 = new NotificationMessage(ter.EntryMessage.Replace("{name}", ter.Name), 60000, "Green");
+                //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
+
+                if (!TerritoryInside.ContainsKey(player.Id.SteamId))
+                {
+                    TerritoryInside.Add(player.Id.SteamId, ter.Id);
+                }
+                else
+                {
+                    TerritoryInside[player.Id.SteamId] = ter.Id;
+                }
+                ModCommunication.SendMessageTo(message2, player.Id.SteamId);
+                InTerritory[player.Identity.IdentityId] = DateTime.Now.AddMinutes(5);
+                if (alliance != null)
+                {
+                    NotificationMessage message3 = new NotificationMessage(ter.ControlledMessage.Replace("{alliance}", alliance.name), 60000, "Red");
+                    ModCommunication.SendMessageTo(message3, player.Id.SteamId);
+                }
+                return;
+            }
+            else
+            {
+
+                message2 = new NotificationMessage(ter.EntryMessage.Replace("{name}", ter.Name), 60000, "Green");
+                ModCommunication.SendMessageTo(message2, player.Id.SteamId);
+                InTerritory.Add(player.Identity.IdentityId, DateTime.Now.AddMinutes(5));
+                if (alliance != null)
+                {
+                    NotificationMessage message3 = new NotificationMessage(ter.ControlledMessage.Replace("{alliance}", alliance.name), 60000, "Red");
+                    ModCommunication.SendMessageTo(message3, player.Id.SteamId);
+                }
+                return;
+            }
+        }
+        public static void SendLeaveMessage(MyPlayer player, Territory ter)
+        {
+            if (TerritoryInside.TryGetValue(player.Id.SteamId, out Guid ter2))
+            {
+                if (!ter.Id.Equals(ter2))
+                {
+                    return;
+                }
+            }
+
+            NotificationMessage message2 = new NotificationMessage(ter.ExitMessage.Replace("{name}", ter.Name), 60000, "White");
+            //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
+            ModCommunication.SendMessageTo(message2, player.Id.SteamId);
+            InTerritory.Remove(player.Identity.IdentityId);
+        }
         public override void Update()
         {
 
             foreach (JumpThing thing in jumpies)
             {
                 MyCubeGrid grid = MyAPIGateway.Entities.GetEntityById(thing.gridId) as MyCubeGrid;
-             //   grid.PositionComp.SetWorldMatrix(ref thing.matrix);
+                //   grid.PositionComp.SetWorldMatrix(ref thing.matrix);
                 grid.Teleport(thing.matrix);
-       
+
             }
             jumpies.Clear();
             ticks++;
+            if (ticks % 128 == 0)
+            {
+
+                try
+                {
+                    foreach (MyPlayer player in MySession.Static.Players.GetOnlinePlayers())
+                    {
+                        if (player.GetPosition() == null)
+                        {
+                            continue;
+                        }
+                        if (config.KothEnabled)
+                        {
+                            foreach (KothConfig koth in KOTHs)
+                            {
+                                if (Vector3.Distance(player.GetPosition(), new Vector3(koth.x, koth.y, koth.z)) <= koth.CaptureRadiusInMetre)
+                                {
+                                    if (!InCapRadius.ContainsKey(player.Id.SteamId))
+                                    {
+                                        InCapRadius.Add(player.Id.SteamId, koth.KothName);
+                                        NotificationMessage message2 = new NotificationMessage("You are inside the capture radius.", 10000, "White");
+                                        //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
+                                        ModCommunication.SendMessageTo(message2, player.Id.SteamId);
+                                    }
+                                }
+                                else
+                                {
+                                    if (InCapRadius.TryGetValue(player.Id.SteamId, out string name))
+                                    {
+                                        if (koth.KothName.Equals(name))
+                                        {
+                                            InCapRadius.Remove(player.Id.SteamId);
+                                            NotificationMessage message2 = new NotificationMessage("You are outside the capture radius.", 10000, "Red");
+                                            //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
+                                            ModCommunication.SendMessageTo(message2, player.Id.SteamId);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        foreach (Territory ter in Territories.Values)
+                        {
+                            if (Vector3.Distance(player.GetPosition(), new Vector3(ter.x, ter.y, ter.z)) <= ter.Radius)
+                            {
+                                SendEnterMessage(player, ter);
+                            }
+                            else
+                            {
+                                if (InTerritory.ContainsKey(player.Identity.IdentityId))
+                                {
+                                    SendLeaveMessage(player, ter);
+                                }
+                            }
+                        }
+                    }
+
+                }
+
+                catch (Exception ex)
+                {
+
+                }
+            }
+
             if (ticks % 512 == 0)
             {
+
                 try
                 {
                     DoTaxStuff();
@@ -2024,7 +2180,15 @@ namespace AlliancesPlugin
 
                     Log.Error(ex);
                 }
+                try
+                {
+                    LoadAllTerritories();
+                }
+                catch (Exception ex)
+                {
 
+                    Log.Error(ex);
+                }
                 try
                 {
                     LoadAllJumpZones();

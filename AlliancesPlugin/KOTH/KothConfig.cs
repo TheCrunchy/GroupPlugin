@@ -21,8 +21,12 @@ namespace AlliancesPlugin.KOTH
         public int RewardAmount = 1;
         public long SpaceMoneyReward = 0;
         public Boolean enabled = false;
-        public Boolean EditTerritoryFile = false;
-        public string TerritoryFilePath = "";
+        public string LinkedTerritory = "";
+        public Boolean HasTerritory = false;
+        public string TerritoryCapEntryMessage = "Entering {name} Capture Radius";
+        public string TerritoryHeldMessage = "Controlled by {alliance}";
+        public string TerritoryExitMessage = "Leaving {name} Capture Zone";
+        public int CaptureMessageRadius = 25000;
         public string KothBuildingOwner = "BOB";
         public long LootboxGridEntityId = 0;
         public string LootBoxTerminalName = "LOOT BOX";
