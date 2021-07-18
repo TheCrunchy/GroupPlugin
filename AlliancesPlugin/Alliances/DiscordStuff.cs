@@ -135,16 +135,18 @@ namespace AlliancesPlugin.Alliances
                 try
                 {
                     bot.ConnectAsync();
+                    bot.MessageCreated += Discord_AllianceMessage;
                 }
                 catch (Exception ex)
                 {
                     AlliancePlugin.Log.Error(ex);
 
+
                     return Task.CompletedTask;
                 }
                 if (!allianceBots.ContainsKey(alliance.AllianceId))
                 {
-                    bot.MessageCreated += Discord_AllianceMessage;
+            
 
                     allianceBots.Remove(alliance.AllianceId);
                     allianceBots.Add(alliance.AllianceId, bot);
@@ -153,6 +155,7 @@ namespace AlliancesPlugin.Alliances
                     allianceChannels.Add(channelId, alliance.AllianceId);
                 }
             }
+
             return Task.CompletedTask;
         }
         private static async void RunGameTask(Action obj)
@@ -178,7 +181,6 @@ namespace AlliancesPlugin.Alliances
             }
             Discord?.DisconnectAsync();
         }
-
         public static void SendMessageToDiscord(string message, KothConfig config)
         {
             if (Ready && AlliancePlugin.config.DiscordChannelId > 0 && config.doDiscordMessages)
@@ -230,6 +232,10 @@ namespace AlliancesPlugin.Alliances
                 try
                 {
                     botId = bot.SendMessageAsync(chann, "**[" + WorldName + "] " + prefix + "**: " + message.Replace(" /n", "\n")).Result.Author.Id;
+                    //bot.MessageCreated -= Discord_AllianceMessage;
+                  //  bot.MessageCreated += Discord_AllianceMessage;
+                   
+                   
                 }
                 catch (DSharpPlus.Exceptions.RateLimitException)
                 {

@@ -250,7 +250,7 @@ namespace AlliancesPlugin.Alliances
                         if (alliance.JoinAlliance(fac))
                         {
                             Context.Respond("Joined alliance!");
-                     
+
                             AlliancePlugin.FactionsInAlliances.Remove(fac.FactionId);
                             AlliancePlugin.FactionsInAlliances.Add(fac.FactionId, alliance.name);
                             AlliancePlugin.SaveAllianceData(alliance);
@@ -367,24 +367,32 @@ namespace AlliancesPlugin.Alliances
             {
                 if (alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.ChangeTax))
                 {
-
-                    if (rank.ToLower().Equals("unranked"))
+                    if (rank.ToLower().Equals("leader"))
                     {
-                        alliance.UnrankedPerms.taxRate = amount;
-                        Context.Respond("Updated tax rate for unranked.");
+                        alliance.leadertax = amount;
+                        Context.Respond("Updated tax rate for leader.");
                         AlliancePlugin.SaveAllianceData(alliance);
                     }
                     else
                     {
-                        if (alliance.CustomRankPermissions.ContainsKey(rank))
+                        if (rank.ToLower().Equals("unranked"))
                         {
-                            alliance.CustomRankPermissions[rank].taxRate = amount;
-                            Context.Respond("Updated tax rate for " + rank + ".");
+                            alliance.UnrankedPerms.taxRate = amount;
+                            Context.Respond("Updated tax rate for unranked.");
                             AlliancePlugin.SaveAllianceData(alliance);
                         }
                         else
                         {
-                            Context.Respond("That rank doesnt exist.");
+                            if (alliance.CustomRankPermissions.ContainsKey(rank))
+                            {
+                                alliance.CustomRankPermissions[rank].taxRate = amount;
+                                Context.Respond("Updated tax rate for " + rank + ".");
+                                AlliancePlugin.SaveAllianceData(alliance);
+                            }
+                            else
+                            {
+                                Context.Respond("That rank doesnt exist.");
+                            }
                         }
                     }
                 }
@@ -1081,13 +1089,13 @@ namespace AlliancesPlugin.Alliances
                             AllianceChat.SendChatMessage(alliance.AllianceId, "Alliance", fac2.Tag + " was kicked from the alliance!", true, 0);
                             foreach (long id in alliance.AllianceMembers)
                             {
-                              
+
                                 IMyFaction member = MySession.Static.Factions.TryGetFactionById(id);
                                 if (member != null)
                                 {
                                     MyFactionCollection.DeclareWar(member.FactionId, fac2.FactionId);
                                     MySession.Static.Factions.SetReputationBetweenFactions(id, fac2.FactionId, -1500);
-                                  
+
                                     foreach (MyFactionMember m in member.Members.Values)
                                     {
                                         AllianceChat.PeopleInAllianceChat.Remove(MySession.Static.Players.TryGetSteamId(m.PlayerId));
@@ -1608,7 +1616,7 @@ namespace AlliancesPlugin.Alliances
 
             if (Context.Player != null)
             {
-               
+
                 //Do stuff with taking components from grid storage
                 //GridCosts localGridCosts = GetComponentsAndCost(projectedGrid);
                 //gridCosts.setComponents(localGridCosts.getComponents());
@@ -1632,7 +1640,7 @@ namespace AlliancesPlugin.Alliances
         }
         [Command("log", "View the bank log")]
         [Permission(MyPromoteLevel.None)]
-        public void BankLog(string timeformat = "MM-dd-yyyy",bool ignoreKoth = false, int max = 100)
+        public void BankLog(string timeformat = "MM-dd-yyyy", bool ignoreKoth = false, int max = 100)
         {
 
             if (Context.Player != null)

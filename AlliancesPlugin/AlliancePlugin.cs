@@ -389,7 +389,7 @@ namespace AlliancesPlugin
             }
             if (state == TorchSessionState.Loaded)
             {
-                if (config != null && config.AllowDiscord)
+                if (config != null && config.AllowDiscord && !DiscordStuff.Ready)
                 {
                     DiscordStuff.RegisterDiscord();
                 }
@@ -1333,7 +1333,7 @@ namespace AlliancesPlugin
                     Boolean hasActiveCaptureBlock = false;
                     // Log.Info("We capping?");
                     Vector3 position = new Vector3(config.x, config.y, config.z);
-                    BoundingSphereD sphere = new BoundingSphereD(position, config.CaptureRadiusInMetre);
+                    BoundingSphereD sphere = new BoundingSphereD(position, config.CaptureRadiusInMetre * 2);
                     if (DateTime.Now >= config.unlockTime)
                     {
                         config.unlockTime = DateTime.Now.AddYears(1);
@@ -1952,6 +1952,7 @@ namespace AlliancesPlugin
         public static Dictionary<long, DateTime> InTerritory = new Dictionary<long, DateTime>();
         public static void SendEnterMessage(MyPlayer player, Territory ter)
         {
+
             Alliance alliance = null;
          
                 alliance = AlliancePlugin.GetAllianceNoLoading(ter.Alliance);
@@ -2023,70 +2024,7 @@ namespace AlliancesPlugin
             }
             jumpies.Clear();
             ticks++;
-            if (ticks % 128 == 0)
-            {
-
-                try
-                {
-                    foreach (MyPlayer player in MySession.Static.Players.GetOnlinePlayers())
-                    {
-                        if (player.GetPosition() == null)
-                        {
-                            continue;
-                        }
-                        if (config.KothEnabled)
-                        {
-                            foreach (KothConfig koth in KOTHs)
-                            {
-                                if (Vector3.Distance(player.GetPosition(), new Vector3(koth.x, koth.y, koth.z)) <= koth.CaptureRadiusInMetre)
-                                {
-                                    if (!InCapRadius.ContainsKey(player.Id.SteamId))
-                                    {
-                                        InCapRadius.Add(player.Id.SteamId, koth.KothName);
-                                        NotificationMessage message2 = new NotificationMessage("You are inside the capture radius.", 10000, "White");
-                                        //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
-                                        ModCommunication.SendMessageTo(message2, player.Id.SteamId);
-                                    }
-                                }
-                                else
-                                {
-                                    if (InCapRadius.TryGetValue(player.Id.SteamId, out string name))
-                                    {
-                                        if (koth.KothName.Equals(name))
-                                        {
-                                            InCapRadius.Remove(player.Id.SteamId);
-                                            NotificationMessage message2 = new NotificationMessage("You are outside the capture radius.", 10000, "Red");
-                                            //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
-                                            ModCommunication.SendMessageTo(message2, player.Id.SteamId);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        foreach (Territory ter in Territories.Values)
-                        {
-                            if (Vector3.Distance(player.GetPosition(), new Vector3(ter.x, ter.y, ter.z)) <= ter.Radius)
-                            {
-                                SendEnterMessage(player, ter);
-                            }
-                            else
-                            {
-                                if (InTerritory.ContainsKey(player.Identity.IdentityId))
-                                {
-                                    SendLeaveMessage(player, ter);
-                                }
-                            }
-                        }
-                    }
-
-                }
-
-                catch (Exception ex)
-                {
-
-                }
-            }
-
+          
             if (ticks % 512 == 0)
             {
 
@@ -2136,7 +2074,6 @@ namespace AlliancesPlugin
 
             if (DateTime.Now > NextUpdate && TorchState == TorchSessionState.Loaded)
             {
-
                 Log.Info("Doing alliance tasks");
                 DateTime now = DateTime.Now;
                 //try
@@ -2221,6 +2158,72 @@ namespace AlliancesPlugin
                     {
                         Log.Error(ex);
                     }
+                }
+            }
+            if (ticks % 128 == 0)
+            {
+
+                try
+                {
+                    foreach (MyPlayer player in MySession.Static.Players.GetOnlinePlayers())
+                    {
+                        if (player.GetPosition() != null)
+                        {
+
+                            if (config.KothEnabled)
+                            {
+                                foreach (KothConfig koth in KOTHs)
+                                {
+                                    if (Vector3.Distance(player.GetPosition(), new Vector3(koth.x, koth.y, koth.z)) <= koth.CaptureRadiusInMetre)
+                                    {
+                                        if (!InCapRadius.ContainsKey(player.Id.SteamId))
+                                        {
+                                            InCapRadius.Add(player.Id.SteamId, koth.KothName);
+                                            NotificationMessage message2 = new NotificationMessage("You are inside the capture radius.", 10000, "White");
+                                            //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
+                                            ModCommunication.SendMessageTo(message2, player.Id.SteamId);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (InCapRadius.TryGetValue(player.Id.SteamId, out string name))
+                                        {
+                                            if (koth.KothName.Equals(name))
+                                            {
+                                                InCapRadius.Remove(player.Id.SteamId);
+                                                NotificationMessage message2 = new NotificationMessage("You are outside the capture radius.", 10000, "Red");
+                                                //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
+                                                ModCommunication.SendMessageTo(message2, player.Id.SteamId);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            foreach (Territory ter in Territories.Values)
+                            {
+                                if (ter.enabled)
+                                {
+                                    if (Vector3.Distance(player.GetPosition(), new Vector3(ter.x, ter.y, ter.z)) <= ter.Radius)
+                                    {
+                                        SendEnterMessage(player, ter);
+                                    }
+                                    else
+                                    {
+                                        if (InTerritory.ContainsKey(player.Identity.IdentityId))
+                                        {
+                                            SendLeaveMessage(player, ter);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                }
+
+                catch (Exception ex)
+                {
+
                 }
             }
 
