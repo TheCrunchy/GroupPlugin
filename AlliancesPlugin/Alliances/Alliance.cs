@@ -113,6 +113,18 @@ namespace AlliancesPlugin.Alliances
             return false;
         }
 
+        public int GetFactionCount()
+        {
+            int count = 0;
+            foreach (long id in this.AllianceMembers)
+            {
+                if (MySession.Static.Factions.TryGetFactionById(id) != null)
+                {
+                    count++;
+                }
+            }
+            return count;
+        }
         public float leadertax = 0;
         public float GetTaxRate(ulong id)
         {
@@ -378,14 +390,28 @@ namespace AlliancesPlugin.Alliances
             sb.AppendLine("");
             bankBalance = DatabaseForBank.GetBalance(AllianceId);
             sb.AppendLine("Bank Balance : " + String.Format("{0:n0}", bankBalance) + " SC.");
+            sb.AppendLine("");
             if (failedUpkeep > 0)
             {
                 sb.AppendLine("Failed Upkeep : " + this.failedUpkeep + " Deleted at " + AlliancePlugin.config.UpkeepFailBeforeDelete);
             }
             
-       
             sb.AppendLine("Expected Upkeep Value :" + String.Format("{0:n0}", this.GetUpkeep()) + " SC.");
+            int mult = this.GetFactionCount();
             sb.AppendLine("");
+            sb.AppendLine("Item Upkeep");
+            foreach (KeyValuePair<MyDefinitionId, int> keys in AlliancePlugin.ItemUpkeep)
+            {
+                string temp = keys.Key.ToString();
+                temp = temp.Replace("MyObjectBuilder_", "");
+                temp = temp.Replace("/", " ");
+                sb.AppendLine(temp + " : " + keys.Value * mult);
+            }
+            sb.AppendLine("");
+            sb.AppendLine("Vault contents");
+            sb.AppendLine(DatabaseForBank.GetVaultString(this));
+            sb.AppendLine("");
+
             sb.AppendLine("Meta Points : " + String.Format("{0:n0}", CurrentMetaPoints));
             sb.AppendLine("");
             sb.AppendLine(LeaderTitle);

@@ -13,6 +13,7 @@ namespace AlliancesPlugin.JumpGates
         public Guid GateId = System.Guid.NewGuid();
         public Boolean UseSafeZones = true;
         public long SafeZoneEntityId = 1;
+        public Boolean GeneratedZone2 = false;
         public Guid TargetGateId;
         public Vector3 Position;
         public string GateName;

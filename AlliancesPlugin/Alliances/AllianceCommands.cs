@@ -787,7 +787,7 @@ namespace AlliancesPlugin.Alliances
         }
         [Command("takepoints", "take points from an alliance")]
         [Permission(MyPromoteLevel.Admin)]
-        public void AllianceInfo(string name, int amount)
+        public void AllianceTakePoints(string name, int amount)
         {
             Boolean console = false;
             Alliance alliance = null;

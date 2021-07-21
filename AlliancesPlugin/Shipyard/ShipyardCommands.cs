@@ -252,7 +252,11 @@ namespace AlliancesPlugin.Shipyard
                         queue.getQueue().TryGetValue(i, out PrintQueueItem slot);
                         DateTime start = slot.startTime;
                         DateTime end = slot.endTime;
-
+                        if (start == null || end == null || slot.name == null)
+                        {
+                            SendMessage("[ " + i + " ]", "Broken slot delete with !shipyard delete " + i, Color.Green, (long)Context.Player.SteamUserId);
+                            continue;
+                        }
                         if (DateTime.Now > end)
                         {
                             SendMessage("[ " + i + " ]", slot.name.Split('_')[0] + " : " + slot.ownerName + " : Claim with !shipyard claim " + i, Color.Green, (long)Context.Player.SteamUserId);
@@ -1010,6 +1014,88 @@ namespace AlliancesPlugin.Shipyard
                 }
             }
         }
+        [Command("delete", "delete a print")]
+        [Permission(MyPromoteLevel.None)]
+        public void DeletePrint(string slotNumber)
+        {
+            if (!AlliancePlugin.config.ShipyardEnabled)
+            {
+                Context.Respond("Shipyard not enabled.");
+                return;
+            }
+            if (Context.Player != null)
+            {
+                IMyFaction faction = FacUtils.GetPlayersFaction(Context.Player.IdentityId);
+                int slot;
+                if (faction == null)
+                {
+                    SendMessage("[Shipyard]", "You arent in a faction.", Color.Red, (long)Context.Player.SteamUserId);
+                    return;
+                }
+                try
+                {
+                    slot = int.Parse(slotNumber);
+                }
+                catch (Exception)
+                {
+                    SendMessage("[Shipyard]", "Cannot parse that number.", Color.Red, (long)Context.Player.SteamUserId);
+                    return;
+                }
+
+                Alliance alliance = AlliancePlugin.GetAlliance(faction as MyFaction);
+                if (alliance == null)
+                {
+                    Context.Respond("Target faction not member of alliance.");
+                    return;
+                }
+                if (!alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.ShipyardClaim) && !alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.ShipyardClaimOther))
+                {
+                    Context.Respond("Current rank does not have access to claim shipyard builds.");
+                    return;
+                }
+                PrintQueue queue = alliance.LoadPrintQueue();
+                if (queue == null)
+                {
+                    SendMessage("[Shipyard]", "Alliance has no queue, to unlock use !shipyard upgrade", Color.Red, (long)Context.Player.SteamUserId);
+                    return;
+                }
+
+                PrintQueueItem item;
+                queue.getQueue().TryGetValue(slot, out item);
+                if (item.name == null || item.startTime == null || item.endTime == null)
+                {
+                    if (item.ownerSteam.Equals((long)Context.Player.SteamUserId) || alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.ShipyardClaimOther))
+                    {
+                        queue.removeFromQueue(slot);
+                        alliance.SavePrintQueue(queue);
+                        PrintLog log = queue.GetLog(alliance);
+                        PrintLogItem newLog = new PrintLogItem();
+                        newLog.Claimed = true;
+                        newLog.Grid = item.name;
+                        newLog.SteamId = Context.Player.SteamUserId;
+                        newLog.TimeClaimed = DateTime.Now;
+                        log.log.Add(newLog);
+                        queue.SaveLog(alliance, log);
+                        Context.Respond("Deleted.");
+                    }
+                    else
+                    {
+                        SendMessage("[Shipyard]", "That isnt yours to claim and you do not have the officer override.", Color.Red, (long)Context.Player.SteamUserId);
+                        return;
+                    }
+                }
+                else
+                {
+                    Context.Respond("This slot doesnt appear to be broken.");
+                }
+                // 
+                //   
+
+            }
+
+        }
+
+
         [Command("claim", "Claim a print")]
         [Permission(MyPromoteLevel.None)]
         public void ClaimPrint(string slotNumber)
@@ -1075,6 +1161,13 @@ namespace AlliancesPlugin.Shipyard
                
                     DateTime start = item.startTime;
                     DateTime end = item.endTime;
+                    if (start == null || end == null || item.name == null)
+                    {
+                        queue.removeFromQueue(slot);
+                        alliance.SavePrintQueue(queue);
+                        SendMessage("[ " + slot + " ]", "Bugged grid deleted from queue.", Color.Green, (long)Context.Player.SteamUserId);
+                        return;
+                    }
                     if (!item.ownerSteam.Equals((long)Context.Player.SteamUserId) && alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.ShipyardClaimOther)){
                         end.AddDays(3);
                     }
@@ -1374,7 +1467,7 @@ namespace AlliancesPlugin.Shipyard
 
                                 store = grid;
                                 VRage.Game.ModAPI.IMyCubeGrid projectedGrid = projector.ProjectedGrid;
-                                if (projectedGrid == null)
+                                if (projectedGrid == null || !projector.IsProjecting)
                                 {
                                     continue;
                                 }
@@ -1426,6 +1519,11 @@ namespace AlliancesPlugin.Shipyard
             if (store == null)
             {
                 Context.Respond("No projector named Projector Printer.");
+                return;
+            }
+            if (gridsToSave.Count == 0)
+            {
+                Context.Respond("No projected grids found.");
                 return;
             }
             Int64 price = Convert.ToInt64(gridCosts.BlockCount * printerConfig.SCPerBlock);

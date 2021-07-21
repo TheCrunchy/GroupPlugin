@@ -78,16 +78,7 @@ namespace AlliancesPlugin.Alliances
                 }
                 Discord.MessageCreated += Discord_MessageCreated;
                 game = new DiscordActivity();
-
-                Discord.Ready += async e =>
-                {
-                    Ready = true;
-                    await Task.CompletedTask;
-                };
-
-
-
-
+                Ready = true;
             }
             return Task.CompletedTask;
         }

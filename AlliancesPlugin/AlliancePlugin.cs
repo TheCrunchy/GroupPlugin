@@ -43,6 +43,7 @@ using VRage.Network;
 using Sandbox.Game.Screens.Helpers;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using Sandbox.Game.Entities.Cube;
 
 namespace AlliancesPlugin
 {
@@ -72,6 +73,7 @@ namespace AlliancesPlugin
 
         public static ITorchBase TorchBase;
         public static bool GridBackupInstalled = false;
+        public static Dictionary<MyDefinitionId, int> ItemUpkeep = new Dictionary<MyDefinitionId, int>();
         public static void InitPluginDependencies(PluginManager Plugins)
         {
 
@@ -113,6 +115,10 @@ namespace AlliancesPlugin
             if (!Directory.Exists(path + "//JumpGates//"))
             {
                 Directory.CreateDirectory(path + "//JumpGates//");
+            }
+            if (!Directory.Exists(path + "//Vaults//"))
+            {
+                Directory.CreateDirectory(path + "//Vaults//");
             }
             if (!Directory.Exists(path + "//Territories//"))
             {
@@ -202,6 +208,7 @@ namespace AlliancesPlugin
         public static Config LoadConfig()
         {
             FileUtils utils = new FileUtils();
+            LoadItemUpkeep();
             config = utils.ReadFromXmlFile<Config>(basePath + "\\Alliances.xml");
             KOTHs.Clear();
             foreach (String s in Directory.GetFiles(basePath + "//Alliances//KOTH//"))
@@ -389,10 +396,7 @@ namespace AlliancesPlugin
             }
             if (state == TorchSessionState.Loaded)
             {
-                if (config != null && config.AllowDiscord && !DiscordStuff.Ready)
-                {
-                    DiscordStuff.RegisterDiscord();
-                }
+
                 if (System.IO.File.Exists(path + "//NoYeetStations.txt"))
                 {
                     String[] line = File.ReadAllLines(path + "//NoYeetStations.txt");
@@ -455,7 +459,15 @@ namespace AlliancesPlugin
                 {
                     Directory.CreateDirectory(path + "//HangarUpgrades//");
                 }
+                if (!File.Exists(path + "//ItemUpkeep.txt"))
+                {
 
+                    StringBuilder output = new StringBuilder();
+                    output.AppendLine("TypeId,SubtypeId,Amount");
+                    output.AppendLine("MyObjectBuilder_Ingot,Uranium,1");
+                    File.WriteAllText(path + "//ItemUpkeep.txt", output.ToString());
+
+                }
                 if (!File.Exists(path + "//ShipyardUpgrades//SpeedUpgrade1.txt"))
                 {
 
@@ -586,6 +598,10 @@ namespace AlliancesPlugin
                 LoadAllGates();
 
 
+
+                LoadItemUpkeep();
+    
+
                 foreach (Alliance alliance in AllAlliances.Values)
                 {
                     alliance.ForceFriendlies();
@@ -623,6 +639,34 @@ namespace AlliancesPlugin
                 }
                 //        DatabaseForBank bank = new DatabaseForBank();
                 //    bank.CreateTable(bank.CreateConnection());
+            }
+        }
+        public static void LoadItemUpkeep()
+        {
+            String[] line;
+            line = File.ReadAllLines(path + "//ItemUpkeep.txt");
+            for (int i = 1; i < line.Length; i++)
+            {
+
+                String[] split = line[i].Split(',');
+                foreach (String s in split)
+                {
+                    s.Replace(" ", "");
+                }
+
+                if (MyDefinitionId.TryParse(split[0], split[1], out MyDefinitionId id))
+                {
+                    if (ItemUpkeep.ContainsKey(id))
+                    {
+                        ItemUpkeep[id] += int.Parse(split[2]);
+                    }
+                    else
+                    {
+                        ItemUpkeep.Add(id, int.Parse(split[2]));
+                    }
+
+                }
+
             }
         }
         public static DateTime nextRegister = DateTime.Now.AddSeconds(15);
@@ -907,11 +951,22 @@ namespace AlliancesPlugin
                     {
                         gate.OwnerAlliance = Guid.Empty;
                     }
-                    if (gate.UseSafeZones)
+                    BoundingSphereD sphere2 = new BoundingSphereD(gate.Position, gate.RadiusToJump + 1000);
+                    if (MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere2).OfType<MySafeZone>().Count() >= 2){
+                        foreach (MySafeZone zonee in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere2).OfType<MySafeZone>())
+                        {
+                            zonee.Close();
+                       
+                            gate.GeneratedZone2 = false;
+                            gate.SafeZoneEntityId = 1;
+                        }
+                    }
+                    if (gate.UseSafeZones && !gate.GeneratedZone2 && gate.SafeZoneEntityId != 1)
                     {
                         MyEntity gateEntity = MyAPIGateway.Entities.GetEntityById(gate.SafeZoneEntityId) as MyEntity;
                         if (gateEntity == null)
                         {
+                            gate.GeneratedZone2 = true;
                             MyObjectBuilder_SafeZone objectBuilderSafeZone = new MyObjectBuilder_SafeZone();
                             objectBuilderSafeZone.PositionAndOrientation = new MyPositionAndOrientation?(new MyPositionAndOrientation(gate.Position, Vector3.Forward, Vector3.Up));
                             objectBuilderSafeZone.PersistentFlags = MyPersistentEntityFlags2.InScene;
@@ -935,6 +990,7 @@ namespace AlliancesPlugin
                             {
                                 if (zone.Radius != (float)gate.RadiusToJump)
                                 {
+                                    gate.GeneratedZone2 = true;
                                     MyObjectBuilder_SafeZone objectBuilderSafeZone = new MyObjectBuilder_SafeZone();
                                     objectBuilderSafeZone.PositionAndOrientation = new MyPositionAndOrientation?(new MyPositionAndOrientation(gate.Position, Vector3.Forward, Vector3.Up));
                                     objectBuilderSafeZone.PersistentFlags = MyPersistentEntityFlags2.InScene;
@@ -959,6 +1015,7 @@ namespace AlliancesPlugin
                             }
                             else
                             {
+                                gate.GeneratedZone2 = true;
                                 MyObjectBuilder_SafeZone objectBuilderSafeZone = new MyObjectBuilder_SafeZone();
                                 objectBuilderSafeZone.PositionAndOrientation = new MyPositionAndOrientation?(new MyPositionAndOrientation(gate.Position, Vector3.Forward, Vector3.Up));
                                 objectBuilderSafeZone.PersistentFlags = MyPersistentEntityFlags2.InScene;
@@ -1956,14 +2013,15 @@ namespace AlliancesPlugin
             Alliance alliance = null;
          
                 alliance = AlliancePlugin.GetAllianceNoLoading(ter.Alliance);
-
+           
+           
             NotificationMessage message2 = new NotificationMessage();
             if (InTerritory.ContainsKey(player.Identity.IdentityId))
             {
                 if (DateTime.Now < InTerritory[player.Identity.IdentityId])
                     return;
 
-                message2 = new NotificationMessage(ter.EntryMessage.Replace("{name}", ter.Name), 60000, "Green");
+                message2 = new NotificationMessage(ter.EntryMessage.Replace("{name}", ter.Name), 30000, "Green");
                 //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
 
                 if (!TerritoryInside.ContainsKey(player.Id.SteamId))
@@ -1975,23 +2033,23 @@ namespace AlliancesPlugin
                     TerritoryInside[player.Id.SteamId] = ter.Id;
                 }
                 ModCommunication.SendMessageTo(message2, player.Id.SteamId);
-                InTerritory[player.Identity.IdentityId] = DateTime.Now.AddMinutes(5);
+                InTerritory[player.Identity.IdentityId] = DateTime.Now.AddMinutes(2);
                 if (alliance != null)
                 {
-                    NotificationMessage message3 = new NotificationMessage(ter.ControlledMessage.Replace("{alliance}", alliance.name), 60000, "Red");
+                    NotificationMessage message3 = new NotificationMessage(ter.ControlledMessage.Replace("{alliance}", alliance.name), 15000, "Red");
                     ModCommunication.SendMessageTo(message3, player.Id.SteamId);
+              
                 }
                 return;
             }
             else
             {
-
-                message2 = new NotificationMessage(ter.EntryMessage.Replace("{name}", ter.Name), 60000, "Green");
+                message2 = new NotificationMessage(ter.EntryMessage.Replace("{name}", ter.Name), 15000, "Green");
                 ModCommunication.SendMessageTo(message2, player.Id.SteamId);
-                InTerritory.Add(player.Identity.IdentityId, DateTime.Now.AddMinutes(5));
+                InTerritory.Add(player.Identity.IdentityId, DateTime.Now.AddMinutes(2));
                 if (alliance != null)
                 {
-                    NotificationMessage message3 = new NotificationMessage(ter.ControlledMessage.Replace("{alliance}", alliance.name), 60000, "Red");
+                    NotificationMessage message3 = new NotificationMessage(ter.ControlledMessage.Replace("{alliance}", alliance.name), 15000, "Red");
                     ModCommunication.SendMessageTo(message3, player.Id.SteamId);
                 }
                 return;
@@ -2007,7 +2065,7 @@ namespace AlliancesPlugin
                 }
             }
 
-            NotificationMessage message2 = new NotificationMessage(ter.ExitMessage.Replace("{name}", ter.Name), 60000, "White");
+            NotificationMessage message2 = new NotificationMessage(ter.ExitMessage.Replace("{name}", ter.Name), 30000, "White");
             //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
             ModCommunication.SendMessageTo(message2, player.Id.SteamId);
             InTerritory.Remove(player.Identity.IdentityId);
@@ -2075,6 +2133,10 @@ namespace AlliancesPlugin
             if (DateTime.Now > NextUpdate && TorchState == TorchSessionState.Loaded)
             {
                 Log.Info("Doing alliance tasks");
+                if (config != null && config.AllowDiscord && !DiscordStuff.Ready)
+                {
+                    DiscordStuff.RegisterDiscord();
+                }
                 DateTime now = DateTime.Now;
                 //try
                 //{
@@ -2179,7 +2241,7 @@ namespace AlliancesPlugin
                                         if (!InCapRadius.ContainsKey(player.Id.SteamId))
                                         {
                                             InCapRadius.Add(player.Id.SteamId, koth.KothName);
-                                            NotificationMessage message2 = new NotificationMessage("You are inside the capture radius.", 10000, "White");
+                                            NotificationMessage message2 = new NotificationMessage("You are inside the capture radius.", 10000, "Green");
                                             //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
                                             ModCommunication.SendMessageTo(message2, player.Id.SteamId);
                                         }

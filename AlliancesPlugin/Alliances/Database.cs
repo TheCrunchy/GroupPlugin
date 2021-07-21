@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using VRage.Game;
 
 namespace AlliancesPlugin.Alliances
 {
@@ -87,10 +87,11 @@ namespace AlliancesPlugin.Alliances
                         }
                         else
                         {
-                            if (bank.balance >= alliance.GetUpkeep())
+                            if (bank.balance >= alliance.GetUpkeep() && CanDoItemUpkeep(alliance))
                             {
                                 bank.balance -= alliance.GetUpkeep();
-                                collection.Update(bank);
+                            DoItemUpkeep(alliance);
+                            collection.Update(bank);
                                 AllianceChat.SendChatMessage(alliance.AllianceId, "Upkeep", "Paying upkeep of " + String.Format("{0:n0}", alliance.GetUpkeep()) + " SC.", true, 0);
                                 alliance.Upkeep(alliance.GetUpkeep(), 1);
                                 alliance.bankBalance -= alliance.GetUpkeep();
@@ -170,10 +171,11 @@ namespace AlliancesPlugin.Alliances
                         }
                         else
                         {
-                            if (bank.balance >= alliance.GetUpkeep())
+                            if (bank.balance >= alliance.GetUpkeep() && CanDoItemUpkeep(alliance))
                             {
                                 bank.balance -= alliance.GetUpkeep();
                                 collection.Update(bank);
+                                DoItemUpkeep(alliance);
                                 AllianceChat.SendChatMessage(alliance.AllianceId, "Upkeep", "Paying upkeep of " + String.Format("{0:n0}", alliance.GetUpkeep()) + " SC.", true, 0);
                                 alliance.Upkeep(alliance.GetUpkeep(), 1);
                                 alliance.bankBalance -= alliance.GetUpkeep();
@@ -230,6 +232,26 @@ namespace AlliancesPlugin.Alliances
             //  }
             try
             {
+                using (var db = new LiteDatabase("Filename=" + AlliancePlugin.path + "//Vaults//" + alliance.AllianceId.ToString() + ".db;Connection=shared;Upgrade=True;"))
+                {
+                    var collection = db.GetCollection<VaultData>("VaultData");
+                    var vault = new VaultData
+                    {
+                      
+                    };
+                    collection.Insert(vault);
+
+                }
+
+            }
+            catch (Exception ex)
+            {
+                AlliancePlugin.Log.Error("Error creating new alliance in db");
+                AlliancePlugin.Log.Error(ex);
+                return false;
+            }
+            try
+            {
                 using (var db = new LiteDatabase(connectionString))
                 {
                     var collection = db.GetCollection<BankData>("BankData");
@@ -272,6 +294,121 @@ namespace AlliancesPlugin.Alliances
             //AlliancePlugin.Log.Info("Successfully created bank data in database!");
             //return true;
         }
+        public static String GetVaultString(Alliance alliance)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            try
+            {
+                using (var db = new LiteDatabase("Filename=" + AlliancePlugin.path + "//Vaults//" + alliance.AllianceId.ToString() + ".db;Connection=shared;Upgrade=True;"))
+                {
+                    var collection = db.GetCollection<VaultData>("VaultData");
+                   foreach (var vault in collection.FindAll())
+                    {
+                        string temp = vault.Id;
+                       temp = temp.Replace("MyObjectBuilder_", "");
+                        temp = temp.Replace("/", " ");
+                        sb.Append(temp + " : " + vault.count);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                AlliancePlugin.Log.Error("Error with reading vault");
+                AlliancePlugin.Log.Error(ex);
+                return "error getting vault";
+            }
+            return sb.ToString();
+
+        }
+        public static void DoItemUpkeep(Alliance alliance)
+        {
+            using (var db = new LiteDatabase("Filename=" + AlliancePlugin.path + "//Vaults//" + alliance.AllianceId.ToString() + ".db;Connection=shared;Upgrade=True;"))
+            {
+
+                var collection = db.GetCollection<VaultData>("VaultData");
+                foreach (KeyValuePair<MyDefinitionId, int> key in AlliancePlugin.ItemUpkeep)
+                {
+                    var vault = collection.FindById(key.Key.ToString());
+                    vault.count -= key.Value * alliance.GetFactionCount();
+                    collection.Update(vault);
+                }
+            }
+        }
+        public static Boolean CanDoItemUpkeep(Alliance alliance)
+        {
+            bool canPayItems = true;
+            using (var db = new LiteDatabase("Filename=" + AlliancePlugin.path + "//Vaults//" + alliance.AllianceId.ToString() + ".db;Connection=shared;Upgrade=True;"))
+            {
+
+                var collection = db.GetCollection<VaultData>("VaultData");
+       foreach (KeyValuePair<MyDefinitionId, int> key in AlliancePlugin.ItemUpkeep)
+                {
+                    var vault = collection.FindById(key.Key.ToString());
+                    if (vault == null)
+                    {
+                        vault = new VaultData
+                        {
+                            Id = key.Key.ToString(),
+                            count = 0
+                        };
+                        canPayItems = false;
+                        collection.Insert(vault);
+                    }
+                    else
+                    {
+                        if (vault.count < key.Value * alliance.GetFactionCount())
+                        {
+                            canPayItems = false;
+                        }
+                    }
+                }
+
+
+            }
+
+            return canPayItems;
+        }
+        public static Boolean DepositToVault(Alliance alliance, MyDefinitionId id, int amount)
+        {
+            try
+            {
+                using (var db = new LiteDatabase("Filename=" + AlliancePlugin.path + "//Vaults//" + alliance.AllianceId.ToString() + ".db;Connection=shared;Upgrade=True;"))
+                {
+                  
+                    var collection = db.GetCollection<VaultData>("VaultData");
+                    var vault = collection.FindById(id.ToString());
+                    if (vault == null)
+                    {
+                        vault = new VaultData
+                        {
+                            Id = id.ToString(),
+                            count = amount
+                        };
+                        collection.Insert(vault);
+
+                    }
+                    else
+                    {
+                        vault.count += amount;
+
+                        collection.Update(vault);
+                    }
+
+
+                }
+
+            }
+            catch (Exception ex)
+            {
+                AlliancePlugin.Log.Error("Error with adding to vault");
+                AlliancePlugin.Log.Error(ex);
+                return false;
+            }
+            return true;
+
+        }
+
         public static Boolean PayShipyardFee(Alliance alliance, long fee, ulong id)
         {
             try

@@ -14,6 +14,10 @@ using System.IO;
 using Sandbox.Engine.Multiplayer;
 using Torch.Mod.Messages;
 using Torch.Mod;
+using Sandbox.Game.Entities;
+using System.Collections.Concurrent;
+using VRage.Groups;
+using Sandbox.Game.Entities.Cube;
 
 namespace AlliancesPlugin
 {
@@ -39,6 +43,26 @@ namespace AlliancesPlugin
             if (fac != null) 
             {
                 fac.Tag = newtag;
+            }
+        }
+        [Command("reftest", "change refinery settings")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void ChangeRefinery()
+        {
+            ConcurrentBag<MyGroups<MyCubeGrid, MyGridPhysicalGroupData>.Group> gridWithSubGrids;
+            gridWithSubGrids = GridFinder.FindLookAtGridGroup(Context.Player.Character);
+
+            foreach (var item in gridWithSubGrids)
+            {
+                foreach (MyGroups<MyCubeGrid, MyGridPhysicalGroupData>.Node groupNodes in item.Nodes)
+                {
+                    MyCubeGrid grid = groupNodes.NodeData;
+                    foreach(MyRefinery refinery in grid.GetFatBlocks().OfType<MyRefinery>())
+                    {
+                        RefineryPatch.RefineriesToUpdate.Add(refinery.EntityId);
+                    }
+
+                }
             }
         }
 
