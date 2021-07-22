@@ -11,6 +11,11 @@ using VRage.Game.ModAPI;
 using VRageMath;
 using AlliancesPlugin.Alliances;
 using Sandbox.Engine.Multiplayer;
+using Sandbox.Common.ObjectBuilders;
+using VRage;
+using VRage.ObjectBuilders;
+using VRage.Game.ObjectBuilders.Components;
+using VRage.Game.Entity;
 
 namespace AlliancesPlugin.JumpGates
 {
@@ -45,12 +50,71 @@ namespace AlliancesPlugin.JumpGates
                 RadiusToJump = radiusToJump,
                 WorldName = MyMultiplayer.Static.HostName
             };
-
-            AlliancePlugin.AllGates.Add(gate.GateId, gate);
+            gate.GeneratedZone2 = true;
+            MyObjectBuilder_SafeZone objectBuilderSafeZone = new MyObjectBuilder_SafeZone();
+            objectBuilderSafeZone.PositionAndOrientation = new MyPositionAndOrientation?(new MyPositionAndOrientation(gate.Position, Vector3.Forward, Vector3.Up));
+            objectBuilderSafeZone.PersistentFlags = MyPersistentEntityFlags2.InScene;
+            objectBuilderSafeZone.Shape = MySafeZoneShape.Sphere;
+            objectBuilderSafeZone.Radius = (float)gate.RadiusToJump;
+            objectBuilderSafeZone.Enabled = true;
+            objectBuilderSafeZone.DisplayName = gate.GateName + " zone";
+            objectBuilderSafeZone.ModelColor = Color.Green.ToVector3();
+            objectBuilderSafeZone.AllowedActions = MySafeZoneAction.Drilling | MySafeZoneAction.Building | MySafeZoneAction.Damage | MySafeZoneAction.Grinding | MySafeZoneAction.Shooting | MySafeZoneAction.Welding | MySafeZoneAction.LandingGearLock;
+            objectBuilderSafeZone.AccessTypeGrids = MySafeZoneAccess.Blacklist;
+            objectBuilderSafeZone.AccessTypeFloatingObjects = MySafeZoneAccess.Blacklist;
+            objectBuilderSafeZone.AccessTypeFactions = MySafeZoneAccess.Blacklist;
+            objectBuilderSafeZone.AccessTypePlayers = MySafeZoneAccess.Blacklist;
+            MyEntity ent = Sandbox.Game.Entities.MyEntities.CreateFromObjectBuilderAndAdd((MyObjectBuilder_EntityBase)objectBuilderSafeZone, true);
+            gate.SafeZoneEntityId = ent.EntityId;
             gate.Save();
+            AlliancePlugin.AllGates.Add(gate.GateId, gate);
             Context.Respond("Gate created. To link to another gate use !jumpgate link gateName targetName");
             Context.Respond("Entry radius " + gate.RadiusToJump);
         }
+
+        [Command("zone", "add a safezone to a gate")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void AddSafeZone(string name)
+        {
+            JumpGate gate1 = null;
+
+
+            foreach (JumpGate gate in AlliancePlugin.AllGates.Values)
+            {
+                if (gate.GateName.Equals(name))
+                {
+                    gate1 = gate;
+                    continue;
+                }
+            }
+            if (gate1 == null)
+            {
+                Context.Respond("Could not find one of those gates.");
+                return;
+            }
+
+            gate1.GeneratedZone2 = true;
+            MyObjectBuilder_SafeZone objectBuilderSafeZone = new MyObjectBuilder_SafeZone();
+            objectBuilderSafeZone.PositionAndOrientation = new MyPositionAndOrientation?(new MyPositionAndOrientation(gate1.Position, Vector3.Forward, Vector3.Up));
+            objectBuilderSafeZone.PersistentFlags = MyPersistentEntityFlags2.InScene;
+            objectBuilderSafeZone.Shape = MySafeZoneShape.Sphere;
+            objectBuilderSafeZone.Radius = (float)gate1.RadiusToJump;
+            objectBuilderSafeZone.Enabled = true;
+            objectBuilderSafeZone.DisplayName = gate1.GateName + " zone";
+            objectBuilderSafeZone.ModelColor = Color.Green.ToVector3();
+            objectBuilderSafeZone.AllowedActions = MySafeZoneAction.Drilling | MySafeZoneAction.Building | MySafeZoneAction.Damage | MySafeZoneAction.Grinding | MySafeZoneAction.Shooting | MySafeZoneAction.Welding | MySafeZoneAction.LandingGearLock;
+            objectBuilderSafeZone.AccessTypeGrids = MySafeZoneAccess.Blacklist;
+            objectBuilderSafeZone.AccessTypeFloatingObjects = MySafeZoneAccess.Blacklist;
+            objectBuilderSafeZone.AccessTypeFactions = MySafeZoneAccess.Blacklist;
+            objectBuilderSafeZone.AccessTypePlayers = MySafeZoneAccess.Blacklist;
+            MyEntity ent = Sandbox.Game.Entities.MyEntities.CreateFromObjectBuilderAndAdd((MyObjectBuilder_EntityBase)objectBuilderSafeZone, true);
+            gate1.SafeZoneEntityId = ent.EntityId;
+            
+            AlliancePlugin.AllGates[gate1.GateId] = gate1;
+            Context.Respond("Added the zone?");
+            gate1.Save();
+        }
+
         [Command("toggle", "toggle activated state of a gate")]
         [Permission(MyPromoteLevel.Admin)]
         public void ToggleGate(string name)
