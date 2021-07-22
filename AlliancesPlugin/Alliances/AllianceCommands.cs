@@ -239,6 +239,13 @@ namespace AlliancesPlugin.Alliances
                 Context.Respond("Only factions can join alliances");
                 return;
             }
+            Alliance temp = AlliancePlugin.GetAlliance(fac);
+            if (temp != null)
+            {
+                Context.Respond("You can only be in one alliance at a time!");
+                return;
+            }
+
             //name = Context.RawArgs;
             if (fac.IsLeader(Context.Player.IdentityId) || fac.IsFounder(Context.Player.IdentityId))
             {
@@ -1038,6 +1045,7 @@ namespace AlliancesPlugin.Alliances
                 }
                 AllianceChat.SendChatMessage(alliance.AllianceId, "Alliance", fac.Tag + " has left the alliance!", true, 0);
                 alliance.AllianceMembers.Remove(fac.FactionId);
+                alliance.EnemyFactions.Add(fac.FactionId);
                 foreach (MyFactionMember m in fac.Members.Values)
                 {
                     AllianceChat.PeopleInAllianceChat.Remove(MySession.Static.Players.TryGetSteamId(m.PlayerId));
@@ -1141,11 +1149,11 @@ namespace AlliancesPlugin.Alliances
             {
                 if (alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.RemoveEnemy))
                 {
+                    IMyFaction fac2;
                     switch (type.ToLower())
                     {
                         case "faction":
-                        case "fac":
-                            IMyFaction fac2 = MySession.Static.Factions.TryGetFactionByTag(tag);
+                            fac2 = MySession.Static.Factions.TryGetFactionByTag(tag);
                             if (fac2 == null)
                             {
                                 Context.Respond("Cant find that faction.");
@@ -1160,18 +1168,41 @@ namespace AlliancesPlugin.Alliances
                             }
                             Context.Respond("Removed from enemy list.");
                             break;
-                        case "alliance":
-                            if (AlliancePlugin.AllAlliances.ContainsKey(tag))
+                        case "fac":
+                            fac2 = MySession.Static.Factions.TryGetFactionByTag(tag);
+                            if (fac2 == null)
+                            {
+                                Context.Respond("Cant find that faction.");
+                                return;
+                            }
+                            if (alliance.EnemyFactions.Contains(fac2.FactionId))
+                            {
+                                alliance.EnemyFactions.Remove(fac2.FactionId);
+                                AlliancePlugin.SaveAllianceData(alliance);
+
+
+                            }
+                            Context.Respond("Removed from enemy list.");
+                            break;
+                        case "other":
+                            Alliance enemy = AlliancePlugin.GetAllianceNoLoading(tag.Replace("\"", ""));
+                            if (enemy != null)
                             {
                                 if (alliance.enemies.Contains(tag))
                                 {
                                     alliance.enemies.Remove(tag);
                                     AlliancePlugin.SaveAllianceData(alliance);
 
-
+                                    Context.Respond("Removed from enemy list.");
                                 }
                             }
-                            Context.Respond("Removed from enemy list.");
+                            else
+                            {
+                                Context.Respond("Could not find that alliance.");
+                            }
+                            break;
+                        default:
+                            Context.Respond("Error, use faction, fac or other as type.");
                             break;
                     }
                 }
@@ -1195,18 +1226,18 @@ namespace AlliancesPlugin.Alliances
                 Context.Respond("Only factions can be in alliances.");
                 return;
             }
-
+       
 
             Alliance alliance = AlliancePlugin.GetAlliance(fac);
             if (alliance != null)
             {
                 if (alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.AddEnemy))
                 {
+                    IMyFaction fac2;
                     switch (type.ToLower())
                     {
                         case "faction":
-                        case "fac":
-                            IMyFaction fac2 = MySession.Static.Factions.TryGetFactionByTag(tag);
+                            fac2 = MySession.Static.Factions.TryGetFactionByTag(tag);
                             if (fac2 == null)
                             {
                                 Context.Respond("Cant find that faction.");
@@ -1221,19 +1252,51 @@ namespace AlliancesPlugin.Alliances
                             }
                             Context.Respond("War declared");
                             break;
-                        case "alliance":
-                            if (AlliancePlugin.AllAlliances.ContainsKey(tag))
+                        case "fac":
+                            fac2 = MySession.Static.Factions.TryGetFactionByTag(tag);
+                            if (fac2 == null)
                             {
-                                if (!alliance.enemies.Contains(tag))
+                                Context.Respond("Cant find that faction.");
+                                return;
+                            }
+                            if (!alliance.EnemyFactions.Contains(fac2.FactionId))
+                            {
+                                alliance.EnemyFactions.Add(fac2.FactionId);
+                                AlliancePlugin.SaveAllianceData(alliance);
+
+                                alliance.ForceEnemies();
+                            }
+                            Context.Respond("War declared");
+                            break;
+                        case "other":
+                            Alliance enemy = AlliancePlugin.GetAllianceNoLoading(tag);
+                            if (enemy != null)
+                            {
+                                if (!alliance.enemies.Contains(enemy.name))
                                 {
                                     alliance.enemies.Add(tag);
                                     AlliancePlugin.SaveAllianceData(alliance);
 
                                     alliance.ForceEnemies();
+                                    Context.Respond("War declared");
                                 }
+                                else
+                                {
+                                    Context.Respond("Already at war with that alliance.");
+                                }
+
                             }
-                            Context.Respond("War declared");
+                            else
+                            {
+                                Context.Respond("Could not find that alliance.");
+                              
+                            }
                             break;
+                        default:
+                            Context.Respond("Error, use faction, fac or other as type.");
+                            return;
+
+
                     }
                 }
                 else
@@ -1302,10 +1365,11 @@ namespace AlliancesPlugin.Alliances
                 return;
             }
             Alliance alliance = AlliancePlugin.GetAlliance(fac);
-            if (alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
+            if (alliance != null)
             {
-                if (alliance != null)
+                if (alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
                 {
+
                     if (title.ToLower().Equals("leader"))
                     {
                         alliance.LeaderTitle = newName;
@@ -1321,13 +1385,18 @@ namespace AlliancesPlugin.Alliances
                             RankPermissions temp = alliance.CustomRankPermissions[title];
                             alliance.CustomRankPermissions.Remove(title);
                             alliance.CustomRankPermissions.Add(newName, temp);
-
+                            List<ulong> fuckfuck = new List<ulong>();
+                            Context.Respond("Updated the title.");
                             foreach (KeyValuePair<ulong, string> fuck in alliance.PlayersCustomRank)
                             {
                                 if (fuck.Value.Equals(title))
                                 {
-                                    alliance.PlayersCustomRank[fuck.Key] = newName;
+                                    fuckfuck.Add(fuck.Key);
                                 }
+                            }
+                            foreach (ulong id in fuckfuck)
+                            {
+                                alliance.PlayersCustomRank[id] = newName;
                             }
                         }
                         else
@@ -1336,11 +1405,14 @@ namespace AlliancesPlugin.Alliances
                         }
                     }
                 }
-
+                else
+                {
+                    Context.Respond("Only the " + alliance.LeaderTitle + " can change titles.");
+                }
             }
             else
             {
-                Context.Respond("Only the " + alliance.LeaderTitle + " can change titles.");
+                Context.Respond("Cannot find your alliance.");
             }
         }
         public static Dictionary<long, DateTime> confirmations = new Dictionary<long, DateTime>();

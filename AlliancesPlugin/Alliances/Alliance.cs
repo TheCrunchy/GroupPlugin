@@ -81,7 +81,7 @@ namespace AlliancesPlugin.Alliances
             {
                 upkeep += AlliancePlugin.config.ShipyardUpkeep;
             }
-            return (long) upkeep;
+            return (long)upkeep;
         }
         public Boolean HasAccess(ulong id, AccessLevel level)
         {
@@ -109,7 +109,7 @@ namespace AlliancesPlugin.Alliances
                 return true;
             }
 
-        
+
             return false;
         }
 
@@ -143,7 +143,7 @@ namespace AlliancesPlugin.Alliances
             {
                 return 0;
             }
-        
+
 
             return UnrankedPerms.taxRate;
         }
@@ -157,11 +157,11 @@ namespace AlliancesPlugin.Alliances
             {
                 return PlayersCustomRank[id];
             }
-                if (otherTitles.ContainsKey(id))
+            if (otherTitles.ContainsKey(id))
             {
                 return otherTitles[id];
             }
-         
+
 
             return "";
         }
@@ -175,7 +175,7 @@ namespace AlliancesPlugin.Alliances
                 if (fac != null)
                 {
                     sb.AppendLine(fac.Tag);
-                  foreach (KeyValuePair<long, MyFactionMember> member in fac.Members)
+                    foreach (KeyValuePair<long, MyFactionMember> member in fac.Members)
                     {
                         sb.AppendLine(AlliancePlugin.GetPlayerName(MySession.Static.Players.TryGetSteamId(member.Value.PlayerId)));
                     }
@@ -386,6 +386,9 @@ namespace AlliancesPlugin.Alliances
         public string OutputAlliance()
         {
             StringBuilder sb = new StringBuilder();
+            sb.AppendLine(LeaderTitle + " " + AlliancePlugin.GetPlayerName(SupremeLeader));
+
+            sb.AppendLine("");
             sb.AppendLine(description);
             sb.AppendLine("");
             bankBalance = DatabaseForBank.GetBalance(AllianceId);
@@ -395,28 +398,27 @@ namespace AlliancesPlugin.Alliances
             {
                 sb.AppendLine("Failed Upkeep : " + this.failedUpkeep + " Deleted at " + AlliancePlugin.config.UpkeepFailBeforeDelete);
             }
-            
+
             sb.AppendLine("Expected Upkeep Value :" + String.Format("{0:n0}", this.GetUpkeep()) + " SC.");
             int mult = this.GetFactionCount();
             sb.AppendLine("");
-            sb.AppendLine("Item Upkeep");
-            foreach (KeyValuePair<MyDefinitionId, int> keys in AlliancePlugin.ItemUpkeep)
+            if (AlliancePlugin.config.DoItemUpkeep)
             {
-                string temp = keys.Key.ToString();
-                temp = temp.Replace("MyObjectBuilder_", "");
-                temp = temp.Replace("/", " ");
-                sb.AppendLine(temp + " : " + keys.Value * mult);
+                sb.AppendLine("Item Upkeep");
+                foreach (KeyValuePair<MyDefinitionId, int> keys in AlliancePlugin.ItemUpkeep)
+                {
+                    string temp = keys.Key.ToString();
+                    temp = temp.Replace("MyObjectBuilder_", "");
+                    temp = temp.Replace("/", " ");
+                    sb.AppendLine(temp + " : " + keys.Value * mult);
+                }
             }
-            sb.AppendLine("");
             sb.AppendLine("Vault contents");
             sb.AppendLine(DatabaseForBank.GetVaultString(this));
             sb.AppendLine("");
 
             sb.AppendLine("Meta Points : " + String.Format("{0:n0}", CurrentMetaPoints));
             sb.AppendLine("");
-            sb.AppendLine(LeaderTitle);
-
-            sb.AppendLine(AlliancePlugin.GetPlayerName(SupremeLeader));
 
             StringBuilder perms = new StringBuilder();
             foreach (KeyValuePair<String, RankPermissions> customs in CustomRankPermissions)
@@ -482,16 +484,17 @@ namespace AlliancesPlugin.Alliances
             }
             sb.AppendLine("");
             sb.AppendLine("Hostile Factions and Hostile Alliances");
+            foreach (String s in enemies)
+            {
+                sb.AppendLine(s);
+            }
+
             foreach (long id in EnemyFactions)
             {
                 IMyFaction fac = MySession.Static.Factions.TryGetFactionById(id);
                 if (fac != null)
                 {
                     sb.AppendLine(fac.Tag);
-                }
-                foreach (String s in enemies)
-                {
-                    sb.AppendLine(s);
                 }
             }
             sb.AppendLine("");
@@ -511,8 +514,9 @@ namespace AlliancesPlugin.Alliances
             sb.AppendLine("Pending invites");
             foreach (long id in Invites)
             {
-               IMyFaction fac = MySession.Static.Factions.TryGetFactionById(id);
-                if (fac != null) {
+                IMyFaction fac = MySession.Static.Factions.TryGetFactionById(id);
+                if (fac != null)
+                {
                     sb.AppendLine(fac.Name + " - " + fac.Tag);
                 }
             }
@@ -529,9 +533,9 @@ namespace AlliancesPlugin.Alliances
             AlliancePlugin.sendChange?.Invoke(null, MethodInput);
             object[] MethodInput2 = new object[] { change2, SecondId, firstId, 0L };
             AlliancePlugin.sendChange?.Invoke(null, MethodInput2);
- 
+
         }
-      
+
         public void ForceFriendlies()
         {
             foreach (long id in AllianceMembers)
@@ -548,7 +552,7 @@ namespace AlliancesPlugin.Alliances
                             {
                                 MySession.Static.Factions.SetReputationBetweenFactions(id, id2, 1500);
                                 DoFriendlyUpdate(id, id2);
-                              
+
                             }
                         }
                     }
@@ -568,18 +572,7 @@ namespace AlliancesPlugin.Alliances
                         IMyFaction fac = MySession.Static.Factions.TryGetFactionById(id);
                         if (fac != null)
                         {
-                            foreach (long id2 in EnemyFactions)
-                            {
-                                IMyFaction fac2 = MySession.Static.Factions.TryGetFactionById(id2);
-                                if (fac2 != null && fac != fac2)
-                                {
-                                    if (!MySession.Static.Factions.AreFactionsEnemies(id, id2))
-                                    {
-                                        MySession.Static.Factions.SetReputationBetweenFactions(id, id2, 0);
-                                        MyFactionCollection.DeclareWar(id, id2);
-                                    }
-                                }
-                            }
+
                             foreach (long id2 in enemy.AllianceMembers)
                             {
                                 IMyFaction fac2 = MySession.Static.Factions.TryGetFactionById(id2);
@@ -592,6 +585,23 @@ namespace AlliancesPlugin.Alliances
                                     }
                                 }
                             }
+                        }
+                    }
+                }
+            }
+            foreach (long id2 in EnemyFactions)
+            {
+                foreach (long id in AllianceMembers)
+                {
+
+                    IMyFaction fac = MySession.Static.Factions.TryGetFactionById(id);
+                    IMyFaction fac2 = MySession.Static.Factions.TryGetFactionById(id2);
+                    if (fac2 != null && fac != fac2)
+                    {
+                        if (!MySession.Static.Factions.AreFactionsEnemies(id, id2))
+                        {
+                            MySession.Static.Factions.SetReputationBetweenFactions(id, id2, 0);
+                            MyFactionCollection.DeclareWar(id, id2);
                         }
                     }
                 }
@@ -631,7 +641,7 @@ namespace AlliancesPlugin.Alliances
                     PlayersCustomRank.Remove(steamid);
                     return;
                 }
-             
+
             }
             if (otherTitles.ContainsKey(steamid))
             {

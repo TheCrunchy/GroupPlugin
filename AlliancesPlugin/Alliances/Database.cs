@@ -1,4 +1,5 @@
-﻿using LiteDB;
+﻿using AlliancesPlugin.Shipyard;
+using LiteDB;
 using Sandbox.Game.World;
 using System;
 using System.Collections.Generic;
@@ -7,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using VRage.Game;
+using VRageMath;
 
 namespace AlliancesPlugin.Alliances
 {
@@ -232,26 +234,6 @@ namespace AlliancesPlugin.Alliances
             //  }
             try
             {
-                using (var db = new LiteDatabase("Filename=" + AlliancePlugin.path + "//Vaults//" + alliance.AllianceId.ToString() + ".db;Connection=shared;Upgrade=True;"))
-                {
-                    var collection = db.GetCollection<VaultData>("VaultData");
-                    var vault = new VaultData
-                    {
-                      
-                    };
-                    collection.Insert(vault);
-
-                }
-
-            }
-            catch (Exception ex)
-            {
-                AlliancePlugin.Log.Error("Error creating new alliance in db");
-                AlliancePlugin.Log.Error(ex);
-                return false;
-            }
-            try
-            {
                 using (var db = new LiteDatabase(connectionString))
                 {
                     var collection = db.GetCollection<BankData>("BankData");
@@ -305,10 +287,13 @@ namespace AlliancesPlugin.Alliances
                     var collection = db.GetCollection<VaultData>("VaultData");
                    foreach (var vault in collection.FindAll())
                     {
-                        string temp = vault.Id;
-                       temp = temp.Replace("MyObjectBuilder_", "");
-                        temp = temp.Replace("/", " ");
-                        sb.Append(temp + " : " + vault.count);
+                        if (vault.Id != null && vault.Id is String temp)
+                        {
+                            
+                            temp = temp.Replace("MyObjectBuilder_", "");
+                            temp = temp.Replace("/", " ");
+                            sb.Append(temp + " : " + vault.count);
+                        }
                     }
                 }
             }
@@ -316,6 +301,14 @@ namespace AlliancesPlugin.Alliances
             {
                 AlliancePlugin.Log.Error("Error with reading vault");
                 AlliancePlugin.Log.Error(ex);
+                if (DiscordStuff.debugMode)
+                {
+                    if (MySession.Static.Players.GetPlayerByName("Crunch") != null)
+                    {
+                        MyPlayer player = MySession.Static.Players.GetPlayerByName("Crunch");
+                        ShipyardCommands.SendMessage("Vault", "" + ex.ToString(), Color.Blue, (long)player.Id.SteamId);
+                    }
+                }
                 return "error getting vault";
             }
             return sb.ToString();
@@ -323,10 +316,14 @@ namespace AlliancesPlugin.Alliances
         }
         public static void DoItemUpkeep(Alliance alliance)
         {
-            using (var db = new LiteDatabase("Filename=" + AlliancePlugin.path + "//Vaults//" + alliance.AllianceId.ToString() + ".db;Connection=shared;Upgrade=True;"))
+            if (!AlliancePlugin.config.DoItemUpkeep)
+            {
+                return;
+            }
+            using (var db = new LiteDatabase("Filename=" + AlliancePlugin.path + "//Vaults//vault.db;Connection=shared;Upgrade=True;"))
             {
 
-                var collection = db.GetCollection<VaultData>("VaultData");
+                var collection = db.GetCollection<VaultData>(alliance.AllianceId.ToString());
                 foreach (KeyValuePair<MyDefinitionId, int> key in AlliancePlugin.ItemUpkeep)
                 {
                     var vault = collection.FindById(key.Key.ToString());
@@ -337,12 +334,15 @@ namespace AlliancesPlugin.Alliances
         }
         public static Boolean CanDoItemUpkeep(Alliance alliance)
         {
+            if (!AlliancePlugin.config.DoItemUpkeep)
+            {
+                return true;
+            }
             bool canPayItems = true;
             using (var db = new LiteDatabase("Filename=" + AlliancePlugin.path + "//Vaults//" + alliance.AllianceId.ToString() + ".db;Connection=shared;Upgrade=True;"))
             {
-
                 var collection = db.GetCollection<VaultData>("VaultData");
-       foreach (KeyValuePair<MyDefinitionId, int> key in AlliancePlugin.ItemUpkeep)
+                foreach (KeyValuePair<MyDefinitionId, int> key in AlliancePlugin.ItemUpkeep)
                 {
                     var vault = collection.FindById(key.Key.ToString());
                     if (vault == null)
@@ -375,16 +375,15 @@ namespace AlliancesPlugin.Alliances
             {
                 using (var db = new LiteDatabase("Filename=" + AlliancePlugin.path + "//Vaults//" + alliance.AllianceId.ToString() + ".db;Connection=shared;Upgrade=True;"))
                 {
-                  
                     var collection = db.GetCollection<VaultData>("VaultData");
                     var vault = collection.FindById(id.ToString());
                     if (vault == null)
                     {
-                        vault = new VaultData
-                        {
-                            Id = id.ToString(),
-                            count = amount
-                        };
+                        vault = new VaultData();
+
+                        vault.Id = id.ToString();
+                        vault.count = amount;
+                      
                         collection.Insert(vault);
 
                     }

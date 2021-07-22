@@ -11,8 +11,8 @@ namespace AlliancesPlugin.Alliances
     public class VaultData
     {
         [BsonId]
-        public String Id { get; set; }
-
+        public string Id { get; set; }
+      
         public int count { get; set; }
 
     }

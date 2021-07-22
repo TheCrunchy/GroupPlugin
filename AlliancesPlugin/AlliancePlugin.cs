@@ -396,19 +396,11 @@ namespace AlliancesPlugin
             }
             if (state == TorchSessionState.Loaded)
             {
-
-                if (System.IO.File.Exists(path + "//NoYeetStations.txt"))
+                if (config != null && config.AllowDiscord && !DiscordStuff.Ready)
                 {
-                    String[] line = File.ReadAllLines(path + "//NoYeetStations.txt");
-                    for (int i = 0; i < line.Length; i++)
-                    {
-                        if (ScanChat(line[i]) != null)
-                        {
-                            MyGps gpsRef = ScanChat(line[i]);
-                            StationLocations.Add(gpsRef.Coords);
-                        }
-                    }
+                    DiscordStuff.RegisterDiscord();
                 }
+
                 AllianceChat.ApplyLogging();
                 InitPluginDependencies(Torch.Managers.GetManager<PluginManager>());
                 TorchState = TorchSessionState.Loaded;
@@ -604,8 +596,15 @@ namespace AlliancesPlugin
 
                 foreach (Alliance alliance in AllAlliances.Values)
                 {
-                    alliance.ForceFriendlies();
-                    alliance.ForceEnemies();
+                    try
+                    {
+                        alliance.ForceFriendlies();
+                        alliance.ForceEnemies();
+                    }
+                    catch (Exception ex)
+                    {
+                        continue;
+                    }
                     if (alliance.DiscordChannelId > 0 && !String.IsNullOrEmpty(alliance.DiscordToken) && TorchState == TorchSessionState.Loaded)
                     {
                         //  Log.Info(Encryption.DecryptString(alliance.AllianceId.ToString(), alliance.DiscordToken).Length);
@@ -2133,10 +2132,7 @@ namespace AlliancesPlugin
             if (DateTime.Now > NextUpdate && TorchState == TorchSessionState.Loaded)
             {
                 Log.Info("Doing alliance tasks");
-                if (config != null && config.AllowDiscord && !DiscordStuff.Ready)
-                {
-                    DiscordStuff.RegisterDiscord();
-                }
+         
                 DateTime now = DateTime.Now;
                 //try
                 //{

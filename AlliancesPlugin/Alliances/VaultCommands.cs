@@ -82,8 +82,15 @@ namespace AlliancesPlugin
                 {
 
                
-                        DatabaseForBank.DepositToVault(alliance, id, amount);
-                    AllianceChat.SendChatMessage(alliance.AllianceId, "Vault", Context.Player.DisplayName + " deposited " + amount.ToString() + " " + id.ToString() + " to the vault.", true, 0L);
+                       if (DatabaseForBank.DepositToVault(alliance, id, amount))
+                    {
+                        AllianceChat.SendChatMessage(alliance.AllianceId, "Vault", Context.Player.DisplayName + " deposited " + amount.ToString() + " " + id.ToString() + " to the vault.", true, 0L);
+
+                    }
+                       else {
+                        Context.Respond("Error adding to the database, open a ticket to get compensation. " + id.ToString() + " " + amount);
+                    }
+                   
                 }
                 else{
                     Context.Respond("Targeted grid doesnt contain enough.");

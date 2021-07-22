@@ -9,6 +9,7 @@ namespace AlliancesPlugin
     public class Config
     {
         public Boolean DisableJumpsWithId0 = true;
+        public Boolean DoItemUpkeep = false;
         public long PriceNewAlliance = 500000000;
         public string StoragePath = "default";
         public Boolean AllowDiscord = true;

@@ -7,8 +7,8 @@ Creation and invites/joining
 !alliance leave - leaves the alliance
 
 Managing hostiles
-!alliance enemy faction/alliance <tag/name> - add to enemy list
-!alliance peace faction/alliance <tag/name> - remove from enemy list
+!alliance enemy faction/other <tag/name> - add to enemy list
+!alliance peace faction/other <tag/name> - remove from enemy list
 
 Misc
 !alliance info <name> - outputs alliance info, if no input, outputs your own alliance
