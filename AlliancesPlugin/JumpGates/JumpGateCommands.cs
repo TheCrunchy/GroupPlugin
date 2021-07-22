@@ -10,6 +10,8 @@ using Torch.Commands.Permissions;
 using VRage.Game.ModAPI;
 using VRageMath;
 using AlliancesPlugin.Alliances;
+using Sandbox.Engine.Multiplayer;
+
 namespace AlliancesPlugin.JumpGates
 {
     [Category("jumpgate")]
@@ -40,8 +42,10 @@ namespace AlliancesPlugin.JumpGates
             {
                 Position = Context.Player.Character.GetPosition(),
                 GateName = name,
-                RadiusToJump = radiusToJump
+                RadiusToJump = radiusToJump,
+                WorldName = MyMultiplayer.Static.HostName
             };
+
             AlliancePlugin.AllGates.Add(gate.GateId, gate);
             gate.Save();
             Context.Respond("Gate created. To link to another gate use !jumpgate link gateName targetName");

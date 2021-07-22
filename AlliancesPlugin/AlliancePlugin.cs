@@ -50,7 +50,7 @@ namespace AlliancesPlugin
     public class AlliancePlugin : TorchPluginBase
     {
         public static MethodInfo sendChange;
-        TorchSessionState TorchState;
+        public static TorchSessionState TorchState;
         private TorchSessionManager sessionManager;
         public static Config config;
         public static ShipyardConfig shipyardConfig;
@@ -146,7 +146,7 @@ namespace AlliancesPlugin
             }
             TorchBase = Torch;
             LoadAllAlliances();
-            LoadAllGates();
+         
             Log.Error(AllAlliances.Count());
         }
 
@@ -400,7 +400,7 @@ namespace AlliancesPlugin
                 {
                     DiscordStuff.RegisterDiscord();
                 }
-
+                LoadAllGates();
                 AllianceChat.ApplyLogging();
                 InitPluginDependencies(Torch.Managers.GetManager<PluginManager>());
                 TorchState = TorchSessionState.Loaded;
@@ -791,6 +791,7 @@ namespace AlliancesPlugin
             }
             return false;
         }
+
         public void LoadAllAlliances()
         {
             if (TorchState == TorchSessionState.Loaded)
@@ -925,9 +926,18 @@ namespace AlliancesPlugin
 
             }
         }
+        public static string WorldName = "";
         public static void LoadAllGates()
         {
+            if (TorchState != TorchSessionState.Loaded)
+            {
+                return;
+            }
             List<string> FilesToDelete = new List<string>();
+            if (WorldName.Equals("") && MyMultiplayer.Static.HostName != null)
+            {
+                    WorldName = MyMultiplayer.Static.HostName;
+            }
             FileUtils jsonStuff = new FileUtils();
             try
             {
@@ -950,69 +960,13 @@ namespace AlliancesPlugin
                     {
                         gate.OwnerAlliance = Guid.Empty;
                     }
-                    BoundingSphereD sphere2 = new BoundingSphereD(gate.Position, gate.RadiusToJump + 1000);
-                    if (MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere2).OfType<MySafeZone>().Count() >= 2){
-                        foreach (MySafeZone zonee in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere2).OfType<MySafeZone>())
-                        {
-                            zonee.Close();
-                       
-                            gate.GeneratedZone2 = false;
-                            gate.SafeZoneEntityId = 1;
-                        }
-                    }
-                    if (gate.UseSafeZones && !gate.GeneratedZone2 && gate.SafeZoneEntityId != 1)
+
+                    if (gate.WorldName.Equals(WorldName))
                     {
-                        MyEntity gateEntity = MyAPIGateway.Entities.GetEntityById(gate.SafeZoneEntityId) as MyEntity;
-                        if (gateEntity == null)
+                        if (gate.UseSafeZones && !gate.GeneratedZone2 && gate.SafeZoneEntityId != 1)
                         {
-                            gate.GeneratedZone2 = true;
-                            MyObjectBuilder_SafeZone objectBuilderSafeZone = new MyObjectBuilder_SafeZone();
-                            objectBuilderSafeZone.PositionAndOrientation = new MyPositionAndOrientation?(new MyPositionAndOrientation(gate.Position, Vector3.Forward, Vector3.Up));
-                            objectBuilderSafeZone.PersistentFlags = MyPersistentEntityFlags2.InScene;
-                            objectBuilderSafeZone.Shape = MySafeZoneShape.Sphere;
-                            objectBuilderSafeZone.Radius = (float)gate.RadiusToJump;
-                            objectBuilderSafeZone.Enabled = true;
-                            objectBuilderSafeZone.DisplayName = gate.GateName + " zone";
-                            objectBuilderSafeZone.ModelColor = Color.Green.ToVector3();
-                            objectBuilderSafeZone.AllowedActions = MySafeZoneAction.Drilling | MySafeZoneAction.Building | MySafeZoneAction.Damage | MySafeZoneAction.Grinding | MySafeZoneAction.Shooting | MySafeZoneAction.Welding | MySafeZoneAction.LandingGearLock;
-                            objectBuilderSafeZone.AccessTypeGrids = MySafeZoneAccess.Blacklist;
-                            objectBuilderSafeZone.AccessTypeFloatingObjects = MySafeZoneAccess.Blacklist;
-                            objectBuilderSafeZone.AccessTypeFactions = MySafeZoneAccess.Blacklist;
-                            objectBuilderSafeZone.AccessTypePlayers = MySafeZoneAccess.Blacklist;
-                            MyEntity ent = Sandbox.Game.Entities.MyEntities.CreateFromObjectBuilderAndAdd((MyObjectBuilder_EntityBase)objectBuilderSafeZone, true);
-                            gate.SafeZoneEntityId = ent.EntityId;
-                            gate.Save();
-                        }
-                        else
-                        {
-                            if (gateEntity is MySafeZone zone)
-                            {
-                                if (zone.Radius != (float)gate.RadiusToJump)
-                                {
-                                    gate.GeneratedZone2 = true;
-                                    MyObjectBuilder_SafeZone objectBuilderSafeZone = new MyObjectBuilder_SafeZone();
-                                    objectBuilderSafeZone.PositionAndOrientation = new MyPositionAndOrientation?(new MyPositionAndOrientation(gate.Position, Vector3.Forward, Vector3.Up));
-                                    objectBuilderSafeZone.PersistentFlags = MyPersistentEntityFlags2.InScene;
-                                    objectBuilderSafeZone.Shape = zone.Shape;
-                                    objectBuilderSafeZone.Radius = (float)gate.RadiusToJump;
-                                    objectBuilderSafeZone.Enabled = zone.Enabled;
-                                    objectBuilderSafeZone.AllowedActions = zone.AllowedActions;
-                                    objectBuilderSafeZone.ModelColor = zone.ModelColor.ToVector3();
-                                    objectBuilderSafeZone.DisplayName = zone.DisplayName;
-                                    objectBuilderSafeZone.Texture = zone.CurrentTexture.String;
-                                    objectBuilderSafeZone.AccessTypeGrids = zone.AccessTypeGrids;
-                                    objectBuilderSafeZone.AccessTypeFloatingObjects = zone.AccessTypeFloatingObjects;
-                                    objectBuilderSafeZone.AccessTypeFactions = zone.AccessTypeFactions;
-                                    objectBuilderSafeZone.AccessTypePlayers = zone.AccessTypePlayers;
-                                    MyEntity ent = Sandbox.Game.Entities.MyEntities.CreateFromObjectBuilderAndAdd((MyObjectBuilder_EntityBase)objectBuilderSafeZone, true);
-                                    gate.SafeZoneEntityId = ent.EntityId;
-                                    gate.Save();
-
-                                    zone.Close();
-
-                                }
-                            }
-                            else
+                            MyEntity gateEntity = MyAPIGateway.Entities.GetEntityById(gate.SafeZoneEntityId) as MyEntity;
+                            if (gateEntity == null)
                             {
                                 gate.GeneratedZone2 = true;
                                 MyObjectBuilder_SafeZone objectBuilderSafeZone = new MyObjectBuilder_SafeZone();
@@ -1021,9 +975,9 @@ namespace AlliancesPlugin
                                 objectBuilderSafeZone.Shape = MySafeZoneShape.Sphere;
                                 objectBuilderSafeZone.Radius = (float)gate.RadiusToJump;
                                 objectBuilderSafeZone.Enabled = true;
-                                objectBuilderSafeZone.AllowedActions = MySafeZoneAction.Drilling | MySafeZoneAction.Building | MySafeZoneAction.Damage | MySafeZoneAction.Grinding | MySafeZoneAction.Shooting | MySafeZoneAction.Welding | MySafeZoneAction.LandingGearLock;
-                                objectBuilderSafeZone.ModelColor = Color.Green.ToVector3();
                                 objectBuilderSafeZone.DisplayName = gate.GateName + " zone";
+                                objectBuilderSafeZone.ModelColor = Color.Green.ToVector3();
+                                objectBuilderSafeZone.AllowedActions = MySafeZoneAction.Drilling | MySafeZoneAction.Building | MySafeZoneAction.Damage | MySafeZoneAction.Grinding | MySafeZoneAction.Shooting | MySafeZoneAction.Welding | MySafeZoneAction.LandingGearLock;
                                 objectBuilderSafeZone.AccessTypeGrids = MySafeZoneAccess.Blacklist;
                                 objectBuilderSafeZone.AccessTypeFloatingObjects = MySafeZoneAccess.Blacklist;
                                 objectBuilderSafeZone.AccessTypeFactions = MySafeZoneAccess.Blacklist;
@@ -1032,13 +986,63 @@ namespace AlliancesPlugin
                                 gate.SafeZoneEntityId = ent.EntityId;
                                 gate.Save();
                             }
+                            else
+                            {
+                                if (gateEntity is MySafeZone zone)
+                                {
+                                    if (zone.Radius != (float)gate.RadiusToJump)
+                                    {
+                                        gate.GeneratedZone2 = true;
+                                        MyObjectBuilder_SafeZone objectBuilderSafeZone = new MyObjectBuilder_SafeZone();
+                                        objectBuilderSafeZone.PositionAndOrientation = new MyPositionAndOrientation?(new MyPositionAndOrientation(gate.Position, Vector3.Forward, Vector3.Up));
+                                        objectBuilderSafeZone.PersistentFlags = MyPersistentEntityFlags2.InScene;
+                                        objectBuilderSafeZone.Shape = zone.Shape;
+                                        objectBuilderSafeZone.Radius = (float)gate.RadiusToJump;
+                                        objectBuilderSafeZone.Enabled = zone.Enabled;
+                                        objectBuilderSafeZone.AllowedActions = zone.AllowedActions;
+                                        objectBuilderSafeZone.ModelColor = zone.ModelColor.ToVector3();
+                                        objectBuilderSafeZone.DisplayName = zone.DisplayName;
+                                        objectBuilderSafeZone.Texture = zone.CurrentTexture.String;
+                                        objectBuilderSafeZone.AccessTypeGrids = zone.AccessTypeGrids;
+                                        objectBuilderSafeZone.AccessTypeFloatingObjects = zone.AccessTypeFloatingObjects;
+                                        objectBuilderSafeZone.AccessTypeFactions = zone.AccessTypeFactions;
+                                        objectBuilderSafeZone.AccessTypePlayers = zone.AccessTypePlayers;
+                                        MyEntity ent = Sandbox.Game.Entities.MyEntities.CreateFromObjectBuilderAndAdd((MyObjectBuilder_EntityBase)objectBuilderSafeZone, true);
+                                        gate.SafeZoneEntityId = ent.EntityId;
+                                        gate.Save();
+
+                                        zone.Close();
+
+                                    }
+                                }
+                                else
+                                {
+                                    gate.GeneratedZone2 = true;
+                                    MyObjectBuilder_SafeZone objectBuilderSafeZone = new MyObjectBuilder_SafeZone();
+                                    objectBuilderSafeZone.PositionAndOrientation = new MyPositionAndOrientation?(new MyPositionAndOrientation(gate.Position, Vector3.Forward, Vector3.Up));
+                                    objectBuilderSafeZone.PersistentFlags = MyPersistentEntityFlags2.InScene;
+                                    objectBuilderSafeZone.Shape = MySafeZoneShape.Sphere;
+                                    objectBuilderSafeZone.Radius = (float)gate.RadiusToJump;
+                                    objectBuilderSafeZone.Enabled = true;
+                                    objectBuilderSafeZone.AllowedActions = MySafeZoneAction.Drilling | MySafeZoneAction.Building | MySafeZoneAction.Damage | MySafeZoneAction.Grinding | MySafeZoneAction.Shooting | MySafeZoneAction.Welding | MySafeZoneAction.LandingGearLock;
+                                    objectBuilderSafeZone.ModelColor = Color.Green.ToVector3();
+                                    objectBuilderSafeZone.DisplayName = gate.GateName + " zone";
+                                    objectBuilderSafeZone.AccessTypeGrids = MySafeZoneAccess.Blacklist;
+                                    objectBuilderSafeZone.AccessTypeFloatingObjects = MySafeZoneAccess.Blacklist;
+                                    objectBuilderSafeZone.AccessTypeFactions = MySafeZoneAccess.Blacklist;
+                                    objectBuilderSafeZone.AccessTypePlayers = MySafeZoneAccess.Blacklist;
+                                    MyEntity ent = Sandbox.Game.Entities.MyEntities.CreateFromObjectBuilderAndAdd((MyObjectBuilder_EntityBase)objectBuilderSafeZone, true);
+                                    gate.SafeZoneEntityId = ent.EntityId;
+                                    gate.Save();
+                                }
+                            }
                         }
-                    }
-                    else
-                    {
-                        if (MyAPIGateway.Entities.GetEntityById(gate.SafeZoneEntityId) != null && MyAPIGateway.Entities.GetEntityById(gate.SafeZoneEntityId) is MySafeZone zone)
+                        else
                         {
-                            zone.Close();
+                            if (MyAPIGateway.Entities.GetEntityById(gate.SafeZoneEntityId) != null && MyAPIGateway.Entities.GetEntityById(gate.SafeZoneEntityId) is MySafeZone zone)
+                            {
+                                zone.Close();
+                            }
                         }
                     }
 

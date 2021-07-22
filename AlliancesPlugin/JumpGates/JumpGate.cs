@@ -11,6 +11,7 @@ namespace AlliancesPlugin.JumpGates
     public class JumpGate
     {
         public Guid GateId = System.Guid.NewGuid();
+        public string WorldName = "";
         public Boolean UseSafeZones = true;
         public long SafeZoneEntityId = 1;
         public Boolean GeneratedZone2 = false;
