@@ -1398,6 +1398,7 @@ namespace AlliancesPlugin.Alliances
                             {
                                 alliance.PlayersCustomRank[id] = newName;
                             }
+                            AlliancePlugin.SaveAllianceData(alliance);
                         }
                         else
                         {

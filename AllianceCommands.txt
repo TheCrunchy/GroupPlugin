@@ -86,6 +86,7 @@ Admin gate commands
 !jumpgate list - list the gates
 !jumpgate setradius gatename amount
 !jumpgate toggle gatename - toggles a gate on/off
+!jumpgate zone name - add a safezone to the gate
 
 !jumpzone reload - reload the configs for jump exclusion zones
 
