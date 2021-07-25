@@ -17,6 +17,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Torch.API;
 using Torch.API.Managers;
+using Torch.Mod;
+using Torch.Mod.Messages;
 using VRage.Game;
 using VRage.Game.ModAPI;
 using VRageMath;
@@ -144,6 +146,10 @@ namespace AlliancesPlugin.Alliances
                 if (player.Identity.IdentityId == playerId)
                 {
                     ShipyardCommands.SendMessage("Alliance chat", "You are in alliance chat.", new Color(alliance.r, alliance.g, alliance.b), (long)player.Id.SteamId);
+
+                    NotificationMessage message2 = new NotificationMessage("You are in alliance chat", 5000, "Green");
+                    ModCommunication.SendMessageTo(message2, player.Id.SteamId);
+ 
                     continue;
                 }
                     MyFaction fac = MySession.Static.Factions.TryGetPlayerFaction(player.Identity.IdentityId) as MyFaction;

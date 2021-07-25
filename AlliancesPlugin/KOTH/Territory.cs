@@ -19,5 +19,15 @@ namespace AlliancesPlugin.KOTH
         public double x;
         public double y;
         public double z;
+        public float ShipyardReductionPercent = 0;
+        public Boolean HasStation = false;
+        public long AddToUpkeepIfStationAboveLimit = 50000000;
+        public double stationX = 0;
+        public double stationY = 0;
+        public double stationZ = 0;
+        public DateTime transferTime = DateTime.Now;
+        public Guid transferTo = Guid.Empty;
+        public Guid previousOwner = Guid.Empty;
+        public string FactionTagForStationOwner = "ACME";
     }
 }

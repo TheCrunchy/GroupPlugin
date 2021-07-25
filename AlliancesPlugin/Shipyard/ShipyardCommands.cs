@@ -1008,6 +1008,7 @@ namespace AlliancesPlugin.Shipyard
                 {
                     alliance.ShipyardFee = amount;
                     AlliancePlugin.SaveAllianceData(alliance);
+                    Context.Respond("Fee changed.");
                 }
                 else {
                     Context.Respond("You do not have permission to change the fee!, Must have bank withdraw perms.");

@@ -44,6 +44,8 @@ using Sandbox.Game.Screens.Helpers;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using Sandbox.Game.Entities.Cube;
+using Sandbox.Game.Entities.Blocks;
+using SpaceEngineers.Game.Entities.Blocks.SafeZone;
 
 namespace AlliancesPlugin
 {
@@ -909,6 +911,8 @@ namespace AlliancesPlugin
             }
             return ids;
         }
+
+
         public static void LoadAllTerritories()
         {
             Territories.Clear();
@@ -919,6 +923,59 @@ namespace AlliancesPlugin
                 {
                     Territory ter = jsonStuff.ReadFromXmlFile<Territory>(s);
                     Territories.Add(ter.Id, ter);
+                    if (DateTime.Now > ter.transferTime && ter.transferTo != ter.previousOwner)
+                    {
+                        Vector3 Position = new Vector3(ter.stationX, ter.stationY, ter.stationZ);
+                        BoundingSphereD sphere = new BoundingSphereD(Position, 1000);
+                        Alliance alliance = AlliancePlugin.GetAlliance(ter.transferTo);
+                        if (alliance == null)
+                        {
+                            continue;
+                        }
+                        foreach (MyCubeGrid grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
+                        {
+                            IMyFaction fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
+                            if (fac != null)
+                            {
+                                if (!fac.Tag.Equals(ter.FactionTagForStationOwner))
+                                {
+                                    continue;
+                                }
+                                Sandbox.ModAPI.IMyGridTerminalSystem gridTerminalSys = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(grid);
+
+                                List<Sandbox.ModAPI.IMyTerminalBlock> blocks = new List<Sandbox.ModAPI.IMyTerminalBlock>();
+                              
+                           
+        
+                                long id = MySession.Static.Players.TryGetIdentityId(alliance.SupremeLeader);
+                                gridTerminalSys.GetBlocksOfType<MyStoreBlock>(blocks);
+                                foreach (MyStoreBlock block in grid.GetBlocks().OfType<MyStoreBlock>())
+                                {
+                                    grid.ChangeOwnerRequest(grid, block, id, MyOwnershipShareModeEnum.None);
+                                }
+
+                                foreach (MySafeZoneBlock block in grid.GetBlocks().OfType<MySafeZoneBlock>())
+                                {
+                                    grid.ChangeOwnerRequest(grid, block, id, MyOwnershipShareModeEnum.None);
+                                }
+
+                                foreach (MyRefinery block in grid.GetBlocks().OfType<MyRefinery>())
+                                {
+                                    grid.ChangeOwnerRequest(grid, block, id, MyOwnershipShareModeEnum.All);
+                                }
+
+                                foreach (MyCargoContainer block in grid.GetBlocks().OfType<MyCargoContainer>())
+                                {
+                                    grid.ChangeOwnerRequest(grid, block, id, MyOwnershipShareModeEnum.None);
+                                }
+
+                                ter.previousOwner = ter.transferTo;
+                                ter.transferTo = Guid.Empty;
+                                ter.transferTime = DateTime.Now.AddYears(1);
+
+                            }
+                        }
+                    }
                 }
             }
             catch (Exception ex)
@@ -1603,9 +1660,15 @@ namespace AlliancesPlugin
                                                        if (File.Exists(AlliancePlugin.path + "//Territories//" + config.LinkedTerritory + ".xml"))
                                                         {
                                                             Territory ter = utils.ReadFromXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + config.LinkedTerritory + ".xml");
+                                                            if (ter.HasStation)
+                                                            {
+                                                                ter.previousOwner = ter.Alliance;
+                                                                ter.transferTime = DateTime.Now.AddMinutes(1);
+                                                                ter.transferTo = alliance.AllianceId;
+                                                            }
                                                             ter.Alliance = alliance.AllianceId;
                                                             utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + config.LinkedTerritory + ".xml", ter);
-
+                                                    
                                                             if (Territories.ContainsKey(ter.Id))
                                                             {
                                                                 Territories[ter.Id] = ter;
@@ -1623,6 +1686,7 @@ namespace AlliancesPlugin
                                                             ter.y = config.y;
                                                             ter.z = config.z;
                                                             ter.Alliance = alliance.AllianceId;
+                                                     
                                                             utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + config.LinkedTerritory + ".xml", ter);
                                                             Territories.Add(ter.Id, ter);
                                                         }
@@ -1991,6 +2055,7 @@ namespace AlliancesPlugin
             ModCommunication.SendMessageTo(message2, player.Id.SteamId);
             InTerritory.Remove(player.Identity.IdentityId);
         }
+        public static DateTime chat = DateTime.Now;
         public override void Update()
         {
 
@@ -2050,12 +2115,26 @@ namespace AlliancesPlugin
             {
                 Log.Error(ex);
             }
-
+            if (DateTime.Now > chat)
+            {
+                try
+                {
+                    foreach (ulong id in AllianceChat.PeopleInAllianceChat.Keys)
+                    {
+                        ShipyardCommands.SendMessage("Alliance chat", "You are in alliance chat, to leave use !alliance chat", Color.Green, (long)id);
+                    }
+                }
+                catch (Exception)
+                {
+                }
+                chat = chat.AddMinutes(3);
+            }
             if (DateTime.Now > NextUpdate && TorchState == TorchSessionState.Loaded)
             {
                 Log.Info("Doing alliance tasks");
          
                 DateTime now = DateTime.Now;
+            
                 //try
                 //{
                 //    if (now.Minute == 59 || now.Minute == 60)
