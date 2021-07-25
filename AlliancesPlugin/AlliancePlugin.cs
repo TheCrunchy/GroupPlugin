@@ -126,6 +126,10 @@ namespace AlliancesPlugin
             {
                 Directory.CreateDirectory(path + "//Territories//");
             }
+            Territory example = new Territory();
+            example.enabled = false;
+            utils.WriteToXmlFile<Territory>(path + "//Territories//Example.xml", example, false);
+
             if (!Directory.Exists(path + "//PlayerData//"))
             {
                 Directory.CreateDirectory(path + "//PlayerData//");
@@ -148,8 +152,11 @@ namespace AlliancesPlugin
             }
             TorchBase = Torch;
             LoadAllAlliances();
-         
-            Log.Error(AllAlliances.Count());
+
+            if (config != null && config.AllowDiscord && !DiscordStuff.Ready)
+            {
+                DiscordStuff.RegisterDiscord();
+            }
         }
 
         public void SetupConfig()
@@ -917,30 +924,49 @@ namespace AlliancesPlugin
         {
             Territories.Clear();
             FileUtils jsonStuff = new FileUtils();
-            try
-            {
+     
                 foreach (String s in Directory.GetFiles(path + "//Territories//"))
                 {
+                try
+                {
                     Territory ter = jsonStuff.ReadFromXmlFile<Territory>(s);
-                    Territories.Add(ter.Id, ter);
-                    if (DateTime.Now > ter.transferTime && ter.transferTo != ter.previousOwner)
+                    if (!ter.enabled) {
+                        continue;
+                    }
+                        Territories.Add(ter.Id, ter);
+       
+                    Log.Info(ter.Name);
+                    
+                    if (DateTime.Now >= ter.transferTime)
                     {
+                        Log.Info("Transferring? " + ter.Name);
+                        if (ter.transferTo == ter.previousOwner)
+                        {
+                            Log.Info("Same owner, not transferring.");
+                            continue;
+                        }
                         Vector3 Position = new Vector3(ter.stationX, ter.stationY, ter.stationZ);
                         BoundingSphereD sphere = new BoundingSphereD(Position, 1000);
                         Alliance alliance = AlliancePlugin.GetAlliance(ter.transferTo);
                         if (alliance == null)
                         {
+                            Log.Info("null alliance");
                             continue;
                         }
                         foreach (MyCubeGrid grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
                         {
                             IMyFaction fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
+                            Log.Info("Grid? " + grid.DisplayNameText);
+                    
                             if (fac != null)
                             {
+                                Log.Info("Fac isnt null");
                                 if (!fac.Tag.Equals(ter.FactionTagForStationOwner))
                                 {
+                                    Log.Info("Fac isnt the configured owner");
                                     continue;
                                 }
+
                                 Sandbox.ModAPI.IMyGridTerminalSystem gridTerminalSys = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(grid);
 
                                 List<Sandbox.ModAPI.IMyTerminalBlock> blocks = new List<Sandbox.ModAPI.IMyTerminalBlock>();
@@ -949,39 +975,50 @@ namespace AlliancesPlugin
         
                                 long id = MySession.Static.Players.TryGetIdentityId(alliance.SupremeLeader);
                                 gridTerminalSys.GetBlocksOfType<MyStoreBlock>(blocks);
-                                foreach (MyStoreBlock block in grid.GetBlocks().OfType<MyStoreBlock>())
+                             bool transferred = false;
+                                foreach (MySafeZoneBlock block in grid.GetFatBlocks().OfType<MySafeZoneBlock>())
                                 {
-                                    grid.ChangeOwnerRequest(grid, block, id, MyOwnershipShareModeEnum.None);
+                                  
+                                    block.ChangeOwner(id, MyOwnershipShareModeEnum.None);
+                                }
+                    
+                                foreach (MyStoreBlock block in grid.GetFatBlocks().OfType<MyStoreBlock>())
+                                {
+                                  
+                                    // grid.ChangeOwner(block, block.OwnerId, id);
+                                    block.ChangeOwner(id, MyOwnershipShareModeEnum.None);
                                 }
 
-                                foreach (MySafeZoneBlock block in grid.GetBlocks().OfType<MySafeZoneBlock>())
+                         
+
+                                foreach (MyRefinery block in grid.GetFatBlocks().OfType<MyRefinery>())
                                 {
-                                    grid.ChangeOwnerRequest(grid, block, id, MyOwnershipShareModeEnum.None);
+
+                                    block.ChangeOwner(id, MyOwnershipShareModeEnum.All);
                                 }
 
-                                foreach (MyRefinery block in grid.GetBlocks().OfType<MyRefinery>())
+                                foreach (MyCargoContainer block in grid.GetFatBlocks().OfType<MyCargoContainer>())
                                 {
-                                    grid.ChangeOwnerRequest(grid, block, id, MyOwnershipShareModeEnum.All);
-                                }
-
-                                foreach (MyCargoContainer block in grid.GetBlocks().OfType<MyCargoContainer>())
-                                {
-                                    grid.ChangeOwnerRequest(grid, block, id, MyOwnershipShareModeEnum.None);
+                        
+                                
+                                    block.ChangeOwner(id, MyOwnershipShareModeEnum.None);
                                 }
 
                                 ter.previousOwner = ter.transferTo;
                                 ter.transferTo = Guid.Empty;
                                 ter.transferTime = DateTime.Now.AddYears(1);
-
+                                utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + ter.Name + ".xml", ter);
+                                Territories[ter.Id] = ter;
                             }
                         }
                     }
                 }
+                catch (Exception ex)
+                {
+                    Log.Info(ex);
+                }
             }
-            catch (Exception ex)
-            {
-
-            }
+        
         }
         public static string WorldName = "";
         public static void LoadAllGates()
@@ -2178,6 +2215,7 @@ namespace AlliancesPlugin
                 }
                 try
                 {
+                    Log.Info("Loading territories");
                     LoadAllTerritories();
                 }
                 catch (Exception ex)
