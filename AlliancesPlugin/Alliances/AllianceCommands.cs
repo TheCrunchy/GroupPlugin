@@ -529,9 +529,60 @@ namespace AlliancesPlugin.Alliances
                 Context.Respond("You arent a member of an alliance.");
             }
         }
-        [Command("make rank", "make a rank")]
+        [Command("level", "edit the permission level")]
         [Permission(MyPromoteLevel.None)]
         public void AllianceCreateRank(string rankName, int permissionLevel)
+        {
+            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
+            if (fac == null)
+            {
+                Context.Respond("Only factions can be in alliances.");
+                return;
+            }
+            Alliance alliance = AlliancePlugin.GetAlliance(fac);
+
+
+
+            if (alliance != null)
+            {
+                if (alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
+                {
+
+
+                    if (alliance.CustomRankPermissions.ContainsKey(rankName))
+                    {
+                       
+                        RankPermissions bob;
+                        bob = alliance.CustomRankPermissions[rankName];
+                        bob.permissionLevel = permissionLevel;
+                        alliance.CustomRankPermissions[rankName] = bob;
+                        Context.Respond("Rank edited!");
+                        AlliancePlugin.SaveAllianceData(alliance);
+                    }
+                    else
+                    {
+                        Context.Respond("That rank doesnt exist.");
+                    }
+
+                }
+                else
+                {
+                    Context.Respond("You dont have permission to create ranks");
+                }
+
+            }
+
+
+            else
+            {
+                Context.Respond("Cannot find alliance, maybe wait a minute and try again.");
+            }
+        }
+
+
+        [Command("make rank", "make a rank")]
+        [Permission(MyPromoteLevel.None)]
+        public void AllianceMakeNewRank(string rankName, int permissionLevel)
         {
             MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
             if (fac == null)
@@ -1090,6 +1141,10 @@ namespace AlliancesPlugin.Alliances
                                 CanKick = false;
                             }
                         }
+                        if (alliance.SupremeLeader == Context.Player.SteamUserId)
+                        {
+                            CanKick = true;
+                        }
                         if (CanKick)
                         {
                             alliance.AllianceMembers.Remove(fac2.FactionId);
@@ -1310,7 +1365,7 @@ namespace AlliancesPlugin.Alliances
             }
         }
 
-        [Command("revoke", "revoke a factions invite to alliance")]
+        [Command("uninvite", "revoke a factions invite to alliance")]
         [Permission(MyPromoteLevel.None)]
         public void AllianceRevoke(string tag)
         {
@@ -2175,8 +2230,8 @@ namespace AlliancesPlugin.Alliances
             MyFaction playerFac = MySession.Static.Factions.GetPlayerFaction(id.IdentityId);
             if (playerFac == null)
             {
-                Context.Respond("That target player has no faction.");
-                return;
+                Context.Respond("That target player has no faction so fuck em booting them anyway.");
+              
             }
             if (alliance != null)
             {
@@ -2228,7 +2283,7 @@ namespace AlliancesPlugin.Alliances
                         alliance.RemoveTitle(MySession.Static.Players.TryGetSteamId(id.IdentityId), Title);
                         AlliancePlugin.SaveAllianceData(alliance);
 
-
+                        Context.Respond("Revoked that guy.");
 
                     }
                     else

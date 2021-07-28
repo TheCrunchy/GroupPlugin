@@ -166,8 +166,9 @@
       <HintPath>..\..\FixPlayerCommand\FixPlayerCommand\bin\Debug\Torch.Server.exe</HintPath>
     </Reference>
     <Reference Include="VRage, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
-    <Reference Include="VRage.Game">
-      <HintPath>..\..\FixPlayerCommand\FixPlayerCommand\bin\Debug\VRage.Game.dll</HintPath>
+    <Reference Include="VRage.Game, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\4 Torch Server\DedicatedServer64\VRage.Game.dll</HintPath>
     </Reference>
     <Reference Include="VRage.Library">
       <HintPath>..\..\..\4 Torch Server\DedicatedServer64\VRage.Library.dll</HintPath>
@@ -237,10 +238,10 @@
     <Compile Include="Shipyard\ShipyardConfig.cs" />
     <Compile Include="Shipyard\UpgradeCost.cs" />
     <Compile Include="Special Designation\DrillPatch.cs" />
+    <Compile Include="Special Designation\Mining\GeneratedContract.cs" />
     <Compile Include="Special Designation\Mining\MiningCommands.cs" />
+    <Compile Include="Special Designation\Mining\MiningConfig.cs" />
     <Compile Include="Special Designation\Mining\MiningContract.cs" />
-    <Compile Include="Special Designation\Mining\ContractHolder.cs" />
-    <Compile Include="Special Designation\Mining\PlayerStorage.cs" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Connected Services\" />

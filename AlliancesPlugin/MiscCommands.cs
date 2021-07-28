@@ -18,6 +18,11 @@ using Sandbox.Game.Entities;
 using System.Collections.Concurrent;
 using VRage.Groups;
 using Sandbox.Game.Entities.Cube;
+using Sandbox.Game.Multiplayer;
+using System.Reflection;
+using Torch.Managers;
+using VRage.Network;
+using Sandbox.ModAPI;
 
 namespace AlliancesPlugin
 {
@@ -126,6 +131,9 @@ namespace AlliancesPlugin
             }
         }
         FileUtils utils = new FileUtils();
+
+ 
+
         [Command("a", "toggle alliance chat")]
         [Permission(MyPromoteLevel.None)]
         public void DoAllianceChat2(string message = "")

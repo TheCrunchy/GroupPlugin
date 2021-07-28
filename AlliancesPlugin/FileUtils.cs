@@ -1,5 +1,6 @@
 ﻿namespace AlliancesPlugin
 {
+    using AlliancesPlugin.Special_Designation;
     using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
@@ -12,7 +13,12 @@
 
     public class FileUtils
     {
-
+        public async Task SaveMiningData(string filePath, MiningContract contract)
+        {
+            await Task.Run(() =>
+            WriteToXmlFile<MiningContract>(filePath, contract)
+            );
+        }
 
         public void WriteToJsonFile<T>(string filePath, T objectToWrite, bool append = false) where T : new()
         {

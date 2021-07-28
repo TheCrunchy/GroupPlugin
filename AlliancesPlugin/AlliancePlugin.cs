@@ -46,6 +46,9 @@ using System.Text.RegularExpressions;
 using Sandbox.Game.Entities.Cube;
 using Sandbox.Game.Entities.Blocks;
 using SpaceEngineers.Game.Entities.Blocks.SafeZone;
+using DSharpPlus;
+using SpaceEngineers.Game.Entities.Blocks;
+using AlliancesPlugin.Special_Designation;
 
 namespace AlliancesPlugin
 {
@@ -67,6 +70,8 @@ namespace AlliancesPlugin
         private static Dictionary<String, int> amountCaptured = new Dictionary<String, int>();
 
         public static Dictionary<Guid, JumpGate> AllGates = new Dictionary<Guid, JumpGate>();
+        public static MiningConfig mining;
+        public DateTime NextMining = DateTime.Now;
 
         public static FileUtils utils = new FileUtils();
         public static Dictionary<string, DenialPoint> denials = new Dictionary<string, DenialPoint>();
@@ -126,9 +131,12 @@ namespace AlliancesPlugin
             {
                 Directory.CreateDirectory(path + "//Territories//");
             }
-            Territory example = new Territory();
-            example.enabled = false;
-            utils.WriteToXmlFile<Territory>(path + "//Territories//Example.xml", example, false);
+            if (!File.Exists(path + "//Territories//Example.xml"))
+            {
+                Territory example = new Territory();
+                example.enabled = false;
+                utils.WriteToXmlFile<Territory>(path + "//Territories//Example.xml", example, false);
+            }
 
             if (!Directory.Exists(path + "//PlayerData//"))
             {
@@ -851,6 +859,12 @@ namespace AlliancesPlugin
                 {
                     alliance.ForceFriendlies();
                     alliance.ForceEnemies();
+                    if (DiscordStuff.allianceBots.TryGetValue(alliance.AllianceId, out DiscordClient bot))
+                    {
+                     //   bot.MessageCreated -= DiscordStuff.Discord_AllianceMessage;
+                      //  bot.MessageCreated += DiscordStuff.Discord_AllianceMessage;
+                       
+                    }
                     if (alliance.DiscordChannelId > 0 && !String.IsNullOrEmpty(alliance.DiscordToken) && TorchState == TorchSessionState.Loaded)
                     {
                         //  Log.Info(Encryption.DecryptString(alliance.AllianceId.ToString(), alliance.DiscordToken).Length);
@@ -860,6 +874,7 @@ namespace AlliancesPlugin
                             if (Encryption.DecryptString(alliance.AllianceId.ToString(), alliance.DiscordToken).Length != 59)
                             {
                                 Log.Error("Invalid bot token for " + alliance.AllianceId);
+
                                 continue;
                             }
 
@@ -870,6 +885,7 @@ namespace AlliancesPlugin
                             Log.Error("Invalid bot token for " + alliance.AllianceId);
                             continue;
                         }
+                     
                         //    if (!botsTried.Contains(alliance.AllianceId))
                         //    {
                         //   botsTried.Add(alliance.AllianceId);
@@ -1009,6 +1025,7 @@ namespace AlliancesPlugin
                                 ter.transferTime = DateTime.Now.AddYears(1);
                                 utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + ter.Name + ".xml", ter);
                                 Territories[ter.Id] = ter;
+                                continue;
                             }
                         }
                     }
@@ -1409,15 +1426,40 @@ namespace AlliancesPlugin
                     if (DateTime.Now >= config.unlockTime)
                     {
                         config.unlockTime = DateTime.Now.AddYears(1);
-
-                        try
+                        config.owner = Guid.Empty;
+                        SaveKothConfig(config.KothName, config);
+                        foreach (MyCubeGrid grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
                         {
-                            DiscordStuff.SendMessageToDiscord(config.KothName + " Is now unlocked! ", config);
+
+                            if (grid.Projector != null)
+                                continue;
+
+                            IMyFaction fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
+                            if (fac != null && !fac.Tag.Equals(config.KothBuildingOwner) && fac.Tag.Length == 3)
+                            {
+                                foreach (MyBeacon beacon in grid.GetFatBlocks().OfType<MyBeacon>())
+                                {
+                                    beacon.Enabled = false;
+                                }
+                                foreach (MyTimerBlock beacon in grid.GetFatBlocks().OfType<MyTimerBlock>())
+                                {
+                                    beacon.Enabled = false;
+                                }
+                                foreach (MyProgrammableBlock beacon in grid.GetFatBlocks().OfType<MyProgrammableBlock>())
+                                {
+                                    beacon.Enabled = false;
+                                }
+                            }
+                        }
+                                try
+                        {
+                            DiscordStuff.SendMessageToDiscord(config.KothName + " Is now unlocked! Ownership reset to nobody", config);
+              
                         }
                         catch (Exception)
                         {
                             Log.Error("Cant do discord message for koth.");
-                            SendChatMessage(config.KothName, "Is now unlocked!");
+                            SendChatMessage(config.KothName, "Is now unlocked! Ownership reset to nobody");
                         }
 
                     }
@@ -1613,7 +1655,7 @@ namespace AlliancesPlugin
                                         config.nextCaptureAvailable = DateTime.Now.AddMinutes(config.MinutesBeforeCaptureStarts);
                                         //  Log.Info("Can cap in 10 minutes");
                                         config.capturingNation = capturingNation;
-                                        SendChatMessage(config.KothName, "Can cap in however many minutes");
+                                  
 
                                         try
                                         {
@@ -1624,7 +1666,7 @@ namespace AlliancesPlugin
                                             Log.Error("Cant do discord message for koth.");
                                             SendChatMessage(config.KothName, "Capture can begin in " + config.MinutesBeforeCaptureStarts + " minutes. By " + GetAllianceNoLoading(capturingNation).name);
                                         }
-                                    }
+                                   }
                                 }
                             }
                             else
@@ -1923,6 +1965,7 @@ namespace AlliancesPlugin
                                     {
                                         if (lootgrid != null)
                                         {
+                                            
                                             SpawnCores(lootgrid, config);
                                             SendChatMessage(config.KothName, "Spawning loot!");
                                             Alliance alliance = GetAlliance(config.owner);
@@ -2093,6 +2136,43 @@ namespace AlliancesPlugin
             InTerritory.Remove(player.Identity.IdentityId);
         }
         public static DateTime chat = DateTime.Now;
+        public void GenerateNewMiningContracts(MyPlayer player)
+        {
+            MiningContract contract;
+            Boolean generate = false;
+            if (DrillPatch.playerWithContract.ContainsKey(player.Id.SteamId)){
+                contract = DrillPatch.playerWithContract[player.Id.SteamId];
+                if (String.IsNullOrEmpty(contract.OreSubType))
+                {
+                    generate = true;
+                }
+            }
+             else
+            {
+               contract = new MiningContract();
+                generate = true;
+            }
+            if (generate)
+            {
+
+                utils.SaveMiningData(AlliancePlugin.path + "//MiningStuff//PlayerData//" + player.Id.SteamId + ".xml", contract);
+            }
+            else
+            {
+                if (contract.minedAmount >= contract.amountToMine)
+                {
+                    ShipyardCommands.SendMessage("Big Boss Dave", "Mining Contract Ready to be completed, !mc info", Color.Gold, (long)MySession.Static.Players.TryGetSteamId(player.Identity.IdentityId));
+                    contract.DoPlayerGps(player.Identity.IdentityId);
+                }
+                else
+                {
+                    ShipyardCommands.SendMessage("Big Boss Dave", "Mining Contract in progress, !mc info", Color.Gold, (long)MySession.Static.Players.TryGetSteamId(player.Identity.IdentityId));
+                }
+            }
+
+        }
+
+        public static Dictionary<ulong, MiningContract> miningSave = new Dictionary<ulong, MiningContract>();
         public override void Update()
         {
 
@@ -2108,7 +2188,14 @@ namespace AlliancesPlugin
           
             if (ticks % 512 == 0)
             {
-
+                if (TorchState == TorchSessionState.Loaded && mining != null && mining.Enabled)
+                {
+                    foreach (KeyValuePair<ulong, MiningContract> keys in miningSave)
+                    {
+                        utils.SaveMiningData(AlliancePlugin.path + "//MiningStuff//PlayerData//" + keys.Key + ".xml", keys.Value);
+                    }
+                    miningSave.Clear();
+                }
                 try
                 {
                     DoTaxStuff();
@@ -2129,7 +2216,8 @@ namespace AlliancesPlugin
                             {
 
                                 DiscordStuff.RegisterAllianceBot(alliance, alliance.DiscordChannelId);
-                                temp.Add(alliance.AllianceId, DateTime.Now.AddMinutes(15));
+                                
+                                temp.Add(alliance.AllianceId, DateTime.Now.AddMinutes(2));
                                 Log.Info("Connecting bot.");
                             }
 
@@ -2166,6 +2254,7 @@ namespace AlliancesPlugin
                 }
                 chat = chat.AddMinutes(3);
             }
+      
             if (DateTime.Now > NextUpdate && TorchState == TorchSessionState.Loaded)
             {
                 Log.Info("Doing alliance tasks");
@@ -2262,11 +2351,20 @@ namespace AlliancesPlugin
 
                 try
                 {
+                    Boolean dig = false;
+                    if (mining != null && DateTime.Now >= NextMining && TorchState == TorchSessionState.Loaded && mining.Enabled)
+                    {
+                        dig = true;
+                        NextMining.AddSeconds(mining.SecondsBetweenNewContracts);
+                    }
                     foreach (MyPlayer player in MySession.Static.Players.GetOnlinePlayers())
                     {
                         if (player.GetPosition() != null)
                         {
-
+                            if (dig)
+                            {
+                                GenerateNewMiningContracts(player);
+                            }
                             if (config.KothEnabled)
                             {
                                 foreach (KothConfig koth in KOTHs)

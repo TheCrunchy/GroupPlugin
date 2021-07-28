@@ -20,7 +20,6 @@ namespace AlliancesPlugin.Alliances
     {
 
         //do the discord shit in here
-        private static DiscordActivity game;
         private static ulong botId = 0;
 
         public static bool AllianceReady { get; set; } = false;
@@ -33,8 +32,6 @@ namespace AlliancesPlugin.Alliances
         {
             if (!Ready)
             {
-
-
                 try
                 {
                     Discord = new DiscordClient(new DiscordConfiguration
@@ -54,11 +51,19 @@ namespace AlliancesPlugin.Alliances
 
 
 
-           
+
+                try
+                {
                     Discord.ConnectAsync();
+                }
+                catch (Exception)
+                {
+                    Ready = false;
+                    return Task.CompletedTask;
+                }
         
                 Discord.MessageCreated += Discord_MessageCreated;
-                game = new DiscordActivity();
+         
                 Ready = true;
             }
             return Task.CompletedTask;
@@ -93,17 +98,17 @@ namespace AlliancesPlugin.Alliances
 
                 try
                 {
-                    bot.ConnectAsync();
-                    bot.MessageCreated += Discord_AllianceMessage;
+                  bot.ConnectAsync();
                 }
                 catch (Exception ex)
                 {
-
+                    return Task.CompletedTask;
                 }
+
                 if (!allianceBots.ContainsKey(alliance.AllianceId))
                 {
 
-
+                    bot.MessageCreated += Discord_AllianceMessage;
                     allianceBots.Remove(alliance.AllianceId);
                     allianceBots.Add(alliance.AllianceId, bot);
                     allianceChannels.Remove(alliance.DiscordChannelId);
@@ -255,22 +260,22 @@ namespace AlliancesPlugin.Alliances
                     IMyFaction fac = MySession.Static.Factions.TryGetFactionById(item.FactionPaid);
                     if (fac != null)
                     {
-                        sb.AppendLine(item.TimeClaimed.ToString() + "," + AlliancePlugin.GetPlayerName(item.SteamId) + "," + item.Action + "," + fac.Tag + " " + String.Format("{0:n0}", item.Amount) + "," + String.Format("{0:n0}", item.BankAmount));
+                        sb.AppendLine(item.TimeClaimed.ToString() + "," + AlliancePlugin.GetPlayerName(item.SteamId) + "," + item.Action + "," + fac.Tag + " " + item.Amount + "," + item.BankAmount);
                     }
                     else
                     {
-                        sb.AppendLine(item.TimeClaimed.ToString() + "," + AlliancePlugin.GetPlayerName(item.SteamId) + "," + item.Action + " a now dead faction ," + String.Format("{0:n0}", item.Amount) + "," + String.Format("{0:n0}", item.BankAmount));
+                        sb.AppendLine(item.TimeClaimed.ToString() + "," + AlliancePlugin.GetPlayerName(item.SteamId) + "," + item.Action + " a now dead faction ," + item.Amount + "," + item.BankAmount);
                     }
                     continue;
                 }
                 if (item.PlayerPaid > 0)
                 {
-                    sb.AppendLine(item.TimeClaimed.ToString() + "," + AlliancePlugin.GetPlayerName(item.SteamId) + "," + item.Action + "," + AlliancePlugin.GetPlayerName(item.PlayerPaid) + ", " + String.Format("{0:n0}", item.Amount) + "," + String.Format("{0:n0}", item.BankAmount));
+                    sb.AppendLine(item.TimeClaimed.ToString() + "," + AlliancePlugin.GetPlayerName(item.SteamId) + "," + item.Action + "," + AlliancePlugin.GetPlayerName(item.PlayerPaid) + ", " + item.Amount + "," + item.BankAmount);
                 }
                 else
                 {
 
-                    sb.AppendLine(item.TimeClaimed.ToString() + "," + AlliancePlugin.GetPlayerName(item.SteamId) + "," + item.Action + "," + String.Format("{0:n0}", item.Amount) + ", " + String.Format("{0:n0}", item.BankAmount));
+                    sb.AppendLine(item.TimeClaimed.ToString() + "," + AlliancePlugin.GetPlayerName(item.SteamId) + "," + item.Action + "," + item.Amount + "," + item.BankAmount);
                 }
             }
             return sb.ToString();
@@ -326,7 +331,7 @@ namespace AlliancesPlugin.Alliances
         public static Dictionary<ulong, string> nickNames = new Dictionary<ulong, string>();
         public static Boolean debugMode = false;
         public static Dictionary<Guid, string> LastMessageSent = new Dictionary<Guid, string>();
-        private static Task Discord_AllianceMessage(DSharpPlus.EventArgs.MessageCreateEventArgs e)
+        public static Task Discord_AllianceMessage(DSharpPlus.EventArgs.MessageCreateEventArgs e)
         {
             if (debugMode)
             {

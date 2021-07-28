@@ -2,7 +2,7 @@ Creation and invites/joining
 !alliance create <name> - create an alliance
 !alliance join <name> - join an alliance if invited
 !alliance invite <tag>- invite a faction the alliance
-!alliance revoke <tag> - revoke a factions invitation
+!alliance uninvite <tag> - revoke a factions invitation
 !alliance kick <tag> - kicks the target if they have permission and the target faction doesnt have any members with a rank
 !alliance leave - leaves the alliance
 
@@ -41,6 +41,7 @@ Permission system and titles
 !alliance revoke title <playername> admiral/otherRank/other  - remove those titles to players in the alliance
 !alliance change leader <NewLeaderName> - changes the supreme leader of the alliance to the target
 !alliance tax <rankname> <taxrate> - Change the tax rate for a rank, maximum of 10%
+!alliance level <rankname> <newLevel>
 
 Admin commands
 !alliance takemoney name amount

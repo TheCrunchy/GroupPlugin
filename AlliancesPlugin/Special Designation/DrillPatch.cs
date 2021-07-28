@@ -25,7 +25,7 @@ namespace AlliancesPlugin.Special_Designation
     [PatchShim]
     public static class DrillPatch
     {
-        public static Dictionary<long, PlayerStorage> playerWithContract = new Dictionary<long, PlayerStorage>();
+        public static Dictionary<ulong, MiningContract> playerWithContract = new Dictionary<ulong, MiningContract>();
         public static readonly Logger Log = LogManager.GetCurrentClassLogger();
 
 
@@ -50,12 +50,20 @@ namespace AlliancesPlugin.Special_Designation
 
         }
         public static Type drill = null;
-
+        public static FileUtils utils = new FileUtils();
         public static void TestPatchMethod(MyDrillBase __instance, MyVoxelMaterialDefinition material,
       VRageMath.Vector3 hitPosition,
       int removedAmount,
       bool onlyCheck)
         {
+            if (AlliancePlugin.mining == null)
+            {
+                return;
+            }
+            if (!AlliancePlugin.mining.Enabled)
+            {
+                return;
+            }
             if (__instance.OutputInventory != null && __instance.OutputInventory.Owner != null)
             {
                 if (__instance.OutputInventory.Owner.GetBaseEntity() is MyShipDrill shipDrill)
@@ -77,44 +85,39 @@ namespace AlliancesPlugin.Special_Designation
                             if (cockpit.Pilot != null)
                             {
                                 MyCharacter pilot = cockpit.Pilot as MyCharacter;
-                                if (playerWithContract.ContainsKey(pilot.GetPlayerIdentityId()))
+                                if (playerWithContract.TryGetValue(MySession.Static.Players.TryGetSteamId(pilot.GetPlayerIdentityId()), out MiningContract contract))
                                 {
-                                    PlayerStorage storage = playerWithContract[pilot.GetPlayerIdentityId()];
-                                    if (storage.CheckIfInMiningArea(hitPosition, material.MinedOre))
+                                    playerId = pilot.GetPlayerIdentityId();
+                                    MyObjectBuilder_Ore newObject = MyObjectBuilderSerializer.CreateNewObject<MyObjectBuilder_Ore>(material.MinedOre);
+                                    newObject.MaterialTypeName = new MyStringHash?(material.Id.SubtypeId);
+                                    float num = (float)((double)removedAmount / (double)byte.MaxValue * 1.0) * __instance.VoxelHarvestRatio * material.MinedOreRatio;
+                                    if (!MySession.Static.AmountMined.ContainsKey(material.MinedOre))
+                                        MySession.Static.AmountMined[material.MinedOre] = (MyFixedPoint)0;
+                                    MySession.Static.AmountMined[material.MinedOre] += (MyFixedPoint)num;
+                                    MyPhysicalItemDefinition physicalItemDefinition = MyDefinitionManager.Static.GetPhysicalItemDefinition((MyObjectBuilder_Base)newObject);
+                                    MyFixedPoint amountItems1 = (MyFixedPoint)(num / physicalItemDefinition.Volume);
+                                    MyFixedPoint maxAmountPerDrop = (MyFixedPoint)(float)(0.150000005960464 / (double)physicalItemDefinition.Volume);
+
+
+                                    MyFixedPoint collectionRatio = (MyFixedPoint)drill.GetField("m_inventoryCollectionRatio", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(__instance);
+                                    MyFixedPoint b = amountItems1 * ((MyFixedPoint)1 - collectionRatio);
+                                    MyFixedPoint amountItems2 = MyFixedPoint.Min(maxAmountPerDrop * 10 - (MyFixedPoint)0.001, b);
+                                    MyFixedPoint totalAmount = amountItems1 * collectionRatio - amountItems2;
+                                    if (contract.OreSubType.Equals(material.MinedOre))
                                     {
-                                        playerId = pilot.GetPlayerIdentityId();
-                                        HasContract = true;
-                                        break;
+                                        if (contract.AddToContractAmount(totalAmount.ToIntSafe()))
+                                        {
+                                            ShipyardCommands.SendMessage("Big Boss Dave", "Contract Ready to be completed, Deliver " + contract.amountToMine + " " + contract.OreSubType + " to the delivery GPS.", Color.Gold, (long)MySession.Static.Players.TryGetSteamId(playerId));
+                                            contract.DoPlayerGps(playerId);
+
+                                        }
+                                        else
+                                        {
+                                            ShipyardCommands.SendMessage("Big Boss Dave", "Contract progress : " + material.MinedOre + " " + contract.minedAmount + " / " + contract.amountToMine, Color.Gold, (long)MySession.Static.Players.TryGetSteamId(playerId));
+                                        }
+                                        playerWithContract[MySession.Static.Players.TryGetSteamId(playerId)] = contract;
+                                        AlliancePlugin.miningSave.Add(MySession.Static.Players.TryGetSteamId(playerId), contract);
                                     }
-                                }
-                            }
-                        }
-                        if (!HasContract)
-                            return;
-
-
-                        MyObjectBuilder_Ore newObject = MyObjectBuilderSerializer.CreateNewObject<MyObjectBuilder_Ore>(material.MinedOre);
-                        newObject.MaterialTypeName = new MyStringHash?(material.Id.SubtypeId);
-                        float num = (float)((double)removedAmount / (double)byte.MaxValue * 1.0) * __instance.VoxelHarvestRatio * material.MinedOreRatio;
-                        if (!MySession.Static.AmountMined.ContainsKey(material.MinedOre))
-                            MySession.Static.AmountMined[material.MinedOre] = (MyFixedPoint)0;
-                        MySession.Static.AmountMined[material.MinedOre] += (MyFixedPoint)num;
-                        MyPhysicalItemDefinition physicalItemDefinition = MyDefinitionManager.Static.GetPhysicalItemDefinition((MyObjectBuilder_Base)newObject);
-                        MyFixedPoint amountItems1 = (MyFixedPoint)(num / physicalItemDefinition.Volume);
-                        MyFixedPoint maxAmountPerDrop = (MyFixedPoint)(float)(0.150000005960464 / (double)physicalItemDefinition.Volume);
-
-
-                        MyFixedPoint collectionRatio = (MyFixedPoint)drill.GetField("m_inventoryCollectionRatio", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(__instance);
-                        MyFixedPoint b = amountItems1 * ((MyFixedPoint)1 - collectionRatio);
-                        MyFixedPoint amountItems2 = MyFixedPoint.Min(maxAmountPerDrop * 10 - (MyFixedPoint)0.001, b);
-                        MyFixedPoint totalAmount = amountItems1 * collectionRatio - amountItems2;
-                        if (playerWithContract[playerId].AddToContractAmount(material.MinedOre, totalAmount.ToIntSafe()))
-                        {
-                            foreach (ContractHolder contractHolder in playerWithContract[playerId].MiningContracts.Values)
-                            {
-                                if (contractHolder.contract.subTypeId.Equals(material.MinedOre))
-                                {
-                                    ShipyardCommands.SendMessage("Big Boss Dave", "Contract progress :" + material.MinedOre + " " + contractHolder.minedAmount + " / " + contractHolder.amountToMine, Color.Gold, (long)MySession.Static.Players.TryGetSteamId(playerId));
                                 }
                             }
                         }
