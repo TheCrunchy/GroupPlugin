@@ -13,6 +13,7 @@ using Sandbox.Engine.Multiplayer;
 using Sandbox.Game.World;
 using System.IO;
 using VRage.Game.ModAPI;
+using DSharpPlus.EventArgs;
 
 namespace AlliancesPlugin.Alliances
 {
@@ -21,7 +22,7 @@ namespace AlliancesPlugin.Alliances
 
         //do the discord shit in here
         private static ulong botId = 0;
-
+        public static List<String> errors = new List<string>();
         public static bool AllianceReady { get; set; } = false;
         public static bool Ready { get; set; } = false;
         public static DiscordClient Discord { get; set; }
@@ -34,40 +35,68 @@ namespace AlliancesPlugin.Alliances
             {
                 try
                 {
-                    Discord = new DiscordClient(new DiscordConfiguration
+                    // Windows Vista - 8.1
+                    if (Environment.OSVersion.Platform.Equals(PlatformID.Win32NT) && Environment.OSVersion.Version.Major == 6)
                     {
-                        Token = AlliancePlugin.config.DiscordBotToken,
-                        TokenType = TokenType.Bot,
-                        AutoReconnect = true
-                    });
-
+                        Discord = new DiscordClient(new DiscordConfiguration
+                        {
+                            Token = AlliancePlugin.config.DiscordBotToken,
+                            TokenType = TokenType.Bot,
+                            WebSocketClientFactory = WebSocket4NetClient.CreateNew,
+                            AutoReconnect = true
+                        });
+                    }
+                    else
+                    {
+                        Discord = new DiscordClient(new DiscordConfiguration
+                        {
+                            Token = AlliancePlugin.config.DiscordBotToken,
+                            TokenType = TokenType.Bot,
+                            AutoReconnect = true
+                        });
+                    }
                 }
                 catch (Exception ex)
                 {
                     AlliancePlugin.Log.Error(ex);
                     Ready = false;
+                    errors.Add(ex.ToString());
                     return Task.CompletedTask;
                 }
 
 
-
+                Discord.ClientErrored += Client_ClientError;
 
                 try
                 {
                     Discord.ConnectAsync();
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     Ready = false;
+                    errors.Add(ex.ToString());
                     return Task.CompletedTask;
                 }
-        
+                
                 Discord.MessageCreated += Discord_MessageCreated;
-         
+
                 Ready = true;
             }
             return Task.CompletedTask;
         }
+        private static Task Client_ClientError(ClientErrorEventArgs e)
+        {
+            errors.Add(e.Exception.ToString());
+            // let's log the details of the error that just 
+            // occured in our client
+            //  sender.Logger.LogError(BotEventId, e.Exception, "Exception occured");
+
+            // since this method is not async, let's return
+            // a completed task, so that no additional work
+            // is done
+            return Task.CompletedTask;
+        }
+
         public static List<Guid> registered = new List<Guid>();
 
         public static Task RegisterAllianceBot(Alliance alliance, ulong channelId)
@@ -79,42 +108,70 @@ namespace AlliancesPlugin.Alliances
                 try
                 {
 
-                    bot = new DiscordClient(new DiscordConfiguration
+                    // Windows Vista - 8.1
+                    if (Environment.OSVersion.Platform.Equals(PlatformID.Win32NT) && Environment.OSVersion.Version.Major == 6)
                     {
-                        Token = Encryption.DecryptString(alliance.AllianceId.ToString(), alliance.DiscordToken),
-                        TokenType = TokenType.Bot,
-                        AutoReconnect = true
-                    });
-
+                        bot = new DiscordClient(new DiscordConfiguration
+                        {
+                            Token = Encryption.DecryptString(alliance.AllianceId.ToString(), alliance.DiscordToken),
+                            TokenType = TokenType.Bot,
+                            WebSocketClientFactory = WebSocket4NetClient.CreateNew,
+                            AutoReconnect = true
+                        });
+                    }
+                    else
+                    {
+                        bot = new DiscordClient(new DiscordConfiguration
+                        {
+                            Token = Encryption.DecryptString(alliance.AllianceId.ToString(), alliance.DiscordToken),
+                            TokenType = TokenType.Bot,
+                            AutoReconnect = true
+                        });
+                    }
 
                 }
                 catch (Exception ex)
                 {
+                    errors.Add(ex.ToString());
                     AlliancePlugin.Log.Error(ex);
-
+                    if (debugMode)
+                    {
+                        if (MySession.Static.Players.GetPlayerByName("Crunch") != null)
+                        {
+                            MyPlayer player = MySession.Static.Players.GetPlayerByName("Crunch");
+                            ShipyardCommands.SendMessage("Discord", "token is fucked " + ex.ToString(), Color.Blue, (long)player.Id.SteamId);
+                        }
+                    }
                     return Task.CompletedTask;
                 }
 
-
+                bot.ClientErrored += Client_ClientError;
                 try
                 {
                   bot.ConnectAsync();
                 }
                 catch (Exception ex)
                 {
+                    errors.Add(ex.ToString());
+                    if (debugMode)
+                    {
+                        if (MySession.Static.Players.GetPlayerByName("Crunch") != null)
+                        {
+                            MyPlayer player = MySession.Static.Players.GetPlayerByName("Crunch");
+                            ShipyardCommands.SendMessage("Discord", "Error on connecting " + ex.ToString(), Color.Blue, (long)player.Id.SteamId);
+                        }
+                    }
                     return Task.CompletedTask;
                 }
 
-                if (!allianceBots.ContainsKey(alliance.AllianceId))
-                {
 
-                    bot.MessageCreated += Discord_AllianceMessage;
-                    allianceBots.Remove(alliance.AllianceId);
-                    allianceBots.Add(alliance.AllianceId, bot);
-                    allianceChannels.Remove(alliance.DiscordChannelId);
+                bot.MessageCreated += Discord_AllianceMessage;
+                allianceBots.Remove(alliance.AllianceId);
+                allianceBots.Add(alliance.AllianceId, bot);
+                allianceChannels.Remove(alliance.DiscordChannelId);
 
-                    allianceChannels.Add(channelId, alliance.AllianceId);
-                }
+                allianceChannels.Add(channelId, alliance.AllianceId);
+
             }
 
             return Task.CompletedTask;

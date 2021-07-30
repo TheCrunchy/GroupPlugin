@@ -645,7 +645,7 @@ namespace AlliancesPlugin
                         //    {
                         //   botsTried.Add(alliance.AllianceId);
                         Log.Info("Registering bot for " + alliance.AllianceId);
-                        registerThese.Add(alliance.AllianceId, nextRegister.AddSeconds(15));
+                        registerThese.Add(alliance.AllianceId, nextRegister.AddSeconds(30));
 
 
 

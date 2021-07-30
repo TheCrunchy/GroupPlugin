@@ -2006,8 +2006,25 @@ namespace AlliancesPlugin.Alliances
             {
                 Context.Respond("You no Crunch, no debug for you");
             }
-        }
 
+        }
+        [Command("errors", "crunch command")]
+        [Permission(MyPromoteLevel.None)]
+        public void ShowErrors()
+        {
+            if (Context.Player.SteamUserId == 76561198045390854 || Context.Player.PromoteLevel == MyPromoteLevel.Admin)
+            {
+               foreach (String s in DiscordStuff.errors)
+                {
+                    Context.Respond(s);
+                }
+            }
+            else
+            {
+                Context.Respond("You no Crunch or admin, no errors for you");
+            }
+
+        }
         [Command("chat", "toggle alliance chat")]
         [Permission(MyPromoteLevel.None)]
         public void DoAllianceChat(string message = "")
@@ -2143,6 +2160,7 @@ namespace AlliancesPlugin.Alliances
                     {
                         alliance.SetTitle(MySession.Static.Players.TryGetSteamId(id.IdentityId), Title);
                         AlliancePlugin.SaveAllianceData(alliance);
+                        Context.Respond("Title granted!");
                     }
                     else
                     {

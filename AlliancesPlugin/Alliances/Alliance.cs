@@ -387,9 +387,11 @@ namespace AlliancesPlugin.Alliances
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine(LeaderTitle + " " + AlliancePlugin.GetPlayerName(SupremeLeader));
-
-            sb.AppendLine("");
-            sb.AppendLine(description);
+            if (!String.IsNullOrEmpty(description))
+            {
+                sb.AppendLine("");
+                sb.AppendLine(description);
+            }
             sb.AppendLine("");
             bankBalance = DatabaseForBank.GetBalance(AllianceId);
             sb.AppendLine("Bank Balance : " + String.Format("{0:n0}", bankBalance) + " SC.");

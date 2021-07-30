@@ -3,6 +3,7 @@ using NLog;
 using Sandbox.Definitions;
 using Sandbox.Engine.Physics;
 using Sandbox.Game.Entities.Character;
+using Sandbox.Game.Screens.Helpers;
 using Sandbox.Game.Weapons;
 using Sandbox.Game.World;
 using Sandbox.ModAPI;
@@ -28,6 +29,7 @@ namespace AlliancesPlugin.Special_Designation
         public static Dictionary<ulong, MiningContract> playerWithContract = new Dictionary<ulong, MiningContract>();
         public static readonly Logger Log = LogManager.GetCurrentClassLogger();
 
+        public static List<MyGps> locations = new List<MyGps>();
 
 
         internal static readonly MethodInfo update =
@@ -39,7 +41,28 @@ namespace AlliancesPlugin.Special_Designation
             throw new Exception("Failed to find patch method");
 
 
-
+        public static MyGps GenerateDeliveryLocation(Vector3 location)
+        {
+            float distance = 0;
+            MyGps closest = null;
+            foreach (MyGps gps in locations)
+            {
+                if (distance == 0)
+                {
+                    closest = gps;
+                }
+                else
+                {
+                    float d = Vector3.Distance(gps.Coords, location);
+                    if (d < distance)
+                    {
+                        distance = d;
+                        closest = gps;
+                    }
+                }
+            }
+            return closest;
+        }
 
         public static void Patch(PatchContext ctx)
         {
@@ -107,9 +130,15 @@ namespace AlliancesPlugin.Special_Designation
                                     {
                                         if (contract.AddToContractAmount(totalAmount.ToIntSafe()))
                                         {
-                                            ShipyardCommands.SendMessage("Big Boss Dave", "Contract Ready to be completed, Deliver " + contract.amountToMine + " " + contract.OreSubType + " to the delivery GPS.", Color.Gold, (long)MySession.Static.Players.TryGetSteamId(playerId));
-                                            contract.DoPlayerGps(playerId);
-
+                                        
+                                         
+                                            MyGps location = GenerateDeliveryLocation(hitPosition);
+                                            if (location != null)
+                                            {
+                                                contract.DeliveryLocation = (location);
+                                                contract.DoPlayerGps(playerId);
+                                                ShipyardCommands.SendMessage("Big Boss Dave", "Contract Ready to be completed, Deliver " + contract.amountToMine + " " + contract.OreSubType + " to the delivery GPS.", Color.Gold, (long)MySession.Static.Players.TryGetSteamId(playerId));
+                                            }
                                         }
                                         else
                                         {
