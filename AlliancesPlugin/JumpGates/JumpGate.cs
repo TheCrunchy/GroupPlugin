@@ -12,6 +12,7 @@ namespace AlliancesPlugin.JumpGates
     {
         public Guid GateId = System.Guid.NewGuid();
         public string WorldName = "";
+        public Boolean RequireDrive = true;
         public Boolean UseSafeZones = true;
         public long SafeZoneEntityId = 1;
         public Boolean GeneratedZone2 = false;

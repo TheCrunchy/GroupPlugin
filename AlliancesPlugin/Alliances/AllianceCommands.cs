@@ -2139,12 +2139,13 @@ namespace AlliancesPlugin.Alliances
                             {
                                 alliance.SetTitle(MySession.Static.Players.TryGetSteamId(id.IdentityId), Title);
                                 AlliancePlugin.SaveAllianceData(alliance);
+                                Context.Respond("Title granted!");
                             }
                             else
                             {
                                 Context.Respond("That rank is higher or same rank as you.");
                             }
-
+                          
 
                         }
                         else
