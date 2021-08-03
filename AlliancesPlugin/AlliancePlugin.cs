@@ -1076,10 +1076,10 @@ namespace AlliancesPlugin
 
                     if (DateTime.Now >= ter.transferTime)
                     {
-                        Log.Info("Transferring? " + ter.Name);
+                      //  Log.Info("Transferring? " + ter.Name);
                         if (ter.transferTo == ter.previousOwner)
                         {
-                            Log.Info("Same owner, not transferring.");
+                         //   Log.Info("Same owner, not transferring.");
                             continue;
                         }
                         Vector3 Position = new Vector3(ter.stationX, ter.stationY, ter.stationZ);
@@ -1087,20 +1087,20 @@ namespace AlliancesPlugin
                         Alliance alliance = AlliancePlugin.GetAlliance(ter.transferTo);
                         if (alliance == null)
                         {
-                            Log.Info("null alliance");
+                          //  Log.Info("null alliance");
                             continue;
                         }
                         foreach (MyCubeGrid grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
                         {
                             IMyFaction fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
-                            Log.Info("Grid? " + grid.DisplayNameText);
+                         //   Log.Info("Grid? " + grid.DisplayNameText);
 
                             if (fac != null)
                             {
-                                Log.Info("Fac isnt null");
+                               // Log.Info("Fac isnt null");
                                 if (!fac.Tag.Equals(ter.FactionTagForStationOwner))
                                 {
-                                    Log.Info("Fac isnt the configured owner");
+                                //    Log.Info("Fac isnt the configured owner");
                                     continue;
                                 }
 
@@ -1484,65 +1484,6 @@ namespace AlliancesPlugin
                 TaxesToBeProcessed.Remove(id);
             }
         }
-        //public void DoTaxStuff()
-        //{
-
-        //    List<long> Processed = new List<long>();
-        //    foreach (long id in TaxesToBeProcessed.Keys)
-        //    {
-
-
-        //        if (MySession.Static.Factions.TryGetPlayerFaction(id) != null)
-        //        {
-
-        //            Alliance alliance = GetAllianceNoLoading(MySession.Static.Factions.TryGetPlayerFaction(id) as MyFaction);
-        //            if (alliance != null)
-        //            {
-
-        //                alliance = GetAlliance(alliance.name);
-
-        //                if (alliance.GetTaxRate(MySession.Static.Players.TryGetSteamId(id)) > 0)
-        //                {
-
-        //                    float tax = TaxesToBeProcessed[id] * alliance.GetTaxRate(MySession.Static.Players.TryGetSteamId(id));
-        //                    if (EconUtils.getBalance(id) >= tax)
-        //                    {
-        //                        if (DatabaseForBank.AddToBalance(alliance, (long)tax))
-        //                        {
-
-        //                            EconUtils.takeMoney(id, (long)tax);
-
-        //                            alliance.DepositTax((long)tax, MySession.Static.Players.TryGetSteamId(id));
-        //                            SaveAllianceData(alliance);
-        //                            Processed.Add(id);
-        //                        }
-        //                        else
-        //                        {
-
-        //                            Processed.Add(id);
-        //                        }
-        //                    }
-        //                    else
-        //                    {
-        //                        Processed.Add(id);
-        //                    }
-        //                }
-        //            }
-        //            else
-        //            {
-        //                Processed.Add(id);
-        //            }
-        //        }
-        //        else
-        //        {
-        //            Processed.Add(id);
-        //        }
-        //    }
-        //    foreach (long id in Processed)
-        //    {
-        //        TaxesToBeProcessed.Remove(id);
-        //    }
-        //}
         public static bool yeeted = false;
         public void DoKothStuff()
         {
@@ -1637,79 +1578,7 @@ namespace AlliancesPlugin
                     if (DateTime.Now >= config.nextCaptureInterval)
                     {
                         config.nextCaptureInterval = DateTime.Now.AddSeconds(config.SecondsBetweenCaptureCheck);
-                        //Log.Info(config.owner + " " + config.capturingNation);
-                        //setup a time check for capture time
-                        //if (config.ShowSafeZone)
-                        //{
-                        //    bool hasZone = false;
-                        //    MySafeZone yeet = null;
-                        //    BoundingSphereD sphere2 = new BoundingSphereD(position, config.CaptureRadiusInMetre + 1500);
-                        //    if (!yeeted)
-                        //    {
-                        //        foreach (MySafeZone zonee in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere2).OfType<MySafeZone>())
-                        //        {
-                        //            zonee.Close();
-                        //            yeeted = true;
-                        //        }
-                        //    }
-                        //    hasZone = true;
-                        //    if (MyAPIGateway.Entities.GetEntityById(config.SafeZoneId) != null && MyAPIGateway.Entities.GetEntityById(config.SafeZoneId) is MySafeZone zone)
-                        //    {
-                        //        zone.Close();
 
-                        //        if (zone.Radius != (float)config.CaptureRadiusInMetre)
-                        //        {
-                        //            MyObjectBuilder_SafeZone objectBuilderSafeZone = new MyObjectBuilder_SafeZone();
-                        //            objectBuilderSafeZone.PositionAndOrientation = new MyPositionAndOrientation?(new MyPositionAndOrientation(position, Vector3.Forward, Vector3.Up));
-                        //            objectBuilderSafeZone.PersistentFlags = MyPersistentEntityFlags2.InScene;
-                        //            objectBuilderSafeZone.Shape = zone.Shape;
-                        //            objectBuilderSafeZone.Radius = (float)config.CaptureRadiusInMetre;
-                        //            objectBuilderSafeZone.Enabled = zone.Enabled;
-                        //            objectBuilderSafeZone.AllowedActions = zone.AllowedActions;
-                        //            objectBuilderSafeZone.ModelColor = zone.ModelColor.ToVector3();
-                        //            objectBuilderSafeZone.DisplayName = zone.DisplayName;
-                        //            objectBuilderSafeZone.Texture = zone.CurrentTexture.String;
-                        //            objectBuilderSafeZone.AccessTypeGrids = zone.AccessTypeGrids;
-                        //            objectBuilderSafeZone.AccessTypeFloatingObjects = zone.AccessTypeFloatingObjects;
-                        //            objectBuilderSafeZone.AccessTypeFactions = zone.AccessTypeFactions;
-                        //            objectBuilderSafeZone.AccessTypePlayers = zone.AccessTypePlayers;
-                        //            MyEntity ent = Sandbox.Game.Entities.MyEntities.CreateFromObjectBuilderAndAdd((MyObjectBuilder_EntityBase)objectBuilderSafeZone, true);
-
-                        //            config.SafeZoneId = ent.EntityId;
-                        //            zone.Close();
-                        //            hasZone = true;
-                        //        }
-                        //        else
-                        //        {
-                        //            hasZone = true;
-                        //        }
-                        //    }
-                        //    if (!hasZone)
-                        //    {
-                        //        MyObjectBuilder_SafeZone objectBuilderSafeZone = new MyObjectBuilder_SafeZone();
-                        //        objectBuilderSafeZone.PositionAndOrientation = new MyPositionAndOrientation?(new MyPositionAndOrientation(position, Vector3.Forward, Vector3.Up));
-                        //        objectBuilderSafeZone.PersistentFlags = MyPersistentEntityFlags2.InScene;
-                        //        objectBuilderSafeZone.Shape = MySafeZoneShape.Sphere;
-                        //        objectBuilderSafeZone.Radius = (float)config.CaptureRadiusInMetre;
-                        //        objectBuilderSafeZone.Enabled = false;
-                        //        objectBuilderSafeZone.AllowedActions = MySafeZoneAction.Drilling | MySafeZoneAction.Building | MySafeZoneAction.Damage | MySafeZoneAction.Grinding | MySafeZoneAction.Shooting | MySafeZoneAction.Welding | MySafeZoneAction.LandingGearLock;
-                        //        objectBuilderSafeZone.DisplayName = config.KothName + " Radius";
-                        //        objectBuilderSafeZone.AccessTypeGrids = MySafeZoneAccess.Blacklist;
-                        //        objectBuilderSafeZone.AccessTypeFloatingObjects = MySafeZoneAccess.Blacklist;
-                        //        objectBuilderSafeZone.AccessTypeFactions = MySafeZoneAccess.Blacklist;
-                        //        objectBuilderSafeZone.AccessTypePlayers = MySafeZoneAccess.Blacklist;
-
-                        //        MyEntity ent = Sandbox.Game.Entities.MyEntities.CreateFromObjectBuilderAndAdd((MyObjectBuilder_EntityBase)objectBuilderSafeZone, true);
-                        //        config.SafeZoneId = ent.EntityId;
-                        //    }
-                        //}
-                        //else
-                        //{
-                        //    if (MyAPIGateway.Entities.GetEntityById(config.SafeZoneId) != null && MyAPIGateway.Entities.GetEntityById(config.SafeZoneId) is MySafeZone zone)
-                        //    {
-                        //        zone.Close();
-                        //    }
-                        //}
                         Guid capturingNation = Guid.Empty;
                         if (config.capturingNation != Guid.Empty)
                         {
@@ -1802,15 +1671,6 @@ namespace AlliancesPlugin
 
                         if (DateTime.Now >= config.nextCaptureAvailable)
                         {
-                            //this errors, i think this is only for client side mods? 
-                            // MatrixD matrix = MatrixD.CreateWorld(position);
-
-                            // Color color = Color.Gray;
-                            //if (matrix != null)
-                            // {
-                            //     MySimpleObjectDraw.DrawTransparentSphere(ref matrix, (float) config.CaptureRadiusInMetre, ref color, MySimpleObjectRasterizer.Solid, 20);
-                            // }
-
                             if (entitiesInCapPoint == 0 && config.IsDenialPoint)
                             {
                                 if (denials.TryGetValue(config.DeniedKoth, out DenialPoint den))
@@ -2217,24 +2077,13 @@ namespace AlliancesPlugin
                         }
                         else
                         {
-                            //    Log.Info("No owner, normal spawn time");
-                            //          if (lootgrid != null)
-                            //     {
-                            //            SpawnCores(lootgrid, config);
-
-                            //     }
                             config.nextCoreSpawn = DateTime.Now.AddSeconds(config.SecondsBetweenCoreSpawn);
-                            //    SendChatMessage("No owner, normal spawn time");
                             SaveKothConfig(config.KothName, config);
                         }
-
                     }
-
                     contested = false;
                     hasActiveCaptureBlock = false;
                 }
-
-
                 catch (Exception ex)
                 {
                     Log.Error("koth error " + ex.ToString());
@@ -2367,7 +2216,6 @@ namespace AlliancesPlugin
                     ShipyardCommands.SendMessage("Big Boss Dave", "Mining Contract in progress, !mc info or !mc quit", Color.Gold, (long)MySession.Static.Players.TryGetSteamId(player.Identity.IdentityId));
                 }
             }
-
         }
 
         public static Dictionary<ulong, MiningContract> miningSave = new Dictionary<ulong, MiningContract>();
@@ -2460,23 +2308,7 @@ namespace AlliancesPlugin
                 catch (Exception ex)
                 {
                     Log.Error(ex);
-
                 }
-                //try
-                //{
-                //    if (now.Minute == 59 || now.Minute == 60)
-                //    {
-                //        NextUpdate = new DateTime(now.Year, now.Month, now.Day, now.Hour + 1, 0, 0, 0, DateTimeKind.Utc);
-                //    }
-                //    else
-                //    {
-                //        NextUpdate = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute + 1, 0, 0, DateTimeKind.Utc);
-                //    }
-                //}
-                //catch (Exception)
-                //{
-
-                // }
                 try
                 {
                     MarketCommands.list.RefreshList();
@@ -2602,13 +2434,13 @@ namespace AlliancesPlugin
                                                         {
                                                             if (AlliancePlugin.TaxesToBeProcessed.ContainsKey(player.Identity.IdentityId))
                                                             {
-                                                                Log.Info("1");
-                                                                AlliancePlugin.TaxesToBeProcessed[player.Identity.IdentityId] += contract.contractPrice;
+                                                               
+                                                                AlliancePlugin.TaxesToBeProcessed[player.Identity.IdentityId] += (long)contract.contractPrice;
                                                             }
                                                             else
                                                             {
                                                                 AlliancePlugin.TaxesToBeProcessed.Add(player.Identity.IdentityId, (long) contract.contractPrice);
-                                                                Log.Info("2");
+                                                                
                                                             }
                                                             EconUtils.addMoney(player.Identity.IdentityId, contract.contractPrice);
                                                             ShipyardCommands.SendMessage("Big Boss Dave", "Good job, heres the money", Color.Gold, (long)player.Id.SteamId);
@@ -2731,7 +2563,6 @@ namespace AlliancesPlugin
                     //   Log.Info("Should spawn item");
                     MyItemType itemType = new MyInventoryItemFilter(rewardItem.TypeId + "/" + rewardItem.SubtypeName).ItemType;
                     block.GetInventory().AddItems((MyFixedPoint)config.RewardAmount, (MyObjectBuilder_PhysicalObject)MyObjectBuilderSerializer.CreateNewObject(rewardItem));
-
                 }
                 else
                 {
@@ -2739,12 +2570,7 @@ namespace AlliancesPlugin
                 }
                 return;
             }
-
-
-
         }
-
-
         public static Boolean DoesGridHaveCaptureBlock(MyCubeGrid grid, KothConfig koth, Boolean ignoreOwner = false)
         {
             foreach (MyCubeBlock block in grid.GetFatBlocks())
