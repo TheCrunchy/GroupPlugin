@@ -41,7 +41,7 @@ namespace AlliancesPlugin.Special_Designation
             throw new Exception("Failed to find patch method");
 
 
-        public static MyGps GenerateDeliveryLocation(Vector3 location)
+        public static MyGps GenerateDeliveryLocation(Vector3 location, MiningContract contract)
         {
             float distance = 0;
             MyGps closest = null;
@@ -61,13 +61,18 @@ namespace AlliancesPlugin.Special_Designation
                     }
                 }
             }
+            closest.Description = "Deliver " + contract.amountToMine + " " + contract.OreSubType + " Ore. !mc info";
+            closest.DisplayName = "Ore Delivery Location.";
+            closest.Name = "Ore Delivery Location.";
+            closest.DiscardAt = new TimeSpan(600);
             return closest;
         }
+        public static Dictionary<ulong, DateTime> messageCooldown = new Dictionary<ulong, DateTime>();
 
         public static void Patch(PatchContext ctx)
         {
 
-            //  ctx.GetPattern(update).Suffixes.Add(updatePatch);
+             ctx.GetPattern(update).Suffixes.Add(updatePatch);
 
             Log.Info("Patching Successful CrunchDrill!");
 
@@ -79,11 +84,11 @@ namespace AlliancesPlugin.Special_Designation
       int removedAmount,
       bool onlyCheck)
         {
-            if (AlliancePlugin.mining == null)
+            if (AlliancePlugin.config == null)
             {
                 return;
             }
-            if (!AlliancePlugin.mining.Enabled)
+            if (!AlliancePlugin.config.MiningContractsEnabled)
             {
                 return;
             }
@@ -102,7 +107,7 @@ namespace AlliancesPlugin.Special_Designation
                     if (!onlyCheck)
                     {
                         long playerId = 0;
-                        bool HasContract = false;
+                      
                         foreach (IMyCockpit cockpit in shipDrill.CubeGrid.GetFatBlocks().OfType<IMyCockpit>())
                         {
                             if (cockpit.Pilot != null)
@@ -126,26 +131,59 @@ namespace AlliancesPlugin.Special_Designation
                                     MyFixedPoint b = amountItems1 * ((MyFixedPoint)1 - collectionRatio);
                                     MyFixedPoint amountItems2 = MyFixedPoint.Min(maxAmountPerDrop * 10 - (MyFixedPoint)0.001, b);
                                     MyFixedPoint totalAmount = amountItems1 * collectionRatio - amountItems2;
+
+                                    //if they can have multiple contracts edit this bit
+                                    //if they can have multiple contracts edit this bit
+                                    //if they can have multiple contracts edit this bit
                                     if (contract.OreSubType.Equals(material.MinedOre))
                                     {
                                         if (contract.AddToContractAmount(totalAmount.ToIntSafe()))
                                         {
-                                        
-                                         
-                                            MyGps location = GenerateDeliveryLocation(hitPosition);
-                                            if (location != null)
+
+
+                                            MyGps location = GenerateDeliveryLocation(hitPosition, contract);
+                                              if (location != null)
+                                             {
+                                                    contract.DeliveryLocation = (location.ToString());
+                                                  contract.DoPlayerGps(playerId);
+                                            if (messageCooldown.TryGetValue(MySession.Static.Players.TryGetSteamId(playerId), out DateTime time))
                                             {
-                                                contract.DeliveryLocation = (location);
-                                                contract.DoPlayerGps(playerId);
-                                                ShipyardCommands.SendMessage("Big Boss Dave", "Contract Ready to be completed, Deliver " + contract.amountToMine + " " + contract.OreSubType + " to the delivery GPS.", Color.Gold, (long)MySession.Static.Players.TryGetSteamId(playerId));
+                                                if (DateTime.Now >= time)
+                                                {
+                                                    ShipyardCommands.SendMessage("Big Boss Dave", "Contract Ready to be completed, Deliver " + String.Format("{0:n0}", contract.amountToMine) + " " + contract.OreSubType + " to the delivery GPS.", Color.Gold, (long)MySession.Static.Players.TryGetSteamId(playerId));
+                                                    messageCooldown[MySession.Static.Players.TryGetSteamId(playerId)] = DateTime.Now.AddSeconds(3);
+                                                }
                                             }
+                                            else
+                                            {
+                                                ShipyardCommands.SendMessage("Big Boss Dave", "Contract Ready to be completed, Deliver " + String.Format("{0:n0}", contract.amountToMine) + " " + contract.OreSubType + " to the delivery GPS.", Color.Gold, (long)MySession.Static.Players.TryGetSteamId(playerId));
+                                                messageCooldown.Add(MySession.Static.Players.TryGetSteamId(playerId), DateTime.Now.AddSeconds(3));
+                                            }
+
+                                              }
+                                            playerWithContract[MySession.Static.Players.TryGetSteamId(playerId)] = contract;
+                                            AlliancePlugin.miningSave.Remove(MySession.Static.Players.TryGetSteamId(playerId));
+                                            AlliancePlugin.miningSave.Add(MySession.Static.Players.TryGetSteamId(playerId), contract);
                                         }
                                         else
                                         {
-                                            ShipyardCommands.SendMessage("Big Boss Dave", "Contract progress : " + material.MinedOre + " " + contract.minedAmount + " / " + contract.amountToMine, Color.Gold, (long)MySession.Static.Players.TryGetSteamId(playerId));
+                                            if (messageCooldown.TryGetValue(MySession.Static.Players.TryGetSteamId(playerId), out DateTime time))
+                                            {
+                                                if (DateTime.Now >= time)
+                                                {
+                                                    ShipyardCommands.SendMessage("Big Boss Dave", "Contract progress : " + material.MinedOre + " " + String.Format("{0:n0}", contract.minedAmount) + " / " + String.Format("{0:n0}", contract.amountToMine), Color.Gold, (long)MySession.Static.Players.TryGetSteamId(playerId));
+                                                    messageCooldown[MySession.Static.Players.TryGetSteamId(playerId)] = DateTime.Now.AddSeconds(0.5);
+                                                }
+                                            }
+                                            else
+                                            {
+                                                ShipyardCommands.SendMessage("Big Boss Dave", "Contract progress : " + material.MinedOre + " " + String.Format("{0:n0}", contract.minedAmount) + " / " + String.Format("{0:n0}", contract.amountToMine), Color.Gold, (long)MySession.Static.Players.TryGetSteamId(playerId));
+                                                messageCooldown.Add(MySession.Static.Players.TryGetSteamId(playerId), DateTime.Now.AddSeconds(0.5));
+                                            }
+                                            playerWithContract[MySession.Static.Players.TryGetSteamId(playerId)] = contract;
+                                            AlliancePlugin.miningSave.Remove(MySession.Static.Players.TryGetSteamId(playerId));
+                                            AlliancePlugin.miningSave.Add(MySession.Static.Players.TryGetSteamId(playerId), contract);
                                         }
-                                        playerWithContract[MySession.Static.Players.TryGetSteamId(playerId)] = contract;
-                                        AlliancePlugin.miningSave.Add(MySession.Static.Players.TryGetSteamId(playerId), contract);
                                     }
                                 }
                             }

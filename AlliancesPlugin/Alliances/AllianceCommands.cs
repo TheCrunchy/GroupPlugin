@@ -1715,7 +1715,7 @@ namespace AlliancesPlugin.Alliances
                             EconUtils.addMoney(Context.Player.IdentityId, amount);
                             alliance.WithdrawMoney(amount, Context.Player.SteamUserId);
                             AlliancePlugin.SaveAllianceData(alliance);
-
+                            Context.Respond("Withdraw complete.");
                         }
                         else
                         {
@@ -1912,6 +1912,7 @@ namespace AlliancesPlugin.Alliances
                 }
                 EconUtils.addMoney(id.IdentityId, amount);
                 alliance.PayPlayer(amount, steamid, MySession.Static.Players.TryGetSteamId(id.IdentityId));
+              
             }
             else
             {
@@ -1924,6 +1925,7 @@ namespace AlliancesPlugin.Alliances
                 }
                 EconUtils.addMoney(playerFac.FactionId, amount);
                 alliance.PayFaction(amount, steamid, playerFac.FactionId);
+               
             }
         }
 
@@ -1975,6 +1977,7 @@ namespace AlliancesPlugin.Alliances
                     if (DatabaseForBank.RemoveFromBalance(alliance, amount))
                     {
                         DoAlliancePay(type, nameortag, amount, alliance, Context.Player.SteamUserId);
+                        AlliancePlugin.SaveAllianceData(alliance);
                     }
                     else
                     {

@@ -1,4 +1,5 @@
 ﻿using AlliancesPlugin.Shipyard;
+using AlliancesPlugin.Special_Designation;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
@@ -360,7 +361,14 @@ namespace AlliancesPlugin.Alliances
                     Sandbox.Game.Multiplayer.MyFactionCollection.DeclareWar(playerFac.FactionId, wolf.FactionId);
                 }
             }
-            if (File.Exists(AlliancePlugin.path + "//PlayerData//" + p.SteamId + ".xml") && playerFac != null)
+            if (File.Exists(AlliancePlugin.path + "//MiningStuff//PlayerData//" + p.SteamId + ".xml"))
+            {
+                MiningContract contract = utils.ReadFromXmlFile<MiningContract>(AlliancePlugin.path + "//MiningStuff//PlayerData//" + p.SteamId + ".xml");
+                DrillPatch.playerWithContract.Remove(p.SteamId);
+                DrillPatch.playerWithContract.Add(p.SteamId, contract);
+            }
+
+                if (File.Exists(AlliancePlugin.path + "//PlayerData//" + p.SteamId + ".xml") && playerFac != null)
             {
                 PlayerData data = utils.ReadFromXmlFile<PlayerData>(AlliancePlugin.path + "//PlayerData//" + p.SteamId + ".xml");
                 if (data.InAllianceChat)

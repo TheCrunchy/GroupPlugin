@@ -49,6 +49,7 @@ using SpaceEngineers.Game.Entities.Blocks.SafeZone;
 using DSharpPlus;
 using SpaceEngineers.Game.Entities.Blocks;
 using AlliancesPlugin.Special_Designation;
+using Sandbox.Game.GameSystems.BankingAndCurrency;
 
 namespace AlliancesPlugin
 {
@@ -105,6 +106,89 @@ namespace AlliancesPlugin
                 Log.Error(ex);
             }
         }
+        public static List<GeneratedContract> miningContracts = new List<GeneratedContract>();
+
+
+        public static GeneratedContract GetPlayerContract()
+        {
+            GeneratedContract output = null;
+            Random random = new Random();
+            List<GeneratedContract> temp = new List<GeneratedContract>();
+            int count = 0;
+            foreach (GeneratedContract contract in miningContracts)
+            {
+                count++;
+                double chance = random.Next(0, 101);
+                if (chance <= contract.chance)
+                {
+                    temp.Add(contract);
+                }
+            }
+            if (temp.Count == 0)
+            {
+                return null;
+            }
+            if (temp.Count == 1)
+            {
+                output = temp.ElementAt(0);
+            }
+            else
+            {
+
+                int index = random.Next(temp.Count - 1);
+
+                output = temp.ElementAt(index);
+            }
+
+            return output;
+        }
+
+
+
+
+
+
+        public static void LoadAllContracts()
+        {
+            miningContracts.Clear();
+            foreach (String s in Directory.GetFiles(AlliancePlugin.path + "//MiningStuff//Contracts//"))
+            {
+
+
+                GeneratedContract contract = utils.ReadFromXmlFile<GeneratedContract>(s);
+                //  DateTime now = DateTime.Now;
+                //if (now.Minute == 59 || now.Minute == 60)
+                //{
+                //    koth.nextCaptureInterval = new DateTime(now.Year, now.Month, now.Day, now.Hour + 1, 0, 0, 0, DateTimeKind.Utc);
+                //}
+                //else
+                //{
+                //    koth.nextCaptureInterval = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute + 1, 0, 0, DateTimeKind.Utc);
+                //}
+                if (contract.Enabled)
+                {
+                    miningContracts.Add(contract);
+                }
+            }
+        }
+        public static void LoadDeliveryLocations()
+        {
+            DrillPatch.locations.Clear();
+            if (System.IO.File.Exists(path + "//MiningStuff//deliveryLocations.txt"))
+            {
+                String[] line = File.ReadAllLines(path + "//MiningStuff//deliveryLocations.txt");
+                for (int i = 0; i < line.Length; i++)
+                {
+                    if (ScanChat(line[i]) != null)
+                    {
+                        MyGps gpsRef = ScanChat(line[i]);
+                        gpsRef.GPSColor = Color.DarkOrange;
+                        gpsRef.ShowOnHud = true;
+                        DrillPatch.locations.Add(gpsRef);
+                    }
+                }
+            }
+        }
 
         public override void Init(ITorchBase torch)
         {
@@ -137,7 +221,24 @@ namespace AlliancesPlugin
                 example.enabled = false;
                 utils.WriteToXmlFile<Territory>(path + "//Territories//Example.xml", example, false);
             }
+            if (!Directory.Exists(path + "//MiningStuff//"))
+            {
+                Directory.CreateDirectory(path + "//MiningStuff//");
+            }
+            if (!Directory.Exists(path + "//MiningStuff//PlayerData//"))
+            {
+                Directory.CreateDirectory(path + "//MiningStuff//PlayerData//");
+            }
 
+            if (!Directory.Exists(path + "//MiningStuff//Contracts//"))
+            {
+                Directory.CreateDirectory(path + "//MiningStuff//Contracts//");
+            }
+            if (!File.Exists(path + "//MiningStuff//Contracts//Example.xml"))
+            {
+                GeneratedContract example = new GeneratedContract();
+                utils.WriteToXmlFile<GeneratedContract>(path + "//MiningStuff//Contracts//Example.xml", example);
+            }
             if (!Directory.Exists(path + "//PlayerData//"))
             {
                 Directory.CreateDirectory(path + "//PlayerData//");
@@ -416,7 +517,19 @@ namespace AlliancesPlugin
                 {
                     DiscordStuff.RegisterDiscord();
                 }
+                if (!System.IO.File.Exists(path + "//MiningStuff//deliveryLocations.txt"))
+                {
+                    MyGps bob = new MyGps();
+                    Vector3D alan = new Vector3D(100, 100, 100);
+                    bob.Coords = alan;
+                    bob.Name = "Example GPS";
+                    bob.DisplayName = "Example GPS";
+
+                    File.WriteAllText(path + "//MiningStuff//deliveryLocations.txt", bob.ToString());
+                }
+
                 LoadAllGates();
+                LoadAllContracts();
                 AllianceChat.ApplyLogging();
                 InitPluginDependencies(Torch.Managers.GetManager<PluginManager>());
                 TorchState = TorchSessionState.Loaded;
@@ -604,7 +717,15 @@ namespace AlliancesPlugin
 
                 LoadAllAlliances();
                 LoadAllGates();
+                try
+                {
+                    LoadDeliveryLocations();
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex);
 
+                }
 
 
                 LoadItemUpkeep();
@@ -1614,7 +1735,7 @@ namespace AlliancesPlugin
                                 {
 
                                     //  Log.Info("Contested faction " + fac.Tag + " " + capturingNation);
-                                   if (DoesGridHaveCaptureBlock(grid, config))
+                                    if (DoesGridHaveCaptureBlock(grid, config))
                                     {
                                         contested = true;
                                     }
@@ -1638,7 +1759,7 @@ namespace AlliancesPlugin
                             {
 
                                 //  Log.Info("Contested no faction");
-                               // contested = false;
+                                // contested = false;
                             }
                         }
 
@@ -2189,6 +2310,16 @@ namespace AlliancesPlugin
             ModCommunication.SendMessageTo(message2, player.Id.SteamId);
             InTerritory.Remove(player.Identity.IdentityId);
         }
+        public static MiningContract GeneratedToPlayer(GeneratedContract gen)
+        {
+            MiningContract contract = new MiningContract();
+            contract.OreSubType = gen.OreSubType;
+            contract.GenerateAmountToMine(gen.minimumToMine, gen.maximumToMine);
+            contract.contractPrice = contract.amountToMine * gen.PricePerOre;
+            contract.minedAmount = 0;
+
+            return contract;
+        }
         public static DateTime chat = DateTime.Now;
         public void GenerateNewMiningContracts(MyPlayer player)
         {
@@ -2209,8 +2340,20 @@ namespace AlliancesPlugin
             }
             if (generate)
             {
+                GeneratedContract newContract = GetPlayerContract();
 
-                utils.SaveMiningData(AlliancePlugin.path + "//MiningStuff//PlayerData//" + player.Id.SteamId + ".xml", contract);
+                if (newContract == null)
+                {
+                    ShipyardCommands.SendMessage("Big Boss Dave", "No contract available.", Color.Gold, (long)MySession.Static.Players.TryGetSteamId(player.Identity.IdentityId));
+                    return;
+                }
+                contract = GeneratedToPlayer(newContract);
+                contract.steamId = player.Id.SteamId;
+                DrillPatch.playerWithContract.Remove(player.Id.SteamId);
+                DrillPatch.playerWithContract.Add(player.Id.SteamId, contract);
+                ShipyardCommands.SendMessage("Big Boss Dave", "New job for you, !mc info or !mc quit", Color.Gold, (long)MySession.Static.Players.TryGetSteamId(player.Identity.IdentityId));
+
+                utils.WriteToXmlFile<MiningContract>(AlliancePlugin.path + "//MiningStuff//PlayerData//" + player.Id.SteamId + ".xml", contract);
             }
             else
             {
@@ -2221,7 +2364,7 @@ namespace AlliancesPlugin
                 }
                 else
                 {
-                    ShipyardCommands.SendMessage("Big Boss Dave", "Mining Contract in progress, !mc info", Color.Gold, (long)MySession.Static.Players.TryGetSteamId(player.Identity.IdentityId));
+                    ShipyardCommands.SendMessage("Big Boss Dave", "Mining Contract in progress, !mc info or !mc quit", Color.Gold, (long)MySession.Static.Players.TryGetSteamId(player.Identity.IdentityId));
                 }
             }
 
@@ -2231,23 +2374,17 @@ namespace AlliancesPlugin
         public override void Update()
         {
 
-            foreach (JumpThing thing in jumpies)
-            {
-                MyCubeGrid grid = MyAPIGateway.Entities.GetEntityById(thing.gridId) as MyCubeGrid;
-                //   grid.PositionComp.SetWorldMatrix(ref thing.matrix);
-                grid.Teleport(thing.matrix);
 
-            }
-            jumpies.Clear();
             ticks++;
 
             if (ticks % 512 == 0)
             {
-                if (TorchState == TorchSessionState.Loaded && mining != null && mining.Enabled)
+                if (TorchState == TorchSessionState.Loaded && config != null && config.MiningContractsEnabled)
                 {
                     foreach (KeyValuePair<ulong, MiningContract> keys in miningSave)
                     {
-                        utils.SaveMiningData(AlliancePlugin.path + "//MiningStuff//PlayerData//" + keys.Key + ".xml", keys.Value);
+                      //  utils.SaveMiningData(AlliancePlugin.path + "//MiningStuff//PlayerData//" + keys.Key + ".xml", keys.Value);
+                        utils.WriteToXmlFile<MiningContract>(AlliancePlugin.path + "//MiningStuff//PlayerData//" + keys.Key + ".xml", keys.Value);
                     }
                     miningSave.Clear();
                 }
@@ -2315,7 +2452,16 @@ namespace AlliancesPlugin
                 Log.Info("Doing alliance tasks");
 
                 DateTime now = DateTime.Now;
+                NextUpdate = now.AddSeconds(60);
+                try
+                {
+                    LoadDeliveryLocations();
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex);
 
+                }
                 //try
                 //{
                 //    if (now.Minute == 59 || now.Minute == 60)
@@ -2329,7 +2475,7 @@ namespace AlliancesPlugin
                 //}
                 //catch (Exception)
                 //{
-                NextUpdate = now.AddSeconds(60);
+
                 // }
                 try
                 {
@@ -2351,6 +2497,7 @@ namespace AlliancesPlugin
                 try
                 {
                     LoadAllGates();
+                    LoadAllContracts();
                 }
                 catch (Exception ex)
                 {
@@ -2407,18 +2554,82 @@ namespace AlliancesPlugin
                 try
                 {
                     Boolean dig = false;
-                    if (mining != null && DateTime.Now >= NextMining && TorchState == TorchSessionState.Loaded && mining.Enabled)
+                    if (DateTime.Now >= NextMining && TorchState == TorchSessionState.Loaded && config.MiningContractsEnabled)
                     {
                         dig = true;
-                        NextMining.AddSeconds(mining.SecondsBetweenNewContracts);
+                        NextMining = NextMining.AddSeconds(config.SecondsBetweenNewContracts);
                     }
                     foreach (MyPlayer player in MySession.Static.Players.GetOnlinePlayers())
                     {
+
                         if (player.GetPosition() != null)
                         {
                             if (dig)
                             {
                                 GenerateNewMiningContracts(player);
+                            }
+                            try
+                            {
+                                if (config.MiningContractsEnabled)
+                                {
+                                    MyPlayer playerOnline = player;
+                                    if (player.Character != null && player?.Controller.ControlledEntity is MyCockpit controller)
+                                    {
+                                        MyCubeGrid grid = controller.CubeGrid;
+                                        if (DrillPatch.playerWithContract.ContainsKey(player.Id.SteamId))
+                                        {
+                                           
+                                            MiningContract contract = DrillPatch.playerWithContract[player.Id.SteamId];
+                                            if (!String.IsNullOrEmpty(contract.OreSubType) && contract.minedAmount >= contract.amountToMine)
+                                            {
+                                                Vector3D coords = contract.getCoords();
+                                                float distance = Vector3.Distance(coords, controller.PositionComp.GetPosition());
+                                                if (distance <= 500)
+                                                {
+                                                    Dictionary<MyDefinitionId, int> itemsToRemove = new Dictionary<MyDefinitionId, int>();
+
+                                                    if (MyDefinitionId.TryParse("MyObjectBuilder_Ore/" + contract.OreSubType, out MyDefinitionId id))
+                                                    {
+                                                        itemsToRemove.Add(id, contract.amountToMine);
+                                                     
+                                                    }
+
+                                                    List<VRage.Game.ModAPI.IMyInventory> inventories = ShipyardCommands.GetInventories(grid);
+
+                                                    if (FacUtils.IsOwnerOrFactionOwned(grid, player.Identity.IdentityId, true))
+                                                    {
+                                                        if (ShipyardCommands.ConsumeComponents(inventories, itemsToRemove, player.Id.SteamId))
+                                                        {
+                                                            if (AlliancePlugin.TaxesToBeProcessed.ContainsKey(player.Identity.IdentityId))
+                                                            {
+                                                                Log.Info("1");
+                                                                AlliancePlugin.TaxesToBeProcessed[player.Identity.IdentityId] += contract.contractPrice;
+                                                            }
+                                                            else
+                                                            {
+                                                                AlliancePlugin.TaxesToBeProcessed.Add(player.Identity.IdentityId, (long) contract.contractPrice);
+                                                                Log.Info("2");
+                                                            }
+                                                            EconUtils.addMoney(player.Identity.IdentityId, contract.contractPrice);
+                                                            ShipyardCommands.SendMessage("Big Boss Dave", "Good job, heres the money", Color.Gold, (long)player.Id.SteamId);
+                                                            contract = new MiningContract();
+                                                            contract.steamId = player.Id.SteamId;
+                                                            DrillPatch.playerWithContract.Remove(player.Id.SteamId);
+                                                            FileUtils utils = new FileUtils();
+                                                            utils.WriteToXmlFile<MiningContract>(AlliancePlugin.path + "//MiningStuff//PlayerData//" + player.Id.SteamId + ".xml", contract);
+
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+
+                                Log.Error(ex);
                             }
                             if (config.KothEnabled)
                             {
@@ -2473,7 +2684,7 @@ namespace AlliancesPlugin
 
                 catch (Exception ex)
                 {
-
+                    AlliancePlugin.Log.Error(ex);
                 }
             }
 

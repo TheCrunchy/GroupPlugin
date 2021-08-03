@@ -14,6 +14,8 @@ namespace AlliancesPlugin
         public string StoragePath = "default";
         public Boolean AllowDiscord = true;
         public Boolean ShipyardEnabled = false;
+        public Boolean MiningContractsEnabled = false;
+        public int SecondsBetweenNewContracts = 300;
         public Boolean HangarEnabled = false;
         public Boolean KothEnabled = false;
         public int MaxHangarSlots = 10;
