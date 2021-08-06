@@ -1,4 +1,5 @@
 ﻿using Sandbox.Game.Entities.Blocks;
+using Sandbox.Game.SessionComponents;
 using Sandbox.Game.World;
 using System;
 using System.Collections.Generic;
@@ -7,6 +8,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Torch.Managers.PatchManager;
+using VRage.Game;
 
 namespace AlliancesPlugin.Alliances
 {
@@ -42,7 +44,7 @@ namespace AlliancesPlugin.Alliances
 
             ctx.GetPattern(update).Suffixes.Add(storePatch);
             ctx.GetPattern(update2).Prefixes.Add(storePatch2);
-           ctx.GetPattern(update3).Prefixes.Add(storePatch3);
+            ctx.GetPattern(update3).Prefixes.Add(storePatch3);
         }
 
         public static Dictionary<long, long> Ids = new Dictionary<long, long>();
@@ -71,10 +73,14 @@ namespace AlliancesPlugin.Alliances
 
             return;
         }
+
+
+     
+
         public static void StorePatchMethod(long id, string name, long price, int amount, MyStoreSellItemResults result)
         {
-           
-          //  AlliancePlugin.Log.Info("sold to store");
+
+            //  AlliancePlugin.Log.Info("sold to store");
             if (result == MyStoreSellItemResults.Success && Ids.ContainsKey(id))
             {
 
@@ -86,7 +92,7 @@ namespace AlliancesPlugin.Alliances
                 {
                     AlliancePlugin.TaxesToBeProcessed.Add(Ids[id], price);
                 }
-              
+
             }
             Ids.Remove(id);
             return;

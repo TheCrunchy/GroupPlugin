@@ -229,7 +229,38 @@ namespace AlliancesPlugin
             {
                 Directory.CreateDirectory(path + "//MiningStuff//PlayerData//");
             }
+            if (!Directory.Exists(path + "//HaulingStuff//"))
+            {
+                Directory.CreateDirectory(path + "//HaulingStuff//");
+            }
+            if (System.IO.File.Exists(path + "//HaulingStuff//easy.csv"))
+            {
+                String[] line = File.ReadAllLines(path + "//HaulingStuff//easy.csv");
 
+                for (int i = 1; i < line.Length; i++)
+                {
+
+                    String[] split = line[i].Split(',');
+                    HaulingCore.AddToEasyContractItems(HaulingCore.ReadContractItem(split, "easy"));
+                }
+            }
+            else
+            {
+                StringBuilder easy = new StringBuilder();
+                easy.AppendLine("ContractItemId,TypeId,SubtypeId,minAmount,maxAmount,minPricePerItem,maxPricePerItem,percentageChance");
+                easy.AppendLine("EasyIngot1,Ingot,Iron,1,10,20,50,50");
+                easy.AppendLine("EasyComponent1,Component,SteelPlate,1,10,20,50,50");
+                easy.AppendLine("EasyOre1,Ore,Iron,1,10,20,50,50");
+                if (!System.IO.File.Exists(path + "//HaulingStuff//easy.csv"))
+                {
+                    File.WriteAllText(path + "//HaulingStuff//easy.csv", easy.ToString());
+                }
+
+            }
+            if (!Directory.Exists(path + "//HaulingStuff//PlayerData//"))
+            {
+                Directory.CreateDirectory(path + "//HaulingStuff//PlayerData//");
+            }
             if (!Directory.Exists(path + "//MiningStuff//Contracts//"))
             {
                 Directory.CreateDirectory(path + "//MiningStuff//Contracts//");
@@ -1076,10 +1107,10 @@ namespace AlliancesPlugin
 
                     if (DateTime.Now >= ter.transferTime)
                     {
-                      //  Log.Info("Transferring? " + ter.Name);
+                        //  Log.Info("Transferring? " + ter.Name);
                         if (ter.transferTo == ter.previousOwner)
                         {
-                         //   Log.Info("Same owner, not transferring.");
+                            //   Log.Info("Same owner, not transferring.");
                             continue;
                         }
                         Vector3 Position = new Vector3(ter.stationX, ter.stationY, ter.stationZ);
@@ -1087,20 +1118,20 @@ namespace AlliancesPlugin
                         Alliance alliance = AlliancePlugin.GetAlliance(ter.transferTo);
                         if (alliance == null)
                         {
-                          //  Log.Info("null alliance");
+                            //  Log.Info("null alliance");
                             continue;
                         }
                         foreach (MyCubeGrid grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
                         {
                             IMyFaction fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
-                         //   Log.Info("Grid? " + grid.DisplayNameText);
+                            //   Log.Info("Grid? " + grid.DisplayNameText);
 
                             if (fac != null)
                             {
-                               // Log.Info("Fac isnt null");
+                                // Log.Info("Fac isnt null");
                                 if (!fac.Tag.Equals(ter.FactionTagForStationOwner))
                                 {
-                                //    Log.Info("Fac isnt the configured owner");
+                                    //    Log.Info("Fac isnt the configured owner");
                                     continue;
                                 }
 
@@ -2231,7 +2262,7 @@ namespace AlliancesPlugin
                 {
                     foreach (KeyValuePair<ulong, MiningContract> keys in miningSave)
                     {
-                      //  utils.SaveMiningData(AlliancePlugin.path + "//MiningStuff//PlayerData//" + keys.Key + ".xml", keys.Value);
+                        //  utils.SaveMiningData(AlliancePlugin.path + "//MiningStuff//PlayerData//" + keys.Key + ".xml", keys.Value);
                         utils.WriteToXmlFile<MiningContract>(AlliancePlugin.path + "//MiningStuff//PlayerData//" + keys.Key + ".xml", keys.Value);
                     }
                     miningSave.Clear();
@@ -2391,6 +2422,8 @@ namespace AlliancesPlugin
                         dig = true;
                         NextMining = NextMining.AddSeconds(config.SecondsBetweenNewContracts);
                     }
+
+                    //i should really split this into multiple methods so i dont have one huge method for everything
                     foreach (MyPlayer player in MySession.Static.Players.GetOnlinePlayers())
                     {
 
@@ -2410,7 +2443,7 @@ namespace AlliancesPlugin
                                         MyCubeGrid grid = controller.CubeGrid;
                                         if (DrillPatch.playerWithContract.ContainsKey(player.Id.SteamId))
                                         {
-                                           
+
                                             MiningContract contract = DrillPatch.playerWithContract[player.Id.SteamId];
                                             if (!String.IsNullOrEmpty(contract.OreSubType) && contract.minedAmount >= contract.amountToMine)
                                             {
@@ -2423,7 +2456,7 @@ namespace AlliancesPlugin
                                                     if (MyDefinitionId.TryParse("MyObjectBuilder_Ore/" + contract.OreSubType, out MyDefinitionId id))
                                                     {
                                                         itemsToRemove.Add(id, contract.amountToMine);
-                                                     
+
                                                     }
 
                                                     List<VRage.Game.ModAPI.IMyInventory> inventories = ShipyardCommands.GetInventories(grid);
@@ -2434,13 +2467,13 @@ namespace AlliancesPlugin
                                                         {
                                                             if (AlliancePlugin.TaxesToBeProcessed.ContainsKey(player.Identity.IdentityId))
                                                             {
-                                                               
+
                                                                 AlliancePlugin.TaxesToBeProcessed[player.Identity.IdentityId] += (long)contract.contractPrice;
                                                             }
                                                             else
                                                             {
-                                                                AlliancePlugin.TaxesToBeProcessed.Add(player.Identity.IdentityId, (long) contract.contractPrice);
-                                                                
+                                                                AlliancePlugin.TaxesToBeProcessed.Add(player.Identity.IdentityId, (long)contract.contractPrice);
+
                                                             }
                                                             EconUtils.addMoney(player.Identity.IdentityId, contract.contractPrice);
                                                             ShipyardCommands.SendMessage("Big Boss Dave", "Good job, heres the money", Color.Gold, (long)player.Id.SteamId);
@@ -2458,56 +2491,131 @@ namespace AlliancesPlugin
                                     }
                                 }
                             }
+
                             catch (Exception ex)
                             {
 
                                 Log.Error(ex);
                             }
-                            if (config.KothEnabled)
+                            if (config.HaulingContractsEnabled)
                             {
-                                foreach (KothConfig koth in KOTHs)
+                                try
                                 {
-                                    if (Vector3.Distance(player.GetPosition(), new Vector3(koth.x, koth.y, koth.z)) <= koth.CaptureRadiusInMetre)
+                                    //do if config enabled
+                                    if (HaulingCore.activeContracts.TryGetValue(player.Id.SteamId, out HaulingContract haulContract))
                                     {
-                                        if (!InCapRadius.ContainsKey(player.Id.SteamId))
+                                        MyPlayer playerOnline = player;
+                                        if (player.Character != null && player?.Controller.ControlledEntity is MyCockpit controller)
                                         {
-                                            InCapRadius.Add(player.Id.SteamId, koth.KothName);
-                                            NotificationMessage message2 = new NotificationMessage("You are inside the capture radius.", 10000, "Green");
-                                            //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
-                                            ModCommunication.SendMessageTo(message2, player.Id.SteamId);
+                                            MyCubeGrid grid = controller.CubeGrid;
+                                            Vector3D coords = haulContract.GetDeliveryLocation().Coords;
+                                            float distance = Vector3.Distance(coords, controller.PositionComp.GetPosition());
+                                            if (distance <= 500)
+                                            {
+                                                Dictionary<MyDefinitionId, int> itemsToRemove = new Dictionary<MyDefinitionId, int>();
+
+                                                int pay = 0;
+                                                //calculate the pay since we only show the player the minimum they can get, this could be removed if the pay is made part of the contract
+                                                //when its generated and stored in the db, reputation when completed could give a bonus percent
+                                                foreach (ContractItems item in haulContract.getItemsInContract())
+                                                {
+                                                    if (MyDefinitionId.TryParse("MyObjectBuilder_" + item.ItemType, item.SubType, out MyDefinitionId id))
+                                                    {
+                                                        itemsToRemove.Add(id, item.AmountToDeliver);
+                                                        pay += item.AmountToDeliver * item.GetPrice();
+                                                    }
+                                                }
+
+                                                List<VRage.Game.ModAPI.IMyInventory> inventories = ShipyardCommands.GetInventories(grid);
+
+                                                if (FacUtils.IsOwnerOrFactionOwned(grid, player.Identity.IdentityId, true))
+                                                {
+                                                    if (ShipyardCommands.ConsumeComponents(inventories, itemsToRemove, player.Id.SteamId))
+                                                    {
+                                                        if (AlliancePlugin.TaxesToBeProcessed.ContainsKey(player.Identity.IdentityId))
+                                                        {
+
+                                                            AlliancePlugin.TaxesToBeProcessed[player.Identity.IdentityId] += pay;
+                                                        }
+                                                        else
+                                                        {
+                                                            AlliancePlugin.TaxesToBeProcessed.Add(player.Identity.IdentityId, pay);
+
+                                                        }
+                                                        EconUtils.addMoney(player.Identity.IdentityId, pay);
+                                                        ShipyardCommands.SendMessage("Big Boss Dave", "Good job, heres the money", Color.Gold, (long)player.Id.SteamId);
+                                                        HaulingCore.RemoveContract(player.Id.SteamId, player.Identity.IdentityId);
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
-                                    else
+                                }
+                                catch (Exception ex)
+                                {
+                                    Log.Error(ex);
+                                }
+                            }
+                            try
+                            {
+                                if (config.KothEnabled)
+                                {
+                                    foreach (KothConfig koth in KOTHs)
                                     {
-                                        if (InCapRadius.TryGetValue(player.Id.SteamId, out string name))
+                                        if (Vector3.Distance(player.GetPosition(), new Vector3(koth.x, koth.y, koth.z)) <= koth.CaptureRadiusInMetre)
                                         {
-                                            if (koth.KothName.Equals(name))
+                                            if (!InCapRadius.ContainsKey(player.Id.SteamId))
                                             {
-                                                InCapRadius.Remove(player.Id.SteamId);
-                                                NotificationMessage message2 = new NotificationMessage("You are outside the capture radius.", 10000, "Red");
+                                                InCapRadius.Add(player.Id.SteamId, koth.KothName);
+                                                NotificationMessage message2 = new NotificationMessage("You are inside the capture radius.", 10000, "Green");
                                                 //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
                                                 ModCommunication.SendMessageTo(message2, player.Id.SteamId);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            if (InCapRadius.TryGetValue(player.Id.SteamId, out string name))
+                                            {
+                                                if (koth.KothName.Equals(name))
+                                                {
+                                                    InCapRadius.Remove(player.Id.SteamId);
+                                                    NotificationMessage message2 = new NotificationMessage("You are outside the capture radius.", 10000, "Red");
+                                                    //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
+                                                    ModCommunication.SendMessageTo(message2, player.Id.SteamId);
+                                                }
                                             }
                                         }
                                     }
                                 }
                             }
-                            foreach (Territory ter in Territories.Values)
+                            catch (Exception ex)
                             {
-                                if (ter.enabled)
+
+                                Log.Error(ex);
+                            }
+                            try
+                            {
+                                foreach (Territory ter in Territories.Values)
                                 {
-                                    if (Vector3.Distance(player.GetPosition(), new Vector3(ter.x, ter.y, ter.z)) <= ter.Radius)
+                                    if (ter.enabled)
                                     {
-                                        SendEnterMessage(player, ter);
-                                    }
-                                    else
-                                    {
-                                        if (InTerritory.ContainsKey(player.Identity.IdentityId))
+                                        if (Vector3.Distance(player.GetPosition(), new Vector3(ter.x, ter.y, ter.z)) <= ter.Radius)
                                         {
-                                            SendLeaveMessage(player, ter);
+                                            SendEnterMessage(player, ter);
+                                        }
+                                        else
+                                        {
+                                            if (InTerritory.ContainsKey(player.Identity.IdentityId))
+                                            {
+                                                SendLeaveMessage(player, ter);
+                                            }
                                         }
                                     }
                                 }
+                            }
+                            catch (Exception ex)
+                            {
+                                Log.Error(ex);
                             }
                         }
                     }

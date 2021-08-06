@@ -195,6 +195,11 @@
     <Compile Include="Alliances\PlayerData.cs" />
     <Compile Include="Alliances\VaultCommands.cs" />
     <Compile Include="Alliances\VaultData.cs" />
+    <Compile Include="HaulingContracts\ContractItems.cs" />
+    <Compile Include="HaulingContracts\HaulingCommands.cs" />
+    <Compile Include="HaulingContracts\HaulingContract.cs" />
+    <Compile Include="HaulingContracts\HaulingCore.cs" />
+    <Compile Include="HaulingContracts\StorePatchBuy.cs" />
     <Compile Include="JumpZones\JumpThing.cs" />
     <Compile Include="KOTH\RefineryPatch.cs" />
     <Compile Include="KOTH\Territory.cs" />

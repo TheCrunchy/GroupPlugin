@@ -3,8 +3,10 @@ using NLog;
 using NLog.Config;
 using NLog.Targets;
 using Sandbox.Game.Entities;
+using Sandbox.Game.Entities.Blocks;
 using Sandbox.Game.Entities.Cube;
 using Sandbox.Game.GameSystems;
+using Sandbox.Game.SessionComponents;
 using Sandbox.Game.World;
 using Sandbox.ModAPI;
 using System;
@@ -48,7 +50,7 @@ namespace AlliancesPlugin
         //        if (__instance is MyBeacon beacon)
         //        {
         //            MyRadioBroadcaster broadcaster = (MyRadioBroadcaster) beacon.Components.Get<MyDataBroadcaster>();
-                 
+
         //            if (beacon.IsWorking)
         //            {
         //                List<MyHudEntityParams> hudParams = __result;
@@ -70,6 +72,23 @@ namespace AlliancesPlugin
         //        }
         //    }
         //}
+        //[HarmonyPatch(typeof(MyContractBlock))]
+        //[HarmonyPatch("AcceptContract")]
+        //[HarmonyPatch(new Type[] { typeof(long), typeof(long)})]
+        //class ContractPatch
+        //{
+        //   static void Postfix(long identityId, long contractId)
+        //    {
+        //        MySessionComponentContractSystem component = MySession.Static.GetComponent<MySessionComponentContractSystem>();
+        //        MyDefinitionId? id = component.GetContractDefinitionId(contractId);
+              
+        //        if (id != null)
+        //        {
+        //            AlliancePlugin.Log.Info(id.ToString());
+        //        }
+        //    }
+        //}
+
         [HarmonyPatch(typeof(MyPlayer))]
         [HarmonyPatch("GetRelationBetweenPlayers")]
         class PlayerPatch
