@@ -17,6 +17,7 @@ namespace AlliancesPlugin
 {
     public static class HaulingCore
     {
+        public static List<MyGps> DeliveryLocations = new List<MyGps>();
         public static Dictionary<ulong, int> reputation = new Dictionary<ulong, int>();
         private static Dictionary<String, ContractItems> easyItems = new Dictionary<string, ContractItems>();
         public static Dictionary<ulong, HaulingContract> activeContracts = new Dictionary<ulong, HaulingContract>();
@@ -63,7 +64,6 @@ namespace AlliancesPlugin
             temp.MinPrice = int.Parse(split[5].Replace(" ", ""));
             temp.MaxPrice = int.Parse(split[6].Replace(" ", ""));
             temp.chance = int.Parse(split[7].Replace(" ", ""));
-            temp.reputation = int.Parse(split[8].Replace(" ", ""));
             temp.difficulty = difficulty;
             return temp;
         }
@@ -96,18 +96,18 @@ namespace AlliancesPlugin
         {
 
             Random random = new Random();
-            //  if (DeliveryLocations.Count == 1)
-            // {
-            //    return DeliveryLocations[0];
-            // }
-            // int r = random.Next(DeliveryLocations.Count);
-            //    return DeliveryLocations[r];
+            if (DeliveryLocations.Count == 1 || DeliveryLocations.Count == 0)
+             {
+                return DeliveryLocations[0];
+           }
+             int r = random.Next(DeliveryLocations.Count);
+              return DeliveryLocations[r];
 
-            return null;
         }
         private static List<ContractItems> getItems(List<ContractItems> items, int AmountToPick)
         {
             List<ContractItems> returnList = new List<ContractItems>();
+            List<ContractItems> oof = new List<ContractItems>();
             List<ContractItems> SortedList = items.OrderByDescending(o => o.chance).ToList();
             SortedList.Reverse();
             int amountPicked = 0;
@@ -118,10 +118,9 @@ namespace AlliancesPlugin
             {
                 item.SetAmountToDeliver();
                 int chance = random.Next(101);
-                if (chance <= item.chance && amountPicked < AmountToPick)
+                if (chance <= item.chance)
                 {
                     returnList.Add(item);
-                    amountPicked++;
                 }
             }
             //check theres at least one item on the contract, if not pick one at complete random
@@ -131,15 +130,15 @@ namespace AlliancesPlugin
             }
             if (returnList.Count == 1)
             {
-               returnList.Add(SortedList.ElementAt(0));
+              oof.Add(returnList.ElementAt(0));
             }
             else
             {
-                int index = random.Next(SortedList.Count - 1);
-                ContractItems temp = SortedList.ElementAt(index);
-                returnList.Add(temp);
+                int index = random.Next(returnList.Count - 1);
+                ContractItems temp = returnList.ElementAt(index);
+                oof.Add(temp);
             }
-            return returnList;
+            return oof;
         }
 
         //i really hate this code, i should make it one method
@@ -195,7 +194,7 @@ namespace AlliancesPlugin
                     contractDetails = MakeContractDetails(contract.getItemsInContract());
 
                 activeContracts.Add(steamid, contract);
-                utils.WriteToXmlFile<HaulingContract>(AlliancePlugin.path + "//HaulingStuff//PlayerData//" + steamid + ".xml", contract);
+                utils.WriteToJsonFile<HaulingContract>(AlliancePlugin.path + "//HaulingStuff//PlayerData//" + steamid + ".json", contract);
                     gps = contract.GetDeliveryLocation();
                     MyGpsCollection gpscol = (MyGpsCollection)MyAPIGateway.Session?.GPS;
 

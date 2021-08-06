@@ -174,9 +174,10 @@ namespace AlliancesPlugin
         public static void LoadDeliveryLocations()
         {
             DrillPatch.locations.Clear();
+            String[] line;
             if (System.IO.File.Exists(path + "//MiningStuff//deliveryLocations.txt"))
             {
-                String[] line = File.ReadAllLines(path + "//MiningStuff//deliveryLocations.txt");
+                line = File.ReadAllLines(path + "//MiningStuff//deliveryLocations.txt");
                 for (int i = 0; i < line.Length; i++)
                 {
                     if (ScanChat(line[i]) != null)
@@ -186,6 +187,16 @@ namespace AlliancesPlugin
                         gpsRef.ShowOnHud = true;
                         DrillPatch.locations.Add(gpsRef);
                     }
+                }
+            }
+            HaulingCore.DeliveryLocations.Clear();
+             line = File.ReadAllLines(path + "//HaulingStuff//deliveryLocations.txt");
+            for (int i = 0; i < line.Length; i++)
+            {
+                if (ScanChat(line[i]) != null)
+                {
+                    MyGps gpsRef = ScanChat(line[i]);
+                    HaulingCore.DeliveryLocations.Add(gpsRef);
                 }
             }
         }
@@ -257,6 +268,8 @@ namespace AlliancesPlugin
                 }
 
             }
+      
+     
             if (!Directory.Exists(path + "//HaulingStuff//PlayerData//"))
             {
                 Directory.CreateDirectory(path + "//HaulingStuff//PlayerData//");
@@ -548,6 +561,16 @@ namespace AlliancesPlugin
                 {
                     DiscordStuff.RegisterDiscord();
                 }
+                if (!System.IO.File.Exists(path + "//HaulingStuff//deliveryLocations.txt"))
+                {
+                    MyGps bob = new MyGps();
+                    Vector3D alan = new Vector3D(100, 100, 100);
+                    bob.Coords = alan;
+                    bob.Name = "Example GPS";
+                    bob.DisplayName = "Example GPS";
+
+                    File.WriteAllText(path + "//HaulingStuff//deliveryLocations.txt", bob.ToString());
+                }
                 if (!System.IO.File.Exists(path + "//MiningStuff//deliveryLocations.txt"))
                 {
                     MyGps bob = new MyGps();
@@ -559,6 +582,7 @@ namespace AlliancesPlugin
                     File.WriteAllText(path + "//MiningStuff//deliveryLocations.txt", bob.ToString());
                 }
 
+ 
                 LoadAllGates();
                 LoadAllContracts();
                 AllianceChat.ApplyLogging();
@@ -2545,6 +2569,7 @@ namespace AlliancesPlugin
                                                         EconUtils.addMoney(player.Identity.IdentityId, pay);
                                                         ShipyardCommands.SendMessage("Big Boss Dave", "Good job, heres the money", Color.Gold, (long)player.Id.SteamId);
                                                         HaulingCore.RemoveContract(player.Id.SteamId, player.Identity.IdentityId);
+                                                        File.Delete(AlliancePlugin.path + "//HaulingStuff//PlayerData//" + player.Id.SteamId + ".json");
                                                     }
                                                 }
                                             }

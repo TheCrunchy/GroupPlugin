@@ -31,9 +31,6 @@ namespace AlliancesPlugin.HaulingContracts
     [Category("contract")]
     public class HaulingCommands : CommandModule
     {
-
-
-
         //stackoverflow 
         public static string RemoveWhitespace(string input)
         {
@@ -63,9 +60,9 @@ namespace AlliancesPlugin.HaulingContracts
             //}
             //else
             //{
-      
-                Context.Respond("Error adding them, remember no spaces!");
-            
+
+            Context.Respond("Error adding them, remember no spaces!");
+
             //   }
         }
 
@@ -88,9 +85,9 @@ namespace AlliancesPlugin.HaulingContracts
             //}
             //else
             //{
-          
-                Context.Respond("Error removing them, remember no spaces!");
-            
+
+            Context.Respond("Error removing them, remember no spaces!");
+
             //}
         }
         [Command("whitelist output", "output")]
@@ -159,31 +156,31 @@ namespace AlliancesPlugin.HaulingContracts
             return random.Next(99) + 1 <= minimalChance;
         }
 
-        [Command("contract quit", "quit a contract")]
+        [Command("quit", "quit a contract")]
         [Permission(MyPromoteLevel.None)]
         public void QuitContract()
         {
             if (HaulingCore.getActiveContract(Context.Player.SteamUserId) != null)
             {
-               
-                if (File.Exists(AlliancePlugin.path + "//HaulingStuff//PlayerData" + Context.Player.SteamUserId + ".xml"))
+
+
+                File.Delete(AlliancePlugin.path + "//HaulingStuff//PlayerData//" + Context.Player.SteamUserId + ".json");
+                HaulingCore.SendMessage("The Boss", "Contract quit", Color.Yellow, Context.Player.SteamUserId);
+                List<IMyGps> playerList = new List<IMyGps>();
+                MySession.Static.Gpss.GetGpsList(Context.Player.IdentityId, playerList);
+                HaulingCore.activeContracts.Remove(Context.Player.SteamUserId);
+                foreach (IMyGps gps in playerList)
                 {
-                    File.Delete(AlliancePlugin.path + "//HaulingStuff//PlayerData" + Context.Player.SteamUserId + ".xml");
-                    HaulingCore.SendMessage("The Boss", "Contract quit", Color.Purple, Context.Player.SteamUserId);
-                    List<IMyGps> playerList = new List<IMyGps>();
-                    MySession.Static.Gpss.GetGpsList(Context.Player.IdentityId, playerList);
-                    foreach (IMyGps gps in playerList)
+                    if (gps.Name.Contains("Delivery Location, bring hauling vehicle within 300m"))
                     {
-                        if (gps.Name.Contains("Delivery Location, bring hauling vehicle within 300m"))
-                        {
-                            MyAPIGateway.Session?.GPS.RemoveGps(Context.Player.Identity.IdentityId, gps);
-                        }
+                        MyAPIGateway.Session?.GPS.RemoveGps(Context.Player.Identity.IdentityId, gps);
                     }
                 }
-                else
-                {
-                    HaulingCore.SendMessage("The Boss", "You dont currently have a contract.", Color.Purple, Context.Player.SteamUserId);
-                }
+            }
+            else
+            {
+                HaulingCore.SendMessage("The Boss", "You dont currently have a contract.", Color.Yellow, Context.Player.SteamUserId);
+
             }
         }
         [Command("setupDatabase", "show contract details")]
@@ -192,7 +189,7 @@ namespace AlliancesPlugin.HaulingContracts
         {
 
         }
-        [Command("contract details", "show contract details")]
+        [Command("info", "show contract details")]
         [Permission(MyPromoteLevel.None)]
         public void ContractDetails()
         {
@@ -204,7 +201,7 @@ namespace AlliancesPlugin.HaulingContracts
                 int pay = HaulingCore.GetMinimumPay(contract.getItemsInContract());
                 contractDetails = HaulingCore.MakeContractDetails(contract.getItemsInContract());
                 MyGps gps = HaulingCore.getDeliveryLocation();
-            
+
                 MyGpsCollection gpscol = (MyGpsCollection)MyAPIGateway.Session?.GPS;
 
                 gpscol.SendAddGps(Context.Player.Identity.IdentityId, ref gps);
@@ -217,7 +214,7 @@ namespace AlliancesPlugin.HaulingContracts
             }
         }
 
-        [Command("contract take", "take a contract")]
+        [Command("take", "take a contract")]
         [Permission(MyPromoteLevel.Admin)]
         public void TakeContract()
         {

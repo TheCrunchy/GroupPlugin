@@ -37,7 +37,10 @@ namespace AlliancesPlugin
 
         public static Boolean StorePatchMethod(MyStoreBlock __instance, long id, int amount, long targetEntityId, MyPlayer player, MyAccountInfo playerAccountInfo)
         {
-
+            if (AlliancePlugin.config == null || !AlliancePlugin.config.HaulingContractsEnabled)
+            {
+                return true;
+            }
             MyStoreItem storeItem = (MyStoreItem)null;
             bool proceed = false;
             foreach (MyStoreItem playerItem in __instance.PlayerItems)

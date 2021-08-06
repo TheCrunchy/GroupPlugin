@@ -368,6 +368,12 @@ namespace AlliancesPlugin.Alliances
                 DrillPatch.playerWithContract.Add(p.SteamId, contract);
             }
 
+            if (File.Exists(AlliancePlugin.path + "//HaulingStuff//PlayerData//" + p.SteamId+ ".json"))
+            {
+                HaulingContract cont = utils.ReadFromJsonFile<HaulingContract>(AlliancePlugin.path + "//HaulingStuff//PlayerData//" + p.SteamId + ".json");
+                HaulingCore.activeContracts.Remove(p.SteamId);
+                HaulingCore.activeContracts.Add(p.SteamId, cont);
+            }
                 if (File.Exists(AlliancePlugin.path + "//PlayerData//" + p.SteamId + ".xml") && playerFac != null)
             {
                 PlayerData data = utils.ReadFromXmlFile<PlayerData>(AlliancePlugin.path + "//PlayerData//" + p.SteamId + ".xml");
