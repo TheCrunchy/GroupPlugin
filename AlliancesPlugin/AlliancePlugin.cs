@@ -1172,7 +1172,19 @@ namespace AlliancesPlugin
                                 {
 
                                     block.ChangeOwner(id, MyOwnershipShareModeEnum.None);
-                                }
+                                    block.Enabled = false;
+                                    foreach (MySafeZone zone in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MySafeZone>())
+                                    {
+                                        zone.Factions.Clear();
+                                        zone.Players.Clear();
+                                        zone.Entities.Clear();
+                                        zone.AccessTypeFactions = MySafeZoneAccess.Blacklist;
+                                        zone.AccessTypePlayers = MySafeZoneAccess.Blacklist;
+                                        zone.AccessTypeGrids = MySafeZoneAccess.Blacklist;
+                                        zone.AccessTypeFloatingObjects = MySafeZoneAccess.Blacklist;
+                                    }
+                                    DiscordStuff.SendMessageToDiscord("Transfer of " + grid.DisplayName + " complete.");
+                                 }
 
                                 foreach (MyStoreBlock block in grid.GetFatBlocks().OfType<MyStoreBlock>())
                                 {

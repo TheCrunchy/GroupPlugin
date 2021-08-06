@@ -26,7 +26,7 @@ using Sandbox.ModAPI;
 
 namespace AlliancesPlugin
 {
-   public class MiscCommands : CommandModule
+    public class MiscCommands : CommandModule
     {
         [Command("azazel", "enable koth because azazel")]
         [Permission(MyPromoteLevel.Admin)]
@@ -34,7 +34,7 @@ namespace AlliancesPlugin
         {
             AlliancePlugin.LoadConfig();
             AlliancePlugin.config.KothEnabled = true;
-         
+
             AlliancePlugin.saveConfig();
             Context.Respond("KOTH is now enabled, at least it should be.");
         }
@@ -45,7 +45,7 @@ namespace AlliancesPlugin
         {
             Context.Respond("I dont recommend seriously using this.");
             MyFaction fac = FacUtils.GetPlayersFaction(Context.Player.IdentityId) as MyFaction;
-            if (fac != null) 
+            if (fac != null)
             {
                 fac.Tag = newtag;
             }
@@ -62,7 +62,7 @@ namespace AlliancesPlugin
                 foreach (MyGroups<MyCubeGrid, MyGridPhysicalGroupData>.Node groupNodes in item.Nodes)
                 {
                     MyCubeGrid grid = groupNodes.NodeData;
-                    foreach(MyRefinery refinery in grid.GetFatBlocks().OfType<MyRefinery>())
+                    foreach (MyRefinery refinery in grid.GetFatBlocks().OfType<MyRefinery>())
                     {
                         RefineryPatch.RefineriesToUpdate.Add(refinery.EntityId);
                     }
@@ -125,14 +125,34 @@ namespace AlliancesPlugin
             if (alliance != null)
             {
                 distressCount++;
-                    AllianceChat.SendChatMessage(alliance.AllianceId, "Distress Signal", CreateGps(Context.Player.Character.GetPosition(), Color.Yellow, 600, distressCount.ToString(), reason).ToString(), true, 0);
-             
-          
+                AllianceChat.SendChatMessage(alliance.AllianceId, "Distress Signal", CreateGps(Context.Player.Character.GetPosition(), Color.Yellow, 600, distressCount.ToString(), reason).ToString(), true, 0);
+
+
             }
         }
         FileUtils utils = new FileUtils();
 
- 
+        [Command("yeeteconomy", "moneys")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void ecotop()
+        {
+
+            Dictionary<ulong, long> moneys = new Dictionary<ulong, long>();
+            foreach (var p in MySession.Static.Players.GetAllPlayers())
+            {
+                long IdentityID = MySession.Static.Players.TryGetIdentityId(p.SteamId);
+
+                EconUtils.takeMoney(IdentityID, EconUtils.getBalance(IdentityID));
+            }
+            foreach (KeyValuePair<long, MyFaction> f in MySession.Static.Factions)
+            {
+                EconUtils.takeMoney(f.Value.FactionId, EconUtils.getBalance(f.Value.FactionId));
+            }
+
+        
+                Context.Respond("Might have reset them all? !eco top");
+        }
+
 
         [Command("a", "toggle alliance chat")]
         [Permission(MyPromoteLevel.None)]
@@ -202,27 +222,102 @@ namespace AlliancesPlugin
                 MyIdentity identity = AlliancePlugin.GetIdentityByNameOrId(player.Id.SteamId.ToString());
                 if (FacUtils.GetPlayersFaction(player.Identity.IdentityId) != null)
                 {
-                        IMyFaction playerFac = null;
-                        if (FacUtils.GetPlayersFaction(Context.Player.Identity.IdentityId) != null)
-                        {
+                    IMyFaction playerFac = null;
+                    if (FacUtils.GetPlayersFaction(Context.Player.Identity.IdentityId) != null)
+                    {
 
-                            playerFac = FacUtils.GetPlayersFaction(Context.Player.Identity.IdentityId);
-                        }
-                        if (playerFac == null)
+                        playerFac = FacUtils.GetPlayersFaction(Context.Player.Identity.IdentityId);
+                    }
+                    if (playerFac == null)
+                    {
+                        Context.Respond("Make a faction. This command does not work without being in a faction.");
+                        return;
+                    }
+                    if (FacUtils.GetPlayersFaction(player.Identity.IdentityId) == null)
+                    {
+                        continue;
+                    }
+                    Alliance alliance = AlliancePlugin.GetAllianceNoLoading(FacUtils.GetPlayersFaction(player.Identity.IdentityId) as MyFaction);
+                    if (alliance != null)
+                    {
+                        if (alliances.ContainsKey(alliance.name))
                         {
-                            Context.Respond("Make a faction. This command does not work without being in a faction.");
-                            return;
-                        }
-                        if (FacUtils.GetPlayersFaction(player.Identity.IdentityId) == null)
-                        {
-                            continue;
-                        }
-                        Alliance alliance = AlliancePlugin.GetAllianceNoLoading(FacUtils.GetPlayersFaction(player.Identity.IdentityId) as MyFaction);
-                        if (alliance != null)
-                        {
-                            if (alliances.ContainsKey(alliance.name))
+                            alliances.TryGetValue(alliance.name, out String temp);
+
+
+                            if (FacUtils.GetPlayersFaction(player.Identity.IdentityId).IsFounder(player.Identity.IdentityId))
                             {
-                                alliances.TryGetValue(alliance.name, out String temp);
+                                temp += "\n [" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName + " (Founder)";
+                            }
+                            else
+                            {
+                                if (FacUtils.GetPlayersFaction(player.Identity.IdentityId).IsLeader(player.Identity.IdentityId))
+                                {
+                                    temp += "\n [" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName + " (Leader)";
+                                }
+
+                                else
+                                {
+                                    temp += "\n [" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName;
+                                }
+                            }
+                            alliances.Remove(alliance.name);
+                            alliances.Add(alliance.name, temp);
+                        }
+                        else
+                        {
+                            String temp = "";
+                            if (FacUtils.GetPlayersFaction(player.Identity.IdentityId).IsFounder(player.Identity.IdentityId))
+                            {
+                                temp += " [" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName + " (Founder)";
+                            }
+                            else
+                            {
+                                if (FacUtils.GetPlayersFaction(player.Identity.IdentityId).IsLeader(player.Identity.IdentityId))
+                                {
+                                    temp += " [" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName + " (Leader)";
+                                }
+
+                                else
+                                {
+                                    temp += " [" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName;
+                                }
+                            }
+
+                            alliances.Add(alliance.name, temp);
+                        }
+                    }
+                    else
+                    {
+                        if (friends.ContainsKey(FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag))
+                        {
+                            friends.TryGetValue(FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag, out String temp);
+
+
+                            if (FacUtils.GetPlayersFaction(player.Identity.IdentityId).IsFounder(player.Identity.IdentityId))
+                            {
+                                temp += "\n [" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName + " (Founder)";
+                            }
+                            else
+                            {
+                                if (FacUtils.GetPlayersFaction(player.Identity.IdentityId).IsLeader(player.Identity.IdentityId))
+                                {
+                                    temp += "\n [" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName + " (Leader)";
+                                }
+
+                                else
+                                {
+                                    temp += "\n [" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName;
+                                }
+                            }
+                            friends.Remove(FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag);
+                            friends.Add(FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag, temp);
+                        }
+                        if (MySession.Static.Factions.AreFactionsEnemies(playerFac.FactionId, FacUtils.GetPlayersFaction(player.Identity.IdentityId).FactionId))
+                        {
+                            if (tagsAndNames.ContainsKey(FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag))
+                            {
+                                tagsAndNames.TryGetValue(FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag, out String temp);
 
 
                                 if (FacUtils.GetPlayersFaction(player.Identity.IdentityId).IsFounder(player.Identity.IdentityId))
@@ -241,37 +336,37 @@ namespace AlliancesPlugin
                                         temp += "\n [" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName;
                                     }
                                 }
-                                alliances.Remove(alliance.name);
-                                alliances.Add(alliance.name, temp);
+                                tagsAndNames.Remove(FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag);
+                                tagsAndNames.Add(FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag, temp);
                             }
                             else
                             {
                                 String temp = "";
                                 if (FacUtils.GetPlayersFaction(player.Identity.IdentityId).IsFounder(player.Identity.IdentityId))
                                 {
-                                    temp += " [" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName + " (Founder)";
+                                    temp += "\n [" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName + " (Founder)";
                                 }
                                 else
                                 {
                                     if (FacUtils.GetPlayersFaction(player.Identity.IdentityId).IsLeader(player.Identity.IdentityId))
                                     {
-                                        temp += " [" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName + " (Leader)";
+                                        temp += "\n [" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName + " (Leader)";
                                     }
 
                                     else
                                     {
-                                        temp += " [" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName;
+                                        temp += "\n [" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName;
                                     }
                                 }
 
-                               alliances.Add(alliance.name, temp);
+                                tagsAndNames.Add(FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag, temp);
                             }
                         }
                         else
                         {
-                            if (friends.ContainsKey(FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag))
+                            if (neutrals.ContainsKey(FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag))
                             {
-                                friends.TryGetValue(FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag, out String temp);
+                                neutrals.TryGetValue(FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag, out String temp);
 
 
                                 if (FacUtils.GetPlayersFaction(player.Identity.IdentityId).IsFounder(player.Identity.IdentityId))
@@ -290,115 +385,40 @@ namespace AlliancesPlugin
                                         temp += "\n [" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName;
                                     }
                                 }
-                                friends.Remove(FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag);
-                                friends.Add(FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag, temp);
-                            }
-                            if (MySession.Static.Factions.AreFactionsEnemies(playerFac.FactionId, FacUtils.GetPlayersFaction(player.Identity.IdentityId).FactionId))
-                            {
-                                if (tagsAndNames.ContainsKey(FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag))
-                                {
-                                    tagsAndNames.TryGetValue(FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag, out String temp);
-
-
-                                    if (FacUtils.GetPlayersFaction(player.Identity.IdentityId).IsFounder(player.Identity.IdentityId))
-                                    {
-                                        temp += "\n [" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName + " (Founder)";
-                                    }
-                                    else
-                                    {
-                                        if (FacUtils.GetPlayersFaction(player.Identity.IdentityId).IsLeader(player.Identity.IdentityId))
-                                        {
-                                            temp += "\n [" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName + " (Leader)";
-                                        }
-
-                                        else
-                                        {
-                                            temp += "\n [" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName;
-                                        }
-                                    }
-                                    tagsAndNames.Remove(FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag);
-                                    tagsAndNames.Add(FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag, temp);
-                                }
-                                else
-                                {
-                                    String temp = "";
-                                    if (FacUtils.GetPlayersFaction(player.Identity.IdentityId).IsFounder(player.Identity.IdentityId))
-                                    {
-                                        temp += "\n [" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName + " (Founder)";
-                                    }
-                                    else
-                                    {
-                                        if (FacUtils.GetPlayersFaction(player.Identity.IdentityId).IsLeader(player.Identity.IdentityId))
-                                        {
-                                            temp += "\n [" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName + " (Leader)";
-                                        }
-
-                                        else
-                                        {
-                                            temp += "\n [" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName;
-                                        }
-                                    }
-
-                                    tagsAndNames.Add(FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag, temp);
-                                }
+                                neutrals.Remove(FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag);
+                                neutrals.Add(FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag, temp);
                             }
                             else
                             {
-                                if (neutrals.ContainsKey(FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag))
+                                String temp = "";
+                                if (FacUtils.GetPlayersFaction(player.Identity.IdentityId).IsFounder(player.Identity.IdentityId))
                                 {
-                                    neutrals.TryGetValue(FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag, out String temp);
-
-
-                                    if (FacUtils.GetPlayersFaction(player.Identity.IdentityId).IsFounder(player.Identity.IdentityId))
-                                    {
-                                        temp += "\n [" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName + " (Founder)";
-                                    }
-                                    else
-                                    {
-                                        if (FacUtils.GetPlayersFaction(player.Identity.IdentityId).IsLeader(player.Identity.IdentityId))
-                                        {
-                                            temp += "\n [" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName + " (Leader)";
-                                        }
-
-                                        else
-                                        {
-                                            temp += "\n [" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName;
-                                        }
-                                    }
-                                    neutrals.Remove(FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag);
-                                    neutrals.Add(FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag, temp);
+                                    temp += "\n [" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName + " (Founder)";
                                 }
                                 else
                                 {
-                                    String temp = "";
-                                    if (FacUtils.GetPlayersFaction(player.Identity.IdentityId).IsFounder(player.Identity.IdentityId))
+                                    if (FacUtils.GetPlayersFaction(player.Identity.IdentityId).IsLeader(player.Identity.IdentityId))
                                     {
-                                        temp += "\n [" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName + " (Founder)";
+                                        temp += "\n [" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName + " (Leader)";
                                     }
+
                                     else
                                     {
-                                        if (FacUtils.GetPlayersFaction(player.Identity.IdentityId).IsLeader(player.Identity.IdentityId))
-                                        {
-                                            temp += "\n [" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName + " (Leader)";
-                                        }
-
-                                        else
-                                        {
-                                            temp += "\n [" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName;
-                                        }
+                                        temp += "\n [" + FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag + "] - " + player.DisplayName;
                                     }
-
-                                    neutrals.Add(FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag, temp);
                                 }
+
+                                neutrals.Add(FacUtils.GetPlayersFaction(player.Identity.IdentityId).Tag, temp);
                             }
                         }
-                    
+                    }
+
                 }
 
 
             }
             var sb = new StringBuilder();
-           
+
             foreach (KeyValuePair<String, String> keys in alliances)
             {
                 sb.AppendLine(keys.Key);
@@ -428,11 +448,11 @@ namespace AlliancesPlugin
                 sb.Append(keys.Value);
 
             }
- 
-                DialogMessage m = new DialogMessage("Tags of online players", "", sb.ToString());
-                ModCommunication.SendMessageTo(m, Context.Player.SteamUserId);
 
-    
+            DialogMessage m = new DialogMessage("Tags of online players", "", sb.ToString());
+            ModCommunication.SendMessageTo(m, Context.Player.SteamUserId);
+
+
 
         }
         private MyGps CreateGps(Vector3D Position, Color gpsColor, int seconds, String Nation, String Reason)
@@ -455,6 +475,6 @@ namespace AlliancesPlugin
             return gps;
         }
     }
-   
+
 
 }

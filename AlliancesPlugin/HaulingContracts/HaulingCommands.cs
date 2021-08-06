@@ -134,6 +134,7 @@ namespace AlliancesPlugin.HaulingContracts
                 }
 
             }
+         
             StringBuilder output = new StringBuilder();
             output.AppendLine("TypeId, SubtypeId, minAmount, maxAmount, minPrice, maxPrice");
             output.AppendLine(ingots.ToString());

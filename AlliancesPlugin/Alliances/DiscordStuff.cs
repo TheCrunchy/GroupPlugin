@@ -213,6 +213,16 @@ namespace AlliancesPlugin.Alliances
                 ShipyardCommands.SendMessage(config.KothName, message, Color.LightGreen, 0L);
             }
         }
+        public static void SendMessageToDiscord(string message)
+        {
+            if (Ready && AlliancePlugin.config.DiscordChannelId > 0)
+            {
+                DiscordChannel chann = Discord.GetChannelAsync(AlliancePlugin.config.DiscordChannelId).Result;
+                botId = Discord.SendMessageAsync(chann, message.Replace("/n", "\n")).Result.Author.Id;
+
+
+            }
+        }
         private static int attempt = 0;
 
         public static void SendAllianceMessage(Alliance alliance, string prefix, string message)
