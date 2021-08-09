@@ -50,6 +50,7 @@ using DSharpPlus;
 using SpaceEngineers.Game.Entities.Blocks;
 using AlliancesPlugin.Special_Designation;
 using Sandbox.Game.GameSystems.BankingAndCurrency;
+using HarmonyLib;
 
 namespace AlliancesPlugin
 {
@@ -1185,6 +1186,26 @@ namespace AlliancesPlugin
                                     }
                                     DiscordStuff.SendMessageToDiscord("Transfer of " + grid.DisplayName + " complete.");
                                  }
+                                foreach (MyBeacon Beacon in grid.GetFatBlocks().OfType<MyBeacon>())
+                                {
+
+                                    // Beacon.DisplayNameText = "Beacon - Owned by " + alliance.name;
+                                    try
+                                    {
+
+                                        StringBuilder sb = new StringBuilder();
+                                        sb.Append("Owned by " + alliance.name);
+                                        MethodInfo methodInfo = typeof(MyBeacon).GetMethod("SetHudText", BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof(String) }, null);
+                                        object[] MethodInput = new object[] { sb.ToString() };
+                                        //  parameters.AddItem
+                                        methodInfo.Invoke(Beacon, MethodInput);
+                                    }
+                                    catch (Exception ex)
+                                    {
+
+                                        Log.Error(ex);
+                                    }
+                                }
 
                                 foreach (MyStoreBlock block in grid.GetFatBlocks().OfType<MyStoreBlock>())
                                 {

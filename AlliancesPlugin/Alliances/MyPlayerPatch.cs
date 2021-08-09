@@ -49,24 +49,26 @@ namespace AlliancesPlugin
         //        AlliancePlugin.Log.Info("beacon");
         //        if (__instance is MyBeacon beacon)
         //        {
-        //            MyRadioBroadcaster broadcaster = (MyRadioBroadcaster) beacon.Components.Get<MyDataBroadcaster>();
 
-        //            if (beacon.IsWorking)
+        //            List<MyHudEntityParams> hudParams = __result;
+        //            StringBuilder hudText = beacon.HudText;
+        //            if (hudText.Length > 0)
         //            {
-        //                List<MyHudEntityParams> hudParams = __result;
-        //                StringBuilder hudText = new StringBuilder();
-        //                hudText.Append("DAVE");
-        //                if (hudText.Length > 0)
+        //                StringBuilder text = hudParams[0].Text;
+        //                text.Clear();
+        //                if (!string.IsNullOrEmpty(__instance.GetOwnerFactionTag()))
         //                {
-        //                    StringBuilder text = hudParams[0].Text;
-        //                    text.Clear();
-        //                    text.Append("BOB");
-        //                    text.Append(".");
-        //                    text.Append((object)hudText);
+        //                    text.Append(__instance.GetOwnerFactionTag());
+        //                    text.Append(".....");
         //                }
-        //                __result = hudParams;
+        //                text.Append((object)hudText);
         //            }
 
+        //            //   .AddRange((IEnumerable<MyHudEntityParams>)hudParams);
+        //            List<MyHudEntityParams> hud = (List<MyHudEntityParams>)Traverse.Create(beacon).Field("m_hudParams").GetValue();
+        //            hud.Clear();
+        //            hud.AddRange((IEnumerable<MyHudEntityParams>)hudParams);
+        //            Traverse.Create(beacon).Field("m_hudParams").SetValue(hud);
         //            return;
         //            // make sure you only skip if really necessary
         //        }
@@ -81,7 +83,7 @@ namespace AlliancesPlugin
         //    {
         //        MySessionComponentContractSystem component = MySession.Static.GetComponent<MySessionComponentContractSystem>();
         //        MyDefinitionId? id = component.GetContractDefinitionId(contractId);
-              
+
         //        if (id != null)
         //        {
         //            AlliancePlugin.Log.Info(id.ToString());

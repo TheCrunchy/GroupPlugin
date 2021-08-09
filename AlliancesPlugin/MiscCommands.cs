@@ -23,6 +23,7 @@ using System.Reflection;
 using Torch.Managers;
 using VRage.Network;
 using Sandbox.ModAPI;
+using HarmonyLib;
 
 namespace AlliancesPlugin
 {
@@ -149,8 +150,8 @@ namespace AlliancesPlugin
                 EconUtils.takeMoney(f.Value.FactionId, EconUtils.getBalance(f.Value.FactionId));
             }
 
-        
-                Context.Respond("Might have reset them all? !eco top");
+
+            Context.Respond("Might have reset them all? !eco top");
         }
 
 
