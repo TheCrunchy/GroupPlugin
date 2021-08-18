@@ -159,51 +159,59 @@ namespace AlliancesPlugin.Hangar
                 return null;
             }
             UpgradeCost cost = new UpgradeCost();
-            String[] line;
-            line = File.ReadAllLines(path);
-            cost.id = int.Parse(line[0].Split(',')[0]);
-            cost.type = line[0].Split(',')[1];
-            cost.NewLevel = float.Parse(line[0].Split(',')[2]);
-            for (int i = 2; i < line.Length; i++)
+            try
             {
+                String[] line;
+                line = File.ReadAllLines(path);
+                cost.id = int.Parse(line[0].Split(',')[0]);
+                cost.type = line[0].Split(',')[1];
+                cost.NewLevel = float.Parse(line[0].Split(',')[2]);
+                for (int i = 2; i < line.Length; i++)
+                {
 
-                String[] split = line[i].Split(',');
-                foreach (String s in split)
-                {
-                    s.Replace(" ", "");
-                }
-                if (split[0].ToLower().Contains("metapoints"))
-                {
-                    cost.MetaPointCost += int.Parse(split[1]);
-                }
-                if (split[0].ToLower().Contains("money"))
-                {
-                    cost.MoneyRequired += int.Parse(split[1]);
-                }
-                else
-                {
-                    if (MyDefinitionId.TryParse(split[0], split[1], out MyDefinitionId id))
+                    String[] split = line[i].Split(',');
+                    foreach (String s in split)
                     {
-                        if (cost.itemsRequired.ContainsKey(id))
+                        s.Replace(" ", "");
+                    }
+                    if (split[0].ToLower().Contains("metapoints"))
+                    {
+                        cost.MetaPointCost += int.Parse(split[1]);
+                    }
+                    if (split[0].ToLower().Contains("money"))
+                    {
+                        cost.MoneyRequired += long.Parse(split[1]);
+                    }
+                    else
+                    {
+                        if (MyDefinitionId.TryParse(split[0], split[1], out MyDefinitionId id))
                         {
-                            cost.itemsRequired[id] += int.Parse(split[2]);
-                        }
-                        else
-                        {
-                            cost.itemsRequired.Add(id, int.Parse(split[2]));
-                        }
+                            if (cost.itemsRequired.ContainsKey(id))
+                            {
+                                cost.itemsRequired[id] += int.Parse(split[2]);
+                            }
+                            else
+                            {
+                                cost.itemsRequired.Add(id, int.Parse(split[2]));
+                            }
 
+                        }
                     }
                 }
+                switch (cost.type.ToLower())
+                {
+                    case "slots":
+                        slotUpgrades.Add(cost.id, cost);
+                        break;
+                    default:
+                        AlliancePlugin.Log.Error("Upgrade file has no defined type");
+                        break;
+                }
             }
-            switch (cost.type.ToLower())
+            catch (Exception ex)
             {
-                case "slots":
-                    slotUpgrades.Add(cost.id, cost);
-                    break;
-                default:
-                    AlliancePlugin.Log.Error("Upgrade file has no defined type");
-                    break;
+                AlliancePlugin.Log.Error("ERROR READING THIS FILE " + path);
+                AlliancePlugin.Log.Error(ex);
             }
             return cost;
         }
