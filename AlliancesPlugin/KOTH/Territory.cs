@@ -9,7 +9,7 @@ namespace AlliancesPlugin.KOTH
     public class Territory
     {
         public Guid Id = System.Guid.NewGuid();
-        public string Name;
+        public string Name = "Unnamed";
         public int Radius = 50000;
         public bool enabled = true;
         public Guid Alliance = Guid.Empty;

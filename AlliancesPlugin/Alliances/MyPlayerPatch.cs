@@ -74,6 +74,18 @@ namespace AlliancesPlugin
         //        }
         //    }
         //}
+
+        //[HarmonyPatch(typeof(MySessionComponentEconomy))]
+        //[HarmonyPatch("GetStoreCreationLimitPerPlayer")]
+        //class ContractPatch
+        //{
+        //    static void Postfix(ref int __result)
+        //    {
+        //        __result = 50000;
+        //    }
+        //}
+
+
         //[HarmonyPatch(typeof(MyContractBlock))]
         //[HarmonyPatch("AcceptContract")]
         //[HarmonyPatch(new Type[] { typeof(long), typeof(long)})]

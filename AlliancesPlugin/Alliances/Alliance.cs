@@ -128,14 +128,17 @@ namespace AlliancesPlugin.Alliances
         public float leadertax = 0;
         public float GetTaxRate(ulong id)
         {
-            if (HasAccess(id, AccessLevel.TaxExempt))
-            {
-                return 0;
-            }
+
+            
             if (SupremeLeader == id)
             {
                 return leadertax;
             }
+            if (HasAccess(id, AccessLevel.TaxExempt))
+            {
+                return 0;
+            }
+           
     
             if (PlayersCustomRank.ContainsKey(id))
             {

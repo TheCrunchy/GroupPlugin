@@ -2232,6 +2232,7 @@ namespace AlliancesPlugin
                 return;
             }
         }
+
         public static void SendLeaveMessage(MyPlayer player, Territory ter)
         {
             if (TerritoryInside.TryGetValue(player.Id.SteamId, out Guid ter2))
@@ -2240,13 +2241,21 @@ namespace AlliancesPlugin
                 {
                     return;
                 }
+            } 
+            else
+            {
+                InTerritory.Remove(player.Identity.IdentityId);
+                TerritoryInside.Remove(player.Id.SteamId);
+                return;
             }
 
             NotificationMessage message2 = new NotificationMessage(ter.ExitMessage.Replace("{name}", ter.Name), 30000, "White");
-            //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
+            
             ModCommunication.SendMessageTo(message2, player.Id.SteamId);
             InTerritory.Remove(player.Identity.IdentityId);
+            TerritoryInside.Remove(player.Id.SteamId);
         }
+
         public static MiningContract GeneratedToPlayer(GeneratedContract gen)
         {
             MiningContract contract = new MiningContract();
