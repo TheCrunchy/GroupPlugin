@@ -44,7 +44,7 @@ namespace AlliancesPlugin.Alliances
         public Dictionary<ulong, String> PlayersCustomRank = new Dictionary<ulong, string>();
         public RankPermissions UnrankedPerms = new RankPermissions();
         public int CurrentMetaPoints = 0;
-
+        public Dictionary<string, string> inheritance = new Dictionary<string, string>();
         public Dictionary<ulong, RankPermissions> playerPermissions = new Dictionary<ulong, RankPermissions>();
 
         public bool ElectionCycle = false;
@@ -83,17 +83,55 @@ namespace AlliancesPlugin.Alliances
             }
             return (long)upkeep;
         }
+
+        public Boolean HasInheritance(String rank)
+        {
+            if (inheritance.ContainsKey(rank)){
+                return true;
+            }
+            return false;
+        }
+
+        public List<AccessLevel> GetInheritedPermissions(String rank){
+            List<AccessLevel> levels = new List<AccessLevel>();
+
+            if (inheritance.TryGetValue(rank, out string minion))
+            {
+                levels.AddRange(CustomRankPermissions[rank].permissions);
+                if (inheritance.ContainsKey(minion))
+                {
+                    levels.AddRange(GetInheritedPermissions(minion));
+                }
+            }
+
+            return levels;
+        }
+        public Boolean HasInheritedAccess(AccessLevel level, string Rank)
+        {
+            List<AccessLevel> levels = new List<AccessLevel>();
+            levels.AddRange(GetInheritedPermissions(Rank));
+
+            return false;
+        }
         public Boolean HasAccess(ulong id, AccessLevel level)
         {
             if (SupremeLeader == id)
             {
                 return true;
             }
+        
             if (PlayersCustomRank.ContainsKey(id))
             {
                 if (CustomRankPermissions[PlayersCustomRank[id]].permissions.Contains(level))
                 {
                     return true;
+                }
+                else
+                {
+                    if (HasInheritedAccess(level, PlayersCustomRank[id]))
+                    {
+                        return true;
+                    }
                 }
             }
             if (playerPermissions.ContainsKey(id))

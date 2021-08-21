@@ -1241,6 +1241,7 @@ namespace AlliancesPlugin
                 }
                 catch (Exception ex)
                 {
+                    Log.Error("Error reading territory " + s);
                     Log.Info(ex);
                 }
             }
@@ -1663,6 +1664,7 @@ namespace AlliancesPlugin
                         }
 
                     }
+                  
                     if (DateTime.Now >= config.nextCaptureInterval)
                     {
                         config.nextCaptureInterval = DateTime.Now.AddSeconds(config.SecondsBetweenCaptureCheck);

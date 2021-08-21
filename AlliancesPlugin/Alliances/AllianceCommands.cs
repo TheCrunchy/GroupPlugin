@@ -1995,6 +1995,21 @@ namespace AlliancesPlugin.Alliances
             }
 
         }
+      
+        [Command("oof", "crunch command")]
+        [Permission(MyPromoteLevel.None)]
+        public void DoDebug2()
+        {
+            if (Context.Player.SteamUserId == 76561198045390854)
+            {
+                MyAPIGateway.Utilities.ShowMessage("Crunch Testing", "Can you see this?");
+            }
+            else
+            {
+                Context.Respond("You no Crunch, no debug for you");
+            }
+
+        }
         FileUtils utils = new FileUtils();
         [Command("debug", "crunch command")]
         [Permission(MyPromoteLevel.None)]

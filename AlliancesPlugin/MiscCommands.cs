@@ -51,27 +51,27 @@ namespace AlliancesPlugin
                 fac.Tag = newtag;
             }
         }
-        [Command("reftest", "change refinery settings")]
-        [Permission(MyPromoteLevel.Admin)]
-        public void ChangeRefinery()
-        {
-            ConcurrentBag<MyGroups<MyCubeGrid, MyGridPhysicalGroupData>.Group> gridWithSubGrids;
-            gridWithSubGrids = GridFinder.FindLookAtGridGroup(Context.Player.Character);
+        //[Command("reftest", "change refinery settings")]
+        //[Permission(MyPromoteLevel.Admin)]
+        //public void ChangeRefinery()
+        //{
+        //    ConcurrentBag<MyGroups<MyCubeGrid, MyGridPhysicalGroupData>.Group> gridWithSubGrids;
+        //    gridWithSubGrids = GridFinder.FindLookAtGridGroup(Context.Player.Character);
 
-            foreach (var item in gridWithSubGrids)
-            {
-                foreach (MyGroups<MyCubeGrid, MyGridPhysicalGroupData>.Node groupNodes in item.Nodes)
-                {
-                    MyCubeGrid grid = groupNodes.NodeData;
-                    foreach (MyRefinery refinery in grid.GetFatBlocks().OfType<MyRefinery>())
-                    {
-                        RefineryPatch.RefineriesToUpdate.Add(refinery.EntityId);
-                    }
+        //    foreach (var item in gridWithSubGrids)
+        //    {
+        //        foreach (MyGroups<MyCubeGrid, MyGridPhysicalGroupData>.Node groupNodes in item.Nodes)
+        //        {
+        //            MyCubeGrid grid = groupNodes.NodeData;
+        //            foreach (MyRefinery refinery in grid.GetFatBlocks().OfType<MyRefinery>())
+        //            {
+        //                RefineryPatch.RefineriesToUpdate.Add(refinery.EntityId);
+        //            }
 
-                }
-            }
-        }
-
+        //        }
+        //    }
+        //}
+       
         public static Dictionary<long, DateTime> distressCooldowns = new Dictionary<long, DateTime>();
         public static int distressCount = 0;
         [Command("distress", "distress signals")]

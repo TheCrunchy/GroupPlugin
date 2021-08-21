@@ -24,6 +24,10 @@ https://github.com/reactiflux/discord-irc/wiki/Creating-a-discord-bot-&-getting-
 !alliance channel input - set the channel id for alliance chat to be sent to
 !alliance chatcolor <r> <g> <b> - change the chat colour
 
+Vault
+!vault deposit Type SubType Amount
+example !vault deposit ConsumableItem dirkcoin 5
+
 Bank
 !alliance deposit <amount> - deposit money, anyone can do it
 !alliance pay <player/faction> <amount> - only bankers and supreme leader can do this
@@ -88,6 +92,9 @@ Admin gate commands
 !jumpgate setradius gatename amount
 !jumpgate toggle gatename - toggles a gate on/off
 !jumpgate zone name - add a safezone to the gate
+
+!jumpgate rent name - rent the gate pair
+!jumpgate rentable - output the current rentable ones and their prices
 
 !jumpzone reload - reload the configs for jump exclusion zones
 
