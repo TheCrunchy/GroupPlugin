@@ -83,7 +83,8 @@ namespace AlliancesPlugin.Alliances
                             else
                             {
                                 AllianceChat.SendChatMessage(alliance.AllianceId, "Upkeep", "Upkeep failed, Upgrades disabled.", true, 0);
-                            }
+                            AlliancePlugin.SaveAllianceData(alliance);
+                        }
 
 
                         }
@@ -117,6 +118,7 @@ namespace AlliancesPlugin.Alliances
                                 else
                                 {
                                     AllianceChat.SendChatMessage(alliance.AllianceId, "Upkeep", "Upkeep failed, Upgrades disabled.", true, 0);
+                                AlliancePlugin.SaveAllianceData(alliance);
                                 }
                             }
                         }
@@ -167,6 +169,7 @@ namespace AlliancesPlugin.Alliances
                             {
                                 AlliancePlugin.Log.Info("failed upkeep " + String.Format("{0:n0}", alliance.GetUpkeep()) + " SC. for " + alliance.name);
                                 AllianceChat.SendChatMessage(alliance.AllianceId, "Upkeep", "Upkeep failed, Upgrades disabled.", true, 0);
+                                saveThese.Add(alliance);
                             }
 
 
@@ -197,6 +200,7 @@ namespace AlliancesPlugin.Alliances
                                 {
                                     AllianceChat.SendChatMessage(alliance.AllianceId, "Upkeep", "Upkeep failed, Upgrades disabled.", true, 0);
                                     AlliancePlugin.Log.Info("failed upkeep " + String.Format("{0:n0}", alliance.GetUpkeep()) + " SC. for " + alliance.name);
+                                    saveThese.Add(alliance);
                                 }
                             }
                         }

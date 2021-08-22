@@ -342,7 +342,7 @@ namespace AlliancesPlugin.JumpGates
         }
 
         [Command("rentable", "list all rentable gates")]
-        [Permission(MyPromoteLevel.Admin)]
+        [Permission(MyPromoteLevel.None)]
         public void OutputRentableGates()
         {
             string response = "";
