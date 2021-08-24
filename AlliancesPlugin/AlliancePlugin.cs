@@ -109,7 +109,7 @@ namespace AlliancesPlugin
         }
         public static List<GeneratedContract> miningContracts = new List<GeneratedContract>();
 
-        public static long AddToTaxes(ulong SteamId, long amount)
+        public static long AddToTaxes(ulong SteamId, long amount, string type)
         {
            MyIdentity identityId = AlliancePlugin.GetIdentityByNameOrId(SteamId.ToString());
 
