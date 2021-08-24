@@ -8,6 +8,7 @@ namespace AlliancesPlugin.Special_Designation
 {
    public class GeneratedContract
     {
+        public string Name = "Example1";
         public Boolean Enabled = false;
         public int ReputationGain = 1;
         public double chance = 100;

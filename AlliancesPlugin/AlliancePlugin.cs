@@ -109,6 +109,24 @@ namespace AlliancesPlugin
         }
         public static List<GeneratedContract> miningContracts = new List<GeneratedContract>();
 
+        public static long AddToTaxes(ulong SteamId, long amount)
+        {
+           MyIdentity identityId = AlliancePlugin.GetIdentityByNameOrId(SteamId.ToString());
+
+            if (AlliancePlugin.TaxesToBeProcessed.ContainsKey(identityId.IdentityId))
+            {
+
+                AlliancePlugin.TaxesToBeProcessed[identityId.IdentityId] += amount;
+            }
+            else
+            {
+                AlliancePlugin.TaxesToBeProcessed.Add(identityId.IdentityId, amount);
+
+            }
+            return amount;
+        }
+
+
 
         public static GeneratedContract GetPlayerContract()
         {
@@ -2738,7 +2756,9 @@ namespace AlliancesPlugin
                 if (block != null && rewardItem != null)
                 {
                     //   Log.Info("Should spawn item");
+              
                     MyItemType itemType = new MyInventoryItemFilter(rewardItem.TypeId + "/" + rewardItem.SubtypeName).ItemType;
+                    block.GetInventory().CanItemsBeAdded((MyFixedPoint)config.RewardAmount, itemType);
                     block.GetInventory().AddItems((MyFixedPoint)config.RewardAmount, (MyObjectBuilder_PhysicalObject)MyObjectBuilderSerializer.CreateNewObject(rewardItem));
                 }
                 else
