@@ -56,7 +56,7 @@ namespace AlliancesPlugin.Alliances
       long lastEconomyTick)
         {
 
-            if (!Ids.ContainsKey(player.Identity.IdentityId))
+            if (!Ids.ContainsKey(id))
             {
                 Ids.Add(id, player.Identity.IdentityId);
             }
@@ -66,7 +66,7 @@ namespace AlliancesPlugin.Alliances
         public static void StorePatchMethod3(long id, int amount, long sourceEntityId, MyPlayer player)
         {
 
-            if (!Ids.ContainsKey(player.Identity.IdentityId))
+            if (!Ids.ContainsKey(id))
             {
                 Ids.Add(id, player.Identity.IdentityId);
             }
