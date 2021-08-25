@@ -110,7 +110,16 @@ namespace AlliancesPlugin
         public static long AddToTaxes(ulong SteamId, long amount, string type)
         {
            MyIdentity identityId = AlliancePlugin.GetIdentityByNameOrId(SteamId.ToString());
-
+            IMyFaction fac = FacUtils.GetPlayersFaction(identityId.IdentityId);
+            if (fac != null)
+            {
+                Alliance alliance = GetAllianceNoLoading(fac as MyFaction);
+                if (alliance != null)
+                {
+                    // alliance.reputation
+                    //amount = Convert.ToInt64(amount * 1.05f);
+                } 
+            }
             if (AlliancePlugin.TaxesToBeProcessed.ContainsKey(identityId.IdentityId))
             {
 
