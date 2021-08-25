@@ -1,6 +1,6 @@
 ﻿namespace AlliancesPlugin
 {
-    using AlliancesPlugin.Special_Designation;
+
     using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
