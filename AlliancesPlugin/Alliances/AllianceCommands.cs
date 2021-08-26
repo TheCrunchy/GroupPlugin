@@ -1769,10 +1769,23 @@ namespace AlliancesPlugin.Alliances
 
         [Command("logsearch", "count the log")]
         [Permission(MyPromoteLevel.None)]
-        public void BankLog(string targetnameOrSteamId, string action)
+        public void BankLog(string targetnameOrSteamId, string action, string inputAmount = "1")
         {
             Context.Respond("Valid actions are tax, deposited, shipyard fee, Example usage !alliance logsearch Crunch tax,deposited or !alliance logsearch 0 tax");
             String timeformat = "MM-dd-yyyy";
+            Int64 amount;
+            inputAmount = inputAmount.Replace(",", "");
+            inputAmount = inputAmount.Replace(".", "");
+            inputAmount = inputAmount.Replace(" ", "");
+            try
+            {
+                amount = Int64.Parse(inputAmount);
+            }
+            catch (Exception)
+            {
+                Context.Respond("Error parsing amount", Color.Red, "Bank Man");
+                return;
+            }
             if (Context.Player != null)
             {
 
@@ -1796,35 +1809,22 @@ namespace AlliancesPlugin.Alliances
                 StringBuilder sb = new StringBuilder();
                 ulong targetId = 0;
                 log.log.Reverse();
+                Dictionary<ulong, long> temporaryCounter = new Dictionary<ulong, long>();
                 long totalPaid = 0;
-                if (targetnameOrSteamId.Equals("0"))
+                if (targetnameOrSteamId.Equals("0") && amount > 0)
                 {
                     if (!action.Contains(","))
                     {
                         foreach (BankLogItem item in log.log.Where(x => x.Action.Equals(action)))
                         {
-                            totalPaid += item.Amount;
-                            if (item.FactionPaid > 0)
+
+                            if (temporaryCounter.TryGetValue(item.SteamId, out long amount2))
                             {
-                                IMyFaction fac = MySession.Static.Factions.TryGetFactionById(item.FactionPaid);
-                                if (fac != null)
-                                {
-                                    sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + AlliancePlugin.GetPlayerName(item.SteamId) + " " + item.Action + " " + fac.Tag + " " + String.Format("{0:n0}", item.Amount) + " : new balance " + String.Format("{0:n0}", item.BankAmount));
-                                }
-                                else
-                                {
-                                    sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + AlliancePlugin.GetPlayerName(item.SteamId) + " " + item.Action + " a now dead faction " + String.Format("{0:n0}", item.Amount) + " : new balance  " + String.Format("{0:n0}", item.BankAmount));
-                                }
-                                continue;
-                            }
-                            if (item.PlayerPaid > 0)
-                            {
-                                sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + AlliancePlugin.GetPlayerName(item.SteamId) + " " + item.Action + " " + AlliancePlugin.GetPlayerName(item.PlayerPaid) + " " + String.Format("{0:n0}", item.Amount) + " : new balance  " + String.Format("{0:n0}", item.BankAmount));
+                                temporaryCounter[item.SteamId] += item.Amount;
                             }
                             else
                             {
-
-                                sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + AlliancePlugin.GetPlayerName(item.SteamId) + " " + item.Action + " " + String.Format("{0:n0}", item.Amount) + " : new balance  " + String.Format("{0:n0}", item.BankAmount));
+                                temporaryCounter.Add(item.SteamId, item.Amount);
                             }
                         }
                     }
@@ -1835,6 +1835,41 @@ namespace AlliancesPlugin.Alliances
                         {
                             String s2 = s.Replace(" ", "");
                             foreach (BankLogItem item in log.log.Where(x => x.Action.Equals(s2)))
+                            {
+                                if (temporaryCounter.TryGetValue(item.SteamId, out long amount2))
+                                {
+                                    temporaryCounter[item.SteamId] += item.Amount;
+                                }
+                                else
+                                {
+                                    temporaryCounter.Add(item.SteamId, item.Amount);
+                                }
+                            }
+                        }
+                    }
+
+                    foreach (KeyValuePair<ulong, long> key in temporaryCounter)
+                    {
+                        if (key.Value > amount)
+                        {
+                            sb.AppendLine(AlliancePlugin.GetPlayerName(key.Key) + " total: " + String.Format("{0:n0}", key.Value));
+                        }
+
+                    }
+
+                    DialogMessage m2 = new DialogMessage("Alliance Bank Records", alliance.name, sb.ToString());
+                    ModCommunication.SendMessageTo(m2, Context.Player.SteamUserId);
+                    return;
+                }
+                else
+                {
+
+
+                    if (targetnameOrSteamId.Equals("0"))
+                    {
+                        if (!action.Contains(","))
+                        {
+                            foreach (BankLogItem item in log.log.Where(x => x.Action.Equals(action)))
                             {
                                 totalPaid += item.Amount;
                                 if (item.FactionPaid > 0)
@@ -1860,52 +1895,92 @@ namespace AlliancesPlugin.Alliances
                                     sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + AlliancePlugin.GetPlayerName(item.SteamId) + " " + item.Action + " " + String.Format("{0:n0}", item.Amount) + " : new balance  " + String.Format("{0:n0}", item.BankAmount));
                                 }
                             }
+                            sb.AppendLine("");
+                            sb.AppendLine("Total found for " + targetnameOrSteamId + " " + String.Format("{0:n0}", totalPaid));
                         }
-                    }
-                }
-                else {
-                    MyIdentity identity = AlliancePlugin.GetIdentityByNameOrId(targetnameOrSteamId);
-                    if (identity != null)
-                    {
-                        targetId = MySession.Static.Players.TryGetSteamId(identity.IdentityId);
+                        else
+                        {
+                            String[] actions = action.Split(',');
+                            foreach (String s in actions)
+                            {
+                                String s2 = s.Replace(" ", "");
+                                foreach (BankLogItem item in log.log.Where(x => x.Action.Equals(s2)))
+                                {
+                                    totalPaid += item.Amount;
+                                    if (item.FactionPaid > 0)
+                                    {
+                                        IMyFaction fac = MySession.Static.Factions.TryGetFactionById(item.FactionPaid);
+                                        if (fac != null)
+                                        {
+                                            sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + AlliancePlugin.GetPlayerName(item.SteamId) + " " + item.Action + " " + fac.Tag + " " + String.Format("{0:n0}", item.Amount) + " : new balance " + String.Format("{0:n0}", item.BankAmount));
+                                        }
+                                        else
+                                        {
+                                            sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + AlliancePlugin.GetPlayerName(item.SteamId) + " " + item.Action + " a now dead faction " + String.Format("{0:n0}", item.Amount) + " : new balance  " + String.Format("{0:n0}", item.BankAmount));
+                                        }
+                                        continue;
+                                    }
+                                    if (item.PlayerPaid > 0)
+                                    {
+                                        sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + AlliancePlugin.GetPlayerName(item.SteamId) + " " + item.Action + " " + AlliancePlugin.GetPlayerName(item.PlayerPaid) + " " + String.Format("{0:n0}", item.Amount) + " : new balance  " + String.Format("{0:n0}", item.BankAmount));
+                                    }
+                                    else
+                                    {
 
+                                        sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + AlliancePlugin.GetPlayerName(item.SteamId) + " " + item.Action + " " + String.Format("{0:n0}", item.Amount) + " : new balance  " + String.Format("{0:n0}", item.BankAmount));
+                                    }
+                                }
+                            }
+                        }
+                        sb.AppendLine("");
+                        sb.AppendLine("Total found for " + targetnameOrSteamId + " " + String.Format("{0:n0}", totalPaid));
                     }
                     else
                     {
-                        try
+                        MyIdentity identity = AlliancePlugin.GetIdentityByNameOrId(targetnameOrSteamId);
+                        if (identity != null)
                         {
-                            targetId = ulong.Parse(targetnameOrSteamId);
+                            targetId = MySession.Static.Players.TryGetSteamId(identity.IdentityId);
+
                         }
-                        catch (Exception ex)
+                        else
                         {
-                            Context.Respond("Error parsing that id, target name didnt find id, input wasnt steam id");
-                            return;
+                            try
+                            {
+                                targetId = ulong.Parse(targetnameOrSteamId);
+                            }
+                            catch (Exception ex)
+                            {
+                                Context.Respond("Error parsing that id, target name didnt find id, input wasnt steam id");
+                                return;
+                            }
                         }
-                    }
-                    if (!action.Contains(","))
-                    {
-                        foreach (BankLogItem item in log.log.Where(x => x.SteamId == targetId && x.Action.Equals(action)))
+                        if (!action.Contains(","))
                         {
-                            totalPaid += item.Amount;
-                            sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + action + " " + String.Format("{0:n0}", item.Amount));
-                        }
-                    }
-                    else
-                    {
-                        String[] actions = action.Split(',');
-                        foreach (String s in actions)
-                        {
-                            String s2 = s.Replace(" ", "");
-                            foreach (BankLogItem item in log.log.Where(x => x.SteamId == targetId && x.Action.Equals(s2)))
+                            foreach (BankLogItem item in log.log.Where(x => x.SteamId == targetId && x.Action.Equals(action)))
                             {
                                 totalPaid += item.Amount;
-                                sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " +  s2 + " " + String.Format("{0:n0}", item.Amount));
+                                sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + action + " " + String.Format("{0:n0}", item.Amount));
+                            }
+                        }
+                        else
+                        {
+                            String[] actions = action.Split(',');
+                            foreach (String s in actions)
+                            {
+                                String s2 = s.Replace(" ", "");
+                                foreach (BankLogItem item in log.log.Where(x => x.SteamId == targetId && x.Action.Equals(s2)))
+                                {
+                                    totalPaid += item.Amount;
+                                    sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + s2 + " " + String.Format("{0:n0}", item.Amount));
+                                }
                             }
                         }
                     }
+                    sb.AppendLine("");
+                    sb.AppendLine("Total found for " + targetnameOrSteamId + " " + String.Format("{0:n0}", totalPaid));
                 }
-                sb.AppendLine("");
-                sb.AppendLine("Total found for " + targetnameOrSteamId + " " + String.Format("{0:n0}", totalPaid));
+
                 DialogMessage m = new DialogMessage("Alliance Bank Records", alliance.name, sb.ToString());
                 ModCommunication.SendMessageTo(m, Context.Player.SteamUserId);
             }

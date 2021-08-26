@@ -777,7 +777,13 @@ namespace AlliancesPlugin.Hangar
                                     proj.Clipboard.Clear();
                                 }
                                 grids.Add(grid);
-
+                                foreach (var block in grid.GetFatBlocks().OfType<MyCockpit>())
+                                {
+                                    if (block.Pilot != null)
+                                    {
+                                        block.RemovePilot();
+                                    }
+                                }
                                 if (name == "")
                                 {
                                     name = grid.DisplayName;
