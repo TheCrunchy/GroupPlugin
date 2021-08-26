@@ -2288,12 +2288,7 @@ namespace AlliancesPlugin
 
                 try
                 {
-                    Boolean dig = false;
-                    if (DateTime.Now >= NextMining && TorchState == TorchSessionState.Loaded && config.MiningContractsEnabled)
-                    {
-                        dig = true;
-                        NextMining = NextMining.AddSeconds(config.SecondsBetweenNewContracts);
-                    }
+
 
                     //i should really split this into multiple methods so i dont have one huge method for everything
                     foreach (MyPlayer player in MySession.Static.Players.GetOnlinePlayers())
