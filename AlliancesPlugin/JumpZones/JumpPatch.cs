@@ -101,7 +101,8 @@ namespace AlliancesPlugin
             {
                 return false;
             }
-            
+            float distance2 = Vector3.Distance(jumpTarget, grid.PositionComp.GetPosition());
+            Log.Info("grid name " + grid.DisplayName + "Target loc " +jumpTarget.ToString() + " Distance to target " + distance2);
             //return false;
             if (userId == 0)
             {

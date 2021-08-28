@@ -153,7 +153,20 @@ namespace AlliancesPlugin
 
             Context.Respond("Might have reset them all? !eco top");
         }
+        [Command("crunchrefin", "toggle alliance chat")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void IDGSDG(double buff = 0)
+        {
+            if (buff > 0)
+            {
+              
+                Context.Respond("Buff increased to " + buff);
+                return;
+            }
+            MyRefineryPatch.Enabled = !MyRefineryPatch.Enabled;
 
+            Context.Respond("Refinery logic handled by plugin toggled to " + MyRefineryPatch.Enabled);
+        }
 
         [Command("a", "toggle alliance chat")]
         [Permission(MyPromoteLevel.None)]

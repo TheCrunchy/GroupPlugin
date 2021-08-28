@@ -530,6 +530,26 @@ namespace AlliancesPlugin
                 {
                     Directory.CreateDirectory(path + "//ShipyardUpgrades//");
                 }
+                if (!Directory.Exists(path + "//RefineryUpgrades//"))
+                {
+                    Directory.CreateDirectory(path + "//RefineryUpgrades//");
+                }
+                if (!File.Exists(path + "//RefineryUpgrades//Example.xml"))
+                {
+                    RefineryUpgrade upgrade = new RefineryUpgrade();
+                    RefineryUpgrade.RefineryBuffList list = new RefineryUpgrade.RefineryBuffList();
+                    list.buffs.Add(new RefineryUpgrade.RefineryBuff());
+                    upgrade.buffedRefineries.Add(list);
+                    RefineryUpgrade.ItemRequirement req = new RefineryUpgrade.ItemRequirement();
+                    upgrade.items.Add(req);
+                    utils.WriteToXmlFile<RefineryUpgrade>(path + "//RefineryUpgrades//Example.xml", upgrade);
+                    upgrade.UpgradeId = 2;
+                    list.buffs.Add(new RefineryUpgrade.RefineryBuff());
+                    upgrade.buffedRefineries.Add(list);
+                    upgrade.items.Add(req);
+                    utils.WriteToXmlFile<RefineryUpgrade>(path + "//RefineryUpgrades//Example2.xml", upgrade);
+
+                }
                 if (!Directory.Exists(path + "//HangarUpgrades//"))
                 {
                     Directory.CreateDirectory(path + "//HangarUpgrades//");
@@ -671,7 +691,7 @@ namespace AlliancesPlugin
 
                 LoadAllAlliances();
                 LoadAllGates();
-
+                LoadAllRefineryUpgrades();
 
 
                 LoadItemUpkeep();
@@ -780,6 +800,23 @@ namespace AlliancesPlugin
             foreach (String s in Directory.GetFiles(path + "//HangarUpgrades//"))
             {
                 HangarCommands.LoadUpgradeCost(s);
+            }
+        }
+        public void LoadAllRefineryUpgrades()
+        {
+            MyRefineryPatch.upgrades.Clear();
+            foreach (String s in Directory.GetFiles(path + "//RefineryUpgrades//"))
+            {
+                RefineryUpgrade upgrade = utils.ReadFromXmlFile<RefineryUpgrade>(s);
+                
+                upgrade.PutBuffedInDictionary();
+                if (!MyRefineryPatch.upgrades.ContainsKey(upgrade.UpgradeId)){
+                    MyRefineryPatch.upgrades.Add(upgrade.UpgradeId, upgrade);
+                }
+                else
+                {
+                    Log.Error("Duplicate ID for upgrades " + s);
+                }
             }
         }
         public int ticks;
@@ -1016,6 +1053,7 @@ namespace AlliancesPlugin
                     {
                         continue;
                     }
+                    
                     Territories.Add(ter.Id, ter);
 
                     Log.Info(ter.Name);
@@ -2102,7 +2140,7 @@ namespace AlliancesPlugin
                     TerritoryInside[player.Id.SteamId] = ter.Id;
                 }
                 ModCommunication.SendMessageTo(message2, player.Id.SteamId);
-                InTerritory[player.Identity.IdentityId] = DateTime.Now.AddMinutes(2);
+                InTerritory[player.Identity.IdentityId] = DateTime.Now.AddMinutes(5);
                 if (alliance != null)
                 {
                     NotificationMessage message3 = new NotificationMessage(ter.ControlledMessage.Replace("{alliance}", alliance.name), 15000, "Red");
@@ -2115,7 +2153,15 @@ namespace AlliancesPlugin
             {
                 message2 = new NotificationMessage(ter.EntryMessage.Replace("{name}", ter.Name), 15000, "Green");
                 ModCommunication.SendMessageTo(message2, player.Id.SteamId);
-                InTerritory.Add(player.Identity.IdentityId, DateTime.Now.AddMinutes(2));
+                InTerritory.Add(player.Identity.IdentityId, DateTime.Now.AddMinutes(5));
+                if (!TerritoryInside.ContainsKey(player.Id.SteamId))
+                {
+                    TerritoryInside.Add(player.Id.SteamId, ter.Id);
+                }
+                else
+                {
+                    TerritoryInside[player.Id.SteamId] = ter.Id;
+                }
                 if (alliance != null)
                 {
                     NotificationMessage message3 = new NotificationMessage(ter.ControlledMessage.Replace("{alliance}", alliance.name), 15000, "Red");
@@ -2241,6 +2287,16 @@ namespace AlliancesPlugin
                 }
                 catch (Exception ex)
                 {
+                    Log.Error(ex);
+                }
+                try
+                {
+
+                    LoadAllRefineryUpgrades();
+                }
+                catch (Exception ex)
+                {
+
                     Log.Error(ex);
                 }
                 try

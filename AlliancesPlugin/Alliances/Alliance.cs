@@ -53,6 +53,7 @@ namespace AlliancesPlugin.Alliances
         public int g = 163;
         public int b = 237;
         public int failedUpkeep = 0;
+        public int RefineryUpgradeLevel = 0;
         public long GetUpkeep()
         {
             float upkeep = 0;
@@ -445,7 +446,7 @@ namespace AlliancesPlugin.Alliances
                 sb.AppendLine("Failed Upkeep : " + this.failedUpkeep + " Deleted at " + AlliancePlugin.config.UpkeepFailBeforeDelete);
             }
 
-            sb.AppendLine("Expected Upkeep Value :" + String.Format("{0:n0}", this.GetUpkeep()) + " SC.");
+            sb.AppendLine("Expected Upkeep Value : " + String.Format("{0:n0}", this.GetUpkeep()) + " SC.");
             int mult = this.GetFactionCount();
             sb.AppendLine("");
             if (AlliancePlugin.config.DoItemUpkeep)
@@ -459,10 +460,12 @@ namespace AlliancesPlugin.Alliances
                     sb.AppendLine(temp + " : " + keys.Value * mult);
                 }
             }
+   
             sb.AppendLine("Vault contents");
             sb.AppendLine(DatabaseForBank.GetVaultString(this));
             sb.AppendLine("");
-
+            sb.AppendLine("Refinery upgrade level : " + this.RefineryUpgradeLevel);
+            sb.AppendLine("");
             sb.AppendLine("Meta Points : " + String.Format("{0:n0}", CurrentMetaPoints));
             sb.AppendLine("");
 
