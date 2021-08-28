@@ -50,6 +50,7 @@ using DSharpPlus;
 using SpaceEngineers.Game.Entities.Blocks;
 using Sandbox.Game.GameSystems.BankingAndCurrency;
 using HarmonyLib;
+using AlliancesPlugin.NewCaptureSite;
 
 namespace AlliancesPlugin
 {
@@ -109,7 +110,7 @@ namespace AlliancesPlugin
 
         public static long AddToTaxes(ulong SteamId, long amount, string type)
         {
-           MyIdentity identityId = AlliancePlugin.GetIdentityByNameOrId(SteamId.ToString());
+            MyIdentity identityId = AlliancePlugin.GetIdentityByNameOrId(SteamId.ToString());
             IMyFaction fac = FacUtils.GetPlayersFaction(identityId.IdentityId);
             if (fac != null)
             {
@@ -118,7 +119,7 @@ namespace AlliancesPlugin
                 {
                     // alliance.reputation
                     //amount = Convert.ToInt64(amount * 1.05f);
-                } 
+                }
             }
             if (AlliancePlugin.TaxesToBeProcessed.ContainsKey(identityId.IdentityId))
             {
@@ -165,8 +166,8 @@ namespace AlliancesPlugin
                 utils.WriteToXmlFile<Territory>(path + "//Territories//Example.xml", example, false);
             }
 
-      
-     
+
+
 
             if (!Directory.Exists(path + "//PlayerData//"))
             {
@@ -446,28 +447,8 @@ namespace AlliancesPlugin
                 {
                     DiscordStuff.RegisterDiscord();
                 }
-                if (!System.IO.File.Exists(path + "//HaulingStuff//deliveryLocations.txt"))
-                {
-                    MyGps bob = new MyGps();
-                    Vector3D alan = new Vector3D(100, 100, 100);
-                    bob.Coords = alan;
-                    bob.Name = "Example GPS";
-                    bob.DisplayName = "Example GPS";
 
-                    File.WriteAllText(path + "//HaulingStuff//deliveryLocations.txt", bob.ToString());
-                }
-                if (!System.IO.File.Exists(path + "//MiningStuff//deliveryLocations.txt"))
-                {
-                    MyGps bob = new MyGps();
-                    Vector3D alan = new Vector3D(100, 100, 100);
-                    bob.Coords = alan;
-                    bob.Name = "Example GPS";
-                    bob.DisplayName = "Example GPS";
 
-                    File.WriteAllText(path + "//MiningStuff//deliveryLocations.txt", bob.ToString());
-                }
-
- 
                 LoadAllGates();
 
                 AllianceChat.ApplyLogging();
@@ -508,6 +489,39 @@ namespace AlliancesPlugin
                 {
                     Directory.CreateDirectory(basePath + "//Alliances//");
                 }
+
+                //if (!Directory.Exists(path + "//CaptureSites//"))
+                //{
+                //    Directory.CreateDirectory(path + "//CaptureSites//");
+                //    CaptureSite site = new CaptureSite();
+                //    Location loc = new Location();
+                //    site.locations.Add(loc);
+                //    LootLocation loot = new LootLocation();
+                //    RewardItem reward = new RewardItem();
+                //    reward.CreditReward = 5000000;
+                //    loc.LinkedLootLocation = 1;
+                //    loot.loot.Add(reward);
+                //    reward = new RewardItem();
+                //    reward.ItemMaxAxmount = 5;
+                //    reward.ItemMinAmount = 1;
+                //    reward.SubTypeId = "Uranium";
+                //    reward.TypeId = "Ingot";
+                //    loot.loot.Add(reward);
+                //    reward = new RewardItem();
+
+                //    reward.MetaPoint = 50;
+                //    loot.loot.Add(reward);
+                //    site.loot.Add(loot);
+                //    utils.WriteToXmlFile<CaptureSite>(path + "//CaptureSites//example.xml", site, false);
+                //    loc.X = 2;
+                //    loc.Y = 2;
+                //    loc.LinkedLootLocation = 1;
+                //    loc.Z = 2;
+                //    loc.Num = 2;
+                //    loc.Name = "Example 2";
+                //    site.locations.Add(loc);
+                //    utils.WriteToXmlFile<CaptureSite>(path + "//CaptureSites//example2.xml", site, false);
+                //}
                 if (!File.Exists(basePath + "//Alliances//KOTH//example.xml"))
                 {
                     utils.WriteToXmlFile<KothConfig>(basePath + "//Alliances//KOTH//example.xml", new KothConfig(), false);
@@ -657,7 +671,7 @@ namespace AlliancesPlugin
 
                 LoadAllAlliances();
                 LoadAllGates();
-         
+
 
 
                 LoadItemUpkeep();
@@ -1061,7 +1075,7 @@ namespace AlliancesPlugin
                                         zone.AccessTypeFloatingObjects = MySafeZoneAccess.Blacklist;
                                     }
                                     DiscordStuff.SendMessageToDiscord("Transfer of " + grid.DisplayName + " complete.");
-                                 }
+                                }
                                 foreach (MyBeacon Beacon in grid.GetFatBlocks().OfType<MyBeacon>())
                                 {
 
@@ -1540,7 +1554,7 @@ namespace AlliancesPlugin
                         }
 
                     }
-                  
+
                     if (DateTime.Now >= config.nextCaptureInterval)
                     {
                         config.nextCaptureInterval = DateTime.Now.AddSeconds(config.SecondsBetweenCaptureCheck);
@@ -2119,7 +2133,7 @@ namespace AlliancesPlugin
                 {
                     return;
                 }
-            } 
+            }
             else
             {
                 InTerritory.Remove(player.Identity.IdentityId);
@@ -2128,7 +2142,7 @@ namespace AlliancesPlugin
             }
 
             NotificationMessage message2 = new NotificationMessage(ter.ExitMessage.Replace("{name}", ter.Name), 30000, "White");
-            
+
             ModCommunication.SendMessageTo(message2, player.Id.SteamId);
             InTerritory.Remove(player.Identity.IdentityId);
             TerritoryInside.Remove(player.Id.SteamId);
@@ -2136,7 +2150,7 @@ namespace AlliancesPlugin
 
 
         public static DateTime chat = DateTime.Now;
-     
+
 
         public override void Update()
         {
@@ -2202,7 +2216,7 @@ namespace AlliancesPlugin
                 catch (Exception)
                 {
                 }
-                chat = chat.AddMinutes(3);
+                chat = chat.AddMinutes(10);
             }
 
             if (DateTime.Now > NextUpdate && TorchState == TorchSessionState.Loaded)
@@ -2211,7 +2225,7 @@ namespace AlliancesPlugin
 
                 DateTime now = DateTime.Now;
                 NextUpdate = now.AddSeconds(60);
-    
+
                 try
                 {
                     MarketCommands.list.RefreshList();
@@ -2232,7 +2246,7 @@ namespace AlliancesPlugin
                 try
                 {
                     LoadAllGates();
-              
+
                 }
                 catch (Exception ex)
                 {
@@ -2409,7 +2423,7 @@ namespace AlliancesPlugin
                 if (block != null && rewardItem != null)
                 {
                     //   Log.Info("Should spawn item");
-              
+
                     MyItemType itemType = new MyInventoryItemFilter(rewardItem.TypeId + "/" + rewardItem.SubtypeName).ItemType;
                     block.GetInventory().CanItemsBeAdded((MyFixedPoint)config.RewardAmount, itemType);
                     block.GetInventory().AddItems((MyFixedPoint)config.RewardAmount, (MyObjectBuilder_PhysicalObject)MyObjectBuilderSerializer.CreateNewObject(rewardItem));

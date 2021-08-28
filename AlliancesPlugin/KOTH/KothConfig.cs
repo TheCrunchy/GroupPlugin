@@ -12,7 +12,7 @@ namespace AlliancesPlugin.KOTH
         public long SafeZoneId = 1;
         public double x = 100000;
         public double y = 100000;
-        public double z = 100000;
+        public double z = 100000; 
         public Boolean RequireCaptureBlockForLootGen = true;
         public Boolean HasReward = true;
         public string KothName = "example";

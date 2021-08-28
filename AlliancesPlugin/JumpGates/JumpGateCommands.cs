@@ -353,7 +353,8 @@ namespace AlliancesPlugin.JumpGates
                     response += "/n" + gate.GateName + " meta point cost " + gate.DaysPerRent;
                 }
             }
-
+            Context.Respond(response);
+          
         }
         [Command("list", "list all loaded gates")]
         [Permission(MyPromoteLevel.Admin)]
