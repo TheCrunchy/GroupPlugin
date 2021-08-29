@@ -21,7 +21,7 @@ namespace AlliancesPlugin.NewCaptureSite
 
         public Boolean Locked = false;
         public Boolean UnlockAtTheseTimes = false;
-        List<int> HoursToUnlockAfter = new List<int>();
+        public List<int> HoursToUnlockAfter = new List<int>();
 
         public Location GetNewCapSite(Location ignore)
         {

@@ -808,15 +808,17 @@ namespace AlliancesPlugin
             foreach (String s in Directory.GetFiles(path + "//RefineryUpgrades//"))
             {
                 RefineryUpgrade upgrade = utils.ReadFromXmlFile<RefineryUpgrade>(s);
-
-                upgrade.PutBuffedInDictionary();
-                if (!MyRefineryPatch.upgrades.ContainsKey(upgrade.UpgradeId))
+                if (upgrade.Enabled)
                 {
-                    MyRefineryPatch.upgrades.Add(upgrade.UpgradeId, upgrade);
-                }
-                else
-                {
-                    Log.Error("Duplicate ID for upgrades " + s);
+                    upgrade.PutBuffedInDictionary();
+                    if (!MyRefineryPatch.upgrades.ContainsKey(upgrade.UpgradeId))
+                    {
+                        MyRefineryPatch.upgrades.Add(upgrade.UpgradeId, upgrade);
+                    }
+                    else
+                    {
+                        Log.Error("Duplicate ID for upgrades " + s);
+                    }
                 }
             }
         }
@@ -1528,9 +1530,12 @@ namespace AlliancesPlugin
                     bool unlocked = false;
                     if (config.UnlockAtTheseTimes && config.Locked)
                     {
-                        unlocked = true;
-                        config.Locked = false;
-                        config.unlockTime = DateTime.Now.AddYears(1);
+                        if (config.HoursToUnlockAfter.Contains(DateTime.Now.Hour))
+                        {
+                             unlocked = true;
+                             config.Locked = false;
+                             config.unlockTime = DateTime.Now.AddYears(1);
+                        }
                     }
                     else
                     {

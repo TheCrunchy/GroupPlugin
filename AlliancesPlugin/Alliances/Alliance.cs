@@ -383,6 +383,32 @@ namespace AlliancesPlugin.Alliances
             log.log.Add(item);
             utils.WriteToJsonFile<BankLog>(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId + "//log.json", log);
         }
+        public void AdminWithdraw(Int64 amount, ulong steamid)
+        {
+            bankBalance -= amount;
+            BankLog log = GetLog();
+            BankLogItem item = new BankLogItem();
+            item.SteamId = steamid;
+            item.Amount = amount;
+            item.TimeClaimed = DateTime.Now;
+            item.Action = "admin withdraw";
+            item.BankAmount = bankBalance;
+            log.log.Add(item);
+            utils.WriteToJsonFile<BankLog>(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId + "//log.json", log);
+        }
+        public void AdminAdd(Int64 amount, ulong steamid)
+        {
+            bankBalance += amount;
+            BankLog log = GetLog();
+            BankLogItem item = new BankLogItem();
+            item.SteamId = steamid;
+            item.Amount = amount;
+            item.TimeClaimed = DateTime.Now;
+            item.Action = "admin add";
+            item.BankAmount = bankBalance;
+            log.log.Add(item);
+            utils.WriteToJsonFile<BankLog>(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId + "//log.json", log);
+        }
         public void DepositTax(Int64 amount, ulong steamid)
         {
             bankBalance += amount;

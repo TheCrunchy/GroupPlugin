@@ -964,7 +964,7 @@ namespace AlliancesPlugin.Alliances
 
             Alliance alliance = null;
 
-            alliance = AlliancePlugin.GetAllianceNoLoading(name);
+            alliance = AlliancePlugin.GetAlliance(name);
 
             if (alliance == null)
             {
@@ -989,7 +989,10 @@ namespace AlliancesPlugin.Alliances
                 Context.Respond("Must be a positive amount", Color.Red, "Bank Man");
                 return;
             }
+            alliance.AdminWithdraw(amount, 1);
+            AlliancePlugin.SaveAllianceData(alliance);
             DatabaseForBank.RemoveFromBalance(alliance, amount);
+     
         }
         [Command("addmoney", "output info about an alliance")]
         [Permission(MyPromoteLevel.Admin)]
@@ -1024,6 +1027,8 @@ namespace AlliancesPlugin.Alliances
                 return;
             }
             DatabaseForBank.AddToBalance(alliance, amount);
+            alliance.AdminAdd(amount, 1);
+            AlliancePlugin.SaveAllianceData(alliance);
         }
         [Command("info", "output info about an alliance")]
         [Permission(MyPromoteLevel.None)]
@@ -1039,7 +1044,7 @@ namespace AlliancesPlugin.Alliances
             {
                 if (MySession.Static.Factions.TryGetPlayerFaction(Context.Player.IdentityId) != null)
                 {
-                    alliance = AlliancePlugin.GetAllianceNoLoading(MySession.Static.Factions.TryGetPlayerFaction(Context.Player.IdentityId) as MyFaction);
+                    alliance = AlliancePlugin.GetAlliance(MySession.Static.Factions.TryGetPlayerFaction(Context.Player.IdentityId) as MyFaction);
 
 
                 }
@@ -1061,6 +1066,7 @@ namespace AlliancesPlugin.Alliances
             else
             {
                 Context.Respond("Alliance Info" + " " + alliance.name + alliance.OutputAlliance());
+                
             }
         }
         [Command("leave", "leave the alliance")]

@@ -10,7 +10,7 @@ namespace AlliancesPlugin.Alliances
     public class RefineryUpgrade
     {
         public int UpgradeId = 1;
-
+        public Boolean Enabled = false;
         public long MoneyRequired = 5000000;
         public int MetaPointsRequired = 500000;
         public List<ItemRequirement> items = new List<ItemRequirement>();

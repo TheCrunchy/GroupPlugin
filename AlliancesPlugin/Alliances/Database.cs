@@ -324,7 +324,7 @@ namespace AlliancesPlugin.Alliances
             {
                 return;
             }
-            using (var db = new LiteDatabase("Filename=" + AlliancePlugin.path + "//Vaults//vault.db;Connection=shared;Upgrade=True;"))
+            using (var db = new LiteDatabase("Filename=" + AlliancePlugin.path + "//Vaults//" + alliance.AllianceId.ToString() + ".db;Connection=shared;Upgrade=True;"))
             {
 
                 var collection = db.GetCollection<VaultData>(alliance.AllianceId.ToString());
