@@ -10,7 +10,7 @@ namespace AlliancesPlugin.NewCaptureSite
     {
         public double chance = 1;
         public int ItemMinAmount;
-        public int ItemMaxAxmount;
+        public int ItemMaxAmount;
         public string TypeId;
         public string SubTypeId;
         public long CreditReward;

@@ -18,5 +18,8 @@ namespace AlliancesPlugin.NewCaptureSite
         public int SecondsBetweenCoreSpawn = 180;
         public List<RewardItem> loot = new List<RewardItem>();
         public DateTime nextCoreSpawn = DateTime.Now;
+        public long LootboxGridEntityId = 0;
+        public int RadiusToCheck = 1000;
+        public string KothBuildingOwner = "BOB";
     }
 }

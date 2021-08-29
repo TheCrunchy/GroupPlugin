@@ -22,7 +22,17 @@ namespace AlliancesPlugin.NewCaptureSite
         public Boolean Locked = false;
         public Boolean UnlockAtTheseTimes = false;
         public List<int> HoursToUnlockAfter = new List<int>();
-
+        public LootLocation GetLootSite()
+        {
+            foreach (LootLocation lot in loot)
+            {
+                if (lot.Num == GetCurrentLocation().LinkedLootLocation)
+                {
+                    return lot;
+                }
+            }
+            return null;
+        }
         public Location GetNewCapSite(Location ignore)
         {
             Random random = new Random();

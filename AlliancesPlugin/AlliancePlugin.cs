@@ -490,38 +490,38 @@ namespace AlliancesPlugin
                     Directory.CreateDirectory(basePath + "//Alliances//");
                 }
 
-                //if (!Directory.Exists(path + "//CaptureSites//"))
-                //{
-                //    Directory.CreateDirectory(path + "//CaptureSites//");
-                //    CaptureSite site = new CaptureSite();
-                //    Location loc = new Location();
-                //    site.locations.Add(loc);
-                //    LootLocation loot = new LootLocation();
-                //    RewardItem reward = new RewardItem();
-                //    reward.CreditReward = 5000000;
-                //    loc.LinkedLootLocation = 1;
-                //    loot.loot.Add(reward);
-                //    reward = new RewardItem();
-                //    reward.ItemMaxAxmount = 5;
-                //    reward.ItemMinAmount = 1;
-                //    reward.SubTypeId = "Uranium";
-                //    reward.TypeId = "Ingot";
-                //    loot.loot.Add(reward);
-                //    reward = new RewardItem();
+                if (!Directory.Exists(path + "//CaptureSites//"))
+                {
+                    Directory.CreateDirectory(path + "//CaptureSites//");
+                    CaptureSite site = new CaptureSite();
+                    Location loc = new Location();
+                    site.locations.Add(loc);
+                    LootLocation loot = new LootLocation();
+                    RewardItem reward = new RewardItem();
+                    reward.CreditReward = 5000000;
+                    loc.LinkedLootLocation = 1;
+                    loot.loot.Add(reward);
+                    reward = new RewardItem();
+                    reward.ItemMaxAmount = 5;
+                    reward.ItemMinAmount = 1;
+                    reward.SubTypeId = "Uranium";
+                    reward.TypeId = "Ingot";
+                    loot.loot.Add(reward);
+                    reward = new RewardItem();
 
-                //    reward.MetaPoint = 50;
-                //    loot.loot.Add(reward);
-                //    site.loot.Add(loot);
-                //    utils.WriteToXmlFile<CaptureSite>(path + "//CaptureSites//example.xml", site, false);
-                //    loc.X = 2;
-                //    loc.Y = 2;
-                //    loc.LinkedLootLocation = 1;
-                //    loc.Z = 2;
-                //    loc.Num = 2;
-                //    loc.Name = "Example 2";
-                //    site.locations.Add(loc);
-                //    utils.WriteToXmlFile<CaptureSite>(path + "//CaptureSites//example2.xml", site, false);
-                //}
+                    reward.MetaPoint = 50;
+                    loot.loot.Add(reward);
+                    site.loot.Add(loot);
+                    utils.WriteToXmlFile<CaptureSite>(path + "//CaptureSites//example.xml", site, false);
+                    loc.X = 2;
+                    loc.Y = 2;
+                    loc.LinkedLootLocation = 1;
+                    loc.Z = 2;
+                    loc.Num = 2;
+                    loc.Name = "Example 2";
+                    site.locations.Add(loc);
+                    utils.WriteToXmlFile<CaptureSite>(path + "//CaptureSites//example2.xml", site, false);
+                }
                 if (!File.Exists(basePath + "//Alliances//KOTH//example.xml"))
                 {
                     utils.WriteToXmlFile<KothConfig>(basePath + "//Alliances//KOTH//example.xml", new KothConfig(), false);
@@ -1532,9 +1532,9 @@ namespace AlliancesPlugin
                     {
                         if (config.HoursToUnlockAfter.Contains(DateTime.Now.Hour))
                         {
-                             unlocked = true;
-                             config.Locked = false;
-                             config.unlockTime = DateTime.Now.AddYears(1);
+                            unlocked = true;
+                            config.Locked = false;
+                            config.unlockTime = DateTime.Now.AddYears(1);
                         }
                     }
                     else
@@ -1729,6 +1729,7 @@ namespace AlliancesPlugin
                                                         {
                                                             Territories.Add(ter.Id, ter);
                                                         }
+                                                        DiscordStuff.SendMessageToDiscord(ter.Name + " Waystation will be transferred to " + GetAllianceNoLoading(CapturingAlliance).name + " in 48 hours if territory is not recaptured.", config);
                                                     }
                                                     else
                                                     {
@@ -1741,7 +1742,9 @@ namespace AlliancesPlugin
 
                                                         utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + config.LinkedTerritory + ".xml", ter);
                                                         Territories.Add(ter.Id, ter);
+                                                        DiscordStuff.SendMessageToDiscord(ter.Name + " Waystation will be transferred to " + GetAllianceNoLoading(CapturingAlliance).name + " in 48 hours if territory is not recaptured.", config);
                                                     }
+                                                   
                                                 }
                                                 foreach (JumpGate gate in AllGates.Values)
                                                 {
@@ -1877,12 +1880,102 @@ namespace AlliancesPlugin
                     {
                         config.nextCaptureInterval = DateTime.Now.AddSeconds(config.SecondsBetweenCaptureCheck);
                     }
-                    SaveCaptureConfig(config.Name, config);
 
+                    SaveCaptureConfig(config.Name, config);
+                    LootLocation loot = config.GetLootSite();
+                    if (loot == null)
+                    {
+                        continue;
+                    }
+
+                    if (DateTime.Now > loot.nextCoreSpawn)
+                    {
+                        Vector3 lootGrid = new Vector3(loot.X, loot.Y, loot.Z);
+                        MyCubeGrid lootgrid = GetLootboxGrid(lootGrid, loot);
+                        //spawn the cores
+                        Boolean hasCap = false;
+                        Boolean hasCapNotOwner = false;
+                        foreach (MyCubeGrid grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
+                        {
+                            IMyFaction fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
+                            if (fac != null)
+                            {
+                                if (fac.Tag == loot.KothBuildingOwner || fac.Tag.Length > 3)
+                                {
+                                    continue;
+                                }
+                            }
+                            if (fac != null)
+                            {
+                                if (GetNationTag(fac) != null && GetNationTag(fac).AllianceId.Equals(config.AllianceOwner))
+                                {
+                                    if (!hasCap)
+                                    {
+                                        hasCap = DoesGridHaveCaptureBlock(grid, loc);
+                                    }
+                                }
+                                else
+                                {
+                                    if (!hasCapNotOwner)
+                                    {
+                                        hasCapNotOwner = DoesGridHaveCaptureBlock(grid, loc);
+                                    }
+                                }
+
+                            }
+
+                        }
+
+
+                        if (config.AllianceOwner != Guid.Empty)
+                        {
+                            Alliance alliance = GetAlliance(config.AllianceOwner);
+                            if (loc.RequireCaptureBlockForLootGen)
+                            {
+                                if (!hasCap)
+                                {
+                                    loot.nextCoreSpawn = DateTime.Now.AddSeconds(loot.SecondsBetweenCoreSpawn);
+                                    if (hasCapNotOwner)
+                                    {
+                                        if (lootgrid != null)
+                                        {
+                                          
+                                            SpawnCores(lootgrid, loot, alliance);
+                                            SendChatMessage(loc.Name, "Spawning loot!");
+
+                                            SaveCaptureConfig(config.Name, config);
+
+
+                                        }
+                                        return;
+                                    }
+
+                                    SendChatMessage(loc.Name, "No loot spawn, No functional capture block");
+
+                                    continue;
+
+                                }
+                            }
+                            else
+                            {
+                                //  Log.Info("No block");
+                                if (lootgrid != null)
+                                {
+                                    SpawnCores(lootgrid, loot, alliance);
+
+                                }
+                                SendChatMessage(loc.Name, "Spawning loot!");
+                                loot.nextCoreSpawn = DateTime.Now.AddSeconds(loot.SecondsBetweenCoreSpawn);
+
+                                SaveCaptureConfig(config.Name, config);
+                            }
+                        }
+                    }
                 }
+
                 catch (Exception e)
                 {
-
+                    Log.Error("New Capture Site Error " + e.ToString());
                 }
 
             }
@@ -2630,6 +2723,7 @@ namespace AlliancesPlugin
             {
                 if (config.KothEnabled)
                 {
+                    DoCaptureSiteStuff();
                     DoKothStuff();
                 }
             }
@@ -2828,6 +2922,35 @@ namespace AlliancesPlugin
 
 
         }
+        public static MyCubeGrid GetLootboxGrid(Vector3 position, LootLocation config)
+        {
+            if (MyAPIGateway.Entities.GetEntityById(config.LootboxGridEntityId) != null)
+            {
+                if (MyAPIGateway.Entities.GetEntityById(config.LootboxGridEntityId) is MyCubeGrid grid)
+                    return grid;
+            }
+            
+            BoundingSphereD sphere = new BoundingSphereD(position, config.RadiusToCheck + 5000);
+            foreach (MyCubeGrid grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
+            {
+                IMyFaction fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
+                if (fac != null && fac.Tag.Equals(config.KothBuildingOwner))
+                {
+
+                    Sandbox.ModAPI.IMyGridTerminalSystem gridTerminalSys = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(grid);
+
+                    Sandbox.ModAPI.IMyTerminalBlock block = gridTerminalSys.GetBlockWithName(config.LootBoxTerminalName);
+                    if (block != null)
+                    {
+                        return grid;
+                    }
+
+                }
+
+            }
+            return null;
+        }
+
         public static MyCubeGrid GetLootboxGrid(Vector3 position, KothConfig config)
         {
             if (MyAPIGateway.Entities.GetEntityById(config.LootboxGridEntityId) != null)
@@ -2855,7 +2978,51 @@ namespace AlliancesPlugin
             }
             return null;
         }
+        public static void SpawnCores(MyCubeGrid grid, LootLocation config, Alliance alliance)
+        {
+            if (grid != null)
+            {
 
+                Sandbox.ModAPI.IMyGridTerminalSystem gridTerminalSys = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(grid);
+                Sandbox.ModAPI.IMyTerminalBlock block = gridTerminalSys.GetBlockWithName(config.LootBoxTerminalName);
+                foreach (RewardItem item in config.loot)
+                {
+                    Random random = new Random();
+                    if (random.NextDouble() <= item.chance)
+                    {
+                        if (item.CreditReward > 0)
+                        {
+                            DatabaseForBank.AddToBalance(alliance, item.CreditReward);
+                            alliance.DepositKOTH(item.CreditReward, 1);
+                        }
+                        if (item.MetaPoint > 0)
+                        {
+
+                            alliance.CurrentMetaPoints += item.MetaPoint;
+                        }
+                        if (item.TypeId != null && item.TypeId != string.Empty)
+                        {
+                            if (MyDefinitionId.TryParse("MyObjectBuilder_" + item.TypeId + "/" + item.SubTypeId, out MyDefinitionId id))
+                            {
+                                if (block != null)
+                                {
+                                    //   Log.Info("Should spawn item");
+
+                                    MyItemType itemType = new MyInventoryItemFilter(item.TypeId + "/" + item.SubTypeId).ItemType;
+                                    int amount = random.Next(item.ItemMinAmount, item.ItemMaxAmount);
+                                    block.GetInventory().CanItemsBeAdded((MyFixedPoint)amount, itemType);
+                                    block.GetInventory().AddItems((MyFixedPoint)amount, (MyObjectBuilder_PhysicalObject)MyObjectBuilderSerializer.CreateNewObject(id));
+                                }
+                            }
+                        }
+
+                    }
+
+                }
+                SaveAllianceData(alliance);
+                return;
+            }
+        }
         public static void SpawnCores(MyCubeGrid grid, KothConfig config)
         {
             if (grid != null)
@@ -2880,7 +3047,7 @@ namespace AlliancesPlugin
         }
         public static Boolean DoesGridHaveCaptureBlock(MyCubeGrid grid, Location loc)
         {
-          
+
             foreach (MyCubeBlock block in grid.GetFatBlocks())
             {
 
