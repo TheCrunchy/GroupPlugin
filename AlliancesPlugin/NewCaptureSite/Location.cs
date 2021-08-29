@@ -10,6 +10,7 @@ namespace AlliancesPlugin.NewCaptureSite
     {
         public Boolean Enabled = false;
         public string WorldName = "SENDS17";
+        public double chance = 1;
         public int Num = 1;
         public double X = 1;
         public double Y = 1;
@@ -20,7 +21,7 @@ namespace AlliancesPlugin.NewCaptureSite
         public string captureBlockSubtype = "LargeBlockBeacon";
         public string Name = "Example Location 1";
         public int LinkedLootLocation = 1;
-       
+        public string KothBuildingOwner = "BOB";
         public string GpsName = "Capture site Location 1";
         public int MaxLootAmount = 1;
 
