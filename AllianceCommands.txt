@@ -55,6 +55,10 @@ Refinery Upgrades
 !refinery view - view the upgrades
 !refinery upgrade - buy the next upgrade
 
+Assembler Upgrades
+!assembler view
+!assembler upgrade
+
 Shipyard stuff
 !shipyard restore tag filename targetplayer - Example !shipyard restore fre "Fighter2021-05-1216-32-48-094" Crunch
 !shipyard purge - deletes the files of claimed grids

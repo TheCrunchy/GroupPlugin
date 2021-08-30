@@ -163,9 +163,9 @@ namespace AlliancesPlugin
                 Context.Respond("Buff increased to " + buff);
                 return;
             }
-            MyRefineryPatch.Enabled = !MyRefineryPatch.Enabled;
+            MyProductionPatch.YEET = !MyProductionPatch.YEET;
 
-            Context.Respond("Refinery logic handled by plugin toggled to " + MyRefineryPatch.Enabled);
+            Context.Respond("Assembler logic handled by plugin toggled to " + MyProductionPatch.YEET);
         }
 
         [Command("a", "toggle alliance chat")]

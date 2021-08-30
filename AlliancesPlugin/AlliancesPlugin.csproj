@@ -185,6 +185,8 @@
     <Compile Include="AlliancePlugin.cs" />
     <Compile Include="Alliances\AllianceChat.cs" />
     <Compile Include="Alliances\AllianceCommands.cs" />
+    <Compile Include="Alliances\AssemblerCommands.cs" />
+    <Compile Include="Alliances\AssemblerUpgrade.cs" />
     <Compile Include="Alliances\BankData.cs" />
     <Compile Include="Alliances\BankLog.cs" />
     <Compile Include="Alliances\BankLogItem.cs" />
@@ -192,7 +194,7 @@
     <Compile Include="Alliances\DiscordStuff.cs" />
     <Compile Include="Alliances\Encryption.cs" />
     <Compile Include="Alliances\MyPlayerPatch.cs" />
-    <Compile Include="Alliances\MyRefineryPatch.cs" />
+    <Compile Include="Alliances\MyProductionPatch.cs" />
     <Compile Include="Alliances\PlayerData.cs" />
     <Compile Include="Alliances\RefineryCommands.cs" />
     <Compile Include="Alliances\RefineryUpgrade.cs" />

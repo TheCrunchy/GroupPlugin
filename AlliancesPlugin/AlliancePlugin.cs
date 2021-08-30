@@ -275,6 +275,25 @@ namespace AlliancesPlugin
 
                 KOTHs.Add(koth);
             }
+            sites.Clear();
+            foreach (String s in Directory.GetFiles(basePath + "//Alliances//CaptureSites//"))
+            {
+
+
+                CaptureSite koth = utils.ReadFromXmlFile<CaptureSite>(s);
+                koth.LoadCapProgress();
+                //  DateTime now = DateTime.Now;
+                //if (now.Minute == 59 || now.Minute == 60)
+                //{
+                //    koth.nextCaptureInterval = new DateTime(now.Year, now.Month, now.Day, now.Hour + 1, 0, 0, 0, DateTimeKind.Utc);
+                //}
+                //else
+                //{
+                //    koth.nextCaptureInterval = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute + 1, 0, 0, DateTimeKind.Utc);
+                //}
+
+                sites.Add(koth);
+            }
 
             return config;
         }
@@ -533,6 +552,26 @@ namespace AlliancesPlugin
                 if (!Directory.Exists(path + "//RefineryUpgrades//"))
                 {
                     Directory.CreateDirectory(path + "//RefineryUpgrades//");
+                }
+                if (!Directory.Exists(path + "//AssemblerUpgrades//"))
+                {
+                    Directory.CreateDirectory(path + "//AssemblerUpgrades//");
+                }
+                if (!File.Exists(path + "//AssemblerUpgrades//Example.xml"))
+                {
+                    AssemblerUpgrade upgrade = new AssemblerUpgrade();
+                    AssemblerUpgrade.AssemblerBuffList list = new AssemblerUpgrade.AssemblerBuffList();
+                    list.buffs.Add(new AssemblerUpgrade.AssemblerBuff());
+                    upgrade.buffedRefineries.Add(list);
+                    AssemblerUpgrade.ItemRequirement req = new AssemblerUpgrade.ItemRequirement();
+                    upgrade.items.Add(req);
+                    utils.WriteToXmlFile<AssemblerUpgrade>(path + "//AssemblerUpgrades//Example.xml", upgrade);
+                    upgrade.UpgradeId = 2;
+                    list.buffs.Add(new AssemblerUpgrade.AssemblerBuff());
+                    upgrade.buffedRefineries.Add(list);
+                    upgrade.items.Add(req);
+                    utils.WriteToXmlFile<AssemblerUpgrade>(path + "//AssemblerUpgrades//Example2.xml", upgrade);
+
                 }
                 if (!File.Exists(path + "//RefineryUpgrades//Example.xml"))
                 {
@@ -804,16 +843,33 @@ namespace AlliancesPlugin
         }
         public void LoadAllRefineryUpgrades()
         {
-            MyRefineryPatch.upgrades.Clear();
+            MyProductionPatch.upgrades.Clear();
             foreach (String s in Directory.GetFiles(path + "//RefineryUpgrades//"))
             {
                 RefineryUpgrade upgrade = utils.ReadFromXmlFile<RefineryUpgrade>(s);
                 if (upgrade.Enabled)
                 {
                     upgrade.PutBuffedInDictionary();
-                    if (!MyRefineryPatch.upgrades.ContainsKey(upgrade.UpgradeId))
+                    if (!MyProductionPatch.upgrades.ContainsKey(upgrade.UpgradeId))
                     {
-                        MyRefineryPatch.upgrades.Add(upgrade.UpgradeId, upgrade);
+                        MyProductionPatch.upgrades.Add(upgrade.UpgradeId, upgrade);
+                    }
+                    else
+                    {
+                        Log.Error("Duplicate ID for upgrades " + s);
+                    }
+                }
+            }
+            MyProductionPatch.assemblerupgrades.Clear();
+            foreach (String s in Directory.GetFiles(path + "//AssemblerUpgrades//"))
+            {
+                AssemblerUpgrade upgrade = utils.ReadFromXmlFile<AssemblerUpgrade>(s);
+                if (upgrade.Enabled)
+                {
+                    upgrade.PutBuffedInDictionary();
+                    if (!MyProductionPatch.assemblerupgrades.ContainsKey(upgrade.UpgradeId))
+                    {
+                        MyProductionPatch.assemblerupgrades.Add(upgrade.UpgradeId, upgrade);
                     }
                     else
                     {
@@ -1059,7 +1115,7 @@ namespace AlliancesPlugin
 
                     Territories.Add(ter.Id, ter);
 
-                    Log.Info(ter.Name);
+               //     Log.Info(ter.Name);
 
                     if (DateTime.Now >= ter.transferTime)
                     {
@@ -1546,6 +1602,8 @@ namespace AlliancesPlugin
                             config.Locked = false;
                         }
                     }
+                    Vector3 position = new Vector3(loc.X, loc.Y, loc.Z);
+                    BoundingSphereD sphere = new BoundingSphereD(position, loc.CaptureRadiusInMetre * 2);
                     if (unlocked)
                     {
                         if (config.ChangeCapSiteOnUnlock)
@@ -1572,11 +1630,60 @@ namespace AlliancesPlugin
                             Log.Error("Cant do discord message for koth.");
                             SendChatMessage(loc.Name, "Is now unlocked! Ownership reset to nobody.");
                         }
+
+
+                        foreach (MyCubeGrid grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
+                        {
+
+                            if (grid.Projector != null)
+                                continue;
+
+                            IMyFaction fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
+                            if (fac != null && !fac.Tag.Equals(loc.KothBuildingOwner) && fac.Tag.Length == 3)
+                            {
+                                Vector3 playerPos = new Vector3();
+                                try
+                                {
+                                    playerPos = MySession.Static.Players.TryGetPlayerBySteamId(MySession.Static.Players.TryGetSteamId(FacUtils.GetOwner(grid))).GetPosition();
+                                }
+                                catch (Exception)
+                                {
+
+
+                                }
+                                Boolean yeet = false;
+                                if (playerPos != null)
+                                {
+                                    if (Vector3.Distance(playerPos, position) > loc.CaptureRadiusInMetre * 2)
+                                    {
+                                        yeet = true;
+                                    }
+                                }
+                                else
+                                {
+                                    yeet = true;
+                                }
+                                if (yeet)
+                                {
+                                    foreach (MyBeacon beacon in grid.GetFatBlocks().OfType<MyBeacon>())
+                                    {
+                                        beacon.Enabled = false;
+                                    }
+                                    foreach (MyTimerBlock beacon in grid.GetFatBlocks().OfType<MyTimerBlock>())
+                                    {
+                                        beacon.Enabled = false;
+                                    }
+                                    foreach (MyProgrammableBlock beacon in grid.GetFatBlocks().OfType<MyProgrammableBlock>())
+                                    {
+                                        beacon.Enabled = false;
+                                    }
+                                }
+
+                            }
+                        }
                     }
 
 
-                    Vector3 position = new Vector3(loc.X, loc.Y, loc.Z);
-                    BoundingSphereD sphere = new BoundingSphereD(position, loc.CaptureRadiusInMetre * 2);
 
 
                     bool contested = false;
@@ -1700,51 +1807,95 @@ namespace AlliancesPlugin
                                                 //        Log.Info("Locking because points went over the threshold");
 
                                                 locked = true;
-                                                config.nextCaptureAvailable = DateTime.Now.AddHours(config.hoursToLockAfterCap);
+                                                //  
                                                 config.CapturingAlliance = Guid.Empty;
                                                 config.AllianceOwner = CapturingAlliance;
                                                 config.amountCaptured = 0;
                                                 config.CaptureStarted = false;
-                                                config.unlockTime = DateTime.Now.AddHours(config.hoursToLockAfterCap);
+
                                                 Alliance alliance = GetAllianceNoLoading(config.AllianceOwner);
                                                 if (config.HasTerritory)
                                                 {
-                                                    if (File.Exists(AlliancePlugin.path + "//Territories//" + config.LinkedTerritory + ".xml"))
+                                                    if (config.GetCapProgress(alliance.AllianceId) >= config.CapturesRequiredForTerritory)
                                                     {
-                                                        Territory ter = utils.ReadFromXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + config.LinkedTerritory + ".xml");
-                                                        if (ter.HasStation)
+                                                        config.nextCaptureAvailable = DateTime.Now.AddHours(config.hoursToLockAfterTerritoryCap);
+                                                        config.unlockTime = DateTime.Now.AddHours(config.hoursToLockAfterTerritoryCap);
+                                                        config.ClearCapProgress();
+                                                        try
                                                         {
-                                                            ter.previousOwner = ter.Alliance;
-                                                            ter.transferTime = DateTime.Now.AddHours(48);
-                                                            ter.transferTo = alliance.AllianceId;
+                                                            DiscordStuff.SendMessageToDiscord(GetAllianceNoLoading(CapturingAlliance).name + " has captured " + loc.Name + ". It is now locked for " + config.hoursToLockAfterTerritoryCap + " hours.", config);
                                                         }
-                                                        ter.Alliance = alliance.AllianceId;
-                                                        utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + config.LinkedTerritory + ".xml", ter);
-
-                                                        if (Territories.ContainsKey(ter.Id))
+                                                        catch (Exception)
                                                         {
-                                                            Territories[ter.Id] = ter;
+
+                                                            Log.Error("Cant do discord message for koth.");
+                                                            SendChatMessage(loc.Name, GetAllianceNoLoading(CapturingAlliance).name + " has captured " + loc.Name + ". It is now locked for " + config.hoursToLockAfterTerritoryCap + " hours.");
+                                                        }
+                                                        if (File.Exists(AlliancePlugin.path + "//Territories//" + config.LinkedTerritory + ".xml"))
+                                                        {
+                                                            Territory ter = utils.ReadFromXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + config.LinkedTerritory + ".xml");
+                                                            if (ter.HasStation)
+                                                            {
+                                                                ter.previousOwner = ter.Alliance;
+                                                                ter.transferTime = DateTime.Now.AddHours(48);
+                                                                ter.transferTo = alliance.AllianceId;
+                                                            }
+                                                            ter.Alliance = alliance.AllianceId;
+                                                            utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + config.LinkedTerritory + ".xml", ter);
+
+                                                            if (Territories.ContainsKey(ter.Id))
+                                                            {
+                                                                Territories[ter.Id] = ter;
+                                                            }
+                                                            else
+                                                            {
+                                                                Territories.Add(ter.Id, ter);
+                                                            }
+                                                            DiscordStuff.SendMessageToDiscord(ter.Name + " Waystation will be transferred to " + GetAllianceNoLoading(CapturingAlliance).name + " in 48 hours if territory is not recaptured.", config);
                                                         }
                                                         else
                                                         {
-                                                            Territories.Add(ter.Id, ter);
-                                                        }
-                                                        DiscordStuff.SendMessageToDiscord(ter.Name + " Waystation will be transferred to " + GetAllianceNoLoading(CapturingAlliance).name + " in 48 hours if territory is not recaptured.", config);
-                                                    }
-                                                    else
-                                                    {
-                                                        Territory ter = new Territory();
-                                                        ter.Name = config.LinkedTerritory;
-                                                        ter.x = loc.X;
-                                                        ter.y = loc.Y;
-                                                        ter.z = loc.Y;
-                                                        ter.Alliance = alliance.AllianceId;
+                                                            Territory ter = new Territory();
+                                                            ter.Name = config.LinkedTerritory;
+                                                            ter.x = loc.X;
+                                                            ter.y = loc.Y;
+                                                            ter.z = loc.Y;
+                                                            ter.Alliance = alliance.AllianceId;
 
-                                                        utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + config.LinkedTerritory + ".xml", ter);
-                                                        Territories.Add(ter.Id, ter);
-                                                        DiscordStuff.SendMessageToDiscord(ter.Name + " Waystation will be transferred to " + GetAllianceNoLoading(CapturingAlliance).name + " in 48 hours if territory is not recaptured.", config);
+                                                            utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + config.LinkedTerritory + ".xml", ter);
+                                                            Territories.Add(ter.Id, ter);
+                                                            DiscordStuff.SendMessageToDiscord(ter.Name + " Waystation will be transferred to " + GetAllianceNoLoading(CapturingAlliance).name + " in 48 hours if territory is not recaptured.", config);
+                                                        }
+                                                    }else
+                                                    {
+                                                        config.nextCaptureAvailable = DateTime.Now.AddHours(config.hoursToLockAfterNormalCap);
+                                                        config.unlockTime = DateTime.Now.AddHours(config.hoursToLockAfterNormalCap);
+                                                        try
+                                                        {
+                                                            DiscordStuff.SendMessageToDiscord(GetAllianceNoLoading(CapturingAlliance).name + " has captured " + loc.Name + ". It is now locked for " + config.hoursToLockAfterNormalCap + " hours. Territory will be captured in " + (config.CapturesRequiredForTerritory - config.GetCapProgress(alliance.AllianceId)) + " more captures", config);
+                                                        }
+                                                        catch (Exception)
+                                                        {
+
+                                                            Log.Error("Cant do discord message for koth.");
+                                                            SendChatMessage(loc.Name, GetAllianceNoLoading(CapturingAlliance).name + " has captured " + loc.Name + ". It is now locked for " + config.hoursToLockAfterNormalCap + " hours. Territory will be captured in " + (config.CapturesRequiredForTerritory - config.GetCapProgress(alliance.AllianceId)) + " more captures");
+                                                        }
                                                     }
-                                                   
+                                                }
+                                                else
+                                                {
+                                                    config.nextCaptureAvailable = DateTime.Now.AddHours(config.hoursToLockAfterNormalCap);
+                                                    config.unlockTime = DateTime.Now.AddHours(config.hoursToLockAfterNormalCap);
+                                                    try
+                                                    {
+                                                        DiscordStuff.SendMessageToDiscord(GetAllianceNoLoading(CapturingAlliance).name + " has captured " + loc.Name + ". It is now locked for " + config.hoursToLockAfterNormalCap + " hours.", config);
+                                                    }
+                                                    catch (Exception)
+                                                    {
+
+                                                        Log.Error("Cant do discord message for koth.");
+                                                        SendChatMessage(loc.Name, GetAllianceNoLoading(CapturingAlliance).name + " has captured " + loc.Name + ". It is now locked for " + config.hoursToLockAfterNormalCap + " hours.");
+                                                    }
                                                 }
                                                 foreach (JumpGate gate in AllGates.Values)
                                                 {
@@ -1754,16 +1905,7 @@ namespace AlliancesPlugin
                                                         gate.Save();
                                                     }
                                                 }
-                                                try
-                                                {
-                                                    DiscordStuff.SendMessageToDiscord(GetAllianceNoLoading(CapturingAlliance).name + " has captured " + loc.Name + ". It is now locked for " + config.hoursToLockAfterCap + " hours.", config);
-                                                }
-                                                catch (Exception)
-                                                {
 
-                                                    Log.Error("Cant do discord message for koth.");
-                                                    SendChatMessage(loc.Name, GetAllianceNoLoading(CapturingAlliance).name + " has captured " + loc.Name + ". It is now locked for " + config.hoursToLockAfterCap + " hours.");
-                                                }
                                             }
                                             else
                                             {
@@ -1939,7 +2081,7 @@ namespace AlliancesPlugin
                                     {
                                         if (lootgrid != null)
                                         {
-                                          
+
                                             SpawnCores(lootgrid, loot, alliance);
                                             SendChatMessage(loc.Name, "Spawning loot!");
 
@@ -1981,7 +2123,7 @@ namespace AlliancesPlugin
             }
         }
 
-        public List<CaptureSite> sites = new List<CaptureSite>();
+        public static List<CaptureSite> sites = new List<CaptureSite>();
         public void DoKothStuff()
         {
 
@@ -2877,6 +3019,37 @@ namespace AlliancesPlugin
                                             }
                                         }
                                     }
+                                    foreach (CaptureSite site in sites)
+                                    {
+                                        Location loc = site.GetCurrentLocation();
+                                        if (loc == null || !loc.WorldName.Equals(MyMultiplayer.Static.HostName) || !loc.Enabled)
+                                        {
+                                            continue;
+                                        }
+                                        if (Vector3.Distance(player.GetPosition(), new Vector3(loc.X, loc.Y, loc.Z)) <= loc.CaptureRadiusInMetre)
+                                        {
+                                            if (!InCapRadius.ContainsKey(player.Id.SteamId))
+                                            {
+                                                InCapRadius.Add(player.Id.SteamId, loc.Name);
+                                                NotificationMessage message2 = new NotificationMessage("You are inside the capture radius.", 10000, "Green");
+                                                //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
+                                                ModCommunication.SendMessageTo(message2, player.Id.SteamId);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            if (InCapRadius.TryGetValue(player.Id.SteamId, out string name))
+                                            {
+                                                if (loc.Name.Equals(name))
+                                                {
+                                                    InCapRadius.Remove(player.Id.SteamId);
+                                                    NotificationMessage message2 = new NotificationMessage("You are outside the capture radius.", 10000, "Red");
+                                                    //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
+                                                    ModCommunication.SendMessageTo(message2, player.Id.SteamId);
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                             catch (Exception ex)
@@ -2929,7 +3102,7 @@ namespace AlliancesPlugin
                 if (MyAPIGateway.Entities.GetEntityById(config.LootboxGridEntityId) is MyCubeGrid grid)
                     return grid;
             }
-            
+
             BoundingSphereD sphere = new BoundingSphereD(position, config.RadiusToCheck + 5000);
             foreach (MyCubeGrid grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
             {
@@ -3090,6 +3263,7 @@ namespace AlliancesPlugin
         public static CaptureSite SaveCaptureConfig(String name, CaptureSite config)
         {
             FileUtils utils = new FileUtils();
+            config.SaveCapProgress();
             utils.WriteToXmlFile<CaptureSite>(basePath + "//Alliances//CaptureSites//" + name + ".xml", config);
 
             return config;

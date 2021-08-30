@@ -54,6 +54,7 @@ namespace AlliancesPlugin.Alliances
         public int b = 237;
         public int failedUpkeep = 0;
         public int RefineryUpgradeLevel = 0;
+        public int AssemblerUpgradeLevel = 0;
         public long GetUpkeep()
         {
             float upkeep = 0;
@@ -491,6 +492,7 @@ namespace AlliancesPlugin.Alliances
             sb.AppendLine(DatabaseForBank.GetVaultString(this));
             sb.AppendLine("");
             sb.AppendLine("Refinery upgrade level : " + this.RefineryUpgradeLevel);
+            sb.AppendLine("Assembler upgrade level : " + this.AssemblerUpgradeLevel);
             sb.AppendLine("");
             sb.AppendLine("Meta Points : " + String.Format("{0:n0}", CurrentMetaPoints));
             sb.AppendLine("");

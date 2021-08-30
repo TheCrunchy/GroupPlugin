@@ -327,7 +327,7 @@ namespace AlliancesPlugin.Alliances
             using (var db = new LiteDatabase("Filename=" + AlliancePlugin.path + "//Vaults//" + alliance.AllianceId.ToString() + ".db;Connection=shared;Upgrade=True;"))
             {
 
-                var collection = db.GetCollection<VaultData>(alliance.AllianceId.ToString());
+                var collection = db.GetCollection<VaultData>("VaultData");
                 foreach (KeyValuePair<MyDefinitionId, int> key in AlliancePlugin.ItemUpkeep)
                 {
                     var vault = collection.FindById(key.Key.ToString());
@@ -405,6 +405,52 @@ namespace AlliancesPlugin.Alliances
             catch (Exception ex)
             {
                 AlliancePlugin.Log.Error("Error with adding to vault");
+                AlliancePlugin.Log.Error(ex);
+                return false;
+            }
+            return true;
+
+        }
+        public static Boolean WithdrawFromVault(Alliance alliance, MyDefinitionId id, int amount)
+        {
+            try
+            {
+                using (var db = new LiteDatabase("Filename=" + AlliancePlugin.path + "//Vaults//" + alliance.AllianceId.ToString() + ".db;Connection=shared;Upgrade=True;"))
+                {
+                    var collection = db.GetCollection<VaultData>("VaultData");
+                    var vault = collection.FindById(id.ToString());
+                    if (vault == null)
+                    {
+                        vault = new VaultData();
+
+                        vault.Id = id.ToString();
+                        vault.count = amount;
+
+                        collection.Insert(vault);
+                        return false;
+                    }
+                    else
+                    {
+                        if (vault.count >= amount)
+                        {
+                            vault.count -= amount;
+
+                            collection.Update(vault);
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+
+
+                }
+
+            }
+            catch (Exception ex)
+            {
+                AlliancePlugin.Log.Error("Error with withdrawing from vault");
                 AlliancePlugin.Log.Error(ex);
                 return false;
             }

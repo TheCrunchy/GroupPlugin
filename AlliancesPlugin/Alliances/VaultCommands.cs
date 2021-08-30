@@ -3,6 +3,7 @@ using AlliancesPlugin.Shipyard;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.Game.World;
+using Sandbox.ModAPI.Ingame;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -11,9 +12,12 @@ using System.Text;
 using System.Threading.Tasks;
 using Torch.Commands;
 using Torch.Commands.Permissions;
+using VRage;
 using VRage.Game;
 using VRage.Game.ModAPI;
+using VRage.Game.ModAPI.Ingame;
 using VRage.Groups;
+using VRage.ObjectBuilders;
 
 namespace AlliancesPlugin
 {
@@ -65,8 +69,8 @@ namespace AlliancesPlugin
 
                         if (FacUtils.IsOwnerOrFactionOwned(grid, FacUtils.GetOwner(grid), true))
                         {
-                                if (!grids.Contains(grid))
-                                    grids.Add(grid);
+                            if (!grids.Contains(grid))
+                                grids.Add(grid);
                         }
                     }
                 }
@@ -81,26 +85,80 @@ namespace AlliancesPlugin
                 if (ShipyardCommands.ConsumeComponents(invents, temp, Context.Player.SteamUserId))
                 {
 
-               
-                       if (DatabaseForBank.DepositToVault(alliance, id, amount))
+
+                    if (DatabaseForBank.DepositToVault(alliance, id, amount))
                     {
                         AllianceChat.SendChatMessage(alliance.AllianceId, "Vault", Context.Player.DisplayName + " deposited " + amount.ToString() + " " + id.ToString() + " to the vault.", true, 0L);
 
                     }
-                       else {
+                    else
+                    {
                         Context.Respond("Error adding to the database, open a ticket to get compensation. " + id.ToString() + " " + amount);
                     }
-                   
+
                 }
-                else{
+                else
+                {
                     Context.Respond("Targeted grid doesnt contain enough.");
                 }
             }
-             else
+            else
             {
                 Context.Respond("Could not find that item. Example !vault deposit Ingot Iron 50");
             }
 
+        }
+        [Command("withdraw", "withdraw from vault")]
+        [Permission(MyPromoteLevel.None)]
+        public void VaultWithdraw(string type, string subtype, int amount)
+        {
+            Alliance alliance = null;
+
+            if (MySession.Static.Factions.TryGetPlayerFaction(Context.Player.IdentityId) != null)
+            {
+                alliance = AlliancePlugin.GetAllianceNoLoading(MySession.Static.Factions.TryGetPlayerFaction(Context.Player.IdentityId) as MyFaction);
+
+
+            }
+            else
+            {
+                Context.Respond("You must be in an alliance to use alliance commands.");
+            }
+
+
+            if (alliance == null)
+            {
+                Context.Respond("You are not a member of an alliance.");
+                return;
+            }
+            if (alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.BankWithdraw))
+            {
+                if (MyDefinitionId.TryParse("MyObjectBuilder_" + type, subtype, out MyDefinitionId id))
+                {
+
+                    MyItemType itemType = new MyInventoryItemFilter("MyObjectBuilder_" + type + "/" + subtype).ItemType;
+                    if (Context.Player.Character.GetInventory() != null && Context.Player.Character.GetInventory().CanItemsBeAdded((MyFixedPoint)amount, itemType))
+                    {
+                        if (DatabaseForBank.WithdrawFromVault(alliance, id, amount))
+                        {
+                            AllianceChat.SendChatMessage(alliance.AllianceId, "Vault", Context.Player.DisplayName + " withdrew " + amount.ToString() + " " + id.ToString() + " to the vault.", true, 0L);
+                            Context.Player.Character.GetInventory().AddItems((MyFixedPoint)amount, (MyObjectBuilder_PhysicalObject)MyObjectBuilderSerializer.CreateNewObject(id));
+                        }
+                        else
+                        {
+                            Context.Respond("Error withdrawing from the database." + id.ToString() + " " + amount);
+                        }
+                    }
+                    else
+                    {
+                        Context.Respond("Player inventory cannot hold that much!");
+                    }
+                }
+            }
+            else
+            {
+                Context.Respond("You dont have permission to withdraw from the vault.");
+            }
         }
     }
 }

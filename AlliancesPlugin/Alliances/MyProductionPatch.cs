@@ -1,4 +1,5 @@
-﻿using Sandbox.Definitions;
+﻿using HarmonyLib;
+using Sandbox.Definitions;
 using Sandbox.Game.Entities.Cube;
 using Sandbox.Game.Multiplayer;
 using Sandbox.Game.World;
@@ -16,14 +17,14 @@ using VRage.ObjectBuilders;
 namespace AlliancesPlugin.Alliances
 {
     [PatchShim]
-    public static class MyRefineryPatch
+    public static class MyProductionPatch
     {
         internal static readonly MethodInfo update =
         typeof(MyRefinery).GetMethod("ChangeRequirementsToResults", BindingFlags.Instance | BindingFlags.NonPublic) ??
         throw new Exception("Failed to find patch method");
 
         internal static readonly MethodInfo patch =
-            typeof(MyRefineryPatch).GetMethod(nameof(ChangeRequirementsToResults), BindingFlags.Static | BindingFlags.Public) ??
+            typeof(MyProductionPatch).GetMethod(nameof(ChangeRequirementsToResults), BindingFlags.Static | BindingFlags.Public) ??
             throw new Exception("Failed to find patch method");
 
         public static MethodInfo RemoveQueue;
@@ -34,6 +35,39 @@ namespace AlliancesPlugin.Alliances
             ctx.GetPattern(update).Prefixes.Add(patch);
         }
         public static Dictionary<int, RefineryUpgrade> upgrades = new Dictionary<int, RefineryUpgrade>();
+        public static Dictionary<int, AssemblerUpgrade> assemblerupgrades = new Dictionary<int, AssemblerUpgrade>();
+        public static Boolean YEET = false;
+
+        [HarmonyPatch(typeof(MyAssembler))]
+        [HarmonyPatch("CalculateBlueprintProductionTime")]
+        public class AssemblerPatch
+        {
+            static void Postfix(MyBlueprintDefinitionBase currentBlueprint, ref float __result, MyAssembler __instance)
+            {
+
+                if (__instance.GetOwnerFactionTag().Length > 0)
+                {
+                    Alliance alliance = AlliancePlugin.GetAllianceNoLoading(MySession.Static.Factions.TryGetFactionByTag(__instance.GetOwnerFactionTag()));
+                    if (alliance == null)
+                    {
+                        return;
+                    }
+                    if (alliance.AssemblerUpgradeLevel == 0)
+                    {
+                        //     AlliancePlugin.Log.Info("no refinery upgrade");
+                        return;
+                    }
+                    float buff = 1f;
+                    //    AlliancePlugin.Log.Info("Buffed by " + buff.ToString());
+                    if (upgrades.TryGetValue(alliance.RefineryUpgradeLevel, out RefineryUpgrade upgrade))
+                    {
+                        //      AlliancePlugin.Log.Info(refin.BlockDefinition.Id.SubtypeName);
+                        buff -= (float)upgrade.getRefineryBuff(__instance.BlockDefinition.Id.SubtypeName);
+                        __result *= buff;
+                    }
+                }
+            }
+        }
 
         public static Boolean ChangeRequirementsToResults(
      MyBlueprintDefinitionBase queueItem,
@@ -60,24 +94,24 @@ namespace AlliancesPlugin.Alliances
                     Alliance alliance = AlliancePlugin.GetAllianceNoLoading(MySession.Static.Factions.TryGetFactionByTag(refin.GetOwnerFactionTag()));
                     if (alliance == null)
                     {
-              //          AlliancePlugin.Log.Info("no alliance");
+                        //          AlliancePlugin.Log.Info("no alliance");
                         return true;
                     }
                     if (alliance.RefineryUpgradeLevel == 0)
                     {
-                   //     AlliancePlugin.Log.Info("no refinery upgrade");
+                        //     AlliancePlugin.Log.Info("no refinery upgrade");
                         return true;
                     }
                     else
                     {
 
                         double buff = 1;
-                    //    AlliancePlugin.Log.Info("Buffed by " + buff.ToString());
+                        //    AlliancePlugin.Log.Info("Buffed by " + buff.ToString());
                         if (upgrades.TryGetValue(alliance.RefineryUpgradeLevel, out RefineryUpgrade upgrade))
                         {
-                      //      AlliancePlugin.Log.Info(refin.BlockDefinition.Id.SubtypeName);
+                            //      AlliancePlugin.Log.Info(refin.BlockDefinition.Id.SubtypeName);
                             buff += upgrade.getRefineryBuff(refin.BlockDefinition.Id.SubtypeName);
-                        //    AlliancePlugin.Log.Info(buff);
+                            //    AlliancePlugin.Log.Info(buff);
                             foreach (MyBlueprintDefinitionBase.Item prerequisite in queueItem.Prerequisites)
                             {
                                 if ((MyObjectBuilderSerializer.CreateNewObject((SerializableDefinitionId)prerequisite.Id) is MyObjectBuilder_PhysicalObject newObject))

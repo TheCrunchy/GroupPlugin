@@ -22,6 +22,59 @@ namespace AlliancesPlugin.NewCaptureSite
         public Boolean Locked = false;
         public Boolean UnlockAtTheseTimes = false;
         public List<int> HoursToUnlockAfter = new List<int>();
+        public int CapturesRequiredForTerritory = 3;
+        public List<TerritoryProgress> TerritoryCapProgress = new List<TerritoryProgress>();
+        private Dictionary<Guid, int> CapProgress = new Dictionary<Guid, int>();
+        public void SaveCapProgress()
+        {
+            TerritoryCapProgress.Clear();
+            foreach (KeyValuePair<Guid, int> pair in CapProgress)
+            {
+                TerritoryCapProgress.Add(new TerritoryProgress(pair.Key, pair.Value));
+            }
+        }
+        public void LoadCapProgress()
+        {
+            foreach (TerritoryProgress progress in TerritoryCapProgress)
+            {
+                AddCapProgress(progress.AllianceId, progress.Progress);
+            }
+        }
+        public void ClearCapProgress()
+        {
+            this.TerritoryCapProgress.Clear();
+            this.CapProgress.Clear();
+        }
+        public int GetCapProgress(Guid allianceId)
+        {
+            if (CapProgress.TryGetValue(allianceId, out int prog))
+            {
+                return prog;
+            }
+
+            return 0;
+        }
+        public void AddCapProgress(Guid allianceId, int num = 1)
+        {
+            if (CapProgress.TryGetValue(allianceId, out int prog))
+            {
+                CapProgress[allianceId] += num;
+            }
+            else
+            {
+                CapProgress.Add(allianceId, num);
+            }
+        }
+        public class TerritoryProgress
+        {
+            public TerritoryProgress(Guid allianceid, int progress)
+            {
+                AllianceId = allianceid;
+                Progress = progress;
+            }
+            public Guid AllianceId = Guid.Empty;
+            public int Progress = 0;
+        }
         public LootLocation GetLootSite()
         {
             foreach (LootLocation lot in loot)
@@ -51,7 +104,7 @@ namespace AlliancesPlugin.NewCaptureSite
             {
                 return temp[0];
             }
-          random = new Random();
+            random = new Random();
             int r = random.Next(temp.Count);
             return temp[r];
         }
@@ -65,8 +118,8 @@ namespace AlliancesPlugin.NewCaptureSite
         public long FactionOwner = 1;
         public long CapturingFaction = 1;
         public int hourCooldownAfterFail = 1;
-        public int hoursToLockAfterCap = 12;
-
+        public int hoursToLockAfterTerritoryCap = 12;
+        public int hoursToLockAfterNormalCap = 12;
         public DateTime nextCaptureAvailable = DateTime.Now;
         public Boolean doChatMessages = true;
         public Boolean doDiscordMessages = true;

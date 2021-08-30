@@ -17,8 +17,8 @@ using VRageMath;
 
 namespace AlliancesPlugin.Alliances
 {
-    [Category("refinery")]
-    public class RefineryCommands : CommandModule
+    [Category("assembler")]
+    public class AssemblerCommands : CommandModule
     {
         [Command("upgrade", "purchase next upgrades")]
         [Permission(MyPromoteLevel.None)]
@@ -36,9 +36,9 @@ namespace AlliancesPlugin.Alliances
                 Context.Respond("Not a member of an alliance, alliance is required.");
                 return;
             }
-            int num = alliance.RefineryUpgradeLevel;
+            int num = alliance.AssemblerUpgradeLevel;
             int newUpgrade = num + 1;
-            if (MyProductionPatch.upgrades.TryGetValue(newUpgrade, out RefineryUpgrade upgrade))
+            if (MyProductionPatch.assemblerupgrades.TryGetValue(newUpgrade, out AssemblerUpgrade upgrade))
             {
                 ConcurrentBag<MyGroups<MyCubeGrid, MyGridMechanicalGroupData>.Group> gridWithSubGrids = GridFinder.FindLookAtGridGroupMechanical(Context.Player.Character);
 
@@ -80,58 +80,58 @@ namespace AlliancesPlugin.Alliances
                 }
 
 
-                    if (upgrade.MetaPointsRequired > 0)
-                    {
+                if (upgrade.MetaPointsRequired > 0)
+                {
 
-                        if (alliance.CurrentMetaPoints < upgrade.MetaPointsRequired)
-                        {
-                            Context.Respond("Cannot afford the meta point cost of " + upgrade.MetaPointsRequired);
-                            return;
-                        }
-                    }
-                    if (upgrade.MoneyRequired > 0)
+                    if (alliance.CurrentMetaPoints < upgrade.MetaPointsRequired)
                     {
-
-                        if (EconUtils.getBalance(Context.Player.IdentityId) >= upgrade.MoneyRequired)
-                        {
-                            if (ShipyardCommands.ConsumeComponents(invents, upgrade.getItemsRequired(), Context.Player.SteamUserId))
-                            {
-                                alliance.CurrentMetaPoints -= upgrade.MetaPointsRequired;
-                                EconUtils.takeMoney(Context.Player.IdentityId, upgrade.MoneyRequired);
-                            alliance.RefineryUpgradeLevel = newUpgrade;
-                                AlliancePlugin.SaveAllianceData(alliance);
-                                ShipyardCommands.SendMessage("[Alliance Refineries]", "Upgrading refinery. Items taken.", Color.LightBlue, (long)Context.Player.SteamUserId);
-                            }
-                        }
-                        else
-                        {
-                            ShipyardCommands.SendMessage("[Alliance Refineries]", "You cant afford the upgrade price of: " + String.Format("{0:n0}", upgrade.MoneyRequired), Color.Red, (long)Context.Player.SteamUserId);
-                        }
+                        Context.Respond("Cannot afford the meta point cost of " + upgrade.MetaPointsRequired);
+                        return;
                     }
-                    else
+                }
+                if (upgrade.MoneyRequired > 0)
+                {
+
+                    if (EconUtils.getBalance(Context.Player.IdentityId) >= upgrade.MoneyRequired)
                     {
                         if (ShipyardCommands.ConsumeComponents(invents, upgrade.getItemsRequired(), Context.Player.SteamUserId))
                         {
                             alliance.CurrentMetaPoints -= upgrade.MetaPointsRequired;
-                        alliance.RefineryUpgradeLevel = newUpgrade;
-                        ShipyardCommands.SendMessage("[Alliance Refineries]", "Upgrading refinery. Items taken.", Color.LightBlue, (long)Context.Player.SteamUserId);
-                        AlliancePlugin.SaveAllianceData(alliance);
+                            EconUtils.takeMoney(Context.Player.IdentityId, upgrade.MoneyRequired);
+                            alliance.AssemblerUpgradeLevel = newUpgrade;
+                            AlliancePlugin.SaveAllianceData(alliance);
+                            ShipyardCommands.SendMessage("[Alliance Assemblers]", "Upgrading Assembler. Items taken.", Color.LightBlue, (long)Context.Player.SteamUserId);
                         }
                     }
-                
+                    else
+                    {
+                        ShipyardCommands.SendMessage("[Alliance Refineries]", "You cant afford the upgrade price of: " + String.Format("{0:n0}", upgrade.MoneyRequired), Color.Red, (long)Context.Player.SteamUserId);
+                    }
+                }
+                else
+                {
+                    if (ShipyardCommands.ConsumeComponents(invents, upgrade.getItemsRequired(), Context.Player.SteamUserId))
+                    {
+                        alliance.CurrentMetaPoints -= upgrade.MetaPointsRequired;
+                        alliance.AssemblerUpgradeLevel = newUpgrade;
+                        ShipyardCommands.SendMessage("[Alliance Assemblers]", "Upgrading Assembler. Items taken.", Color.LightBlue, (long)Context.Player.SteamUserId);
+                        AlliancePlugin.SaveAllianceData(alliance);
+                    }
+                }
+
             }
             else
             {
                 Context.Respond("No more upgrades available.");
             }
-            
+
         }
         [Command("view", "view the upgrades")]
         [Permission(MyPromoteLevel.None)]
         public void ViewUpgrades()
         {
             StringBuilder sb = new StringBuilder();
-            foreach (RefineryUpgrade upgrade in MyProductionPatch.upgrades.Values)
+            foreach (AssemblerUpgrade upgrade in MyProductionPatch.assemblerupgrades.Values)
             {
                 sb.AppendLine("Upgrade number " + upgrade.UpgradeId);
                 if (upgrade.MoneyRequired > 0)
@@ -142,21 +142,21 @@ namespace AlliancesPlugin.Alliances
                 {
                     sb.AppendLine("Costs " + String.Format("{0:n0}", upgrade.MetaPointsRequired) + " Meta Points.");
                 }
-                foreach (RefineryUpgrade.ItemRequirement item in upgrade.items)
+                foreach (AssemblerUpgrade.ItemRequirement item in upgrade.items)
                 {
                     if (item.Enabled)
                     {
                         sb.AppendLine("Costs " + item.RequiredAmount + " " + item.TypeId + " " + item.SubTypeId);
                     }
                 }
-                foreach (RefineryUpgrade.RefineryBuffList buffed in upgrade.buffedRefineries)
+                foreach (AssemblerUpgrade.AssemblerBuffList buffed in upgrade.buffedRefineries)
                 {
-                    
-                    foreach (RefineryUpgrade.RefineryBuff b in buffed.buffs)
+
+                    foreach (AssemblerUpgrade.AssemblerBuff b in buffed.buffs)
                     {
                         if (b.Enabled)
                         {
-                            sb.AppendLine("Buffs yield of " + b.SubtypeId + " by " + buffed.UpgradeAddsYield * 100 + "%");
+                            sb.AppendLine("Buffs speed by " + b.SubtypeId + " by " + buffed.UpgradeGivesSpeedBuuf * 100 + "%");
                         }
                     }
                 }
