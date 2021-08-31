@@ -59,10 +59,10 @@ namespace AlliancesPlugin.Alliances
                     }
                     float buff = 1f;
                     //    AlliancePlugin.Log.Info("Buffed by " + buff.ToString());
-                    if (upgrades.TryGetValue(alliance.RefineryUpgradeLevel, out RefineryUpgrade upgrade))
+                    if (assemblerupgrades.TryGetValue(alliance.AssemblerUpgradeLevel, out AssemblerUpgrade upgrade))
                     {
                         //      AlliancePlugin.Log.Info(refin.BlockDefinition.Id.SubtypeName);
-                        buff -= (float)upgrade.getRefineryBuff(__instance.BlockDefinition.Id.SubtypeName);
+                        buff -= (float)upgrade.getAssemblerBuff(__instance.BlockDefinition.Id.SubtypeName);
                         __result *= buff;
                     }
                 }

@@ -14,6 +14,7 @@ using AlliancesPlugin.JumpGates;
 using VRage.Game;
 using System.Numerics;
 using VRageMath;
+using AlliancesPlugin.KOTH;
 
 namespace AlliancesPlugin.Alliances
 {
@@ -57,7 +58,21 @@ namespace AlliancesPlugin.Alliances
         public int AssemblerUpgradeLevel = 0;
         public long GetUpkeep()
         {
+
             float upkeep = 0;
+            int terCount = 0;
+            foreach (Territory ter in AlliancePlugin.Territories.Values)
+            {
+                if (ter.Alliance.Equals(this.AllianceId))
+                {
+                    terCount++;
+                    if (terCount > 1)
+                    {
+                        upkeep += ter.AddToUpkeepIfStationAboveLimit * terCount - 1;
+                    }
+                }
+            }
+    
             upkeep += AlliancePlugin.config.BaseUpkeepFee;
             foreach (long id in AllianceMembers)
             {

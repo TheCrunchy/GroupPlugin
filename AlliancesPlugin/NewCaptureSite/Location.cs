@@ -17,6 +17,7 @@ namespace AlliancesPlugin.NewCaptureSite
         public double Z = 1;
         public int CaptureRadiusInMetre = 200;
         public Boolean RequireCaptureBlockForLootGen = true;
+        public int CaptureBlockRange = 40000;
         public string captureBlockType = "Beacon";
         public string captureBlockSubtype = "LargeBlockBeacon";
         public string Name = "Example Location 1";

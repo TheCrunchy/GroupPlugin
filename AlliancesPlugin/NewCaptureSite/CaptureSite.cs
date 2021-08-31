@@ -18,10 +18,9 @@ namespace AlliancesPlugin.NewCaptureSite
         public int LockAgainAfterThisManyHours = 2;
         public Boolean CaptureStarted = false;
         public Boolean HasTerritory = false;
-
         public Boolean Locked = false;
-        public Boolean UnlockAtTheseTimes = false;
-        public List<int> HoursToUnlockAfter = new List<int>();
+    //    public Boolean UnlockAtTheseTimes = false;
+   //     public List<int> HoursToUnlockAfter = new List<int>();
         public int CapturesRequiredForTerritory = 3;
         public List<TerritoryProgress> TerritoryCapProgress = new List<TerritoryProgress>();
         private Dictionary<Guid, int> CapProgress = new Dictionary<Guid, int>();
@@ -30,7 +29,9 @@ namespace AlliancesPlugin.NewCaptureSite
             TerritoryCapProgress.Clear();
             foreach (KeyValuePair<Guid, int> pair in CapProgress)
             {
-                TerritoryCapProgress.Add(new TerritoryProgress(pair.Key, pair.Value));
+                TerritoryProgress prog = new TerritoryProgress();
+                prog.setTerritoryProgress(pair.Key, pair.Value);
+                TerritoryCapProgress.Add(prog);
             }
         }
         public void LoadCapProgress()
@@ -67,7 +68,7 @@ namespace AlliancesPlugin.NewCaptureSite
         }
         public class TerritoryProgress
         {
-            public TerritoryProgress(Guid allianceid, int progress)
+            public void setTerritoryProgress(Guid allianceid, int progress)
             {
                 AllianceId = allianceid;
                 Progress = progress;
@@ -75,12 +76,18 @@ namespace AlliancesPlugin.NewCaptureSite
             public Guid AllianceId = Guid.Empty;
             public int Progress = 0;
         }
+        private LootLocation currentLoot = null;
         public LootLocation GetLootSite()
         {
+            if (currentLoot != null)
+            {
+                return currentLoot;
+            }
             foreach (LootLocation lot in loot)
             {
                 if (lot.Num == GetCurrentLocation().LinkedLootLocation)
                 {
+                    currentLoot = lot;
                     return lot;
                 }
             }
@@ -127,9 +134,19 @@ namespace AlliancesPlugin.NewCaptureSite
         public DateTime nextCaptureInterval = DateTime.Now;
 
         public DateTime unlockTime = DateTime.Now;
-
+        public void setLootSite(LootLocation loc)
+        {
+           
+        }
         public Location GetCurrentLocation()
         {
+            foreach (Location loc in locations)
+            {
+                if (loc.Num == this.CurrentSite)
+                {
+                    return loc;
+                }
+            }
             return null;
         }
         public List<Location> locations = new List<Location>();
