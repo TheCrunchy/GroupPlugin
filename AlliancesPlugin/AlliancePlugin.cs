@@ -285,7 +285,7 @@ namespace AlliancesPlugin
             return config;
         }
 
-        public void LoadAllCaptureSites()
+        public static void LoadAllCaptureSites()
         {
             sites.Clear();
 
@@ -1589,6 +1589,7 @@ namespace AlliancesPlugin
         }
         public static bool yeeted = false;
 
+        public static bool Paused = false;
         public void DoCaptureSiteStuff()
         {
             if (TorchState != TorchSessionState.Loaded)
@@ -1599,7 +1600,10 @@ namespace AlliancesPlugin
             {
                 return;
             }
-
+            if (Paused)
+            {
+                return;
+            }
             foreach (CaptureSite config in sites)
             {
 
@@ -1630,6 +1634,7 @@ namespace AlliancesPlugin
                     {
                         unlocked = true;
                         config.unlockTime = DateTime.Now.AddYears(1);
+                        config.AllianceOwner = Guid.Empty;
                         config.Locked = false;
                     }
                     //  }
@@ -2074,8 +2079,9 @@ namespace AlliancesPlugin
                             {
                                 config.nextCaptureInterval = DateTime.Now.AddSeconds(config.SecondsBetweenCaptureCheck);
                             }
+                            SaveCaptureConfig(config.Name, config);
                         }
-                        SaveCaptureConfig(config.Name, config);
+                       
                     }
                     LootLocation loot = config.GetLootSite();
                     if (loot == null)
@@ -3315,7 +3321,7 @@ namespace AlliancesPlugin
                 {
                     if (block is Sandbox.ModAPI.IMyBeacon beacon)
                     {
-                        Log.Info(beacon.Radius);
+                       // Log.Info(beacon.Radius);
 
                         if (beacon.IsFunctional && beacon.IsWorking)
                         {

@@ -1,4 +1,5 @@
 ﻿using AlliancesPlugin.Alliances;
+using AlliancesPlugin.NewCaptureSite;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,7 +19,22 @@ namespace AlliancesPlugin.KOTH
         public void UnlockKoth()
         {
             AlliancePlugin.LoadConfig();
+            AlliancePlugin.LoadAllCaptureSites();
             Context.Respond("Reloaded");
+        }
+        [Command("pause", "pause koth")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void PauseKoth()
+        {
+            AlliancePlugin.Paused = true;
+            Context.Respond("Paused");
+        }
+        [Command("start", "start koth")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void StartKoth()
+        {
+            AlliancePlugin.Paused = false;
+            Context.Respond("Starting");
         }
         [Command("toggle", "enable or disable a koth")]
         [Permission(MyPromoteLevel.Admin)]
@@ -56,6 +72,29 @@ namespace AlliancesPlugin.KOTH
                         koth.capturingNation = Guid.Empty;
                     }
                     Context.Respond("Unlocked the koth");
+                }
+
+            }
+            foreach (CaptureSite site in AlliancePlugin.sites)
+            {
+                if (site.Name.Equals(name))
+                {
+                    site.nextCaptureAvailable = DateTime.Now;
+                    site.nextCaptureInterval = DateTime.Now;
+                    site.CaptureStarted = true;
+                    site.nextCaptureAvailable = DateTime.Now.AddSeconds(1);
+                    // koth.owner = Guid.Empty;
+                    if (!allianceName.Equals(""))
+                    {
+                        Alliance alliance = AlliancePlugin.GetAllianceNoLoading(allianceName);
+                        site.CapturingAlliance = alliance.AllianceId;
+                    }
+                    else
+                    {
+                        site.CapturingAlliance = Guid.Empty;
+                    }
+                    AlliancePlugin.SaveCaptureConfig(site.Name, site);
+                    Context.Respond("Unlocked the site");
                 }
 
             }
