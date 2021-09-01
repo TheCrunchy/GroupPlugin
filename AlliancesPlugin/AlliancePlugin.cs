@@ -147,6 +147,11 @@ namespace AlliancesPlugin
             basePath = StoragePath;
             SetupConfig();
             path = CreatePath();
+            if (!Directory.Exists(path + "//CaptureSites//"))
+            {
+                Directory.CreateDirectory(path + "//CaptureSites//");
+
+            }
             if (!Directory.Exists(path + "//JumpGates//"))
             {
                 Directory.CreateDirectory(path + "//JumpGates//");
@@ -275,34 +280,6 @@ namespace AlliancesPlugin
 
                 KOTHs.Add(koth);
             }
-            sites.Clear();
-
-            foreach (String s in Directory.GetFiles(basePath + "//Alliances//CaptureSites//"))
-            {
-
-                try
-                {
-                    CaptureSite koth = utils.ReadFromXmlFile<CaptureSite>(s);
-                    koth.LoadCapProgress();
-                    //  DateTime now = DateTime.Now;
-                    //if (now.Minute == 59 || now.Minute == 60)
-                    //{
-                    //    koth.nextCaptureInterval = new DateTime(now.Year, now.Month, now.Day, now.Hour + 1, 0, 0, 0, DateTimeKind.Utc);
-                    //}
-                    //else
-                    //{
-                    //    koth.nextCaptureInterval = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute + 1, 0, 0, DateTimeKind.Utc);
-                    //}
-
-                    sites.Add(koth);
-                }
-                catch (Exception ex)
-                {
-
-                    Log.Error("Delete this file and generate a new one " + s);
-                }
-
-            }
 
 
             return config;
@@ -312,7 +289,7 @@ namespace AlliancesPlugin
         {
             sites.Clear();
 
-            foreach (String s in Directory.GetFiles(basePath + "//Alliances//CaptureSites//"))
+            foreach (String s in Directory.GetFiles(path + "//CaptureSites//"))
             {
 
                 try
@@ -551,11 +528,7 @@ namespace AlliancesPlugin
                     Directory.CreateDirectory(basePath + "//Alliances//");
                 }
 
-                if (!Directory.Exists(path + "//CaptureSites//"))
-                {
-                    Directory.CreateDirectory(path + "//CaptureSites//");
-
-                }
+           
                 if (!File.Exists(path + "//CaptureSites//Example.xml"))
                 {
                     CaptureSite site = new CaptureSite();
@@ -3389,7 +3362,7 @@ namespace AlliancesPlugin
         {
             FileUtils utils = new FileUtils();
             config.SaveCapProgress();
-            utils.WriteToXmlFile<CaptureSite>(basePath + "//Alliances//CaptureSites//" + name + ".xml", config);
+            utils.WriteToXmlFile<CaptureSite>(path + "//CaptureSites//" + name + ".xml", config);
 
             return config;
         }
