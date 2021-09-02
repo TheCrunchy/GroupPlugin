@@ -82,9 +82,10 @@ namespace AlliancesPlugin.KOTH
                 {
                     site.nextCaptureAvailable = DateTime.Now;
                     site.nextCaptureInterval = DateTime.Now;
-                    site.CaptureStarted = true;
+                    site.CaptureStarted = false;
                     site.nextCaptureAvailable = DateTime.Now.AddSeconds(1);
                     site.CapturingAlliance = Guid.Empty;
+                    site.CapturingFaction = 0;
                     // koth.owner = Guid.Empty;
                     if (!allianceName.Equals(""))
                     {

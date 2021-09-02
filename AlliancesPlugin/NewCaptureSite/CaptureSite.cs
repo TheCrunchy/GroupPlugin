@@ -19,9 +19,10 @@ namespace AlliancesPlugin.NewCaptureSite
         public Boolean CaptureStarted = false;
         public Boolean HasTerritory = false;
         public Boolean Locked = false;
-
-    //    public Boolean UnlockAtTheseTimes = false;
-   //     public List<int> HoursToUnlockAfter = new List<int>();
+        public Boolean OnlyDoLootOnceAfterCap = false;
+        public int SecondsForOneLootSpawnAfterCap = 600;
+        //    public Boolean UnlockAtTheseTimes = false;
+        //     public List<int> HoursToUnlockAfter = new List<int>();
         public int CapturesRequiredForTerritory = 3;
         public List<TerritoryProgress> TerritoryCapProgress = new List<TerritoryProgress>();
         private Dictionary<Guid, int> CapProgress = new Dictionary<Guid, int>();
@@ -124,14 +125,14 @@ namespace AlliancesPlugin.NewCaptureSite
         public Guid AllianceOwner = Guid.Empty;
         public Guid CapturingAlliance = Guid.Empty;
         public long FactionOwner = 1;
-        public long CapturingFaction = 1;
+        public long CapturingFaction = 0;
         public int hourCooldownAfterFail = 1;
         public int hoursToLockAfterTerritoryCap = 12;
         public int hoursToLockAfterNormalCap = 12;
         public DateTime nextCaptureAvailable = DateTime.Now;
         public Boolean doChatMessages = true;
         public Boolean doDiscordMessages = true;
-
+   
         public DateTime nextCaptureInterval = DateTime.Now;
 
         public DateTime unlockTime = DateTime.Now;
