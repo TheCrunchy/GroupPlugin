@@ -61,6 +61,7 @@ namespace AlliancesPlugin.KOTH
                     koth.nextCaptureInterval = DateTime.Now;
                   koth.CaptureStarted = true;
                     koth.nextCaptureAvailable = DateTime.Now.AddSeconds(1);
+                    koth.capturingNation = Guid.Empty;
                    // koth.owner = Guid.Empty;
                     if (!allianceName.Equals(""))
                     {
@@ -83,6 +84,7 @@ namespace AlliancesPlugin.KOTH
                     site.nextCaptureInterval = DateTime.Now;
                     site.CaptureStarted = true;
                     site.nextCaptureAvailable = DateTime.Now.AddSeconds(1);
+                    site.CapturingAlliance = Guid.Empty;
                     // koth.owner = Guid.Empty;
                     if (!allianceName.Equals(""))
                     {

@@ -19,6 +19,7 @@ namespace AlliancesPlugin.NewCaptureSite
         public Boolean CaptureStarted = false;
         public Boolean HasTerritory = false;
         public Boolean Locked = false;
+
     //    public Boolean UnlockAtTheseTimes = false;
    //     public List<int> HoursToUnlockAfter = new List<int>();
         public int CapturesRequiredForTerritory = 3;
