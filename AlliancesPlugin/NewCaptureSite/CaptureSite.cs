@@ -8,6 +8,7 @@ namespace AlliancesPlugin.NewCaptureSite
 {
     public class CaptureSite
     {
+     
         public Boolean LockOnFail = true;
         public string Name = "Default, change this";
         public byte FDiscordR = 255;

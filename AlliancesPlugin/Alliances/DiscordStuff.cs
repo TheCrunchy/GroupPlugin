@@ -214,7 +214,7 @@ namespace AlliancesPlugin.Alliances
                 ShipyardCommands.SendMessage(config.KothName, message, Color.LightGreen, 0L);
             }
         }
-        public static void SendMessageToDiscord(string message, NewCaptureSite.CaptureSite config, Boolean Embed = true)
+        public static void SendMessageToDiscord(string name,string message, NewCaptureSite.CaptureSite config, Boolean Embed = true)
         {
             if (Ready && AlliancePlugin.config.DiscordChannelId > 0 && config.doDiscordMessages)
             {
@@ -236,9 +236,10 @@ namespace AlliancesPlugin.Alliances
                 {
                     var embed = new DiscordEmbedBuilder
                     {
-                        Title = config.Name,
+                        Title = name,
                         Description = message,
                         Color = new DiscordColor(config.FDiscordR, config.FDiscordG, config.FDiscordB)
+                        
 
                     };
                     botId = Discord.SendMessageAsync(chann, null, false, embed).Result.Author.Id;

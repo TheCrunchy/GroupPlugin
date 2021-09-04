@@ -8,6 +8,7 @@ namespace AlliancesPlugin.NewCaptureSite
 {
     public class LootLocation
     {
+        public Boolean DepositLootToVault = true;
         public int Num = 1;
         public string WorldName = "SENDS17";
         public double X = 1;
