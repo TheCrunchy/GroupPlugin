@@ -1636,6 +1636,8 @@ namespace AlliancesPlugin
                         config.unlockTime = DateTime.Now.AddYears(1);
                         config.AllianceOwner = Guid.Empty;
                         config.Locked = false;
+
+                        config.FactionOwner = 0;
                     }
                     //  }
                     if (DateTime.Now >= config.nextCaptureInterval)
@@ -1674,12 +1676,12 @@ namespace AlliancesPlugin
                                     MyGps gps = new MyGps();
                                     gps.Coords = new Vector3D(loc.X, loc.Y, loc.Z);
                                     gps.Name = loc.Name;
-                                    DiscordStuff.SendMessageToDiscord(loc.Name + " Is now unlocked! Ownership reset to nobody. Find it here " + gps.ToString(), config);
+                                    DiscordStuff.SendMessageToDiscord(loc.Name + " Is now unlocked! Ownership reset to nobody. Find it here " + gps.ToString(), config, true);
 
                                 }
-                                catch (Exception)
+                                catch (Exception e)
                                 {
-                                    Log.Error("Cant do discord message for koth.");
+                                    Log.Error("Cant do discord message for koth. " + e.ToString());
                                     SendChatMessage(loc.Name, "Is now unlocked! Ownership reset to nobody.");
                                 }
 
@@ -1819,11 +1821,11 @@ namespace AlliancesPlugin
 
                                             try
                                             {
-                                                DiscordStuff.SendMessageToDiscord(loc.Name + " Capture can begin in " + config.MinutesBeforeCaptureStarts + " minutes. By " + GetAllianceNoLoading(CapturingAlliance).name, config);
+                                                DiscordStuff.SendMessageToDiscord(loc.Name + " Capture can begin in " + config.MinutesBeforeCaptureStarts + " minutes. By " + GetAllianceNoLoading(CapturingAlliance).name, config, true);
                                             }
-                                            catch (Exception)
+                                            catch (Exception e)
                                             {
-                                                Log.Error("Cant do discord message for koth.");
+                                                Log.Error("Cant do discord message for koth. " + e.ToString());
                                                 SendChatMessage(loc.Name, "Capture can begin in " + config.MinutesBeforeCaptureStarts + " minutes. By " + GetAllianceNoLoading(CapturingAlliance).name);
                                             }
                                         }
@@ -1845,20 +1847,39 @@ namespace AlliancesPlugin
                                                 {
                                                     // Log.Info("Locking because no active cap block");
 
-                                                    config.CapturingAlliance = Guid.Empty;
-                                                    config.nextCaptureAvailable = DateTime.Now.AddHours(config.hourCooldownAfterFail);
-                                                    //broadcast that its locked
-                                                    config.amountCaptured = 0;
-                                                    config.CaptureStarted = false;
-                                                    config.unlockTime = DateTime.Now.AddHours(config.hourCooldownAfterFail);
-                                                    try
+                                                    if (config.LockOnFail)
                                                     {
-                                                        DiscordStuff.SendMessageToDiscord(loc.Name + " Locked, Capture blocks are missing or destroyed. Locked for " + config.hourCooldownAfterFail + " hours", config);
+                                                        config.CapturingAlliance = Guid.Empty;
+                                                        config.nextCaptureAvailable = DateTime.Now.AddHours(config.hourCooldownAfterFail);
+                                                        //broadcast that its locked
+                                                        config.amountCaptured = 0;
+                                                        config.CaptureStarted = false;
+                                                        config.unlockTime = DateTime.Now.AddHours(config.hourCooldownAfterFail);
+                                                        try
+                                                        {
+                                                            DiscordStuff.SendMessageToDiscord(loc.Name + " Locked, Capture blocks are missing or destroyed. Locked for " + config.hourCooldownAfterFail + " hours", config);
+                                                        }
+                                                        catch (Exception e)
+                                                        {
+                                                            Log.Error("Cant do discord message for koth. " + e.ToString());
+                                                            SendChatMessage(loc.Name, "Locked, Capture blocks are missing or destroyed. Locked for " + config.hourCooldownAfterFail + " hours");
+                                                        }
                                                     }
-                                                    catch (Exception)
+                                                    else
                                                     {
-                                                        Log.Error("Cant do discord message for koth.");
-                                                        SendChatMessage(loc.Name, "Locked, Capture blocks are missing or destroyed. Locked for " + config.hourCooldownAfterFail + " hours");
+                                                        try
+                                                        {
+                                                            DiscordStuff.SendMessageToDiscord(loc.Name + " Capture blocks are missing or destroyed. Resetting site capture.", config);
+                                                        }
+                                                        catch (Exception e)
+                                                        {
+                                                            Log.Error("Cant do discord message for koth. " + e.ToString());
+                                                            SendChatMessage(loc.Name, "Capture blocks are missing or destroyed. Resetting site capture.");
+                                                        }
+                                                        config.nextCaptureInterval = DateTime.Now.AddSeconds(config.SecondsBetweenCaptureCheck);
+                                                        config.CapturingAlliance = Guid.Empty;
+                                                        config.amountCaptured = config.amountCaptured / 2;
+                                                        config.CaptureStarted = false;
                                                     }
                                                 }
                                                 else
@@ -1890,12 +1911,12 @@ namespace AlliancesPlugin
                                                                 config.ClearCapProgress();
                                                                 try
                                                                 {
-                                                                    DiscordStuff.SendMessageToDiscord(GetAllianceNoLoading(CapturingAlliance).name + " has captured " + loc.Name + ". It is now locked for " + config.hoursToLockAfterTerritoryCap + " hours.", config);
+                                                                    DiscordStuff.SendMessageToDiscord(GetAllianceNoLoading(CapturingAlliance).name + " has captured " + loc.Name + ". It is now locked for " + config.hoursToLockAfterTerritoryCap + " hours.", config, true);
                                                                 }
-                                                                catch (Exception)
+                                                                catch (Exception e)
                                                                 {
 
-                                                                    Log.Error("Cant do discord message for koth.");
+                                                                    Log.Error("Cant do discord message for koth. " + e.ToString());
                                                                     SendChatMessage(loc.Name, GetAllianceNoLoading(CapturingAlliance).name + " has captured " + loc.Name + ". It is now locked for " + config.hoursToLockAfterTerritoryCap + " hours.");
                                                                 }
                                                                 if (File.Exists(AlliancePlugin.path + "//Territories//" + config.LinkedTerritory + ".xml"))
@@ -1918,7 +1939,7 @@ namespace AlliancesPlugin
                                                                     {
                                                                         Territories.Add(ter.Id, ter);
                                                                     }
-                                                                    DiscordStuff.SendMessageToDiscord(ter.Name + " Waystation will be transferred to " + GetAllianceNoLoading(CapturingAlliance).name + " in 48 hours if territory is not recaptured.", config);
+                                                                    DiscordStuff.SendMessageToDiscord(ter.Name + " Waystation will be transferred to " + GetAllianceNoLoading(CapturingAlliance).name + " in 48 hours if territory is not recaptured.", config, true);
                                                                 }
                                                                 else
                                                                 {
@@ -1931,7 +1952,7 @@ namespace AlliancesPlugin
 
                                                                     utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + config.LinkedTerritory + ".xml", ter);
                                                                     Territories.Add(ter.Id, ter);
-                                                                    DiscordStuff.SendMessageToDiscord(ter.Name + " Waystation will be transferred to " + GetAllianceNoLoading(CapturingAlliance).name + " in 48 hours if territory is not recaptured.", config);
+                                                                    DiscordStuff.SendMessageToDiscord(ter.Name + " Waystation will be transferred to " + GetAllianceNoLoading(CapturingAlliance).name + " in 48 hours if territory is not recaptured.", config, true);
                                                                 }
                                                             }
                                                             else
@@ -1940,12 +1961,12 @@ namespace AlliancesPlugin
                                                                 config.unlockTime = DateTime.Now.AddHours(config.hoursToLockAfterNormalCap);
                                                                 try
                                                                 {
-                                                                    DiscordStuff.SendMessageToDiscord(GetAllianceNoLoading(CapturingAlliance).name + " has captured " + loc.Name + ". It is now locked for " + config.hoursToLockAfterNormalCap + " hours. Territory will be captured in " + (config.CapturesRequiredForTerritory - config.GetCapProgress(alliance.AllianceId)) + " more captures", config);
+                                                                    DiscordStuff.SendMessageToDiscord(GetAllianceNoLoading(CapturingAlliance).name + " has captured " + loc.Name + ". It is now locked for " + config.hoursToLockAfterNormalCap + " hours. Territory will be captured in " + (config.CapturesRequiredForTerritory - config.GetCapProgress(alliance.AllianceId)) + " more captures", config, true);
                                                                 }
-                                                                catch (Exception)
+                                                                catch (Exception e)
                                                                 {
 
-                                                                    Log.Error("Cant do discord message for koth.");
+                                                                    Log.Error("Cant do discord message for koth. " + e.ToString()); 
                                                                     SendChatMessage(loc.Name, GetAllianceNoLoading(CapturingAlliance).name + " has captured " + loc.Name + ". It is now locked for " + config.hoursToLockAfterNormalCap + " hours. Territory will be captured in " + (config.CapturesRequiredForTerritory - config.GetCapProgress(alliance.AllianceId)) + " more captures");
                                                                 }
                                                             }
@@ -1956,7 +1977,7 @@ namespace AlliancesPlugin
                                                             config.unlockTime = DateTime.Now.AddHours(config.hoursToLockAfterNormalCap);
                                                             try
                                                             {
-                                                                DiscordStuff.SendMessageToDiscord(GetAllianceNoLoading(CapturingAlliance).name + " has captured " + loc.Name + ". It is now locked for " + config.hoursToLockAfterNormalCap + " hours.", config);
+                                                                DiscordStuff.SendMessageToDiscord(GetAllianceNoLoading(CapturingAlliance).name + " has captured " + loc.Name + ". It is now locked for " + config.hoursToLockAfterNormalCap + " hours.", config, true);
                                                             }
                                                             catch (Exception)
                                                             {
@@ -1971,9 +1992,14 @@ namespace AlliancesPlugin
                                                             LootLocation l = config.GetLootSite();
                                                             if (l != null)
                                                             {
+                                                                DiscordStuff.SendMessageToDiscord(GetAllianceNoLoading(CapturingAlliance).name + " has captured " + loc.Name + ". It is now locked for " + config.hoursToLockAfterNormalCap + " hours. Loot will spawn in " + config.SecondsForOneLootSpawnAfterCap + " seconds.", config);
                                                                 l.nextCoreSpawn = DateTime.Now.AddSeconds(config.SecondsForOneLootSpawnAfterCap);
                                                                 SendChatMessage(loc.Name,"Loot will spawn in " + config.SecondsForOneLootSpawnAfterCap + " seconds.");
                                                             }
+                                                        }
+                                                        else
+                                                        {
+                                                            DiscordStuff.SendMessageToDiscord(GetAllianceNoLoading(CapturingAlliance).name + " has captured " + loc.Name + ". It is now locked for " + config.hoursToLockAfterNormalCap + " hours.", config);
                                                         }
                                                         foreach (JumpGate gate in AllGates.Values)
                                                         {
@@ -1993,12 +2019,12 @@ namespace AlliancesPlugin
 
                                                         try
                                                         {
-                                                            DiscordStuff.SendMessageToDiscord(loc.Name + " capture progress " + config.amountCaptured + " out of " + config.PointsToCap + " by " + GetAlliance(CapturingAlliance).name, config);
+                                                            DiscordStuff.SendMessageToDiscord(loc.Name + " " + config.amountCaptured + " out of " + config.PointsToCap + " by " + GetAlliance(CapturingAlliance).name, config);
                                                         }
-                                                        catch (Exception)
+                                                        catch (Exception e)
                                                         {
-                                                            Log.Error("Cant do discord message for koth.");
-                                                            SendChatMessage(loc.Name, "capture progress " + config.amountCaptured + " out of " + config.PointsToCap + " by " + GetAlliance(CapturingAlliance).name);
+                                                            Log.Error("Cant do discord message for koth. " + e.ToString());
+                                                            SendChatMessage(loc.Name,  config.amountCaptured + " out of " + config.PointsToCap + " by " + GetAlliance(CapturingAlliance).name);
                                                         }
                                                         SaveCaptureConfig(config.Name, config);
                                                         continue;
@@ -2009,23 +2035,43 @@ namespace AlliancesPlugin
                                             }
                                             else
                                             {
-                                                //  Log.Info("Locking because the capturing nation changed");
-                                                config.CapturingAlliance = Guid.Empty;
-                                                config.CaptureStarted = false;
-                                                config.unlockTime = DateTime.Now.AddHours(config.hourCooldownAfterFail);
-                                                config.nextCaptureAvailable = DateTime.Now.AddHours(config.hourCooldownAfterFail);
-                                                //broadcast that its locked
-                                                SendChatMessage(loc.Name, "Locked because capturing nation has changed.");
-                                                config.amountCaptured = 0;
-                                                try
+                                                if (config.LockOnFail)
                                                 {
+                                                    //  Log.Info("Locking because the capturing nation changed");
+                                                    config.CapturingAlliance = Guid.Empty;
+                                                    config.CaptureStarted = false;
+                                                    config.unlockTime = DateTime.Now.AddHours(config.hourCooldownAfterFail);
+                                                    config.nextCaptureAvailable = DateTime.Now.AddHours(config.hourCooldownAfterFail);
+                                                    //broadcast that its locked
 
-                                                    DiscordStuff.SendMessageToDiscord(loc.Name + " Locked, Capturing alliance has changed. Locked for " + config.hourCooldownAfterFail + " hours", config);
+                                            
+                                                    config.amountCaptured = 0;
+                                                    try
+                                                    {
+
+                                                        DiscordStuff.SendMessageToDiscord(loc.Name + " Locked, Capturing alliance has changed. Locked for " + config.hourCooldownAfterFail + " hours", config);
+                                                    }
+                                                    catch (Exception e)
+                                                    {
+                                                        Log.Error("Cant do discord message for koth. " + e.ToString());
+                                                        SendChatMessage(loc.Name, "Locked, Capturing alliance has changed. Locked for " + config.hourCooldownAfterFail + " hours");
+                                                    }
                                                 }
-                                                catch (Exception)
+                                                else
                                                 {
-                                                    Log.Error("Cant do discord message for koth.");
-                                                    SendChatMessage(loc.Name, "Locked, Capturing alliance has changed. Locked for " + config.hourCooldownAfterFail + " hours");
+                                                    config.CapturingAlliance = Guid.Empty;
+                                                    config.CaptureStarted = false;
+                                                    config.amountCaptured = config.amountCaptured / 2;
+                                                    try
+                                                    {
+
+                                                        DiscordStuff.SendMessageToDiscord(loc.Name + " Capturing alliance has changed. Resetting capture site.", config);
+                                                    }
+                                                    catch (Exception e)
+                                                    {
+                                                        Log.Error("Cant do discord message for koth. " + e.ToString());
+                                                        SendChatMessage(loc.Name, " Capturing alliance has changed. Resetting capture site.");
+                                                    }
                                                 }
                                             }
                                         }
@@ -2041,22 +2087,39 @@ namespace AlliancesPlugin
                                         if (!hasActiveCaptureBlock && config.CaptureStarted)
                                         {
                                             // Log.Info("Locking because no active cap block");
-                                            config.CapturingAlliance = Guid.Empty;
-                                            config.nextCaptureAvailable = DateTime.Now.AddHours(config.hourCooldownAfterFail);
-                                            config.CaptureStarted = false;
-                                            //broadcast that its locked
-
-                                            config.amountCaptured = 0;
-                                            //   SendChatMessage("Locked because capture blocks are dead");
-                                            config.unlockTime = DateTime.Now.AddHours(config.hourCooldownAfterFail);
-                                            try
+                                            if (config.LockOnFail)
                                             {
-                                                DiscordStuff.SendMessageToDiscord(loc.Name + " Locked, Capture blocks are missing or destroyed. Locked for " + config.hourCooldownAfterFail + " hours", config);
+                                                config.CapturingAlliance = Guid.Empty;
+                                                config.nextCaptureAvailable = DateTime.Now.AddHours(config.hourCooldownAfterFail);
+                                                //broadcast that its locked
+                                                config.amountCaptured = 0;
+                                                config.CaptureStarted = false;
+                                                config.unlockTime = DateTime.Now.AddHours(config.hourCooldownAfterFail);
+                                                try
+                                                {
+                                                    DiscordStuff.SendMessageToDiscord(loc.Name + " Locked, Capture blocks are missing or destroyed. Locked for " + config.hourCooldownAfterFail + " hours", config);
+                                                }
+                                                catch (Exception e)
+                                                {
+                                                    Log.Error("Cant do discord message for koth. " + e.ToString());
+                                                    SendChatMessage(loc.Name, "Locked, Capture blocks are missing or destroyed. Locked for " + config.hourCooldownAfterFail + " hours");
+                                                }
                                             }
-                                            catch (Exception)
+                                            else
                                             {
-                                                Log.Error("Cant do discord message for koth.");
-                                                SendChatMessage(loc.Name, "Locked, Capture blocks are missing or destroyed. Locked for " + config.hourCooldownAfterFail + " hours");
+                                                try
+                                                {
+                                                    DiscordStuff.SendMessageToDiscord(loc.Name + " Capture blocks are missing or destroyed. Resetting site capture.", config);
+                                                }
+                                                catch (Exception)
+                                                {
+                                                    Log.Error("Cant do discord message for koth.");
+                                                    SendChatMessage(loc.Name, "Capture blocks are missing or destroyed. Resetting site capture.");
+                                                }
+                                                config.nextCaptureInterval = DateTime.Now.AddSeconds(config.SecondsBetweenCaptureCheck);
+                                                config.CapturingAlliance = Guid.Empty;
+                                                config.amountCaptured = config.amountCaptured / 2;
+                                                config.CaptureStarted = false;
                                             }
                                         }
                                         if (contested && config.CaptureStarted)
@@ -2068,10 +2131,10 @@ namespace AlliancesPlugin
                                             {
                                                 DiscordStuff.SendMessageToDiscord(loc.Name + " Capture point contested!", config);
                                             }
-                                            catch (Exception)
+                                            catch (Exception e)
                                             {
                                                 SendChatMessage(loc.Name, "Capture point contested!");
-                                                Log.Error("Cant do discord message for koth.");
+                                                Log.Error("Cant do discord message for koth. " + e.ToString());
                                             }
                                         }
                                         else
@@ -2169,9 +2232,9 @@ namespace AlliancesPlugin
                                                 {
                                                     DiscordStuff.SendMessageToDiscord(loc.Name + " Capture can begin in " + config.MinutesBeforeCaptureStarts + " minutes. By " + capture.Name, config);
                                                 }
-                                                catch (Exception)
+                                                catch (Exception e)
                                                 {
-                                                    Log.Error("Cant do discord message for koth.");
+                                                    Log.Error("Cant do discord message for koth. " + e.ToString());
                                                     SendChatMessage(loc.Name, "Capture can begin in " + config.MinutesBeforeCaptureStarts + " minutes. By " + capture.Name);
                                                 }
                                             }
@@ -2192,21 +2255,39 @@ namespace AlliancesPlugin
                                                     if (!hasActiveCaptureBlock)
                                                     {
                                                         // Log.Info("Locking because no active cap block");
-
-                                                        config.CapturingFaction = 0;
-                                                        config.nextCaptureAvailable = DateTime.Now.AddHours(config.hourCooldownAfterFail);
-                                                        //broadcast that its locked
-                                                        config.amountCaptured = 0;
-                                                        config.CaptureStarted = false;
-                                                        config.unlockTime = DateTime.Now.AddHours(config.hourCooldownAfterFail);
-                                                        try
+                                                        if (config.LockOnFail)
                                                         {
-                                                            DiscordStuff.SendMessageToDiscord(loc.Name + " Locked, Capture blocks are missing or destroyed. Locked for " + config.hourCooldownAfterFail + " hours", config);
+                                                            config.CapturingFaction = 0;
+                                                            config.nextCaptureAvailable = DateTime.Now.AddHours(config.hourCooldownAfterFail);
+                                                            //broadcast that its locked
+                                                            config.amountCaptured = 0;
+                                                            config.CaptureStarted = false;
+                                                            config.unlockTime = DateTime.Now.AddHours(config.hourCooldownAfterFail);
+                                                            try
+                                                            {
+                                                                DiscordStuff.SendMessageToDiscord(loc.Name + " Locked, Capture blocks are missing or destroyed. Locked for " + config.hourCooldownAfterFail + " hours", config);
+                                                            }
+                                                            catch (Exception e)
+                                                            {
+                                                                Log.Error("Cant do discord message for koth. " + e.ToString());
+                                                                SendChatMessage(loc.Name, "Locked, Capture blocks are missing or destroyed. Locked for " + config.hourCooldownAfterFail + " hours");
+                                                            }
                                                         }
-                                                        catch (Exception)
+                                                        else
                                                         {
-                                                            Log.Error("Cant do discord message for koth.");
-                                                            SendChatMessage(loc.Name, "Locked, Capture blocks are missing or destroyed. Locked for " + config.hourCooldownAfterFail + " hours");
+                                                            try
+                                                            {
+                                                                DiscordStuff.SendMessageToDiscord(loc.Name + " Capture blocks are missing or destroyed. Resetting site capture.", config);
+                                                            }
+                                                            catch (Exception e)
+                                                            {
+                                                                Log.Error("Cant do discord message for koth. " + e.ToString());
+                                                                SendChatMessage(loc.Name, "Capture blocks are missing or destroyed. Resetting site capture.");
+                                                            }
+                                                            config.nextCaptureInterval = DateTime.Now.AddSeconds(config.SecondsBetweenCaptureCheck);
+                                                            config.CapturingFaction = 0;
+                                                            config.amountCaptured = config.amountCaptured / 2;
+                                                            config.CaptureStarted = false;
                                                         }
                                                     }
                                                     else
@@ -2231,8 +2312,17 @@ namespace AlliancesPlugin
                                                                 LootLocation l = config.GetLootSite();
                                                                 if (l != null)
                                                                 {
+                                                                    try
+                                                                    {
+                                                                        DiscordStuff.SendMessageToDiscord(capture.Name + " has captured " + loc.Name + ". It is now locked for " + config.hoursToLockAfterNormalCap + " hours. Loot will spawn in " + config.SecondsForOneLootSpawnAfterCap + " seconds.", config);
+                                                                    }
+                                                                    catch (Exception ex)
+                                                                    {
+                                                                        SendChatMessage(loc.Name, capture.Name + " has captured " + loc.Name + ". It is now locked for " + config.hoursToLockAfterNormalCap + " hours. Loot will spawn in " + config.SecondsForOneLootSpawnAfterCap + " seconds.");
+                                                                        Log.Error("Cant do discord message for koth. " + ex.ToString());
+                                                                    }
                                                                     l.nextCoreSpawn = DateTime.Now.AddSeconds(config.SecondsForOneLootSpawnAfterCap);
-                                                                    SendChatMessage(loc.Name, capture.Name + " has captured " + loc.Name + ". It is now locked for " + config.hoursToLockAfterNormalCap + " hours. Loot will spawn in " + config.SecondsForOneLootSpawnAfterCap + " seconds.");
+                                                                
                                                                 }
                                                             }
                                                             else
@@ -2241,9 +2331,9 @@ namespace AlliancesPlugin
                                                                 {
                                                                     DiscordStuff.SendMessageToDiscord(capture.Name + " has captured " + loc.Name + ". It is now locked for " + config.hoursToLockAfterNormalCap + " hours.", config);
                                                                 }
-                                                                catch (Exception)
+                                                                catch (Exception e)
                                                                 {
-                                                                    Log.Error("Cant do discord message for koth.");
+                                                                    Log.Error("Cant do discord message for koth. " + e.ToString());
                                                                     SendChatMessage(loc.Name, capture.Name + " has captured " + loc.Name + ". It is now locked for " + config.hoursToLockAfterNormalCap + " hours.");
                                                                 }
                                                             }
@@ -2256,12 +2346,12 @@ namespace AlliancesPlugin
 
                                                             try
                                                             {
-                                                                DiscordStuff.SendMessageToDiscord(loc.Name + " capture progress " + config.amountCaptured + " out of " + config.PointsToCap + " by " + capture.Name, config);
+                                                                DiscordStuff.SendMessageToDiscord(loc.Name + " " + config.amountCaptured + " out of " + config.PointsToCap + " by " + capture.Tag, config);
                                                             }
-                                                            catch (Exception)
+                                                            catch (Exception e)
                                                             {
-                                                                Log.Error("Cant do discord message for koth.");
-                                                                SendChatMessage(loc.Name, "capture progress " + config.amountCaptured + " out of " + config.PointsToCap + " by " + capture.Name);
+                                                                Log.Error("Cant do discord message for koth. " + e.ToString());
+                                                                SendChatMessage(loc.Name, " " + config.amountCaptured + " out of " + config.PointsToCap + " by " + capture.Tag);
                                                             }
                                                             SaveCaptureConfig(config.Name, config);
                                                             continue;
@@ -2273,22 +2363,41 @@ namespace AlliancesPlugin
                                                 else
                                                 {
                                                     //  Log.Info("Locking because the capturing nation changed");
-                                                    config.CapturingFaction = 0;
-                                                    config.CaptureStarted = false;
-                                                    config.unlockTime = DateTime.Now.AddHours(config.hourCooldownAfterFail);
-                                                    config.nextCaptureAvailable = DateTime.Now.AddHours(config.hourCooldownAfterFail);
-                                                    //broadcast that its locked
-                                                    SendChatMessage(loc.Name, "Locked because capturing faction has changed.");
-                                                    config.amountCaptured = 0;
-                                                    try
+                                                    if (config.LockOnFail)
                                                     {
+                                                        config.CapturingFaction = 0;
+                                                        config.CaptureStarted = false;
+                                                        config.unlockTime = DateTime.Now.AddHours(config.hourCooldownAfterFail);
+                                                        config.nextCaptureAvailable = DateTime.Now.AddHours(config.hourCooldownAfterFail);
+                                                        //broadcast that its locked
 
-                                                        DiscordStuff.SendMessageToDiscord(loc.Name + " Locked, Capturing faction has changed. Locked for " + config.hourCooldownAfterFail + " hours", config);
+                                                        config.amountCaptured = 0;
+                                                        try
+                                                        {
+
+                                                            DiscordStuff.SendMessageToDiscord(loc.Name + " Locked, Capturing faction has changed. Locked for " + config.hourCooldownAfterFail + " hours", config);
+                                                        }
+                                                        catch (Exception)
+                                                        {
+                                                            Log.Error("Cant do discord message for koth.");
+                                                            SendChatMessage(loc.Name, "Locked, Capturing faction has changed. Locked for " + config.hourCooldownAfterFail + " hours");
+                                                        }
                                                     }
-                                                    catch (Exception)
+                                                    else
                                                     {
-                                                        Log.Error("Cant do discord message for koth.");
-                                                        SendChatMessage(loc.Name, "Locked, Capturing faction has changed. Locked for " + config.hourCooldownAfterFail + " hours");
+                                                        config.CapturingFaction = 0;
+                                                        config.CaptureStarted = false;
+                                                        config.amountCaptured = config.amountCaptured / 2;
+                                                        try
+                                                        {
+
+                                                            DiscordStuff.SendMessageToDiscord(loc.Name + " Capturing faction has changed. Resetting capture site.", config);
+                                                        }
+                                                        catch (Exception e)
+                                                        {
+                                                            Log.Error("Cant do discord message for koth. " + e.ToString());
+                                                            SendChatMessage(loc.Name, "Capturing faction has changed. Resetting capture site.");
+                                                        }
                                                     }
                                                 }
                                             }
@@ -2304,22 +2413,39 @@ namespace AlliancesPlugin
                                             if (!hasActiveCaptureBlock && config.CaptureStarted)
                                             {
                                                 // Log.Info("Locking because no active cap block");
-                                                config.CapturingFaction = 0;
-                                                config.nextCaptureAvailable = DateTime.Now.AddHours(config.hourCooldownAfterFail);
-                                                config.CaptureStarted = false;
-                                                //broadcast that its locked
-
-                                                config.amountCaptured = 0;
-                                                //   SendChatMessage("Locked because capture blocks are dead");
-                                                config.unlockTime = DateTime.Now.AddHours(config.hourCooldownAfterFail);
-                                                try
+                                                if (config.LockOnFail)
                                                 {
-                                                    DiscordStuff.SendMessageToDiscord(loc.Name + " Locked, Capture blocks are missing or destroyed. Locked for " + config.hourCooldownAfterFail + " hours", config);
+                                                    config.CapturingFaction = 0;
+                                                    config.nextCaptureAvailable = DateTime.Now.AddHours(config.hourCooldownAfterFail);
+                                                    //broadcast that its locked
+                                                    config.amountCaptured = 0;
+                                                    config.CaptureStarted = false;
+                                                    config.unlockTime = DateTime.Now.AddHours(config.hourCooldownAfterFail);
+                                                    try
+                                                    {
+                                                        DiscordStuff.SendMessageToDiscord(loc.Name + " Locked, Capture blocks are missing or destroyed. Locked for " + config.hourCooldownAfterFail + " hours", config);
+                                                    }
+                                                    catch (Exception e)
+                                                    {
+                                                        Log.Error("Cant do discord message for koth. " + e.ToString());
+                                                        SendChatMessage(loc.Name, "Locked, Capture blocks are missing or destroyed. Locked for " + config.hourCooldownAfterFail + " hours");
+                                                    }
                                                 }
-                                                catch (Exception)
+                                                else
                                                 {
-                                                    Log.Error("Cant do discord message for koth.");
-                                                    SendChatMessage(loc.Name, "Locked, Capture blocks are missing or destroyed. Locked for " + config.hourCooldownAfterFail + " hours");
+                                                    try
+                                                    {
+                                                        DiscordStuff.SendMessageToDiscord(loc.Name + " Capture blocks are missing or destroyed. Resetting site capture.", config);
+                                                    }
+                                                    catch (Exception e)
+                                                    {
+                                                        Log.Error("Cant do discord message for koth. " + e.ToString());
+                                                        SendChatMessage(loc.Name, "Capture blocks are missing or destroyed. Resetting site capture.");
+                                                    }
+                                                    config.nextCaptureInterval = DateTime.Now.AddSeconds(config.SecondsBetweenCaptureCheck);
+                                                    config.CapturingFaction = 0;
+                                                    config.amountCaptured = config.amountCaptured / 2;
+                                                    config.CaptureStarted = false;
                                                 }
                                             }
                                             if (contested && config.CaptureStarted)
@@ -2331,10 +2457,10 @@ namespace AlliancesPlugin
                                                 {
                                                     DiscordStuff.SendMessageToDiscord(loc.Name + " Capture point contested!", config);
                                                 }
-                                                catch (Exception)
+                                                catch (Exception e)
                                                 {
                                                     SendChatMessage(loc.Name, "Capture point contested!");
-                                                    Log.Error("Cant do discord message for koth.");
+                                                    Log.Error("Cant do discord message for koth. " + e.ToString());
                                                 }
                                             }
                                             else
@@ -2392,6 +2518,16 @@ namespace AlliancesPlugin
 
                             loot.nextCoreSpawn = DateTime.Now.AddYears(5);
 
+                            try
+                            {
+                                DiscordStuff.SendMessageToDiscord(loc.Name + " Doing one time loot spawn.", config);
+                            }
+                            catch (Exception e)
+                            {
+
+                                Log.Error("Cant do discord message for koth. " + e.ToString());
+                            }
+                            
                         }
                         SaveCaptureConfig(config.Name, config);
                         Vector3 lootGrid = new Vector3(loot.X, loot.Y, loot.Z);
@@ -2494,11 +2630,11 @@ namespace AlliancesPlugin
                         }
                         else
                         {
-                            if (config.FactionOwner > 1)
+                            if (config.FactionOwner > 0)
                             {
                                 MyFaction capture = null;
                       
-                                    capture = MySession.Static.Factions.TryGetFactionById(config.CapturingFaction) as MyFaction;
+                                    capture = MySession.Static.Factions.TryGetFactionById(config.FactionOwner) as MyFaction;
                                 if (capture == null)
                                 {
                                     SaveCaptureConfig(config.Name, config);

@@ -8,9 +8,15 @@ namespace AlliancesPlugin.NewCaptureSite
 {
     public class CaptureSite
     {
+        public Boolean LockOnFail = true;
         public string Name = "Default, change this";
+        public byte FDiscordR = 255;
+        public byte FDiscordG = 255;
+        public byte FDiscordB = 255;
+        public ulong FactionDiscordChannelId = 0;
         public Boolean AllianceSite = false;
         public int amountCaptured = 0;
+       
         public int MinutesBeforeCaptureStarts = 10;
         public Boolean ChangeCapSiteOnUnlock = true;
         public String LinkedTerritory = "Change this";
@@ -132,7 +138,7 @@ namespace AlliancesPlugin.NewCaptureSite
         public DateTime nextCaptureAvailable = DateTime.Now;
         public Boolean doChatMessages = true;
         public Boolean doDiscordMessages = true;
-   
+
         public DateTime nextCaptureInterval = DateTime.Now;
 
         public DateTime unlockTime = DateTime.Now;

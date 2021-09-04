@@ -126,7 +126,7 @@ namespace AlliancesPlugin
             if (alliance != null)
             {
                 distressCount++;
-                AllianceChat.SendChatMessage(alliance.AllianceId, "Distress Signal", CreateGps(Context.Player.Character.GetPosition(), Color.Yellow, 600, distressCount.ToString(), reason).ToString(), true, 0);
+                AllianceChat.SendChatMessage(alliance.AllianceId, Context.Player.DisplayName + " Distress Signal", CreateGps(Context.Player.Character.GetPosition(), Color.Yellow, 600, distressCount.ToString(), reason).ToString(), true, 0);
 
 
             }
@@ -153,6 +153,17 @@ namespace AlliancesPlugin
 
             Context.Respond("Might have reset them all? !eco top");
         }
+
+        [Command("embed", "embedTest")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void embed()
+        {
+
+            DiscordStuff.SendEmbedToDiscord("","bob");
+
+            Context.Respond("Might have reset them all? !eco top");
+        }
+
         [Command("crunchrefin", "toggle alliance chat")]
         [Permission(MyPromoteLevel.Admin)]
         public void IDGSDG(double buff = 0)

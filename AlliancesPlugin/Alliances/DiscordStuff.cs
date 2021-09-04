@@ -14,6 +14,7 @@ using Sandbox.Game.World;
 using System.IO;
 using VRage.Game.ModAPI;
 using DSharpPlus.EventArgs;
+using AlliancesPlugin.NewCaptureSite;
 
 namespace AlliancesPlugin.Alliances
 {
@@ -77,7 +78,7 @@ namespace AlliancesPlugin.Alliances
                     errors.Add(ex.ToString());
                     return Task.CompletedTask;
                 }
-                
+
                 Discord.MessageCreated += Discord_MessageCreated;
 
                 Ready = true;
@@ -148,7 +149,7 @@ namespace AlliancesPlugin.Alliances
                 bot.ClientErrored += Client_ClientError;
                 try
                 {
-                  bot.ConnectAsync();
+                    bot.ConnectAsync();
                 }
                 catch (Exception ex)
                 {
@@ -213,12 +214,35 @@ namespace AlliancesPlugin.Alliances
                 ShipyardCommands.SendMessage(config.KothName, message, Color.LightGreen, 0L);
             }
         }
-        public static void SendMessageToDiscord(string message, NewCaptureSite.CaptureSite config)
+        public static void SendMessageToDiscord(string message, NewCaptureSite.CaptureSite config, Boolean Embed = true)
         {
             if (Ready && AlliancePlugin.config.DiscordChannelId > 0 && config.doDiscordMessages)
             {
-                DiscordChannel chann = Discord.GetChannelAsync(AlliancePlugin.config.DiscordChannelId).Result;
-                botId = Discord.SendMessageAsync(chann, message.Replace("/n", "\n")).Result.Author.Id;
+                DiscordChannel chann;
+
+                if (config.AllianceSite)
+                {
+                    chann = Discord.GetChannelAsync(AlliancePlugin.config.DiscordChannelId).Result;
+                }
+                else
+                {
+                    chann = Discord.GetChannelAsync(config.FactionDiscordChannelId).Result;
+                }
+                if (!Embed)
+                {
+                    botId = Discord.SendMessageAsync(chann, message.Replace("/n", "\n")).Result.Author.Id;
+                }
+                else
+                {
+                    var embed = new DiscordEmbedBuilder
+                    {
+                        Title = config.Name,
+                        Description = message,
+                        Color = new DiscordColor(config.FDiscordR, config.FDiscordG, config.FDiscordB)
+
+                    };
+                    botId = Discord.SendMessageAsync(chann, null, false, embed).Result.Author.Id;
+                }
 
 
             }
@@ -237,7 +261,22 @@ namespace AlliancesPlugin.Alliances
 
             }
         }
+        public static void SendEmbedToDiscord(string name, string message)
+        {
+            if (Ready && AlliancePlugin.config.DiscordChannelId > 0)
+            {
+                DiscordChannel chann = Discord.GetChannelAsync(AlliancePlugin.config.DiscordChannelId).Result;
 
+                var embed = new DiscordEmbedBuilder
+                {
+                    Title = "Capture Alert",
+                    Description = "Test Embed",
+                    Color = new DiscordColor(255, 255, 255)
+
+                };
+                botId = Discord.SendMessageAsync(chann, null, false, embed).Result.Author.Id;
+            }
+        }
         private static int attempt = 0;
 
         public static void SendAllianceMessage(Alliance alliance, string prefix, string message)
@@ -594,18 +633,49 @@ namespace AlliancesPlugin.Alliances
         }
         private static Task Discord_MessageCreated(DSharpPlus.EventArgs.MessageCreateEventArgs e)
         {
-
-            if (AlliancePlugin.config.DiscordChannelId == e.Channel.Id)
+            if (e.Author.IsBot)
             {
-                if (e.Author.IsBot)
+                foreach (CaptureSite site in AlliancePlugin.sites)
                 {
-                    ShipyardCommands.SendMessage(e.Author.Username, e.Message.Content, Color.LightGreen, 0L);
-                }
-            }
+                    if (site.FactionDiscordChannelId == e.Channel.Id)
+                    {
+                        if (e.Message.Embeds.Count > 0)
+                        {
+                            foreach (DiscordEmbed embed in e.Message.Embeds)
+                            {
+                                ShipyardCommands.SendMessage(embed.Title, embed.Description, Color.LightGreen, 0L);
+                            }
+                        }
+                        else
+                        {
+                            ShipyardCommands.SendMessage(e.Author.Username, e.Message.Content, Color.LightGreen, 0L);
+                        }
 
+
+                        return Task.CompletedTask;
+                    }
+                }
+                if (AlliancePlugin.config.DiscordChannelId == e.Channel.Id)
+                {
+                    if (e.Message.Embeds.Count > 0)
+                    {
+                        foreach (DiscordEmbed embed in e.Message.Embeds)
+                        {
+                            ShipyardCommands.SendMessage(embed.Title, embed.Description, Color.LightGreen, 0L);
+                        }
+                    }
+                    else
+                    {
+                        ShipyardCommands.SendMessage(e.Author.Username, e.Message.Content, Color.LightGreen, 0L);
+                    }
+
+                }
+
+
+                return Task.CompletedTask;
+            }
 
             return Task.CompletedTask;
         }
-
     }
 }

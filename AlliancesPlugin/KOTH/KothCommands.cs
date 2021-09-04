@@ -72,7 +72,7 @@ namespace AlliancesPlugin.KOTH
                     {
                         koth.capturingNation = Guid.Empty;
                     }
-                    Context.Respond("Unlocked the koth");
+                
                 }
 
             }
@@ -86,6 +86,7 @@ namespace AlliancesPlugin.KOTH
                     site.nextCaptureAvailable = DateTime.Now.AddSeconds(1);
                     site.CapturingAlliance = Guid.Empty;
                     site.CapturingFaction = 0;
+                    site.FactionOwner = 0;
                     // koth.owner = Guid.Empty;
                     if (!allianceName.Equals(""))
                     {
