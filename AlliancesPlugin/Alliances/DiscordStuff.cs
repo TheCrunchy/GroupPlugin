@@ -67,7 +67,8 @@ namespace AlliancesPlugin.Alliances
 
 
                 Discord.ClientErrored += Client_ClientError;
-
+                Discord.SocketErrored += Client_SocketError;
+                Discord.SocketClosed += Client_SocketClosed;
                 try
                 {
                     Discord.ConnectAsync();
@@ -97,8 +98,36 @@ namespace AlliancesPlugin.Alliances
             // is done
             return Task.CompletedTask;
         }
+        private static Task Client_SocketError(SocketErrorEventArgs e)
+        {
+            errors.Add(e.Exception.ToString());
+            // let's log the details of the error that just 
+            // occured in our client
+            //  sender.Logger.LogError(BotEventId, e.Exception, "Exception occured");
+
+            // since this method is not async, let's return
+            // a completed task, so that no additional work
+            // is done
+            
+            return Task.CompletedTask;
+        }
+        private static Task Client_SocketClosed(SocketCloseEventArgs e)
+        {
+          
+            errors.Add(e.CloseMessage);
+            // let's log the details of the error that just 
+            // occured in our client
+            //  sender.Logger.LogError(BotEventId, e.Exception, "Exception occured");
+
+            // since this method is not async, let's return
+            // a completed task, so that no additional work
+            // is done
+
+            return Task.CompletedTask;
+        }
 
         public static List<Guid> registered = new List<Guid>();
+        public static List<string> temp = new List<string>();
 
         public static Task RegisterAllianceBot(Alliance alliance, ulong channelId)
         {
@@ -147,6 +176,8 @@ namespace AlliancesPlugin.Alliances
                 }
 
                 bot.ClientErrored += Client_ClientError;
+                bot.SocketErrored += Client_SocketError;
+                bot.SocketClosed += Client_SocketClosed;
                 try
                 {
                     bot.ConnectAsync();
@@ -165,7 +196,9 @@ namespace AlliancesPlugin.Alliances
                     return Task.CompletedTask;
                 }
 
+            
 
+                temp.Add("Registered " + alliance.name + " BOT");
                 bot.MessageCreated += Discord_AllianceMessage;
                 allianceBots.Remove(alliance.AllianceId);
                 allianceBots.Add(alliance.AllianceId, bot);

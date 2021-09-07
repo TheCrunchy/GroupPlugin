@@ -25,6 +25,7 @@ namespace AlliancesPlugin.NewCaptureSite
         public string KothBuildingOwner = "BOB";
         public string GpsName = "Capture site Location 1";
         public int MaxLootAmount = 1;
-
+        public String LinkedTerritory = "Change this";
+        public Boolean HasTerritory = false;
     }
 }

@@ -1662,8 +1662,12 @@ namespace AlliancesPlugin
                             config.nextCaptureInterval = DateTime.Now.AddSeconds(config.SecondsBetweenCaptureCheck);
                             if (unlocked)
                             {
-                                if (config.ChangeCapSiteOnUnlock)
+                                if (config.PickNewSiteOnUnlock)
                                 {
+                                    
+                            
+                           
+                                    config.PickNewSiteOnUnlock = false ;
                                     Location newloc = config.GetNewCapSite(loc);
                                     if (newloc != null)
                                     {
@@ -1892,8 +1896,11 @@ namespace AlliancesPlugin
                                                     {
                                                         //lock
                                                         //        Log.Info("Locking because points went over the threshold");
-
-                                                        locked = true;
+                                                        if (config.ChangeCapSiteOnUnlock)
+                                                        {
+                                                            config.PickNewSiteOnUnlock = true;
+                                                        }
+                                                            locked = true;
                                                         //  
                                                         config.CapturingAlliance = Guid.Empty;
                                                         config.AllianceOwner = CapturingAlliance;
@@ -1901,8 +1908,12 @@ namespace AlliancesPlugin
                                                         config.CaptureStarted = false;
 
                                                         Alliance alliance = GetAllianceNoLoading(config.AllianceOwner);
-                                                        if (config.HasTerritory)
+                                                        if (loc.HasTerritory)
                                                         {
+                                                            if (config.ChangeLocationAfterTerritoryCap)
+                                                            {
+                                                                config.PickNewSiteOnUnlock = true;
+                                                            }
                                                             config.AddCapProgress(alliance.AllianceId, 1);
                                                             if (config.GetCapProgress(alliance.AllianceId) >= config.CapturesRequiredForTerritory)
                                                             {
@@ -1919,9 +1930,9 @@ namespace AlliancesPlugin
                                                                     Log.Error("Cant do discord message for koth. " + e.ToString());
                                                                     SendChatMessage(loc.Name, GetAllianceNoLoading(CapturingAlliance).name + " has captured " + loc.Name + ". It is now locked for " + config.hoursToLockAfterTerritoryCap + " hours.");
                                                                 }
-                                                                if (File.Exists(AlliancePlugin.path + "//Territories//" + config.LinkedTerritory + ".xml"))
+                                                                if (File.Exists(AlliancePlugin.path + "//Territories//" + loc.LinkedTerritory + ".xml"))
                                                                 {
-                                                                    Territory ter = utils.ReadFromXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + config.LinkedTerritory + ".xml");
+                                                                    Territory ter = utils.ReadFromXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + loc.LinkedTerritory + ".xml");
                                                                     if (ter.HasStation)
                                                                     {
                                                                         ter.previousOwner = ter.Alliance;
@@ -1930,7 +1941,7 @@ namespace AlliancesPlugin
                                                                         DiscordStuff.SendMessageToDiscord(ter.Name, "Waystation will be transferred to " + GetAllianceNoLoading(CapturingAlliance).name + " in 48 hours if territory is not recaptured.", config, true);
                                                                     }
                                                                     ter.Alliance = alliance.AllianceId;
-                                                                    utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + config.LinkedTerritory + ".xml", ter);
+                                                                    utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + loc.LinkedTerritory + ".xml", ter);
 
                                                                     if (Territories.ContainsKey(ter.Id))
                                                                     {
@@ -1945,13 +1956,13 @@ namespace AlliancesPlugin
                                                                 else
                                                                 {
                                                                     Territory ter = new Territory();
-                                                                    ter.Name = config.LinkedTerritory;
+                                                                    ter.Name = loc.LinkedTerritory;
                                                                     ter.x = loc.X;
                                                                     ter.y = loc.Y;
                                                                     ter.z = loc.Y;
                                                                     ter.Alliance = alliance.AllianceId;
 
-                                                                    utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + config.LinkedTerritory + ".xml", ter);
+                                                                    utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + loc.LinkedTerritory + ".xml", ter);
                                                                     Territories.Add(ter.Id, ter);
                                           
                                                                 }
@@ -2310,7 +2321,10 @@ namespace AlliancesPlugin
                                                             config.CaptureStarted = false;
                                                             config.unlockTime = DateTime.Now.AddHours(config.hoursToLockAfterNormalCap);
                                                             config.nextCaptureAvailable = DateTime.Now.AddHours(config.hoursToLockAfterNormalCap);
-
+                                                            if (config.ChangeCapSiteOnUnlock)
+                                                            {
+                                                                config.PickNewSiteOnUnlock = true;
+                                                            }
                                                             if (config.OnlyDoLootOnceAfterCap)
                                                             {
                                                                 LootLocation l = config.GetLootSite();

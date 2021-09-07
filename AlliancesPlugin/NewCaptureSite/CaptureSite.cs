@@ -20,11 +20,11 @@ namespace AlliancesPlugin.NewCaptureSite
        
         public int MinutesBeforeCaptureStarts = 10;
         public Boolean ChangeCapSiteOnUnlock = true;
-        public String LinkedTerritory = "Change this";
+        public Boolean ChangeLocationAfterTerritoryCap = false;
         public Boolean LockAfterSoManyHoursOpen = false;
         public int LockAgainAfterThisManyHours = 2;
         public Boolean CaptureStarted = false;
-        public Boolean HasTerritory = false;
+        public Boolean PickNewSiteOnUnlock = false;
         public Boolean Locked = false;
         public Boolean OnlyDoLootOnceAfterCap = false;
         public int SecondsForOneLootSpawnAfterCap = 600;

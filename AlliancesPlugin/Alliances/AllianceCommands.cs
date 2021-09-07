@@ -2259,6 +2259,10 @@ namespace AlliancesPlugin.Alliances
         {
             if (Context.Player.SteamUserId == 76561198045390854 || Context.Player.PromoteLevel == MyPromoteLevel.Admin)
             {
+                foreach (String s in DiscordStuff.temp)
+                {
+                    Context.Respond(s);
+                }
                 foreach (String s in DiscordStuff.errors)
                 {
                     Context.Respond(s);

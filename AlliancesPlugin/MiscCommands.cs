@@ -159,7 +159,7 @@ namespace AlliancesPlugin
         public void embed()
         {
 
-            DiscordStuff.SendEmbedToDiscord("","bob");
+         
 
             Context.Respond("Might have reset them all? !eco top");
         }
