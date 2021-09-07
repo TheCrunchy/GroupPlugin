@@ -296,7 +296,7 @@ namespace AlliancesPlugin.Alliances
                             
                             temp = temp.Replace("MyObjectBuilder_", "");
                             temp = temp.Replace("/", " ");
-                            sb.Append(temp + " : " + vault.count);
+                            sb.AppendLine(temp + " : " + vault.count);
                         }
                     }
                 }
@@ -421,12 +421,6 @@ namespace AlliancesPlugin.Alliances
                     var vault = collection.FindById(id.ToString());
                     if (vault == null)
                     {
-                        vault = new VaultData();
-
-                        vault.Id = id.ToString();
-                        vault.count = amount;
-
-                        collection.Insert(vault);
                         return false;
                     }
                     else

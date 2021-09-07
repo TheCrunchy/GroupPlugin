@@ -1927,6 +1927,7 @@ namespace AlliancesPlugin
                                                                         ter.previousOwner = ter.Alliance;
                                                                         ter.transferTime = DateTime.Now.AddHours(48);
                                                                         ter.transferTo = alliance.AllianceId;
+                                                                        DiscordStuff.SendMessageToDiscord(ter.Name, "Waystation will be transferred to " + GetAllianceNoLoading(CapturingAlliance).name + " in 48 hours if territory is not recaptured.", config, true);
                                                                     }
                                                                     ter.Alliance = alliance.AllianceId;
                                                                     utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + config.LinkedTerritory + ".xml", ter);
@@ -1939,7 +1940,7 @@ namespace AlliancesPlugin
                                                                     {
                                                                         Territories.Add(ter.Id, ter);
                                                                     }
-                                                                    DiscordStuff.SendMessageToDiscord(ter.Name, "Waystation will be transferred to " + GetAllianceNoLoading(CapturingAlliance).name + " in 48 hours if territory is not recaptured.", config, true);
+                                                        
                                                                 }
                                                                 else
                                                                 {
@@ -1952,7 +1953,7 @@ namespace AlliancesPlugin
 
                                                                     utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + config.LinkedTerritory + ".xml", ter);
                                                                     Territories.Add(ter.Id, ter);
-                                                                    DiscordStuff.SendMessageToDiscord(ter.Name, "Waystation will be transferred to " + GetAllianceNoLoading(CapturingAlliance).name + " in 48 hours if territory is not recaptured.", config, true);
+                                          
                                                                 }
                                                             }
                                                             else
@@ -3823,24 +3824,18 @@ namespace AlliancesPlugin
 
                             if (MyDefinitionId.TryParse("MyObjectBuilder_" + item.TypeId + "/" + item.SubTypeId, out MyDefinitionId id))
                             {
-                                if (!config.DepositLootToVault)
+                                int amount = random.Next(item.ItemMinAmount, item.ItemMaxAmount);
+
+                                if (block != null)
                                 {
+                                    //   Log.Info("Should spawn item");
 
-                                    if (block != null)
-                                    {
-                                        //   Log.Info("Should spawn item");
+                                    MyItemType itemType = new MyInventoryItemFilter(item.TypeId + "/" + item.SubTypeId).ItemType;
 
-                                        MyItemType itemType = new MyInventoryItemFilter(item.TypeId + "/" + item.SubTypeId).ItemType;
-                                        int amount = random.Next(item.ItemMinAmount, item.ItemMaxAmount);
-                                        block.GetInventory().CanItemsBeAdded((MyFixedPoint)amount, itemType);
-                                        block.GetInventory().AddItems((MyFixedPoint)amount, (MyObjectBuilder_PhysicalObject)MyObjectBuilderSerializer.CreateNewObject(id));
-                                    }
+                                    block.GetInventory().CanItemsBeAdded((MyFixedPoint)amount, itemType);
+                                    block.GetInventory().AddItems((MyFixedPoint)amount, (MyObjectBuilder_PhysicalObject)MyObjectBuilderSerializer.CreateNewObject(id));
                                 }
 
-                                else
-                                {
-                                    DatabaseForBank.DepositToVault(alliance, id, random.Next(item.ItemMinAmount, item.ItemMaxAmount));
-                                }
                             }
                         }
 

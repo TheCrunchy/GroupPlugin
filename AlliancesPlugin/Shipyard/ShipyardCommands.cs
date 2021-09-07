@@ -591,11 +591,7 @@ namespace AlliancesPlugin.Shipyard
                     switch (type.ToLower())
                     {
                         case "speed":
-                            if (queue.upgradeSpeed <= AlliancePlugin.shipyardConfig.MaxSpeedReduction)
-                            {
-                                Context.Respond("Cannot upgrade any further");
-                                return;
-                            }
+  
                            // Context.Respond(queue.SpeedUpgrade + " ");
 
                             try
@@ -635,11 +631,6 @@ namespace AlliancesPlugin.Shipyard
                             }
                             break;
                         case "slots":
-                            if (queue.upgradeSlots >= AlliancePlugin.shipyardConfig.MaxShipyardSlots)
-                            {
-                                Context.Respond("Cannot upgrade any further");
-                                return;
-                            }
 
 
                             try
@@ -730,11 +721,6 @@ namespace AlliancesPlugin.Shipyard
                     switch (type.ToLower())
                     {
                         case "speed":
-                            if (queue.upgradeSpeed <= AlliancePlugin.shipyardConfig.MaxSpeedReduction)
-                            {
-                                Context.Respond("Cannot upgrade any further");
-                                return;
-                            }
                             int upgradeNum = Convert.ToInt16(AlliancePlugin.shipyardConfig.StartingSpeedMultiply - queue.upgradeSpeed);
 
                             try
@@ -795,12 +781,6 @@ namespace AlliancesPlugin.Shipyard
                             }
                             break;
                         case "slots":
-                            if (queue.upgradeSlots >= AlliancePlugin.shipyardConfig.MaxShipyardSlots)
-                            {
-                                Context.Respond("Cannot upgrade any further");
-                                return;
-                            }
-
                             try
                             {
                                 cost = slotUpgrades[queue.SlotsUpgrade += 1];
@@ -1544,7 +1524,12 @@ namespace AlliancesPlugin.Shipyard
                 return;
             }
             Int64 price = Convert.ToInt64(gridCosts.BlockCount * printerConfig.SCPerBlock);
-            if (confirmations.ContainsKey(playerId))
+            if (gridCosts.BlockCount >= AlliancePlugin.shipyardConfig.MaximumPCU)
+            {
+                Context.Respond("Projected PCU exceeds the maximum of 60,000");
+                return;
+            }
+                if (confirmations.ContainsKey(playerId))
             {
 
 

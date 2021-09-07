@@ -16,6 +16,7 @@ namespace AlliancesPlugin.Shipyard
         public Boolean SaveGameOnPrintStart = true;
         public Boolean ShowMoneyTakenOnStart = true;
         public int MaximumBlockSize = 10000;
+        public int MaximumPCU = 60000;
         private List<ShipyardBlockConfig> blocks = new List<ShipyardBlockConfig>();
 
         public void AddToBlockConfig(ShipyardBlockConfig item)
