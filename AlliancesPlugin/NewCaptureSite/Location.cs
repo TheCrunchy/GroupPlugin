@@ -27,5 +27,8 @@ namespace AlliancesPlugin.NewCaptureSite
         public int MaxLootAmount = 1;
         public String LinkedTerritory = "Change this";
         public Boolean HasTerritory = false;
+
+        public Boolean ChangeToDefinedTerritory = false;
+        public int ChangeToThisNum = 1;
     }
 }

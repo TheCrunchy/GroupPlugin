@@ -51,6 +51,8 @@ using SpaceEngineers.Game.Entities.Blocks;
 using Sandbox.Game.GameSystems.BankingAndCurrency;
 using HarmonyLib;
 using AlliancesPlugin.NewCaptureSite;
+using Sandbox.ModAPI.Weapons;
+using Sandbox.Game.Weapons;
 
 namespace AlliancesPlugin
 {
@@ -471,6 +473,143 @@ namespace AlliancesPlugin
             return null;
         }
         public static ChatManagerServer _chatmanager;
+
+        public long GetAttacker(long attackerId)
+        {
+
+            var entity = MyAPIGateway.Entities.GetEntityById(attackerId);
+
+            if (entity == null)
+                return 0L;
+
+            if (entity is MyPlanet)
+            {
+
+                return 0L;
+            }
+
+            if (entity is MyCharacter character)
+            {
+
+                return character.GetPlayerIdentityId();
+            }
+
+            if (entity is IMyEngineerToolBase toolbase)
+            {
+
+                return toolbase.OwnerIdentityId;
+
+            }
+
+            if (entity is MyLargeTurretBase turret)
+            {
+
+                return turret.OwnerId;
+
+            }
+
+            if (entity is MyShipToolBase shipTool)
+            {
+
+                return shipTool.OwnerId;
+            }
+
+            if (entity is IMyGunBaseUser gunUser)
+            {
+
+                return gunUser.OwnerId;
+
+            }
+
+
+
+            if (entity is MyCubeGrid grid)
+            {
+
+                var gridOwnerList = grid.BigOwners;
+                var ownerCnt = gridOwnerList.Count;
+                var gridOwner = 0L;
+
+                if (ownerCnt > 0 && gridOwnerList[0] != 0)
+                    gridOwner = gridOwnerList[0];
+                else if (ownerCnt > 1)
+                    gridOwner = gridOwnerList[1];
+
+                return gridOwner;
+
+            }
+
+            return 0L;
+        }
+
+
+        private void DamageHandler(object target, ref MyDamageInformation info)
+        {
+            if (config == null)
+            {
+                return;
+            }
+       
+
+            if (config.EnableAllianceSafeZones)
+            {
+                long attackerId = GetAttacker(info.AttackerId);
+            //    Log.Info(attackerId);
+             //   Log.Info(info.Type.ToString());
+                //check if in zone
+                foreach (Territory ter in Territories.Values)
+                {
+                    if (ter.HasBigSafeZone && ter.Alliance != Guid.Empty)
+                    {
+                        MySlimBlock block = target as MySlimBlock;
+                        float distance = Vector3.Distance(block.CubeGrid.PositionComp.GetPosition(), new Vector3(ter.stationX, ter.stationY, ter.stationZ));
+                        if (distance <= ter.SafeZoneRadiusFromStationCoords)
+                        {
+                            if (!info.Type.Equals("Grind"))
+                            {
+                                info.Amount = 0.0f;
+                                return;
+                            }
+                            //if in zone and damage type is from weapons/ramming deny it
+                            if (attackerId == 0L)
+                            {
+                                info.Amount = 0.0f;
+                                return;
+                            }
+                            MyFaction attacker = MySession.Static.Factions.GetPlayerFaction(attackerId) as MyFaction;
+                            if (attacker != null)
+                            {
+                                Alliance alliance = GetAllianceNoLoading(attacker);
+                                if (alliance != null && ter.Alliance == alliance.AllianceId)
+                                {
+                                    
+                                    if (!alliance.HasAccess(MySession.Static.Players.TryGetSteamId(attackerId), AccessLevel.GrindInSafeZone))
+                                    {
+                                        info.Amount = 0.0f;
+                                        return;
+                                    }
+                                    else
+                                    {
+                                        return;
+                                    }
+                                }
+                                else
+                                {
+                                    info.Amount = 0.0f;
+                                    return;
+                                }
+                            }
+                            else
+                            {
+                                info.Amount = 0.0f;
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         private void SessionChanged(ITorchSession session, TorchSessionState state)
         {
             if (state == TorchSessionState.Unloading)
@@ -481,6 +620,7 @@ namespace AlliancesPlugin
             }
             if (state == TorchSessionState.Loaded)
             {
+                MyAPIGateway.Session.DamageSystem.RegisterBeforeDamageHandler(1, new BeforeDamageApplied(DamageHandler));
                 if (config != null && config.AllowDiscord && !DiscordStuff.Ready)
                 {
                     DiscordStuff.RegisterDiscord();
@@ -1664,10 +1804,10 @@ namespace AlliancesPlugin
                             {
                                 if (config.PickNewSiteOnUnlock)
                                 {
-                                    
-                            
-                           
-                                    config.PickNewSiteOnUnlock = false ;
+
+
+
+                                    config.PickNewSiteOnUnlock = false;
                                     Location newloc = config.GetNewCapSite(loc);
                                     if (newloc != null)
                                     {
@@ -1900,7 +2040,7 @@ namespace AlliancesPlugin
                                                         {
                                                             config.PickNewSiteOnUnlock = true;
                                                         }
-                                                            locked = true;
+                                                        locked = true;
                                                         //  
                                                         config.CapturingAlliance = Guid.Empty;
                                                         config.AllianceOwner = CapturingAlliance;
@@ -1951,7 +2091,7 @@ namespace AlliancesPlugin
                                                                     {
                                                                         Territories.Add(ter.Id, ter);
                                                                     }
-                                                        
+
                                                                 }
                                                                 else
                                                                 {
@@ -1964,7 +2104,7 @@ namespace AlliancesPlugin
 
                                                                     utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + loc.LinkedTerritory + ".xml", ter);
                                                                     Territories.Add(ter.Id, ter);
-                                          
+
                                                                 }
                                                             }
                                                             else
@@ -3351,7 +3491,7 @@ namespace AlliancesPlugin
                 if (DateTime.Now < InTerritory[player.Identity.IdentityId])
                     return;
 
-                message2 = new NotificationMessage(ter.EntryMessage.Replace("{name}", ter.Name), 30000, "Green");
+                message2 = new NotificationMessage(ter.EntryMessage.Replace("{name}", ter.Name), 10000, "Green");
                 //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
 
                 if (!TerritoryInside.ContainsKey(player.Id.SteamId))
@@ -3363,10 +3503,10 @@ namespace AlliancesPlugin
                     TerritoryInside[player.Id.SteamId] = ter.Id;
                 }
                 ModCommunication.SendMessageTo(message2, player.Id.SteamId);
-                InTerritory[player.Identity.IdentityId] = DateTime.Now.AddMinutes(5);
+                InTerritory[player.Identity.IdentityId] = DateTime.Now.AddMinutes(10);
                 if (alliance != null)
                 {
-                    NotificationMessage message3 = new NotificationMessage(ter.ControlledMessage.Replace("{alliance}", alliance.name), 15000, "Red");
+                    NotificationMessage message3 = new NotificationMessage(ter.ControlledMessage.Replace("{alliance}", alliance.name), 5000, "Red");
                     ModCommunication.SendMessageTo(message3, player.Id.SteamId);
 
                 }
@@ -3374,9 +3514,9 @@ namespace AlliancesPlugin
             }
             else
             {
-                message2 = new NotificationMessage(ter.EntryMessage.Replace("{name}", ter.Name), 15000, "Green");
+                message2 = new NotificationMessage(ter.EntryMessage.Replace("{name}", ter.Name), 5000, "Green");
                 ModCommunication.SendMessageTo(message2, player.Id.SteamId);
-                InTerritory.Add(player.Identity.IdentityId, DateTime.Now.AddMinutes(5));
+                InTerritory.Add(player.Identity.IdentityId, DateTime.Now.AddMinutes(10));
                 if (!TerritoryInside.ContainsKey(player.Id.SteamId))
                 {
                     TerritoryInside.Add(player.Id.SteamId, ter.Id);
@@ -3387,7 +3527,7 @@ namespace AlliancesPlugin
                 }
                 if (alliance != null)
                 {
-                    NotificationMessage message3 = new NotificationMessage(ter.ControlledMessage.Replace("{alliance}", alliance.name), 15000, "Red");
+                    NotificationMessage message3 = new NotificationMessage(ter.ControlledMessage.Replace("{alliance}", alliance.name), 5000, "Red");
                     ModCommunication.SendMessageTo(message3, player.Id.SteamId);
                 }
                 return;
@@ -3410,7 +3550,7 @@ namespace AlliancesPlugin
                 return;
             }
 
-            NotificationMessage message2 = new NotificationMessage(ter.ExitMessage.Replace("{name}", ter.Name), 30000, "White");
+            NotificationMessage message2 = new NotificationMessage(ter.ExitMessage.Replace("{name}", ter.Name), 10000, "White");
 
             ModCommunication.SendMessageTo(message2, player.Id.SteamId);
             InTerritory.Remove(player.Identity.IdentityId);

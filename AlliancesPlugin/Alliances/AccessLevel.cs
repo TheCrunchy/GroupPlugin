@@ -28,6 +28,7 @@ namespace AlliancesPlugin.Alliances
         RecieveDividend,
         TaxExempt,
         ChangeTax,
+        GrindInSafeZone,
         UnableToParse
 
     }

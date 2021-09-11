@@ -1401,6 +1401,7 @@ namespace AlliancesPlugin.Shipyard
                 SendMessage("[Shipyard]", "Alliance has no queue, to unlock use !shipyard upgrade", Color.Red, (long)Context.Player.SteamUserId);
                 return;
             }
+            int pcu = 0;
             bool owned = false;
             List<MyCubeGrid> gridsToSave = new List<MyCubeGrid>();
             ConcurrentBag<MyGroups<MyCubeGrid, MyGridPhysicalGroupData>.Group> gridWithSubGrids;
@@ -1472,8 +1473,12 @@ namespace AlliancesPlugin.Shipyard
 
                                 List<VRage.Game.ModAPI.IMySlimBlock> blocks = new List<VRage.Game.ModAPI.IMySlimBlock>();
                                 projectedGrid.GetBlocks(blocks);
-
-
+                                MyProjectorBase projbase = projector as MyProjectorBase;
+                                foreach (MyCubeGrid grid2 in projbase.Clipboard.PreviewGrids)
+                                {
+                                    pcu += grid2.BlocksPCU;
+                                }
+                    
                                 gridCosts.setGridName(name + "_" + string.Format("{0:yyyy-MM-dd_HH-mm-ss-fff}", DateTime.Now));
                                 GridCosts localGridCosts = GetComponentsAndCost(projectedGrid);
                                 gridCosts.setComponents(localGridCosts.getComponents());
@@ -1524,9 +1529,9 @@ namespace AlliancesPlugin.Shipyard
                 return;
             }
             Int64 price = Convert.ToInt64(gridCosts.BlockCount * printerConfig.SCPerBlock);
-            if (gridCosts.BlockCount >= AlliancePlugin.shipyardConfig.MaximumPCU)
+            if (pcu >= AlliancePlugin.shipyardConfig.MaximumPCU)
             {
-                Context.Respond("Projected PCU exceeds the maximum of 60,000");
+                Context.Respond("Projected PCU exceeds the maximum of " + AlliancePlugin.shipyardConfig.MaximumPCU);
                 return;
             }
                 if (confirmations.ContainsKey(playerId))

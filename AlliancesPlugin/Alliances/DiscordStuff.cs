@@ -108,12 +108,12 @@ namespace AlliancesPlugin.Alliances
             // since this method is not async, let's return
             // a completed task, so that no additional work
             // is done
-            
+
             return Task.CompletedTask;
         }
         private static Task Client_SocketClosed(SocketCloseEventArgs e)
         {
-          
+
             errors.Add(e.CloseMessage);
             // let's log the details of the error that just 
             // occured in our client
@@ -196,7 +196,7 @@ namespace AlliancesPlugin.Alliances
                     return Task.CompletedTask;
                 }
 
-            
+
 
                 temp.Add("Registered " + alliance.name + " BOT");
                 bot.MessageCreated += Discord_AllianceMessage;
@@ -247,7 +247,7 @@ namespace AlliancesPlugin.Alliances
                 ShipyardCommands.SendMessage(config.KothName, message, Color.LightGreen, 0L);
             }
         }
-        public static void SendMessageToDiscord(string name,string message, NewCaptureSite.CaptureSite config, Boolean Embed = true)
+        public static void SendMessageToDiscord(string name, string message, NewCaptureSite.CaptureSite config, Boolean Embed = true)
         {
             if (Ready && AlliancePlugin.config.DiscordChannelId > 0 && config.doDiscordMessages)
             {
@@ -272,7 +272,7 @@ namespace AlliancesPlugin.Alliances
                         Title = name,
                         Description = message,
                         Color = new DiscordColor(config.FDiscordR, config.FDiscordG, config.FDiscordB)
-                        
+
 
                     };
                     botId = Discord.SendMessageAsync(chann, null, false, embed).Result.Author.Id;
@@ -669,26 +669,6 @@ namespace AlliancesPlugin.Alliances
         {
             if (e.Author.IsBot)
             {
-                foreach (CaptureSite site in AlliancePlugin.sites)
-                {
-                    if (site.FactionDiscordChannelId == e.Channel.Id)
-                    {
-                        if (e.Message.Embeds.Count > 0)
-                        {
-                            foreach (DiscordEmbed embed in e.Message.Embeds)
-                            {
-                                ShipyardCommands.SendMessage(embed.Title, embed.Description, Color.LightGreen, 0L);
-                            }
-                        }
-                        else
-                        {
-                            ShipyardCommands.SendMessage(e.Author.Username, e.Message.Content, Color.LightGreen, 0L);
-                        }
-
-
-                        return Task.CompletedTask;
-                    }
-                }
                 if (AlliancePlugin.config.DiscordChannelId == e.Channel.Id)
                 {
                     if (e.Message.Embeds.Count > 0)
@@ -702,11 +682,35 @@ namespace AlliancesPlugin.Alliances
                     {
                         ShipyardCommands.SendMessage(e.Author.Username, e.Message.Content, Color.LightGreen, 0L);
                     }
-
+                    return Task.CompletedTask;
                 }
 
 
-                return Task.CompletedTask;
+
+                foreach (CaptureSite site in AlliancePlugin.sites)
+                {
+                    if (!site.AllianceSite)
+                    {
+                        if (site.FactionDiscordChannelId == e.Channel.Id)
+                        {
+                            if (e.Message.Embeds.Count > 0)
+                            {
+                                foreach (DiscordEmbed embed in e.Message.Embeds)
+                                {
+                                    ShipyardCommands.SendMessage(embed.Title, embed.Description, Color.LightGreen, 0L);
+                                }
+                            }
+                            else
+                            {
+                                ShipyardCommands.SendMessage(e.Author.Username, e.Message.Content, Color.LightGreen, 0L);
+                            }
+
+
+                            return Task.CompletedTask;
+                        }
+                    }
+                }
+
             }
 
             return Task.CompletedTask;

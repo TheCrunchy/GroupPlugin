@@ -25,9 +25,12 @@ namespace AlliancesPlugin.KOTH
         public double stationX = 0;
         public double stationY = 0;
         public double stationZ = 0;
+        
         public DateTime transferTime = DateTime.Now;
         public Guid transferTo = Guid.Empty;
         public Guid previousOwner = Guid.Empty;
         public string FactionTagForStationOwner = "ACME";
+        public Boolean HasBigSafeZone = false;
+        public int SafeZoneRadiusFromStationCoords = 50000;
     }
 }

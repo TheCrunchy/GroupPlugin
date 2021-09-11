@@ -8,7 +8,7 @@ namespace AlliancesPlugin.NewCaptureSite
 {
     public class CaptureSite
     {
-     
+
         public Boolean LockOnFail = true;
         public string Name = "Default, change this";
         public byte FDiscordR = 255;
@@ -17,7 +17,7 @@ namespace AlliancesPlugin.NewCaptureSite
         public ulong FactionDiscordChannelId = 0;
         public Boolean AllianceSite = false;
         public int amountCaptured = 0;
-       
+
         public int MinutesBeforeCaptureStarts = 10;
         public Boolean ChangeCapSiteOnUnlock = true;
         public Boolean ChangeLocationAfterTerritoryCap = false;
@@ -104,6 +104,17 @@ namespace AlliancesPlugin.NewCaptureSite
         }
         public Location GetNewCapSite(Location ignore)
         {
+            if (ignore.ChangeToDefinedTerritory)
+            {
+                foreach (Location loc in locations)
+                {
+                    if (loc.Num == ignore.ChangeToThisNum)
+                    {
+                        return loc;
+                    }
+                }
+
+            }
             Random random = new Random();
             List<Location> temp = new List<Location>();
             foreach (Location loc in locations)
@@ -145,7 +156,7 @@ namespace AlliancesPlugin.NewCaptureSite
         public DateTime unlockTime = DateTime.Now;
         public void setLootSite(LootLocation loc)
         {
-           
+
         }
         public Location GetCurrentLocation()
         {
