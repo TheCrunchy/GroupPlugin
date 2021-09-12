@@ -549,47 +549,54 @@ namespace AlliancesPlugin
             {
                 return;
             }
-       
+
 
             if (config.EnableAllianceSafeZones)
             {
                 long attackerId = GetAttacker(info.AttackerId);
-            //    Log.Info(attackerId);
-             //   Log.Info(info.Type.ToString());
+                //    Log.Info(attackerId);
+                //   Log.Info(info.Type.ToString());
                 //check if in zone
                 foreach (Territory ter in Territories.Values)
                 {
                     if (ter.HasBigSafeZone && ter.Alliance != Guid.Empty)
                     {
-                        MySlimBlock block = target as MySlimBlock;
-                        float distance = Vector3.Distance(block.CubeGrid.PositionComp.GetPosition(), new Vector3(ter.stationX, ter.stationY, ter.stationZ));
-                        if (distance <= ter.SafeZoneRadiusFromStationCoords)
+                        if (target is MyEntity block)
                         {
-                            if (!info.Type.Equals("Grind"))
+                            float distance = Vector3.Distance(block.PositionComp.GetPosition(), new Vector3(ter.stationX, ter.stationY, ter.stationZ));
+                            if (distance <= ter.SafeZoneRadiusFromStationCoords)
                             {
-                                info.Amount = 0.0f;
-                                return;
-                            }
-                            //if in zone and damage type is from weapons/ramming deny it
-                            if (attackerId == 0L)
-                            {
-                                info.Amount = 0.0f;
-                                return;
-                            }
-                            MyFaction attacker = MySession.Static.Factions.GetPlayerFaction(attackerId) as MyFaction;
-                            if (attacker != null)
-                            {
-                                Alliance alliance = GetAllianceNoLoading(attacker);
-                                if (alliance != null && ter.Alliance == alliance.AllianceId)
+                                if (!info.Type.Equals("Grind"))
                                 {
-                                    
-                                    if (!alliance.HasAccess(MySession.Static.Players.TryGetSteamId(attackerId), AccessLevel.GrindInSafeZone))
+                                    info.Amount = 0.0f;
+                                    return;
+                                }
+                                //if in zone and damage type is from weapons/ramming deny it
+                                if (attackerId == 0L)
+                                {
+                                    info.Amount = 0.0f;
+                                    return;
+                                }
+                                MyFaction attacker = MySession.Static.Factions.GetPlayerFaction(attackerId) as MyFaction;
+                                if (attacker != null)
+                                {
+                                    Alliance alliance = GetAllianceNoLoading(attacker);
+                                    if (alliance != null && ter.Alliance == alliance.AllianceId)
                                     {
-                                        info.Amount = 0.0f;
-                                        return;
+
+                                        if (!alliance.HasAccess(MySession.Static.Players.TryGetSteamId(attackerId), AccessLevel.GrindInSafeZone))
+                                        {
+                                            info.Amount = 0.0f;
+                                            return;
+                                        }
+                                        else
+                                        {
+                                            return;
+                                        }
                                     }
                                     else
                                     {
+                                        info.Amount = 0.0f;
                                         return;
                                     }
                                 }
@@ -598,11 +605,6 @@ namespace AlliancesPlugin
                                     info.Amount = 0.0f;
                                     return;
                                 }
-                            }
-                            else
-                            {
-                                info.Amount = 0.0f;
-                                return;
                             }
                         }
                     }
