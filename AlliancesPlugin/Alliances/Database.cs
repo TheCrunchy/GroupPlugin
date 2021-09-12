@@ -183,7 +183,7 @@ namespace AlliancesPlugin.Alliances
                                 DoItemUpkeep(alliance);
                                 AllianceChat.SendChatMessage(alliance.AllianceId, "Upkeep", "Paying upkeep of " + String.Format("{0:n0}", alliance.GetUpkeep()) + " SC.", true, 0);
                                 alliance.Upkeep(alliance.GetUpkeep(), 1);
-                                alliance.bankBalance -= alliance.GetUpkeep();
+                              //  alliance.bankBalance -= alliance.GetUpkeep();
                                 alliance.failedUpkeep = 0;
                                 AlliancePlugin.Log.Info("Paying upkeep " + String.Format("{0:n0}", alliance.GetUpkeep()) + " SC. for " + alliance.name);
                                 saveThese.Add(alliance);
