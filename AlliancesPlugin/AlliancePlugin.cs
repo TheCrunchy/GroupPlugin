@@ -2080,7 +2080,15 @@ namespace AlliancesPlugin
                                                                         ter.previousOwner = ter.Alliance;
                                                                         ter.transferTime = DateTime.Now.AddHours(48);
                                                                         ter.transferTo = alliance.AllianceId;
-                                                                        DiscordStuff.SendMessageToDiscord(ter.Name, "Waystation will be transferred to " + GetAllianceNoLoading(CapturingAlliance).name + " in 48 hours if territory is not recaptured.", config, true);
+                                                                        try
+                                                                        {
+                                                                            DiscordStuff.SendMessageToDiscord(ter.Name, "Waystation will be transferred to " + GetAllianceNoLoading(CapturingAlliance).name + " in 48 hours if territory is not recaptured.", config, true);
+                                                                        }
+                                                                        catch (Exception ex)
+                                                                        {
+                                                                            SendChatMessage(loc.Name, "Waystation will be transferred to " + GetAllianceNoLoading(CapturingAlliance).name + " in 48 hours if territory is not recaptured.");
+
+                                                                        }
                                                                     }
                                                                     ter.Alliance = alliance.AllianceId;
                                                                     utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + loc.LinkedTerritory + ".xml", ter);
@@ -2097,6 +2105,7 @@ namespace AlliancesPlugin
                                                                 }
                                                                 else
                                                                 {
+                                                                    Log.Error("TERRITORY FILE DID NOT EXIST.");
                                                                     Territory ter = new Territory();
                                                                     ter.Name = loc.LinkedTerritory;
                                                                     ter.x = loc.X;
@@ -2219,12 +2228,12 @@ namespace AlliancesPlugin
                                                     try
                                                     {
 
-                                                        DiscordStuff.SendMessageToDiscord(loc.Name, "Capturing alliance has changed. Resetting capture site.", config);
+                                                        DiscordStuff.SendMessageToDiscord(loc.Name, "Capturing alliance has changed. Resetting capture site and halfing progress.", config);
                                                     }
                                                     catch (Exception e)
                                                     {
                                                         Log.Error("Cant do discord message for koth. " + e.ToString());
-                                                        SendChatMessage(loc.Name, " Capturing alliance has changed. Resetting capture site.");
+                                                        SendChatMessage(loc.Name, " Capturing alliance has changed. Resetting capture site and halfing progress.");
                                                     }
                                                 }
                                             }

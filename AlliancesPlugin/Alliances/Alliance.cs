@@ -56,7 +56,7 @@ namespace AlliancesPlugin.Alliances
         public int failedUpkeep = 0;
         public int RefineryUpgradeLevel = 0;
         public int AssemblerUpgradeLevel = 0;
-        public long GetUpkeep()
+        public long GetExpectedUpkeep()
         {
 
             float upkeep = 0;
@@ -72,7 +72,7 @@ namespace AlliancesPlugin.Alliances
                     }
                 }
             }
-    
+            var cutoff = DateTime.Now - TimeSpan.FromDays(3);
             upkeep += AlliancePlugin.config.BaseUpkeepFee;
             foreach (long id in AllianceMembers)
             {
@@ -100,16 +100,75 @@ namespace AlliancesPlugin.Alliances
             }
             return (long)upkeep;
         }
+        public long GetUpkeep()
+        {
+
+            float upkeep = 0;
+            int terCount = 0;
+            foreach (Territory ter in AlliancePlugin.Territories.Values)
+            {
+                if (ter.Alliance.Equals(this.AllianceId))
+                {
+                    terCount++;
+                    if (terCount > 1)
+                    {
+                        upkeep += ter.AddToUpkeepIfStationAboveLimit * terCount - 1;
+                    }
+                }
+            }
+            var cutoff = DateTime.Now - TimeSpan.FromDays(3);
+            upkeep += AlliancePlugin.config.BaseUpkeepFee;
+            foreach (long id in AllianceMembers)
+            {
+                MyFaction fac = MySession.Static.Factions.TryGetFactionById(id) as MyFaction;
+                if (fac != null)
+                {
+                    upkeep += AlliancePlugin.config.BaseUpkeepFee * AlliancePlugin.config.PercentPerFac;
+                    foreach (KeyValuePair<long, MyFactionMember> mem in fac.Members)
+                    {
+                        MyIdentity idenid = MySession.Static.Players.TryGetIdentity(mem.Value.PlayerId);
+                        DateTime referenceTime = idenid.LastLoginTime;
+                        if (idenid.LastLogoutTime > referenceTime)
+                            referenceTime = idenid.LastLogoutTime;
+                        if (referenceTime >= cutoff)
+                        {
+                            upkeep += AlliancePlugin.config.FeePerMember;
+
+                        }
+
+                    }
+
+                }
+            }
+            foreach (JumpGate gate in AlliancePlugin.AllGates.Values)
+            {
+                if (gate.OwnerAlliance == AllianceId && !gate.CanBeRented)
+                {
+                    upkeep += gate.upkeep;
+                }
+            }
+            if (this.hasUnlockedHangar)
+            {
+                upkeep += AlliancePlugin.config.HangarUpkeep;
+            }
+            if (this.hasUnlockedShipyard)
+            {
+                upkeep += AlliancePlugin.config.ShipyardUpkeep;
+            }
+            return (long)upkeep;
+        }
 
         public Boolean HasInheritance(String rank)
         {
-            if (inheritance.ContainsKey(rank)){
+            if (inheritance.ContainsKey(rank))
+            {
                 return true;
             }
             return false;
         }
 
-        public List<AccessLevel> GetInheritedPermissions(String rank){
+        public List<AccessLevel> GetInheritedPermissions(String rank)
+        {
             List<AccessLevel> levels = new List<AccessLevel>();
 
             if (inheritance.TryGetValue(rank, out string minion))
@@ -136,7 +195,7 @@ namespace AlliancesPlugin.Alliances
             {
                 return true;
             }
-        
+
             if (PlayersCustomRank.ContainsKey(id))
             {
                 if (CustomRankPermissions[PlayersCustomRank[id]].permissions.Contains(level))
@@ -184,7 +243,7 @@ namespace AlliancesPlugin.Alliances
         public float GetTaxRate(ulong id)
         {
 
-            
+
             if (SupremeLeader == id)
             {
                 return leadertax;
@@ -193,8 +252,8 @@ namespace AlliancesPlugin.Alliances
             {
                 return 0;
             }
-           
-    
+
+
             if (PlayersCustomRank.ContainsKey(id))
             {
                 if (CustomRankPermissions.ContainsKey(PlayersCustomRank[id]))
@@ -202,8 +261,8 @@ namespace AlliancesPlugin.Alliances
                     return CustomRankPermissions[PlayersCustomRank[id]].taxRate;
                 }
             }
-         
-        
+
+
 
 
             return UnrankedPerms.taxRate;
@@ -473,7 +532,7 @@ namespace AlliancesPlugin.Alliances
         public string OutputAlliance()
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine(LeaderTitle + " " + AlliancePlugin.GetPlayerName(SupremeLeader));
+            sb.AppendLine("Alliance Leader: " + LeaderTitle + " " + AlliancePlugin.GetPlayerName(SupremeLeader));
             if (!String.IsNullOrEmpty(description))
             {
                 sb.AppendLine("");
@@ -488,7 +547,8 @@ namespace AlliancesPlugin.Alliances
                 sb.AppendLine("Failed Upkeep : " + this.failedUpkeep + " Deleted at " + AlliancePlugin.config.UpkeepFailBeforeDelete);
             }
 
-            sb.AppendLine("Expected Upkeep Value : " + String.Format("{0:n0}", this.GetUpkeep()) + " SC.");
+            sb.AppendLine("Maximum Upkeep Value : " + String.Format("{0:n0}", this.GetExpectedUpkeep()) + " SC.");
+            sb.AppendLine("Current Upkeep Value : " + String.Format("{0:n0}", this.GetUpkeep()) + " SC.");
             int mult = this.GetFactionCount();
             sb.AppendLine("");
             if (AlliancePlugin.config.DoItemUpkeep)
@@ -502,7 +562,7 @@ namespace AlliancesPlugin.Alliances
                     sb.AppendLine(temp + " : " + keys.Value * mult);
                 }
             }
-   
+
             sb.AppendLine("Vault contents");
             sb.AppendLine(DatabaseForBank.GetVaultString(this));
             sb.AppendLine("");

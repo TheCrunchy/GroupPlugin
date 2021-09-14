@@ -360,9 +360,9 @@ namespace AlliancesPlugin.Alliances
             Alliance alliance = AlliancePlugin.GetAlliance(fac);
             float amount = float.Parse(tax.Replace("%", ""));
             amount = amount / 100;
-            if (amount > 0.1f)
+            if (amount > 0.5f)
             {
-                Context.Respond("Maximum tax rate is 10%");
+                Context.Respond("Maximum tax rate is 50%");
                 return;
             }
             if (amount < 0)

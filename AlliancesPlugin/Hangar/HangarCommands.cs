@@ -330,11 +330,7 @@ namespace AlliancesPlugin.Hangar
                         invents.AddList(ShipyardCommands.GetInventories(grid));
                     }
 
-                    if (hangar.SlotsAmount >= AlliancePlugin.config.MaxHangarSlots)
-                    {
-                        Context.Respond("Cannot upgrade any further");
-                        return;
-                    }
+  
 
                     try
                     {

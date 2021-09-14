@@ -45,6 +45,8 @@ namespace AlliancesPlugin
             {
 
                 /* What else should it be? LOL? */
+                grid.DestructibleBlocks = true;
+                grid.Editable = true;
                 if (!(grid.GetObjectBuilder(true) is MyObjectBuilder_CubeGrid objectBuilder))
                     throw new ArgumentException(grid + " has a ObjectBuilder thats not for a CubeGrid");
 
@@ -60,7 +62,8 @@ namespace AlliancesPlugin
 
             foreach (MyCubeGrid grid in grids)
             {
-
+                grid.DestructibleBlocks = true;
+                grid.Editable = true;
                 /* What else should it be? LOL? */
                 if (!(grid.GetObjectBuilder(true) is MyObjectBuilder_CubeGrid objectBuilder))
                     throw new ArgumentException(grid + " has a ObjectBuilder thats not for a CubeGrid");
@@ -76,7 +79,8 @@ namespace AlliancesPlugin
 
             foreach (MyCubeGrid grid in grids)
             {
-
+                grid.DestructibleBlocks = true;
+                grid.Editable = true;
                 /* What else should it be? LOL? */
                 if (!(grid.GetObjectBuilder(true) is MyObjectBuilder_CubeGrid objectBuilder))
                     throw new ArgumentException(grid + " has a ObjectBuilder thats not for a CubeGrid");
@@ -376,6 +380,9 @@ namespace AlliancesPlugin
 
             foreach (var grid in grids)
             {
+                grid.DestructibleBlocks = true;
+                grid.Editable = true;
+                
                 foreach (MyObjectBuilder_CubeBlock block in grid.CubeBlocks)
                 {
                     long ownerID = AlliancePlugin.GetIdentityByNameOrId(steamID.ToString()).IdentityId;
@@ -449,7 +456,8 @@ namespace AlliancesPlugin
             /* Stop grids */
             foreach (var grid in grids)
             {
-
+                grid.DestructibleBlocks = true;
+                grid.Editable = true;
                 grid.AngularVelocity = new SerializableVector3();
                 grid.LinearVelocity = new SerializableVector3();
 
@@ -504,7 +512,8 @@ namespace AlliancesPlugin
 
             foreach (var grid in grids)
             {
-
+                grid.DestructibleBlocks = true;
+                grid.Editable = true;
                 var position = grid.PositionAndOrientation;
 
                 if (position == null)
@@ -612,7 +621,8 @@ namespace AlliancesPlugin
 
             foreach (var grid in grids)
             {
-
+                grid.DestructibleBlocks = true;
+                grid.Editable = true;
                 var gridSphere = grid.CalculateBoundingSphere();
 
                 /* If this is the first run, we use the center of that grid, and its radius as it is */

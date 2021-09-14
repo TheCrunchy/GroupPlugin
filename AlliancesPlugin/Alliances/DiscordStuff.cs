@@ -88,7 +88,7 @@ namespace AlliancesPlugin.Alliances
         }
         private static Task Client_ClientError(ClientErrorEventArgs e)
         {
-            errors.Add(e.Exception.ToString());
+            errors.Add("Client error " + e.Exception.Message.ToString());
             // let's log the details of the error that just 
             // occured in our client
             //  sender.Logger.LogError(BotEventId, e.Exception, "Exception occured");
@@ -100,7 +100,7 @@ namespace AlliancesPlugin.Alliances
         }
         private static Task Client_SocketError(SocketErrorEventArgs e)
         {
-            errors.Add(e.Exception.ToString());
+            errors.Add("Client socket error "  + e.Exception.Message.ToString());
             // let's log the details of the error that just 
             // occured in our client
             //  sender.Logger.LogError(BotEventId, e.Exception, "Exception occured");
@@ -114,7 +114,7 @@ namespace AlliancesPlugin.Alliances
         private static Task Client_SocketClosed(SocketCloseEventArgs e)
         {
 
-            errors.Add(e.CloseMessage);
+            errors.Add("CLOSED? " + e.CloseMessage);
             // let's log the details of the error that just 
             // occured in our client
             //  sender.Logger.LogError(BotEventId, e.Exception, "Exception occured");
@@ -488,6 +488,10 @@ namespace AlliancesPlugin.Alliances
         public static Dictionary<Guid, string> LastMessageSent = new Dictionary<Guid, string>();
         public static Task Discord_AllianceMessage(DSharpPlus.EventArgs.MessageCreateEventArgs e)
         {
+            if (e.Message == null)
+            {
+                return Task.CompletedTask;
+            }
             if (debugMode)
             {
                 if (MySession.Static.Players.GetPlayerByName("Crunch") != null)
@@ -496,7 +500,7 @@ namespace AlliancesPlugin.Alliances
                     ShipyardCommands.SendMessage("Discord", "Got a message " + e.Message.ChannelId + " " + e.Channel.Id, Color.Blue, (long)player.Id.SteamId);
                 }
             }
-            if (allianceChannels.ContainsKey(e.Channel.Id))
+            if (allianceChannels.ContainsKey(e.Message.Channel.Id))
             {
                 if (debugMode)
                 {
@@ -667,9 +671,26 @@ namespace AlliancesPlugin.Alliances
         }
         private static Task Discord_MessageCreated(DSharpPlus.EventArgs.MessageCreateEventArgs e)
         {
+            if (e == null)
+            {
+                errors.Add("Null message? " + DateTime.Now.ToString());
+                return Task.CompletedTask;
+            }
+            if (e.Message == null)
+            {
+                errors.Add("Null channel? " + DateTime.Now.ToString());
+                return Task.CompletedTask;
+            }
+            if (e.Message.Channel == null)
+            {
+                errors.Add("Null channel? " + DateTime.Now.ToString());
+                return Task.CompletedTask;
+            }
             if (e.Author.IsBot)
             {
-                if (AlliancePlugin.config.DiscordChannelId == e.Channel.Id)
+
+
+                if (AlliancePlugin.config.DiscordChannelId == e.Message.Channel.Id)
                 {
                     if (e.Message.Embeds.Count > 0)
                     {
@@ -691,7 +712,7 @@ namespace AlliancesPlugin.Alliances
                 {
                     if (!site.AllianceSite)
                     {
-                        if (site.FactionDiscordChannelId == e.Channel.Id)
+                        if (site.FactionDiscordChannelId == e.Message.Channel.Id)
                         {
                             if (e.Message.Embeds.Count > 0)
                             {
@@ -710,8 +731,8 @@ namespace AlliancesPlugin.Alliances
                         }
                     }
                 }
-
             }
+
 
             return Task.CompletedTask;
         }
