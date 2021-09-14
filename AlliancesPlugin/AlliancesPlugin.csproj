@@ -231,10 +231,6 @@
     <Compile Include="NewCaptureSite\RewardItem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReputationPatch.cs" />
-    <Compile Include="ShipMarket\ItemStatus.cs" />
-    <Compile Include="ShipMarket\MarketCommands.cs" />
-    <Compile Include="ShipMarket\MarketItem.cs" />
-    <Compile Include="ShipMarket\MarketList.cs" />
     <Compile Include="Shipyard\GridCosts.cs" />
     <Compile Include="GridManager.cs" />
     <Compile Include="Shipyard\PrintLog.cs" />

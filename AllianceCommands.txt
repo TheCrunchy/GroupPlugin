@@ -107,7 +107,9 @@ Admin gate commands
 !jumpzone reload - reload the configs for jump exclusion zones
 
 
-Shipmarket
+
+
+Shipmarket - NO LONGER ALLIANCE CONTENT BECAUSE NOBODY TRIED IT
 !market view - view everything in the market
 !market search input
 !market info number - view detailed info on the target grid

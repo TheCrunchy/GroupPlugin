@@ -3654,14 +3654,7 @@ namespace AlliancesPlugin
                 {
                     Log.Error(ex);
                 }
-                try
-                {
-                    MarketCommands.list.RefreshList();
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex);
-                }
+         
 
                 try
                 {
