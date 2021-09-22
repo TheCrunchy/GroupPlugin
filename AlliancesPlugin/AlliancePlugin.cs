@@ -34,7 +34,6 @@ using AlliancesPlugin.Hangar;
 using AlliancesPlugin.Shipyard;
 using AlliancesPlugin.JumpGates;
 using VRage.Utils;
-using AlliancesPlugin.ShipMarket;
 using Sandbox.Common.ObjectBuilders;
 using Sandbox.Game.GameSystems;
 using VRage.Game.Entity;
@@ -474,7 +473,7 @@ namespace AlliancesPlugin
         }
         public static ChatManagerServer _chatmanager;
 
-        public long GetAttacker(long attackerId)
+        public static long GetAttacker(long attackerId)
         {
 
             var entity = MyAPIGateway.Entities.GetEntityById(attackerId);
@@ -555,25 +554,42 @@ namespace AlliancesPlugin
             {
                 long attackerId = GetAttacker(info.AttackerId);
                 //    Log.Info(attackerId);
-                //   Log.Info(info.Type.ToString());
+                Log.Info(info.Type.ToString());
                 //check if in zone
                 foreach (Territory ter in Territories.Values)
                 {
                     if (ter.HasBigSafeZone && ter.Alliance != Guid.Empty)
                     {
-                        if (target is MyEntity block)
+                        //Log.Info("has zone");
+                        if (target is MyCharacter character)
                         {
-                            float distance = Vector3.Distance(block.PositionComp.GetPosition(), new Vector3(ter.stationX, ter.stationY, ter.stationZ));
+                            float distance = Vector3.Distance(character.PositionComp.GetPosition(), new Vector3(ter.stationX, ter.stationY, ter.stationZ));
+                            //    Log.Info(distance);
                             if (distance <= ter.SafeZoneRadiusFromStationCoords)
                             {
+
+                                info.Amount = 0.0f;
+                                return;
+                            }
+                        }
+                        if (target is MySlimBlock block)
+                        {
+                            //    Log.Info("is an entity");
+                            float distance = Vector3.Distance(block.CubeGrid.PositionComp.GetPosition(), new Vector3(ter.stationX, ter.stationY, ter.stationZ));
+                            //    Log.Info(distance);
+                            if (distance <= ter.SafeZoneRadiusFromStationCoords)
+                            {
+                                //     Log.Info("in distance");
                                 if (!info.Type.Equals("Grind"))
                                 {
+                                    //        Log.Info("Denying damage");
                                     info.Amount = 0.0f;
                                     return;
                                 }
                                 //if in zone and damage type is from weapons/ramming deny it
                                 if (attackerId == 0L)
                                 {
+                                    //      Log.Info("Denying damage");
                                     info.Amount = 0.0f;
                                     return;
                                 }
@@ -1279,7 +1295,62 @@ namespace AlliancesPlugin
                     Territories.Add(ter.Id, ter);
 
                     //     Log.Info(ter.Name);
+                    if (DateTime.Now >= ter.DisableZoneAt && ter.ZoneIsEnabled)
+                    {
+                        //CONSUME CHIPS
+                        Vector3 Position = new Vector3(ter.stationX, ter.stationY, ter.stationZ);
+                        BoundingSphereD sphere = new BoundingSphereD(Position, 1000);
+                        Alliance alliance = AlliancePlugin.GetAlliance(ter.Alliance);
+                        if (alliance == null)
+                        {
+                            //  Log.Info("null alliance");
+                            continue;
+                        }
+                        List<VRage.Game.ModAPI.IMyInventory> zoneInvent = new List<VRage.Game.ModAPI.IMyInventory>();
+                
+                        foreach (MyCubeGrid grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
+                        {
+                            IMyFaction fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
+                            //   Log.Info("Grid? " + grid.DisplayNameText);
 
+                            if (fac != null)
+                            {
+                                // Log.Info("Fac isnt null");
+                                if (!fac.Tag.Equals(ter.FactionTagForStationOwner))
+                                {
+                                    //    Log.Info("Fac isnt the configured owner");
+                                    continue;
+                                }
+                            }
+                            List<long> blockIds = new List<long>();
+                            foreach (MySafeZoneBlock block in grid.GetFatBlocks().OfType<MySafeZoneBlock>())
+                            {
+                                blockIds.Add(block.EntityId);
+                                for (int i = 0; i < block.InventoryCount; i++)
+                                {
+
+                                    VRage.Game.ModAPI.IMyInventory inv = ((VRage.Game.ModAPI.IMyCubeBlock)block).GetInventory(i);
+                                   zoneInvent.Add(inv);
+                                    
+                                }
+                            }
+                            Dictionary<MyDefinitionId, int> chips = new Dictionary<MyDefinitionId, int>();
+                            MyDefinitionId.TryParse("MyObjectBuilder_Component/ZoneChip", out MyDefinitionId id);
+                            chips.Add(id, ter.ZoneChipUse);
+                            if (ShipyardCommands.ConsumeComponents(zoneInvent, chips, 0l))
+                            {
+                                ter.DisableZoneAt = DateTime.Now.AddHours(ter.HoursPerChip);
+                            }
+                            else
+                            {
+                                ter.ZoneIsEnabled = false;
+                                FunctionalBlockPatch.DisableThese.AddRange(blockIds);
+                            }
+
+                            utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + ter.Name + ".xml", ter);
+                            Territories[ter.Id] = ter;
+                        }
+                    }
                     if (DateTime.Now >= ter.transferTime)
                     {
                         //  Log.Info("Transferring? " + ter.Name);
@@ -1316,13 +1387,13 @@ namespace AlliancesPlugin
 
 
 
-                                long id = MySession.Static.Players.TryGetIdentityId(alliance.SupremeLeader);
+
                                 gridTerminalSys.GetBlocksOfType<MyStoreBlock>(blocks);
                                 bool transferred = false;
                                 foreach (MySafeZoneBlock block in grid.GetFatBlocks().OfType<MySafeZoneBlock>())
                                 {
+                                    FunctionalBlockPatch.transferList.Add(block.EntityId, alliance.SupremeLeader);
 
-                                    block.ChangeOwner(id, MyOwnershipShareModeEnum.None);
                                     block.Enabled = false;
                                     foreach (MySafeZone zone in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MySafeZone>())
                                     {
@@ -1360,29 +1431,32 @@ namespace AlliancesPlugin
                                 foreach (MyStoreBlock block in grid.GetFatBlocks().OfType<MyStoreBlock>())
                                 {
 
-                                    // grid.ChangeOwner(block, block.OwnerId, id);
-                                    block.ChangeOwner(id, MyOwnershipShareModeEnum.None);
+                                    FunctionalBlockPatch.transferList.Add(block.EntityId, alliance.SupremeLeader);
                                 }
 
+                                foreach (MyShipConnector block in grid.GetFatBlocks().OfType<MyShipConnector>())
+                                {
+
+                                    FunctionalBlockPatch.transferList.Add(block.EntityId, alliance.SupremeLeader);
+                                }
 
 
                                 foreach (MyRefinery block in grid.GetFatBlocks().OfType<MyRefinery>())
                                 {
 
-                                    block.ChangeOwner(id, MyOwnershipShareModeEnum.All);
+                                    FunctionalBlockPatch.transferList.Add(block.EntityId, alliance.SupremeLeader);
                                 }
 
                                 foreach (MyAssembler block in grid.GetFatBlocks().OfType<MyAssembler>())
                                 {
 
-                                    block.ChangeOwner(id, MyOwnershipShareModeEnum.All);
+                                    FunctionalBlockPatch.transferList.Add(block.EntityId, alliance.SupremeLeader);
                                 }
 
                                 foreach (MyCargoContainer block in grid.GetFatBlocks().OfType<MyCargoContainer>())
                                 {
 
-
-                                    block.ChangeOwner(id, MyOwnershipShareModeEnum.None);
+                                    FunctionalBlockPatch.transferList.Add(block.EntityId, alliance.SupremeLeader);
                                 }
 
                                 ter.previousOwner = ter.transferTo;
@@ -1633,6 +1707,7 @@ namespace AlliancesPlugin
                             }
                             MatrixD worldMatrix = MatrixD.CreateWorld(newPosition.Value, controller.CubeGrid.WorldMatrix.Forward, controller.CubeGrid.WorldMatrix.Up);
                             controller.CubeGrid.Teleport(worldMatrix);
+                            AlliancePlugin.Log.Info("Gate travel " + gate.GateName + " for " + player.DisplayName + " in " + controller.CubeGrid.DisplayName);
                         }
                         else
                         {
@@ -3488,6 +3563,7 @@ namespace AlliancesPlugin
         public static List<JumpThing> jumpies = new List<JumpThing>();
         public static Dictionary<Guid, Territory> Territories = new Dictionary<Guid, Territory>();
         public static Dictionary<long, DateTime> InTerritory = new Dictionary<long, DateTime>();
+        public static List<ulong> InSafeZone = new List<ulong>();
         public static void SendEnterMessage(MyPlayer player, Territory ter)
         {
 
@@ -3497,11 +3573,32 @@ namespace AlliancesPlugin
 
 
             NotificationMessage message2 = new NotificationMessage();
+
+        
             if (InTerritory.ContainsKey(player.Identity.IdentityId))
             {
+
                 if (DateTime.Now < InTerritory[player.Identity.IdentityId])
                     return;
-
+                if (ter.HasBigSafeZone)
+                {
+                    float distance = Vector3.Distance(player.GetPosition(), new Vector3(ter.stationX, ter.stationY, ter.stationZ));
+                    if (distance <= ter.SafeZoneRadiusFromStationCoords)
+                    {
+                        if (ter.ZoneIsEnabled)
+                        {
+                            ShipyardCommands.SendMessage(ter.MessagePrefix, "Safezone is enabled, combat is disabled.", Color.LimeGreen, (long)player.Id.SteamId);
+                            InSafeZone.Remove(player.Id.SteamId);
+                            InSafeZone.Add(player.Id.SteamId);
+                            return;
+                        }
+                        else
+                        {
+                            ShipyardCommands.SendMessage(ter.MessagePrefix, "Safezone is NOT enabled.", Color.DarkRed, (long)player.Id.SteamId);
+                            InSafeZone.Remove(player.Id.SteamId);
+                        }
+                    }
+                }
                 message2 = new NotificationMessage(ter.EntryMessage.Replace("{name}", ter.Name), 10000, "Green");
                 //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
 
@@ -3560,7 +3657,17 @@ namespace AlliancesPlugin
                 TerritoryInside.Remove(player.Id.SteamId);
                 return;
             }
-
+            if (ter.HasBigSafeZone && InSafeZone.Contains(player.Id.SteamId))
+            {
+                float distance = Vector3.Distance(player.GetPosition(), new Vector3(ter.stationX, ter.stationY, ter.stationZ));
+                if (distance > ter.SafeZoneRadiusFromStationCoords)
+                {
+                  
+                    ShipyardCommands.SendMessage(ter.MessagePrefix, "You have left the safezone, combat is enabled.", Color.DarkRed, (long)player.Id.SteamId);
+                    InSafeZone.Remove(player.Id.SteamId);
+                    return;
+                }
+            }
             NotificationMessage message2 = new NotificationMessage(ter.ExitMessage.Replace("{name}", ter.Name), 10000, "White");
 
             ModCommunication.SendMessageTo(message2, player.Id.SteamId);
@@ -3645,6 +3752,10 @@ namespace AlliancesPlugin
                 Log.Info("Doing alliance tasks");
 
                 DateTime now = DateTime.Now;
+                //  if (config != null && config.AllowDiscord && !DiscordStuff.Ready)
+                //  {
+                //      DiscordStuff.RegisterDiscord();
+                // }
                 NextUpdate = now.AddSeconds(60);
                 try
                 {
@@ -3654,7 +3765,7 @@ namespace AlliancesPlugin
                 {
                     Log.Error(ex);
                 }
-         
+
 
                 try
                 {

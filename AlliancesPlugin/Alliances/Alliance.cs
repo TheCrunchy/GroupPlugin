@@ -56,6 +56,8 @@ namespace AlliancesPlugin.Alliances
         public int failedUpkeep = 0;
         public int RefineryUpgradeLevel = 0;
         public int AssemblerUpgradeLevel = 0;
+
+        public Boolean ForceFriends = true;
         public long GetExpectedUpkeep()
         {
 
@@ -318,8 +320,9 @@ namespace AlliancesPlugin.Alliances
                     data.allianceId = AllianceId;
                     utils.WriteToJsonFile<HangarData>(AlliancePlugin.path + "//HangarData//" + AllianceId + "//hangar.json", data);
                 }
-
-                return utils.ReadFromJsonFile<HangarData>(AlliancePlugin.path + "//HangarData//" + AllianceId + "//hangar.json");
+                HangarData hangar = utils.ReadFromJsonFile<HangarData>(AlliancePlugin.path + "//HangarData//" + AllianceId + "//hangar.json");
+                hangar.SlotsAmount = (int) HangarCommands.slotUpgrades[hangar.SlotUpgradeNum].NewLevel;
+                return hangar;
             }
             return null;
         }
@@ -327,7 +330,12 @@ namespace AlliancesPlugin.Alliances
         {
             if (hasUnlockedShipyard)
             {
-                return utils.ReadFromJsonFile<PrintQueue>(AlliancePlugin.path + "//ShipyardData//" + AllianceId + "//queue.json");
+       
+                    
+                   PrintQueue queue = utils.ReadFromJsonFile<PrintQueue>(AlliancePlugin.path + "//ShipyardData//" + AllianceId + "//queue.json");
+                queue.upgradeSlots = (int)ShipyardCommands.slotUpgrades[queue.SlotsUpgrade].NewLevel;
+          
+                return queue;
             }
             return null;
         }
@@ -690,21 +698,24 @@ namespace AlliancesPlugin.Alliances
 
         public void ForceFriendlies()
         {
-            foreach (long id in AllianceMembers)
+            if (ForceFriends)
             {
-                IMyFaction fac = MySession.Static.Factions.TryGetFactionById(id);
-                if (fac != null)
+                foreach (long id in AllianceMembers)
                 {
-                    foreach (long id2 in AllianceMembers)
+                    IMyFaction fac = MySession.Static.Factions.TryGetFactionById(id);
+                    if (fac != null)
                     {
-                        IMyFaction fac2 = MySession.Static.Factions.TryGetFactionById(id2);
-                        if (fac2 != null && fac != fac2)
+                        foreach (long id2 in AllianceMembers)
                         {
-                            if (!MySession.Static.Factions.AreFactionsFriends(id, id2))
+                            IMyFaction fac2 = MySession.Static.Factions.TryGetFactionById(id2);
+                            if (fac2 != null && fac != fac2)
                             {
-                                MySession.Static.Factions.SetReputationBetweenFactions(id, id2, 1500);
-                                DoFriendlyUpdate(id, id2);
+                                if (!MySession.Static.Factions.AreFactionsFriends(id, id2))
+                                {
+                                    MySession.Static.Factions.SetReputationBetweenFactions(id, id2, 1500);
+                                    DoFriendlyUpdate(id, id2);
 
+                                }
                             }
                         }
                     }

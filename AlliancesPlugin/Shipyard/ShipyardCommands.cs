@@ -244,7 +244,7 @@ namespace AlliancesPlugin.Shipyard
                 {
                     SendMessage("[Shipyard]", "Shipyard speed: blockCount * base speed * " + queue.upgradeSpeed, Color.Cyan, (long)Context.Player.SteamUserId);
                 }
-   
+             
                 for (int i = 1; i <= queue.upgradeSlots; i++)
                 {
                     if (queue.getQueue().ContainsKey(i))
@@ -273,6 +273,7 @@ namespace AlliancesPlugin.Shipyard
                         SendMessage("[ Y ]", i.ToString() + " : Empty - Can use", Color.Green, (long)Context.Player.SteamUserId);
                     }
                 }
+               
             }
 
         }
@@ -521,6 +522,7 @@ namespace AlliancesPlugin.Shipyard
                             {
                                 alliance.hasUnlockedShipyard = true;
                                 queue.upgradeSlots = 1;
+                           
                                 alliance.CurrentMetaPoints -= cost.MetaPointCost;
                                 alliance.SavePrintQueue(queue);
                                 AlliancePlugin.SaveAllianceData(alliance);
@@ -591,82 +593,60 @@ namespace AlliancesPlugin.Shipyard
                     switch (type.ToLower())
                     {
                         case "speed":
-  
-                           // Context.Respond(queue.SpeedUpgrade + " ");
-
-                            try
+                            sb.AppendLine("Current upgrade number : " + queue.SpeedUpgrade);
+                            foreach (KeyValuePair<int,UpgradeCost> key in speedUpgrades)
                             {
-                                cost = speedUpgrades[queue.SpeedUpgrade += 1];
-                            }
-                            catch (Exception ex)
-                            {
-                            
-                                Context.Respond("Cannot upgrade any further as there are no more defined upgrade files.");
-                                return;
-                            }
-                            if (cost != null)
-                            {
-                                if (cost.MoneyRequired > 0)
+                                sb.AppendLine("Upgrade number " + key.Key);
+                                if (key.Value.MoneyRequired > 0)
                                 {
-                                    SendMessage("[Shipyard]", "SC Cost for next speed upgrade " + String.Format("{0:n0}", cost.MoneyRequired), Color.Cyan, (long)Context.Player.SteamUserId);
+                                    sb.AppendLine("Costs " + String.Format("{0:n0}", key.Value.MoneyRequired) + " SC.");
                                 }
-                                if (cost.MetaPointCost > 0)
+                                if (key.Value.MetaPointCost > 0)
                                 {
-                                    
-                                        SendMessage("[Shipyard]", "Metapoint cost for next speed upgrade " + cost.MetaPointCost, Color.Cyan, (long)Context.Player.SteamUserId);
-                                  
-                                    
+                                    sb.AppendLine("Costs " + String.Format("{0:n0}", key.Value.MetaPointCost) + " Meta Points.");
                                 }
                                 sb.AppendLine("Items required.");
-                                foreach (KeyValuePair<MyDefinitionId, int> id in cost.itemsRequired)
+                                foreach (KeyValuePair<MyDefinitionId, int> id in key.Value.itemsRequired)
                                 {
                                     sb.AppendLine(id.Key.ToString() + " - " + id.Value);
                                 }
-                                Context.Respond(sb.ToString());
+                                sb.AppendLine("New Speed " + key.Value.NewLevel);
+                                sb.AppendLine("");
                             }
-                            else
-                            {
-                                Context.Respond("Error loading upgrade details.");
-                                return;
-                            }
+
+
+                            DialogMessage m2 = new DialogMessage("Available upgrades", "", sb.ToString());
+                            ModCommunication.SendMessageTo(m2, Context.Player.SteamUserId);
+                            // Context.Respond(queue.SpeedUpgrade + " ");
+
                             break;
                         case "slots":
 
 
-                            try
+                            sb.AppendLine("Current upgrade number : " + queue.SlotsUpgrade);
+                            foreach (KeyValuePair<int, UpgradeCost> key in slotUpgrades)
                             {
-                                cost = slotUpgrades[queue.SlotsUpgrade += 1];
-                            }
-                            catch (Exception)
-                            {
-                                Context.Respond("Cannot upgrade any further as there are no more defined upgrade files.");
-                                return;
-                            }
-                            if (cost != null)
-                            {
-                                if (cost.MoneyRequired > 0)
+                                sb.AppendLine("Upgrade number " + key.Key);
+                                if (key.Value.MoneyRequired > 0)
                                 {
-                                    SendMessage("[Shipyard]", "SC Cost for next slot upgrade " + String.Format("{0:n0}", cost.MoneyRequired), Color.Cyan, (long)Context.Player.SteamUserId);
+                                    sb.AppendLine("Costs " + String.Format("{0:n0}", key.Value.MoneyRequired) + " SC.");
                                 }
-                                if (cost.MetaPointCost > 0)
+                                if (key.Value.MetaPointCost > 0)
                                 {
-
-                                    SendMessage("[Shipyard]", "Metapoint cost for next slot upgrade " + cost.MetaPointCost, Color.Cyan, (long)Context.Player.SteamUserId);
-                                    
-
+                                    sb.AppendLine("Costs " + String.Format("{0:n0}", key.Value.MetaPointCost) + " Meta Points.");
                                 }
                                 sb.AppendLine("Items required.");
-                                foreach (KeyValuePair<MyDefinitionId, int> id in cost.itemsRequired)
+                                foreach (KeyValuePair<MyDefinitionId, int> id in key.Value.itemsRequired)
                                 {
                                     sb.AppendLine(id.Key.ToString() + " - " + id.Value);
                                 }
-                                Context.Respond(sb.ToString());
+                                sb.AppendLine("New Slots " + key.Value.NewLevel);
+                                sb.AppendLine("");
                             }
-                            else
-                            {
-                                Context.Respond("Error loading upgrade details.");
-                                return;
-                            }
+
+
+                            DialogMessage m3 = new DialogMessage("Available upgrades", "", sb.ToString());
+                            ModCommunication.SendMessageTo(m3, Context.Player.SteamUserId);
                             break;
                         default:
                             Context.Respond("Use !shipyard upgrade speed or slots");
@@ -810,7 +790,7 @@ namespace AlliancesPlugin.Shipyard
                             
                                            
                                             EconUtils.takeMoney(Context.Player.IdentityId, cost.MoneyRequired);
-                                            queue.upgradeSlots = (int)cost.NewLevel;
+                                           // queue.upgradeSlots = (int)cost.NewLevel;
                                             queue.SlotsUpgrade++;
                                             alliance.SavePrintQueue(queue);
                                             AlliancePlugin.SaveAllianceData(alliance);
@@ -827,7 +807,7 @@ namespace AlliancesPlugin.Shipyard
                                     if (ConsumeComponents(invents, cost.itemsRequired, Context.Player.SteamUserId))
                                     {
                                         alliance.CurrentMetaPoints -= cost.MetaPointCost;
-                                        queue.upgradeSlots = (int)cost.NewLevel;
+                                       // queue.upgradeSlots = (int)cost.NewLevel;
                                         alliance.SavePrintQueue(queue);
                                         queue.SlotsUpgrade++;
                                         AlliancePlugin.SaveAllianceData(alliance);
@@ -1446,11 +1426,14 @@ namespace AlliancesPlugin.Shipyard
                     }
                     foreach (MyCubeBlock proj in grid.GetFatBlocks().OfType<MyProjectorBase>())
                     {
-
+                        
                         if (proj != null && !found && store == null && proj is Sandbox.ModAPI.IMyProjector projector)
                         {
+
                             if (AlliancePlugin.shipyardConfig.GetPrinterConfig(projector.BlockDefinition.SubtypeId) != null)
                             {
+                                if (!projector.Enabled)
+                                    continue;
                                 printerConfig = AlliancePlugin.shipyardConfig.GetPrinterConfig(projector.BlockDefinition.SubtypeId);
                                 if (!printerConfig.enabled)
                                 {
@@ -1486,7 +1469,7 @@ namespace AlliancesPlugin.Shipyard
                                 int blockCount = blocks.Count;
                                 if (blockCount > AlliancePlugin.shipyardConfig.MaximumBlockSize)
                                 {
-                                    Context.Respond("Projected grid exceeds maximum limit of " + AlliancePlugin.shipyardConfig);
+                                    Context.Respond("Projected grid exceeds maximum limit of " + AlliancePlugin.shipyardConfig.MaximumBlockSize);
                                     return;
                                 }
                                 gridCosts.setPCU(blockCount);
@@ -1536,7 +1519,7 @@ namespace AlliancesPlugin.Shipyard
             }
                 if (confirmations.ContainsKey(playerId))
             {
-
+               // MyVisualScriptLogicProvider.add
 
                 confirmations.TryGetValue(playerId, out long time);
 

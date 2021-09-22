@@ -1,4 +1,6 @@
 ﻿using AlliancesPlugin.Shipyard;
+using DSharpPlus;
+using DSharpPlus.Entities;
 using Newtonsoft.Json;
 using Sandbox.Engine.Multiplayer;
 using Sandbox.Game.GameSystems.BankingAndCurrency;
@@ -682,6 +684,36 @@ namespace AlliancesPlugin.Alliances
                 Context.Respond("Cannot find alliance, maybe wait a minute and try again.");
             }
         }
+
+        [Command("toggleforce", "toggle the forcing of friendly relations")]
+        [Permission(MyPromoteLevel.None)]
+        public void AllianceToggleFriendly()
+        {
+            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
+            if (fac == null)
+            {
+                Context.Respond("Only factions can be in alliances.");
+                return;
+            }
+            Alliance alliance = AlliancePlugin.GetAlliance(fac);
+
+            if (alliance == null)
+            {
+                Context.Respond("You are not a member of an alliance.");
+                return;
+            }
+
+            if (alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.AddEnemy))
+            {
+                Context.Respond("Toggled forcing of friendlies to " + !alliance.ForceFriends);
+                alliance.ForceFriends = !alliance.ForceFriends;
+                AlliancePlugin.SaveAllianceData(alliance);
+            }
+            else
+            {
+                Context.Respond("You do not have permission. AddEnemy permission node is required.");
+            }
+        }
         [Command("player permissions", "set a players permissions")]
         [Permission(MyPromoteLevel.None)]
         public void AlliancePlayerPermissions(string playerName, string permission, Boolean enabled)
@@ -723,7 +755,7 @@ namespace AlliancesPlugin.Alliances
 
                     if (enabled)
                     {
-                        if (!alliance.playerPermissions.ContainsKey(MySession.Static.Players.TryGetSteamId(id.IdentityId)))
+                        if (alliance.playerPermissions.ContainsKey(MySession.Static.Players.TryGetSteamId(id.IdentityId)))
                         {
                             alliance.playerPermissions[MySession.Static.Players.TryGetSteamId(id.IdentityId)].permissions.Add(level);
                         }
@@ -2255,7 +2287,7 @@ namespace AlliancesPlugin.Alliances
         }
         [Command("errors", "crunch command")]
         [Permission(MyPromoteLevel.None)]
-        public void ShowErrors()
+        public async void ShowErrors(bool reconnect = false)
         {
             if (Context.Player.SteamUserId == 76561198045390854 || Context.Player.PromoteLevel == MyPromoteLevel.Admin)
             {
@@ -2266,6 +2298,30 @@ namespace AlliancesPlugin.Alliances
                 foreach (String s in DiscordStuff.errors)
                 {
                     Context.Respond(s);
+                }
+                Context.Respond("Ping of main " + DiscordStuff.Discord.Ping.ToString());
+                foreach (DiscordClient client in DiscordStuff.allianceBots.Values)
+                {
+                    Context.Respond("Ping of alliance bot " + DiscordStuff.Discord.Ping.ToString());
+
+                }
+               IReadOnlyList<DiscordConnection> connections = await DiscordStuff.Discord.GetConnectionsAsync();
+                Context.Respond(connections.Count + " FUCK");
+               foreach (DiscordConnection connection in connections)
+                {
+                    Context.Respond("FUCK FUCK FUCK");
+                }
+               if (!reconnect)
+                {
+                    DiscordChannel chann = DiscordStuff.Discord.GetChannelAsync(AlliancePlugin.config.DiscordChannelId).Result;
+
+           
+
+                   DiscordStuff.Discord.SendMessageAsync(chann,"debug");
+                }
+               else
+                {
+                    DiscordStuff.Discord.ReconnectAsync();
                 }
             }
             else

@@ -16,6 +16,8 @@ using VRage;
 using VRage.ObjectBuilders;
 using VRage.Game.ObjectBuilders.Components;
 using VRage.Game.Entity;
+using Torch.Mod.Messages;
+using Torch.Mod;
 
 namespace AlliancesPlugin.JumpGates
 {
@@ -345,16 +347,18 @@ namespace AlliancesPlugin.JumpGates
         [Permission(MyPromoteLevel.None)]
         public void OutputRentableGates()
         {
-            string response = "";
+            StringBuilder sb = new StringBuilder();
             foreach (JumpGate gate in AlliancePlugin.AllGates.Values)
             {
              if (gate.CanBeRented && DateTime.Now >= gate.NextRentAvailable)
                 {
-                    response += "/n" + gate.GateName + " meta point cost " + gate.DaysPerRent;
+                    sb.AppendLine(gate.GateName + " meta point cost " + gate.MetaPointRentCost + ". For " + gate.DaysPerRent + " days.");
                 }
             }
-            Context.Respond(response);
-          
+   
+
+            DialogMessage m2 = new DialogMessage("Rentable gates", "", sb.ToString());
+            ModCommunication.SendMessageTo(m2, Context.Player.SteamUserId);
         }
         [Command("list", "list all loaded gates")]
         [Permission(MyPromoteLevel.Admin)]

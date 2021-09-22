@@ -36,26 +36,33 @@ namespace AlliancesPlugin.Alliances
             {
                 try
                 {
-                    // Windows Vista - 8.1
-                    if (Environment.OSVersion.Platform.Equals(PlatformID.Win32NT) && Environment.OSVersion.Version.Major == 6)
+                    //Windows Vista -8.1
+                    //if (Environment.OSVersion.Platform.Equals(PlatformID.Win32NT) && Environment.OSVersion.Version.Major == 6)
+                    //{
+                    //    Discord = new DiscordClient(new DiscordConfiguration
+                    //    {
+                    //        Token = AlliancePlugin.config.DiscordBotToken,
+                    //        TokenType = TokenType.Bot,
+                    //        WebSocketClientFactory = WebSocket4NetClient.CreateNew,
+                    //        AutoReconnect = true
+                    //    });
+                    //}
+                    //else
+                    //{
+                    //    Discord = new DiscordClient(new DiscordConfiguration
+                    //    {
+                    //        Token = AlliancePlugin.config.DiscordBotToken,
+                    //        TokenType = TokenType.Bot,
+                    //        AutoReconnect = true
+                    //    });
+                    //}
+
+                    DiscordConfiguration = new DiscordConfiguration
                     {
-                        Discord = new DiscordClient(new DiscordConfiguration
-                        {
-                            Token = AlliancePlugin.config.DiscordBotToken,
-                            TokenType = TokenType.Bot,
-                            WebSocketClientFactory = WebSocket4NetClient.CreateNew,
-                            AutoReconnect = true
-                        });
-                    }
-                    else
-                    {
-                        Discord = new DiscordClient(new DiscordConfiguration
-                        {
-                            Token = AlliancePlugin.config.DiscordBotToken,
-                            TokenType = TokenType.Bot,
-                            AutoReconnect = true
-                        });
-                    }
+                        Token = Plugin.Config.BotToken,
+                        TokenType = TokenType.Bot,
+                    };
+                    Discord = new DiscordClient(DiscordConfiguration);
                 }
                 catch (Exception ex)
                 {
@@ -64,8 +71,8 @@ namespace AlliancesPlugin.Alliances
                     errors.Add(ex.ToString());
                     return Task.CompletedTask;
                 }
-
-
+      
+        
                 Discord.ClientErrored += Client_ClientError;
                 Discord.SocketErrored += Client_SocketError;
                 Discord.SocketClosed += Client_SocketClosed;
@@ -79,7 +86,7 @@ namespace AlliancesPlugin.Alliances
                     errors.Add(ex.ToString());
                     return Task.CompletedTask;
                 }
-
+                errors.Add("Registering the koth bot");
                 Discord.MessageCreated += Discord_MessageCreated;
 
                 Ready = true;
@@ -88,7 +95,16 @@ namespace AlliancesPlugin.Alliances
         }
         private static Task Client_ClientError(ClientErrorEventArgs e)
         {
-            errors.Add("Client error " + e.Exception.Message.ToString());
+            foreach (KeyValuePair<Guid, DiscordClient> clients in allianceBots)
+            {
+                if (e.Client == clients.Value)
+                {
+                    Alliance alliance = AlliancePlugin.GetAllianceNoLoading(clients.Key);
+                    errors.Add("CLIENT ERROR FOR " + alliance.name + " " + e.Exception.StackTrace.ToString());
+                    return Task.CompletedTask;
+                }
+            }
+            errors.Add("CLIENT ERROR FOR NORMAL BOT " + e.Exception.StackTrace.ToString());
             // let's log the details of the error that just 
             // occured in our client
             //  sender.Logger.LogError(BotEventId, e.Exception, "Exception occured");
@@ -100,7 +116,16 @@ namespace AlliancesPlugin.Alliances
         }
         private static Task Client_SocketError(SocketErrorEventArgs e)
         {
-            errors.Add("Client socket error "  + e.Exception.Message.ToString());
+            foreach (KeyValuePair<Guid, DiscordClient> clients in allianceBots)
+            {
+                if (e.Client == clients.Value)
+                {
+                    Alliance alliance = AlliancePlugin.GetAllianceNoLoading(clients.Key);
+                    errors.Add("CLIENT SOCKET ERROR FOR " + alliance.name + " " + e.Exception.StackTrace.ToString());
+                    return Task.CompletedTask;
+                }
+            }
+            errors.Add("CLIENT SOCKET ERROR FOR NORMAL BOT " + e.Exception.StackTrace.ToString());
             // let's log the details of the error that just 
             // occured in our client
             //  sender.Logger.LogError(BotEventId, e.Exception, "Exception occured");
@@ -114,7 +139,17 @@ namespace AlliancesPlugin.Alliances
         private static Task Client_SocketClosed(SocketCloseEventArgs e)
         {
 
-            errors.Add("CLOSED? " + e.CloseMessage);
+   
+            foreach (KeyValuePair<Guid, DiscordClient> clients in allianceBots)
+            {
+                if (e.Client == clients.Value)
+                {
+                    Alliance alliance = AlliancePlugin.GetAllianceNoLoading(clients.Key);
+                    errors.Add("CLOSED FOR " + alliance.name);
+                    return Task.CompletedTask;
+                }
+            }
+            errors.Add("CLOSED FOR THE NORMAL BOT");
             // let's log the details of the error that just 
             // occured in our client
             //  sender.Logger.LogError(BotEventId, e.Exception, "Exception occured");
@@ -669,68 +704,134 @@ namespace AlliancesPlugin.Alliances
             }
             return Task.CompletedTask;
         }
+       static bool tried = false;
+        public static DateTime nextMention = DateTime.Now;
         private static Task Discord_MessageCreated(DSharpPlus.EventArgs.MessageCreateEventArgs e)
         {
+            if (WorldName.Equals("") && MyMultiplayer.Static.HostName != null)
+            {
+                if (MyMultiplayer.Static.HostName.Contains("SENDS"))
+                {
+                    WorldName = MyMultiplayer.Static.HostName.Replace("SENDS", "");
+                }
+                else
+                {
+                    if (MyMultiplayer.Static.HostName.Equals("Sigma Draconis Lobby"))
+                    {
+                        WorldName = "01";
+                    }
+                    else
+                    {
+                        WorldName = MyMultiplayer.Static.HostName;
+                    }
+                }
+            }
             if (e == null)
             {
-                errors.Add("Null message? " + DateTime.Now.ToString());
+                errors.Add("Null exception? " + DateTime.Now.ToString());
+                //if (DateTime.Now >= nextMention)
+                //{
+                //    DiscordChannel chann = e.Client.GetChannelAsync(AlliancePlugin.config.DiscordChannelId).Result;
+
+
+
+                //    botId = e.Client.SendMessageAsync(chann, "**[" + WorldName + "] " + "It happened again Null exception ").Result.Author.Id;
+                //    nextMention = DateTime.Now.AddHours(1);
+                //}
                 return Task.CompletedTask;
             }
             if (e.Message == null)
             {
-                errors.Add("Null channel? " + DateTime.Now.ToString());
+               
+                errors.Add("Null message? " + DateTime.Now.ToString());
+                //if (DateTime.Now >= nextMention)
+                //{
+                //    DiscordChannel chann = e.Client.GetChannelAsync(AlliancePlugin.config.DiscordChannelId).Result;
+
+
+
+                //    botId = e.Client.SendMessageAsync(chann, "**[" + WorldName + "] " + "It happened again Null message ").Result.Author.Id;
+                //    nextMention = DateTime.Now.AddHours(1);
+                //}
                 return Task.CompletedTask;
             }
             if (e.Message.Channel == null)
             {
                 errors.Add("Null channel? " + DateTime.Now.ToString());
+              
+                //if (DateTime.Now >= nextMention)
+                //{
+                //    tried = true;
+                //    DiscordChannel chann = e.Client.GetChannelAsync(AlliancePlugin.config.DiscordChannelId).Result;
+
+                //    e.Client.ReconnectAsync();
+
+                //    botId = e.Client.SendMessageAsync(chann, "**[" + WorldName + "] " + "It happened again Null channel ").Result.Author.Id;
+                //    nextMention = DateTime.Now.AddHours(1);
+                //}
                 return Task.CompletedTask;
             }
-            if (e.Author.IsBot)
+
+            if (tried)
             {
+                DiscordChannel chann = e.Client.GetChannelAsync(AlliancePlugin.config.DiscordChannelId).Result;
+                tried = false;
 
-
-                if (AlliancePlugin.config.DiscordChannelId == e.Message.Channel.Id)
+                botId = e.Client.SendMessageAsync(chann, "**[" + WorldName + "] " + "Bot reconnected properly? ").Result.Author.Id;
+            }
+            try
+            {
+                if (e.Author.IsBot)
                 {
-                    if (e.Message.Embeds.Count > 0)
+
+
+                    if (AlliancePlugin.config.DiscordChannelId == e.Message.Channel.Id)
                     {
-                        foreach (DiscordEmbed embed in e.Message.Embeds)
+                        if (e.Message.Embeds.Count > 0)
                         {
-                            ShipyardCommands.SendMessage(embed.Title, embed.Description, Color.LightGreen, 0L);
-                        }
-                    }
-                    else
-                    {
-                        ShipyardCommands.SendMessage(e.Author.Username, e.Message.Content, Color.LightGreen, 0L);
-                    }
-                    return Task.CompletedTask;
-                }
-
-
-
-                foreach (CaptureSite site in AlliancePlugin.sites)
-                {
-                    if (!site.AllianceSite)
-                    {
-                        if (site.FactionDiscordChannelId == e.Message.Channel.Id)
-                        {
-                            if (e.Message.Embeds.Count > 0)
+                            foreach (DiscordEmbed embed in e.Message.Embeds)
                             {
-                                foreach (DiscordEmbed embed in e.Message.Embeds)
+                                ShipyardCommands.SendMessage(embed.Title, embed.Description, Color.LightGreen, 0L);
+                            }
+                        }
+                        else
+                        {
+                            ShipyardCommands.SendMessage(e.Author.Username, e.Message.Content, Color.LightGreen, 0L);
+                        }
+                        return Task.CompletedTask;
+                    }
+
+
+
+                    foreach (CaptureSite site in AlliancePlugin.sites)
+                    {
+                        if (!site.AllianceSite)
+                        {
+                            if (site.FactionDiscordChannelId == e.Message.Channel.Id)
+                            {
+                                if (e.Message.Embeds.Count > 0)
                                 {
-                                    ShipyardCommands.SendMessage(embed.Title, embed.Description, Color.LightGreen, 0L);
+                                    foreach (DiscordEmbed embed in e.Message.Embeds)
+                                    {
+                                        ShipyardCommands.SendMessage(embed.Title, embed.Description, Color.LightGreen, 0L);
+                                    }
                                 }
-                            }
-                            else
-                            {
-                                ShipyardCommands.SendMessage(e.Author.Username, e.Message.Content, Color.LightGreen, 0L);
-                            }
+                                else
+                                {
+                                    ShipyardCommands.SendMessage(e.Author.Username, e.Message.Content, Color.LightGreen, 0L);
+                                }
 
 
-                            return Task.CompletedTask;
+                                return Task.CompletedTask;
+                            }
                         }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                errors.Add("Error reading normal discord message " + ex.ToString());
+                
             }
 
 

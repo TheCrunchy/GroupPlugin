@@ -261,32 +261,29 @@ namespace AlliancesPlugin.Hangar
                     StringBuilder sb = new StringBuilder();
 
 
-                    try
+                    sb.AppendLine("Current upgrade number : " + hangar.SlotUpgradeNum);
+                    foreach (KeyValuePair<int, UpgradeCost> key in slotUpgrades)
                     {
-                        cost = slotUpgrades[hangar.SlotUpgradeNum += 1];
-                    }
-                    catch (Exception ex)
-                    {
-                        Context.Respond("Cannot upgrade any further as there are no more defined upgrade files.");
-                        return;
-                    }
-                    if (cost != null)
-                    {
-                        if (cost.MoneyRequired > 0)
+                        sb.AppendLine("Upgrade number " + key.Key);
+                        if (key.Value.MoneyRequired > 0)
                         {
-                            ShipyardCommands.SendMessage("[Alliance Hangar]", "SC Cost for next slot upgrade " + String.Format("{0:n0}", cost.MoneyRequired), Color.Cyan, (long)Context.Player.SteamUserId);
+                            sb.AppendLine("Costs " + String.Format("{0:n0}", key.Value.MoneyRequired) + " SC.");
                         }
-                        if (cost.MetaPointCost > 0)
+                        if (key.Value.MetaPointCost > 0)
                         {
-                            ShipyardCommands.SendMessage("[Alliance Hangar]", "Metapoint cost for next slot upgrade " + cost.MetaPointCost, Color.Cyan, (long)Context.Player.SteamUserId);
+                            sb.AppendLine("Costs " + String.Format("{0:n0}", key.Value.MetaPointCost) + " Meta Points.");
                         }
                         sb.AppendLine("Items required.");
-                        foreach (KeyValuePair<MyDefinitionId, int> id in cost.itemsRequired)
+                        foreach (KeyValuePair<MyDefinitionId, int> id in key.Value.itemsRequired)
                         {
                             sb.AppendLine(id.Key.ToString() + " - " + id.Value);
                         }
-                        Context.Respond(sb.ToString());
+                        sb.AppendLine("New Slots " + key.Value.NewLevel);
+                        sb.AppendLine("");
                     }
+
+                    DialogMessage m3 = new DialogMessage("Available upgrades", "", sb.ToString());
+                    ModCommunication.SendMessageTo(m3, Context.Player.SteamUserId);
 
                 }
                 else
@@ -330,7 +327,7 @@ namespace AlliancesPlugin.Hangar
                         invents.AddList(ShipyardCommands.GetInventories(grid));
                     }
 
-  
+
 
                     try
                     {
