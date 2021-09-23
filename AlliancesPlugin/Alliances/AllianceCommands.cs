@@ -3,6 +3,7 @@ using DSharpPlus;
 using DSharpPlus.Entities;
 using Newtonsoft.Json;
 using Sandbox.Engine.Multiplayer;
+using Sandbox.Game;
 using Sandbox.Game.GameSystems.BankingAndCurrency;
 using Sandbox.Game.Multiplayer;
 using Sandbox.Game.Screens.Helpers;
@@ -2287,7 +2288,7 @@ namespace AlliancesPlugin.Alliances
         }
         [Command("errors", "crunch command")]
         [Permission(MyPromoteLevel.None)]
-        public async void ShowErrors(bool reconnect = false)
+        public async void ShowErrors(int num, string ServerNum = "06")
         {
             if (Context.Player.SteamUserId == 76561198045390854 || Context.Player.PromoteLevel == MyPromoteLevel.Admin)
             {
@@ -2305,13 +2306,14 @@ namespace AlliancesPlugin.Alliances
                     Context.Respond("Ping of alliance bot " + DiscordStuff.Discord.Ping.ToString());
 
                 }
-               IReadOnlyList<DiscordConnection> connections = await DiscordStuff.Discord.GetConnectionsAsync();
-                Context.Respond(connections.Count + " FUCK");
-               foreach (DiscordConnection connection in connections)
+
+
+                //to lazy to make a switch/case
+                if (num == 0)
                 {
-                    Context.Respond("FUCK FUCK FUCK");
+                    MyVisualScriptLogicProvider.SendChatMessageColored("Can anyone see this message in a server that isnt " + MyMultiplayer.Static.HostName,Color.Pink, "TESTING", 0);
                 }
-               if (!reconnect)
+                if (num == 1)
                 {
                     DiscordChannel chann = DiscordStuff.Discord.GetChannelAsync(AlliancePlugin.config.DiscordChannelId).Result;
 
@@ -2319,9 +2321,30 @@ namespace AlliancesPlugin.Alliances
 
                    DiscordStuff.Discord.SendMessageAsync(chann,"debug");
                 }
-               else
+               if (num == 2)
                 {
-                    DiscordStuff.Discord.ReconnectAsync();
+                    DiscordStuff.Discord.DisconnectAsync();
+                }
+                if (num == 3)
+                {
+                    DiscordStuff.Discord.ConnectAsync();
+                }
+                if (num == 4)
+                {
+                    DiscordStuff.Discord.MessageCreated -= DiscordStuff.Discord_MessageCreated;
+                }
+                if (num == 5)
+                {
+                    DiscordStuff.Discord.MessageCreated -= DiscordStuff.Discord_MessageCreated;
+                    DiscordStuff.Discord.MessageCreated += DiscordStuff.Discord_MessageCreated;
+                }
+                if (num == 6)
+                {
+                    DiscordChannel chann = DiscordStuff.Discord.GetChannelAsync(AlliancePlugin.config.DiscordChannelId).Result;
+
+
+
+                    DiscordStuff.Discord.SendMessageAsync(chann, " Checking SENDS"  + ServerNum);
                 }
             }
             else

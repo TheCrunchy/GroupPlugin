@@ -551,7 +551,8 @@ namespace AlliancesPlugin.Alliances
                             if (EconUtils.getBalance(tax.Key) >= tax.Value)
                             {
                                 alliance.DepositTax((long)tax.Value, MySession.Static.Players.TryGetSteamId(tax.Key));
-
+                                AlliancePlugin.TaxingId.Remove(tax.Key);
+                                AlliancePlugin.TaxingId.Add(tax.Key);
                                 EconUtils.takeMoney(tax.Key, (long)tax.Value);
                             }
                         }

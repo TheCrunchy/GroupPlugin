@@ -331,7 +331,7 @@ namespace AlliancesPlugin.Hangar
 
                     try
                     {
-                        cost = slotUpgrades[hangar.SlotUpgradeNum += 1];
+                        cost = slotUpgrades[hangar.SlotUpgradeNum + 1];
                     }
                     catch (Exception)
                     {

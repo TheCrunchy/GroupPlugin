@@ -52,6 +52,7 @@ using HarmonyLib;
 using AlliancesPlugin.NewCaptureSite;
 using Sandbox.ModAPI.Weapons;
 using Sandbox.Game.Weapons;
+using Sandbox.Game;
 
 namespace AlliancesPlugin
 {
@@ -628,6 +629,45 @@ namespace AlliancesPlugin
             }
         }
 
+        public static void BalanceChangedMethod2(
+     MyAccountInfo oldAccountInfo,
+     MyAccountInfo newAccountInfo)
+        {
+
+
+
+            if (Sync.Players.TryGetPlayerId(newAccountInfo.OwnerIdentifier, out MyPlayer.PlayerId player))
+            {
+                if (MySession.Static.Players.TryGetPlayerById(player, out MyPlayer pp))
+                {
+
+                    MySession.Static.Players.TryGetSteamId(newAccountInfo.OwnerIdentifier);
+                    //  foreach (MyPlayer player in MySession.Static.Players.GetOnlinePlayers())
+                    //    {
+                    //     if (player.Identity.IdentityId == identifierId)
+                    //    {
+                    long change;
+                    if (oldAccountInfo.Balance > newAccountInfo.Balance)
+                    {
+                        change = oldAccountInfo.Balance - newAccountInfo.Balance;
+                        if (!TaxingId.Contains(pp.Identity.IdentityId))
+                        {
+                            ShipyardCommands.SendMessage("CrunchEcon", "Balance decreased by: " + String.Format("{0:n0}", change) + " SC", Color.Red, (long)pp.Id.SteamId);
+                        }
+                        else
+                        {
+                            ShipyardCommands.SendMessage("CrunchEcon", "Alliances Taxes: " + String.Format("{0:n0}", change) + " SC", Color.HotPink, (long)pp.Id.SteamId);
+                            TaxingId.Remove(pp.Identity.IdentityId);
+                        }
+                    }
+
+                }
+            }
+
+
+        }
+
+
         private void SessionChanged(ITorchSession session, TorchSessionState state)
         {
             if (state == TorchSessionState.Unloading)
@@ -646,6 +686,8 @@ namespace AlliancesPlugin
 
 
                 LoadAllGates();
+
+                MyBankingSystem.Static.OnAccountBalanceChanged += BalanceChangedMethod2;
 
                 AllianceChat.ApplyLogging();
                 InitPluginDependencies(Torch.Managers.GetManager<PluginManager>());
@@ -1307,7 +1349,7 @@ namespace AlliancesPlugin
                             continue;
                         }
                         List<VRage.Game.ModAPI.IMyInventory> zoneInvent = new List<VRage.Game.ModAPI.IMyInventory>();
-                
+
                         foreach (MyCubeGrid grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
                         {
                             IMyFaction fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
@@ -1330,8 +1372,8 @@ namespace AlliancesPlugin
                                 {
 
                                     VRage.Game.ModAPI.IMyInventory inv = ((VRage.Game.ModAPI.IMyCubeBlock)block).GetInventory(i);
-                                   zoneInvent.Add(inv);
-                                    
+                                    zoneInvent.Add(inv);
+
                                 }
                             }
                             Dictionary<MyDefinitionId, int> chips = new Dictionary<MyDefinitionId, int>();
@@ -1755,7 +1797,7 @@ namespace AlliancesPlugin
                 }
             }
         }
-
+        public static List<long> TaxingId = new List<long>();
         public void DoTaxStuff()
         {
             List<long> Processed = new List<long>();
@@ -3574,7 +3616,7 @@ namespace AlliancesPlugin
 
             NotificationMessage message2 = new NotificationMessage();
 
-        
+
             if (InTerritory.ContainsKey(player.Identity.IdentityId))
             {
 
@@ -3601,6 +3643,7 @@ namespace AlliancesPlugin
                 }
                 message2 = new NotificationMessage(ter.EntryMessage.Replace("{name}", ter.Name), 10000, "Green");
                 //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
+
 
                 if (!TerritoryInside.ContainsKey(player.Id.SteamId))
                 {
@@ -3662,7 +3705,7 @@ namespace AlliancesPlugin
                 float distance = Vector3.Distance(player.GetPosition(), new Vector3(ter.stationX, ter.stationY, ter.stationZ));
                 if (distance > ter.SafeZoneRadiusFromStationCoords)
                 {
-                  
+
                     ShipyardCommands.SendMessage(ter.MessagePrefix, "You have left the safezone, combat is enabled.", Color.DarkRed, (long)player.Id.SteamId);
                     InSafeZone.Remove(player.Id.SteamId);
                     return;

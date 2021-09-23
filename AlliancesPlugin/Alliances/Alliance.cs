@@ -275,14 +275,15 @@ namespace AlliancesPlugin.Alliances
             {
                 return LeaderTitle;
             }
-            if (PlayersCustomRank.ContainsKey(id))
-            {
-                return PlayersCustomRank[id];
-            }
             if (otherTitles.ContainsKey(id))
             {
                 return otherTitles[id];
             }
+            if (PlayersCustomRank.ContainsKey(id))
+            {
+                return PlayersCustomRank[id];
+            }
+        
 
 
             return "";

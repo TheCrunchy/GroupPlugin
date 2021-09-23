@@ -36,33 +36,26 @@ namespace AlliancesPlugin.Alliances
             {
                 try
                 {
-                    //Windows Vista -8.1
-                    //if (Environment.OSVersion.Platform.Equals(PlatformID.Win32NT) && Environment.OSVersion.Version.Major == 6)
-                    //{
-                    //    Discord = new DiscordClient(new DiscordConfiguration
-                    //    {
-                    //        Token = AlliancePlugin.config.DiscordBotToken,
-                    //        TokenType = TokenType.Bot,
-                    //        WebSocketClientFactory = WebSocket4NetClient.CreateNew,
-                    //        AutoReconnect = true
-                    //    });
-                    //}
-                    //else
-                    //{
-                    //    Discord = new DiscordClient(new DiscordConfiguration
-                    //    {
-                    //        Token = AlliancePlugin.config.DiscordBotToken,
-                    //        TokenType = TokenType.Bot,
-                    //        AutoReconnect = true
-                    //    });
-                    //}
-
-                    DiscordConfiguration = new DiscordConfiguration
+                    // Windows Vista - 8.1
+                    if (Environment.OSVersion.Platform.Equals(PlatformID.Win32NT) && Environment.OSVersion.Version.Major == 6)
                     {
-                        Token = Plugin.Config.BotToken,
-                        TokenType = TokenType.Bot,
-                    };
-                    Discord = new DiscordClient(DiscordConfiguration);
+                        Discord = new DiscordClient(new DiscordConfiguration
+                        {
+                            Token = AlliancePlugin.config.DiscordBotToken,
+                            TokenType = TokenType.Bot,
+                            WebSocketClientFactory = WebSocket4NetClient.CreateNew,
+                            AutoReconnect = true
+                        });
+                    }
+                    else
+                    {
+                        Discord = new DiscordClient(new DiscordConfiguration
+                        {
+                            Token = AlliancePlugin.config.DiscordBotToken,
+                            TokenType = TokenType.Bot,
+                            AutoReconnect = true
+                        });
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -706,7 +699,7 @@ namespace AlliancesPlugin.Alliances
         }
        static bool tried = false;
         public static DateTime nextMention = DateTime.Now;
-        private static Task Discord_MessageCreated(DSharpPlus.EventArgs.MessageCreateEventArgs e)
+        public static Task Discord_MessageCreated(DSharpPlus.EventArgs.MessageCreateEventArgs e)
         {
             if (WorldName.Equals("") && MyMultiplayer.Static.HostName != null)
             {
@@ -771,7 +764,26 @@ namespace AlliancesPlugin.Alliances
                 //}
                 return Task.CompletedTask;
             }
+            if (e.Message.Content.Equals("Connection Check"))
+            {
+                  DiscordChannel chann = e.Client.GetChannelAsync(AlliancePlugin.config.DiscordChannelId).Result;
 
+                  botId = e.Client.SendMessageAsync(chann, "**[" + WorldName + "] " + "Connected").Result.Author.Id;
+            }
+            if (e.Message.Content.Contains("Checking Server "))
+            {
+                if (e.Message.Content.Equals("Checking Server " + MyMultiplayer.Static.HostName))
+                {
+                    DiscordChannel chann = e.Client.GetChannelAsync(AlliancePlugin.config.DiscordChannelId).Result;
+
+                    botId = e.Client.SendMessageAsync(chann, "**[" + WorldName + "] " + "Connected").Result.Author.Id;
+                }
+                else
+                {
+
+                    return Task.CompletedTask;
+                }
+            }
             if (tried)
             {
                 DiscordChannel chann = e.Client.GetChannelAsync(AlliancePlugin.config.DiscordChannelId).Result;
