@@ -1221,7 +1221,8 @@ namespace AlliancesPlugin.Shipyard
 
             foreach (var block in grid.GetFatBlocks())
             {
-
+                //block.SlimBlock.GetMissingComponents()
+                block.SlimBlock.ComponentStack
                 for (int i = 0; i < block.InventoryCount; i++)
                 {
                     VRage.Game.ModAPI.IMyInventory inv = ((VRage.Game.ModAPI.IMyCubeBlock)block).GetInventory(i);

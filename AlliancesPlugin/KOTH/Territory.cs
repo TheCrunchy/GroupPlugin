@@ -36,5 +36,25 @@ namespace AlliancesPlugin.KOTH
         public Boolean ZoneIsEnabled = true;
         public int ZoneChipUse = 1;
         public int HoursPerChip = 1;
+        public Boolean TaxesForStationsInTerritory = false;
+        public float TaxPercent = 0.02f;
+        public List<TaxPercentAlliance> AllianceRates = new List<TaxPercentAlliance>();
+        public float GetTaxRate(Guid allianceId)
+        {
+            foreach (TaxPercentAlliance percent in AllianceRates) {
+                if (percent.AllianceId == allianceId)
+                {
+                    return percent.TaxPercent;
+                }
+            }
+
+            return TaxPercent;
+        }
+
+        public class TaxPercentAlliance
+        {
+            public Guid AllianceId;
+            public float TaxPercent = 0.02f;
+        }
     }
 }

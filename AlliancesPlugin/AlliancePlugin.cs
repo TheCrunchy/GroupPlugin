@@ -53,6 +53,7 @@ using AlliancesPlugin.NewCaptureSite;
 using Sandbox.ModAPI.Weapons;
 using Sandbox.Game.Weapons;
 using Sandbox.Game;
+using static AlliancesPlugin.Alliances.StorePatchTaxes;
 
 namespace AlliancesPlugin
 {
@@ -110,7 +111,7 @@ namespace AlliancesPlugin
         }
 
 
-        public static long AddToTaxes(ulong SteamId, long amount, string type)
+        public static long AddToTaxes(ulong SteamId, long amount, string type, Vector3 Location)
         {
             MyIdentity identityId = AlliancePlugin.GetIdentityByNameOrId(SteamId.ToString());
             IMyFaction fac = FacUtils.GetPlayersFaction(identityId.IdentityId);
@@ -123,6 +124,24 @@ namespace AlliancesPlugin
                     //amount = Convert.ToInt64(amount * 1.05f);
                 }
             }
+            foreach (Territory ter in AlliancePlugin.Territories.Values)
+            {
+                if (ter.TaxesForStationsInTerritory && ter.Alliance != Guid.Empty)
+                {
+                    float distance = Vector3.Distance(new Vector3(ter.x, ter.y, ter.z), Location);
+                    if (distance <= ter.Radius)
+                    {
+                        TaxItem item = new TaxItem();
+                        item.playerId = identityId.IdentityId;
+                        item.price = amount;
+                        item.territory = ter.Id;
+
+                        AlliancePlugin.TerritoryTaxes.Add(item);
+                        return amount;
+                    }
+                }
+            }
+
             if (AlliancePlugin.TaxesToBeProcessed.ContainsKey(identityId.IdentityId))
             {
 
@@ -650,15 +669,20 @@ namespace AlliancesPlugin
                     if (oldAccountInfo.Balance > newAccountInfo.Balance)
                     {
                         change = oldAccountInfo.Balance - newAccountInfo.Balance;
-                        if (!TaxingId.Contains(pp.Identity.IdentityId))
-                        {
-                            ShipyardCommands.SendMessage("CrunchEcon", "Balance decreased by: " + String.Format("{0:n0}", change) + " SC", Color.Red, (long)pp.Id.SteamId);
-                        }
-                        else
+                   
+                       if (TaxingId.Contains(pp.Identity.IdentityId))
                         {
                             ShipyardCommands.SendMessage("CrunchEcon", "Alliances Taxes: " + String.Format("{0:n0}", change) + " SC", Color.HotPink, (long)pp.Id.SteamId);
                             TaxingId.Remove(pp.Identity.IdentityId);
                         }
+                        if (OtherTaxingId.Contains(pp.Identity.IdentityId))
+                        {
+                            ShipyardCommands.SendMessage("CrunchEcon", "Territory Taxes: " + String.Format("{0:n0}", change) + " SC", Color.Red, (long)pp.Id.SteamId);
+                            OtherTaxingId.Remove(pp.Identity.IdentityId);
+                        }
+
+                        ShipyardCommands.SendMessage("CrunchEcon", "Balance decreased by: " + String.Format("{0:n0}", change) + " SC", Color.Red, (long)pp.Id.SteamId);
+                        return;
                     }
 
                 }
@@ -1692,6 +1716,7 @@ namespace AlliancesPlugin
         }
         public static Dictionary<long, long> TaxesToBeProcessed = new Dictionary<long, long>();
         public static Dictionary<long, DateTime> messageCooldowns = new Dictionary<long, DateTime>();
+        public static List<TaxItem> TerritoryTaxes = new List<TaxItem>();
 
         public void DoJumpGateStuff()
         {
@@ -1728,6 +1753,9 @@ namespace AlliancesPlugin
                 if (target.TargetGateId == target.GateId)
                     continue;
 
+                if (!gate.WorldName.Equals(MyMultiplayer.Static.HostName))
+                    continue;
+
 
                 foreach (MyPlayer player in players)
                 {
@@ -1753,9 +1781,18 @@ namespace AlliancesPlugin
                         }
                         else
                         {
-                            if (Distance <= 500)
+                            if (gate.fee > 0 && Distance <= 500)
                             {
-                                SendPlayerNotify(player, 1000, "You will jump in " + Distance + " meters", "Green");
+                                DoFeeMessage(player, gate, Distance);
+                            }
+                            else
+                            {
+
+
+                                if (Distance <= 500)
+                                {
+                                    SendPlayerNotify(player, 1000, "You will jump in " + Distance + " meters", "Green");
+                                }
                             }
                         }
                     }
@@ -1798,10 +1835,78 @@ namespace AlliancesPlugin
             }
         }
         public static List<long> TaxingId = new List<long>();
+        public static List<long> OtherTaxingId = new List<long>();
         public void DoTaxStuff()
         {
             List<long> Processed = new List<long>();
+            Dictionary<Guid, Dictionary<long, float>> Territory = new Dictionary<Guid, Dictionary<long, float>>();
+
+
             Dictionary<Guid, Dictionary<long, float>> taxes = new Dictionary<Guid, Dictionary<long, float>>();
+           
+            foreach (TaxItem item in TerritoryTaxes)
+            {
+                float tax;
+                Territory ter = Territories[item.territory];
+                Alliance alliance1 = GetAllianceNoLoading(ter.Alliance);
+                if (alliance1 != null)
+                {
+                    if (MySession.Static.Factions.TryGetPlayerFaction(item.playerId) != null)
+                    {
+
+                        Alliance alliance = GetAllianceNoLoading(MySession.Static.Factions.TryGetPlayerFaction(item.playerId) as MyFaction);
+                        if (alliance != null)
+                        {
+                            if (alliance.AllianceId == ter.Id)
+                            {
+                                if (AlliancePlugin.TaxesToBeProcessed.ContainsKey(item.playerId))
+                                {
+                                    AlliancePlugin.TaxesToBeProcessed[item.playerId] += item.price;
+                                }
+                                else
+                                {
+                                    AlliancePlugin.TaxesToBeProcessed.Add(item.playerId, item.price);
+                                }
+                                continue;
+                            }
+                            else
+                            {
+                                 tax = item.price * ter.GetTaxRate(alliance.AllianceId);
+                                if (AlliancePlugin.TaxesToBeProcessed.ContainsKey(item.playerId))
+                                {
+                                    AlliancePlugin.TaxesToBeProcessed[item.playerId] += Convert.ToInt64(item.price - tax);
+                                }
+                                else
+                                {
+                                    AlliancePlugin.TaxesToBeProcessed.Add(item.playerId, Convert.ToInt64(item.price - tax));
+                                }
+                            }
+                        }
+
+                    }
+                    tax = item.price * ter.TaxPercent;
+                    if (EconUtils.getBalance(item.playerId) >= tax)
+                    {
+                        //add taxes to the dictionary
+                        if (taxes.ContainsKey(ter.Id))
+                        {
+                            Territory[ter.Id].Remove(item.playerId);
+                            taxes[ter.Id].Add(item.playerId, tax);
+                        }
+                        else
+                        {
+                            Dictionary<long, float> temp = new Dictionary<long, float>();
+                            temp.Add(item.playerId, tax);
+                            taxes.Add(ter.Id, temp);
+                        }
+                    }
+                }
+            }
+            //dont do an else, far too much effort 
+
+            DatabaseForBank.TerritoryTaxes(taxes);
+            TerritoryTaxes.Clear();
+
             foreach (long id in TaxesToBeProcessed.Keys)
             {
 

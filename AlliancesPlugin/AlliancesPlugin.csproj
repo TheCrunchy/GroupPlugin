@@ -99,8 +99,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\DSharpPlus.dll</HintPath>
     </Reference>
-    <Reference Include="DSharpPlus.WebSocket.WebSocket4Net">
-      <HintPath>..\DSharpPlus.WebSocket.WebSocket4Net.dll</HintPath>
+    <Reference Include="Emzi0767.Common">
+      <HintPath>..\Emzi0767.Common.dll</HintPath>
     </Reference>
     <Reference Include="LiteDB, Version=5.0.10.0, Culture=neutral, PublicKeyToken=4ee40123013c9f27, processorArchitecture=MSIL">
       <HintPath>..\packages\LiteDB.5.0.10\lib\net45\LiteDB.dll</HintPath>

@@ -511,6 +511,64 @@ namespace AlliancesPlugin.Alliances
             //AlliancePlugin.Log.Info("Paid shipyard fee " + id);
             //return true;
         }
+        public static Boolean TerritoryTaxes(Dictionary<Guid, Dictionary<long, float>> taxes)
+        {
+            try
+            {
+                using (var db = new LiteDatabase(connectionString))
+                {
+                    var collection = db.GetCollection<BankData>("BankData");
+                    foreach (KeyValuePair<Guid, Dictionary<long, float>> key in taxes)
+                    {
+                        Alliance alliance = AlliancePlugin.GetAlliance(AlliancePlugin.Territories[key.Key].Alliance);
+
+                        long amount = 0;
+                        foreach (float f in key.Value.Values)
+                        {
+
+                            amount += (long)f;
+                        }
+
+                        var bank = collection.FindById(key.Key);
+                        if (bank == null)
+                        {
+                            bank = new BankData
+                            {
+                                Id = key.Key,
+                                balance = amount
+                            };
+                            collection.Insert(bank);
+
+                        }
+                        else
+                        {
+                            bank.balance += amount;
+
+                            collection.Update(bank);
+                        }
+                        foreach (KeyValuePair<long, float> tax in key.Value)
+                        {
+                            if (EconUtils.getBalance(tax.Key) >= tax.Value)
+                            {
+                                alliance.DepositTerritoryTax((long)tax.Value, MySession.Static.Players.TryGetSteamId(tax.Key),  AlliancePlugin.Territories[key.Key].Name);
+                                AlliancePlugin.OtherTaxingId.Remove(tax.Key);
+                                AlliancePlugin.OtherTaxingId.Add(tax.Key);
+                                EconUtils.takeMoney(tax.Key, (long)tax.Value);
+                            }
+                        }
+                        AlliancePlugin.SaveAllianceData(alliance);
+
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                AlliancePlugin.Log.Error("Error with territory taxes");
+                AlliancePlugin.Log.Error(ex);
+                return false;
+            }
+            return true;
+        }
         public static Boolean Taxes(Dictionary<Guid, Dictionary<long, float>> taxes)
         {
             try

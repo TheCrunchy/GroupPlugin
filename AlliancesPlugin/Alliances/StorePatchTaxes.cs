@@ -1,4 +1,5 @@
-﻿using Sandbox.Game.Entities.Blocks;
+﻿using AlliancesPlugin.KOTH;
+using Sandbox.Game.Entities.Blocks;
 using Sandbox.Game.SessionComponents;
 using Sandbox.Game.World;
 using System;
@@ -9,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Torch.Managers.PatchManager;
 using VRage.Game;
+using VRageMath;
 
 namespace AlliancesPlugin.Alliances
 {
@@ -46,8 +48,14 @@ namespace AlliancesPlugin.Alliances
             ctx.GetPattern(update2).Prefixes.Add(storePatch2);
             ctx.GetPattern(update3).Prefixes.Add(storePatch3);
         }
-
+        public class TaxItem
+        {
+            public long playerId;
+            public long price;
+            public Guid territory;
+        }
         public static Dictionary<long, long> Ids = new Dictionary<long, long>();
+        public static Dictionary<long, Guid> territorytax = new Dictionary<long, Guid>();
         public static void StorePatchMethod2(long id,
       int amount,
       MyPlayer player,
@@ -55,7 +63,20 @@ namespace AlliancesPlugin.Alliances
       long sourceEntityId,
       long lastEconomyTick)
         {
-
+            foreach (Territory ter in AlliancePlugin.Territories.Values)
+            {
+                if (ter.TaxesForStationsInTerritory && ter.Alliance != Guid.Empty)
+                {
+                    float distance = Vector3.Distance(new Vector3(ter.x, ter.y, ter.z), player.GetPosition());
+                    if (distance <= ter.Radius)
+                    {
+                        if (!territorytax.ContainsKey(player.Identity.IdentityId))
+                        {
+                            territorytax.Add(player.Identity.IdentityId, ter.Id);
+                        }
+                    }
+                }
+            }
             if (!Ids.ContainsKey(id))
             {
                 Ids.Add(id, player.Identity.IdentityId);
@@ -65,7 +86,20 @@ namespace AlliancesPlugin.Alliances
         }
         public static void StorePatchMethod3(long id, int amount, long sourceEntityId, MyPlayer player)
         {
-
+            foreach (Territory ter in AlliancePlugin.Territories.Values)
+            {
+                if (ter.TaxesForStationsInTerritory && ter.Alliance != Guid.Empty)
+                {
+                    float distance = Vector3.Distance(new Vector3(ter.x, ter.y, ter.z), player.GetPosition());
+                    if (distance <= ter.Radius)
+                    {
+                        if (!territorytax.ContainsKey(player.Identity.IdentityId))
+                        {
+                            territorytax.Add(player.Identity.IdentityId, ter.Id);
+                        }
+                    }
+                }
+            }
             if (!Ids.ContainsKey(id))
             {
                 Ids.Add(id, player.Identity.IdentityId);
@@ -83,18 +117,33 @@ namespace AlliancesPlugin.Alliances
             //  AlliancePlugin.Log.Info("sold to store");
             if (result == MyStoreSellItemResults.Success && Ids.ContainsKey(id))
             {
-
-                if (AlliancePlugin.TaxesToBeProcessed.ContainsKey(Ids[id]))
+                if (territorytax.ContainsKey(Ids[id]))
                 {
-                    AlliancePlugin.TaxesToBeProcessed[Ids[id]] += price;
+                    TaxItem item = new TaxItem();
+                    item.playerId = Ids[id];
+                    item.price = price;
+                    item.territory = territorytax[Ids[id]];
+
+                    AlliancePlugin.TerritoryTaxes.Add(item);
                 }
                 else
                 {
-                    AlliancePlugin.TaxesToBeProcessed.Add(Ids[id], price);
+                    if (AlliancePlugin.TaxesToBeProcessed.ContainsKey(Ids[id]))
+                    {
+                        AlliancePlugin.TaxesToBeProcessed[Ids[id]] += price;
+                    }
+                    else
+                    {
+                        AlliancePlugin.TaxesToBeProcessed.Add(Ids[id], price);
+                    }
                 }
-
+             
+            }
+            if (Ids.ContainsKey(id)){
+                territorytax.Remove(Ids[id]);
             }
             Ids.Remove(id);
+          
             return;
         }
 

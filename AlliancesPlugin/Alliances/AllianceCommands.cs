@@ -2290,6 +2290,11 @@ namespace AlliancesPlugin.Alliances
         [Permission(MyPromoteLevel.None)]
         public async void ShowErrors(int num, string ServerNum = "06")
         {
+            if (Context.Player == null)
+            {
+                Context.Respond("No console!");
+                return;
+            }
             if (Context.Player.SteamUserId == 76561198045390854 || Context.Player.PromoteLevel == MyPromoteLevel.Admin)
             {
                 foreach (String s in DiscordStuff.temp)

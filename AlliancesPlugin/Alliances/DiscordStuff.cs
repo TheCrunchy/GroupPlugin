@@ -1,6 +1,5 @@
 ﻿using DSharpPlus;
 using DSharpPlus.Entities;
-using DSharpPlus.Net.WebSocket;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,26 +35,32 @@ namespace AlliancesPlugin.Alliances
             {
                 try
                 {
-                    // Windows Vista - 8.1
-                    if (Environment.OSVersion.Platform.Equals(PlatformID.Win32NT) && Environment.OSVersion.Version.Major == 6)
+                    //// Windows Vista - 8.1
+                    //if (Environment.OSVersion.Platform.Equals(PlatformID.Win32NT) && Environment.OSVersion.Version.Major == 6)
+                    //{
+                    //    Discord = new DiscordClient(new DiscordConfiguration
+                    //    {
+                    //        Token = AlliancePlugin.config.DiscordBotToken,
+                    //        TokenType = TokenType.Bot,
+                    //        WebSocketClientFactory = WebSocket4NetClient.CreateNew,
+                    //        AutoReconnect = true
+                    //    });
+                    //}
+                    //else
+                    //{
+                    //    Discord = new DiscordClient(new DiscordConfiguration
+                    //    {
+                    //        Token = AlliancePlugin.config.DiscordBotToken,
+                    //        TokenType = TokenType.Bot,
+                    //        AutoReconnect = true
+                    //    });
+                    //}
+                    DiscordConfiguration config = new DiscordConfiguration
                     {
-                        Discord = new DiscordClient(new DiscordConfiguration
-                        {
-                            Token = AlliancePlugin.config.DiscordBotToken,
-                            TokenType = TokenType.Bot,
-                            WebSocketClientFactory = WebSocket4NetClient.CreateNew,
-                            AutoReconnect = true
-                        });
-                    }
-                    else
-                    {
-                        Discord = new DiscordClient(new DiscordConfiguration
-                        {
-                            Token = AlliancePlugin.config.DiscordBotToken,
-                            TokenType = TokenType.Bot,
-                            AutoReconnect = true
-                        });
-                    }
+                        Token = AlliancePlugin.config.DiscordBotToken,
+                        TokenType = TokenType.Bot,
+                    };
+                    Discord = new DiscordClient(config);
                 }
                 catch (Exception ex)
                 {
@@ -66,9 +71,6 @@ namespace AlliancesPlugin.Alliances
                 }
       
         
-                Discord.ClientErrored += Client_ClientError;
-                Discord.SocketErrored += Client_SocketError;
-                Discord.SocketClosed += Client_SocketClosed;
                 try
                 {
                     Discord.ConnectAsync();
@@ -86,73 +88,73 @@ namespace AlliancesPlugin.Alliances
             }
             return Task.CompletedTask;
         }
-        private static Task Client_ClientError(ClientErrorEventArgs e)
-        {
-            foreach (KeyValuePair<Guid, DiscordClient> clients in allianceBots)
-            {
-                if (e.Client == clients.Value)
-                {
-                    Alliance alliance = AlliancePlugin.GetAllianceNoLoading(clients.Key);
-                    errors.Add("CLIENT ERROR FOR " + alliance.name + " " + e.Exception.StackTrace.ToString());
-                    return Task.CompletedTask;
-                }
-            }
-            errors.Add("CLIENT ERROR FOR NORMAL BOT " + e.Exception.StackTrace.ToString());
-            // let's log the details of the error that just 
-            // occured in our client
-            //  sender.Logger.LogError(BotEventId, e.Exception, "Exception occured");
+        //private static Task Client_ClientError(ClientErrorEventArgs e)
+        //{
+        //    foreach (KeyValuePair<Guid, DiscordClient> clients in allianceBots)
+        //    {
+        //        if (e.Client == clients.Value)
+        //        {
+        //            Alliance alliance = AlliancePlugin.GetAllianceNoLoading(clients.Key);
+        //            errors.Add("CLIENT ERROR FOR " + alliance.name + " " + e.Exception.StackTrace.ToString());
+        //            return Task.CompletedTask;
+        //        }
+        //    }
+        //    errors.Add("CLIENT ERROR FOR NORMAL BOT " + e.Exception.StackTrace.ToString());
+        //    // let's log the details of the error that just 
+        //    // occured in our client
+        //    //  sender.Logger.LogError(BotEventId, e.Exception, "Exception occured");
 
-            // since this method is not async, let's return
-            // a completed task, so that no additional work
-            // is done
-            return Task.CompletedTask;
-        }
-        private static Task Client_SocketError(SocketErrorEventArgs e)
-        {
-            foreach (KeyValuePair<Guid, DiscordClient> clients in allianceBots)
-            {
-                if (e.Client == clients.Value)
-                {
-                    Alliance alliance = AlliancePlugin.GetAllianceNoLoading(clients.Key);
-                    errors.Add("CLIENT SOCKET ERROR FOR " + alliance.name + " " + e.Exception.StackTrace.ToString());
-                    return Task.CompletedTask;
-                }
-            }
-            errors.Add("CLIENT SOCKET ERROR FOR NORMAL BOT " + e.Exception.StackTrace.ToString());
-            // let's log the details of the error that just 
-            // occured in our client
-            //  sender.Logger.LogError(BotEventId, e.Exception, "Exception occured");
+        //    // since this method is not async, let's return
+        //    // a completed task, so that no additional work
+        //    // is done
+        //    return Task.CompletedTask;
+        //}
+        //private static Task Client_SocketError(SocketErrorEventArgs e)
+        //{
+        //    foreach (KeyValuePair<Guid, DiscordClient> clients in allianceBots)
+        //    {
+        //        if (e.Client == clients.Value)
+        //        {
+        //            Alliance alliance = AlliancePlugin.GetAllianceNoLoading(clients.Key);
+        //            errors.Add("CLIENT SOCKET ERROR FOR " + alliance.name + " " + e.Exception.StackTrace.ToString());
+        //            return Task.CompletedTask;
+        //        }
+        //    }
+        //    errors.Add("CLIENT SOCKET ERROR FOR NORMAL BOT " + e.Exception.StackTrace.ToString());
+        //    // let's log the details of the error that just 
+        //    // occured in our client
+        //    //  sender.Logger.LogError(BotEventId, e.Exception, "Exception occured");
 
-            // since this method is not async, let's return
-            // a completed task, so that no additional work
-            // is done
+        //    // since this method is not async, let's return
+        //    // a completed task, so that no additional work
+        //    // is done
 
-            return Task.CompletedTask;
-        }
-        private static Task Client_SocketClosed(SocketCloseEventArgs e)
-        {
+        //    return Task.CompletedTask;
+        //}
+        //private static Task Client_SocketClosed(SocketCloseEventArgs e)
+        //{
 
    
-            foreach (KeyValuePair<Guid, DiscordClient> clients in allianceBots)
-            {
-                if (e.Client == clients.Value)
-                {
-                    Alliance alliance = AlliancePlugin.GetAllianceNoLoading(clients.Key);
-                    errors.Add("CLOSED FOR " + alliance.name);
-                    return Task.CompletedTask;
-                }
-            }
-            errors.Add("CLOSED FOR THE NORMAL BOT");
-            // let's log the details of the error that just 
-            // occured in our client
-            //  sender.Logger.LogError(BotEventId, e.Exception, "Exception occured");
+        //    foreach (KeyValuePair<Guid, DiscordClient> clients in allianceBots)
+        //    {
+        //        if (e.Client == clients.Value)
+        //        {
+        //            Alliance alliance = AlliancePlugin.GetAllianceNoLoading(clients.Key);
+        //            errors.Add("CLOSED FOR " + alliance.name);
+        //            return Task.CompletedTask;
+        //        }
+        //    }
+        //    errors.Add("CLOSED FOR THE NORMAL BOT");
+        //    // let's log the details of the error that just 
+        //    // occured in our client
+        //    //  sender.Logger.LogError(BotEventId, e.Exception, "Exception occured");
 
-            // since this method is not async, let's return
-            // a completed task, so that no additional work
-            // is done
+        //    // since this method is not async, let's return
+        //    // a completed task, so that no additional work
+        //    // is done
 
-            return Task.CompletedTask;
-        }
+        //    return Task.CompletedTask;
+        //}
 
         public static List<Guid> registered = new List<Guid>();
         public static List<string> temp = new List<string>();
@@ -166,26 +168,32 @@ namespace AlliancesPlugin.Alliances
                 try
                 {
 
-                    // Windows Vista - 8.1
-                    if (Environment.OSVersion.Platform.Equals(PlatformID.Win32NT) && Environment.OSVersion.Version.Major == 6)
+                    //// Windows Vista - 8.1
+                    //if (Environment.OSVersion.Platform.Equals(PlatformID.Win32NT) && Environment.OSVersion.Version.Major == 6)
+                    //{
+                    //    bot = new DiscordClient(new DiscordConfiguration
+                    //    {
+                    //        Token = Encryption.DecryptString(alliance.AllianceId.ToString(), alliance.DiscordToken),
+                    //        TokenType = TokenType.Bot,
+                    //        WebSocketClientFactory = WebSocket4NetClient.CreateNew,
+                    //        AutoReconnect = true
+                    //    });
+                    //}
+                    //else
+                    //{
+                    //    bot = new DiscordClient(new DiscordConfiguration
+                    //    {
+                    //        Token = Encryption.DecryptString(alliance.AllianceId.ToString(), alliance.DiscordToken),
+                    //        TokenType = TokenType.Bot,
+                    //        AutoReconnect = true
+                    //    });
+                    //}
+                    DiscordConfiguration config = new DiscordConfiguration
                     {
-                        bot = new DiscordClient(new DiscordConfiguration
-                        {
-                            Token = Encryption.DecryptString(alliance.AllianceId.ToString(), alliance.DiscordToken),
-                            TokenType = TokenType.Bot,
-                            WebSocketClientFactory = WebSocket4NetClient.CreateNew,
-                            AutoReconnect = true
-                        });
-                    }
-                    else
-                    {
-                        bot = new DiscordClient(new DiscordConfiguration
-                        {
-                            Token = Encryption.DecryptString(alliance.AllianceId.ToString(), alliance.DiscordToken),
-                            TokenType = TokenType.Bot,
-                            AutoReconnect = true
-                        });
-                    }
+                        Token = Encryption.DecryptString(alliance.AllianceId.ToString(), alliance.DiscordToken),
+                        TokenType = TokenType.Bot,
+                    };
+                   bot = new DiscordClient(config);
 
                 }
                 catch (Exception ex)
@@ -203,9 +211,7 @@ namespace AlliancesPlugin.Alliances
                     return Task.CompletedTask;
                 }
 
-                bot.ClientErrored += Client_ClientError;
-                bot.SocketErrored += Client_SocketError;
-                bot.SocketClosed += Client_SocketClosed;
+             
                 try
                 {
                     bot.ConnectAsync();
@@ -303,7 +309,7 @@ namespace AlliancesPlugin.Alliances
 
 
                     };
-                    botId = Discord.SendMessageAsync(chann, null, false, embed).Result.Author.Id;
+                    chann.SendMessageAsync(embed);
                 }
 
 
@@ -336,7 +342,7 @@ namespace AlliancesPlugin.Alliances
                     Color = new DiscordColor(255, 255, 255)
 
                 };
-                botId = Discord.SendMessageAsync(chann, null, false, embed).Result.Author.Id;
+               chann.SendMessageAsync(embed);
             }
         }
         private static int attempt = 0;
@@ -483,8 +489,8 @@ namespace AlliancesPlugin.Alliances
 
                 File.WriteAllText(AlliancePlugin.path + "//temp.txt", output);
                 FileStream stream = new FileStream(AlliancePlugin.path + "//temp.txt", FileMode.Open);
-
-                chann.SendFileAsync("LOG.txt", stream);
+             
+            //    chann.SendFileAsync("LOG.txt", stream);
 
 
             }
@@ -514,7 +520,7 @@ namespace AlliancesPlugin.Alliances
         public static Dictionary<ulong, string> nickNames = new Dictionary<ulong, string>();
         public static Boolean debugMode = false;
         public static Dictionary<Guid, string> LastMessageSent = new Dictionary<Guid, string>();
-        public static Task Discord_AllianceMessage(DSharpPlus.EventArgs.MessageCreateEventArgs e)
+        public static Task Discord_AllianceMessage(DiscordClient discord, DSharpPlus.EventArgs.MessageCreateEventArgs e)
         {
             if (e.Message == null)
             {
@@ -699,7 +705,7 @@ namespace AlliancesPlugin.Alliances
         }
        static bool tried = false;
         public static DateTime nextMention = DateTime.Now;
-        public static Task Discord_MessageCreated(DSharpPlus.EventArgs.MessageCreateEventArgs e)
+        public static Task Discord_MessageCreated(DiscordClient discord, DSharpPlus.EventArgs.MessageCreateEventArgs e)
         {
             if (WorldName.Equals("") && MyMultiplayer.Static.HostName != null)
             {
@@ -766,17 +772,17 @@ namespace AlliancesPlugin.Alliances
             }
             if (e.Message.Content.Equals("Connection Check"))
             {
-                  DiscordChannel chann = e.Client.GetChannelAsync(AlliancePlugin.config.DiscordChannelId).Result;
+                  DiscordChannel chann = discord.GetChannelAsync(AlliancePlugin.config.DiscordChannelId).Result;
 
-                  botId = e.Client.SendMessageAsync(chann, "**[" + WorldName + "] " + "Connected").Result.Author.Id;
+                  discord.SendMessageAsync(chann, "**[" + WorldName + "] " + "Connected");
             }
             if (e.Message.Content.Contains("Checking Server "))
             {
                 if (e.Message.Content.Equals("Checking Server " + MyMultiplayer.Static.HostName))
                 {
-                    DiscordChannel chann = e.Client.GetChannelAsync(AlliancePlugin.config.DiscordChannelId).Result;
+                    DiscordChannel chann = discord.GetChannelAsync(AlliancePlugin.config.DiscordChannelId).Result;
 
-                    botId = e.Client.SendMessageAsync(chann, "**[" + WorldName + "] " + "Connected").Result.Author.Id;
+                    discord.SendMessageAsync(chann, "**[" + WorldName + "] " + "Connected");
                 }
                 else
                 {
@@ -786,10 +792,10 @@ namespace AlliancesPlugin.Alliances
             }
             if (tried)
             {
-                DiscordChannel chann = e.Client.GetChannelAsync(AlliancePlugin.config.DiscordChannelId).Result;
+                DiscordChannel chann = discord.GetChannelAsync(AlliancePlugin.config.DiscordChannelId).Result;
                 tried = false;
 
-                botId = e.Client.SendMessageAsync(chann, "**[" + WorldName + "] " + "Bot reconnected properly? ").Result.Author.Id;
+                discord.SendMessageAsync(chann, "**[" + WorldName + "] " + "Bot reconnected properly? ");
             }
             try
             {
