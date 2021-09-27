@@ -30,7 +30,7 @@ namespace Crunch
         private void HUD_Init_Complete()
         {
 			          // Init status line
-                HUD_Status = new HudAPIv2.HUDMessage(StatusText, new Vector2D(-0.7, -0.65), null, -1, 0.7, true, false, null, BlendTypeEnum.PostPP, "white");
+                HUD_Status = new HudAPIv2.HUDMessage(StatusText, new Vector2D(-0.7, -0.60), null, -1, 1, true, false, null, BlendTypeEnum.PostPP, "white");
 
                 // Init info line
                 HUD_Info = new HudAPIv2.HUDMessage(InfoText, new Vector2D(-0.7, -0.65), null, -1, 1, true, false, null, BlendTypeEnum.PostPP, "white");

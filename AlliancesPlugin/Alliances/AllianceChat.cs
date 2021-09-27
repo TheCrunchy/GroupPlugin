@@ -145,10 +145,10 @@ namespace AlliancesPlugin.Alliances
                 {
                 if (player.Identity.IdentityId == playerId)
                 {
-                    ShipyardCommands.SendMessage("Alliance chat", "You are in alliance chat.", new Color(alliance.r, alliance.g, alliance.b), (long)player.Id.SteamId);
+                   // ShipyardCommands.SendMessage("Alliance chat", "You are in alliance chat.", new Color(alliance.r, alliance.g, alliance.b), (long)player.Id.SteamId);
 
-                    NotificationMessage message2 = new NotificationMessage("You are in alliance chat", 5000, "Green");
-                    ModCommunication.SendMessageTo(message2, player.Id.SteamId);
+                  //  NotificationMessage message2 = new NotificationMessage("You are in alliance chat", 5000, "Green");
+                //    ModCommunication.SendMessageTo(message2, player.Id.SteamId);
  
                     continue;
                 }
@@ -282,6 +282,7 @@ namespace AlliancesPlugin.Alliances
                     if (noFac)
                     {
                         PeopleInAllianceChat.Remove((ulong)msg.AuthorSteamId);
+                        AllianceCommands.SendStatusToClient(false, (ulong) msg.AuthorSteamId);
                         AlliancePlugin.SendChatMessage("Failsafe", "Faction null");
                     }
                     return;
@@ -289,6 +290,7 @@ namespace AlliancesPlugin.Alliances
                 if (AlliancePlugin.GetAllianceNoLoading(fac) == null)
                 {
                     PeopleInAllianceChat.Remove((ulong)msg.AuthorSteamId);
+                    AllianceCommands.SendStatusToClient(false, (ulong)msg.AuthorSteamId);
                     AlliancePlugin.SendChatMessage("Failsafe", "Alliance null");
                     return;
                 }
@@ -373,8 +375,7 @@ namespace AlliancesPlugin.Alliances
                         PeopleInAllianceChat.Remove(p.SteamId);
                         PeopleInAllianceChat.Add(p.SteamId, AlliancePlugin.GetAllianceNoLoading(playerFac as MyFaction).AllianceId);
 
-                        var status = MyAPIGateway.Utilities.SerializeFromBinary<Boolean>(rawData);
-
+                  
                     }
                 }
             }

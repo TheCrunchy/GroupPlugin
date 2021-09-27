@@ -225,7 +225,7 @@ namespace AlliancesPlugin
                     AllianceChat.PeopleInAllianceChat.Add(Context.Player.SteamUserId, alliance.AllianceId);
                     Context.Respond("Entering alliance chat.", Color.Cyan);
                     utils.WriteToXmlFile<PlayerData>(AlliancePlugin.path + "//PlayerData//" + Context.Player.SteamUserId + ".xml", data);
-                    AllianceCommands.SendStatusToClient(true, Context.Player.SteamUserId);
+                           AllianceCommands.SendStatusToClient(true, Context.Player.SteamUserId);
                 }
             }
             else

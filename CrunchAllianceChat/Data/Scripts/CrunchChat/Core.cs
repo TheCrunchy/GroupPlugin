@@ -70,7 +70,7 @@ namespace Crunch
             base.BeforeStart();
             HudModule.Init();
             // Register network handling
-		   MyAPIGateway.Multiplayer.RegisterMessageHandler(8543, ReceivedPacket);
+		   MyAPIGateway.Multiplayer.RegisterMessageHandler(8544, ReceivedPacket);
 		}
 		
         private void ReceivedPacket(byte[] rawData) // executed when a packet is received on this machine
