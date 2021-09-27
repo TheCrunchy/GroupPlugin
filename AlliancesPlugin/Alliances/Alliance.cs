@@ -320,6 +320,8 @@ namespace AlliancesPlugin.Alliances
                     HangarData data = new HangarData();
                     data.allianceId = AllianceId;
                     utils.WriteToJsonFile<HangarData>(AlliancePlugin.path + "//HangarData//" + AllianceId + "//hangar.json", data);
+
+                    return data;
                 }
                 HangarData hangar = utils.ReadFromJsonFile<HangarData>(AlliancePlugin.path + "//HangarData//" + AllianceId + "//hangar.json");
                 hangar.SlotsAmount = (int) HangarCommands.slotUpgrades[hangar.SlotUpgradeNum].NewLevel;

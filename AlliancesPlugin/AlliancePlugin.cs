@@ -160,7 +160,8 @@ namespace AlliancesPlugin
 
             base.Init(torch);
             sessionManager = Torch.Managers.GetManager<TorchSessionManager>();
-
+            sessionManager.AddOverrideMod(758597413L);
+            sessionManager.AddOverrideMod(2612907530L);
             if (sessionManager != null)
             {
                 sessionManager.SessionStateChanged += SessionChanged;
@@ -669,8 +670,8 @@ namespace AlliancesPlugin
                     if (oldAccountInfo.Balance > newAccountInfo.Balance)
                     {
                         change = oldAccountInfo.Balance - newAccountInfo.Balance;
-                   
-                       if (TaxingId.Contains(pp.Identity.IdentityId))
+
+                        if (TaxingId.Contains(pp.Identity.IdentityId))
                         {
                             ShipyardCommands.SendMessage("CrunchEcon", "Alliances Taxes: " + String.Format("{0:n0}", change) + " SC", Color.HotPink, (long)pp.Id.SteamId);
                             TaxingId.Remove(pp.Identity.IdentityId);
@@ -725,6 +726,7 @@ namespace AlliancesPlugin
                 else
                 {
                     _chatmanager.MessageProcessing += AllianceChat.DoChatMessage;
+
                     session.Managers.GetManager<IMultiplayerManagerBase>().PlayerJoined += AllianceChat.Login;
                     session.Managers.GetManager<IMultiplayerManagerBase>().PlayerLeft += AllianceChat.Logout;
                 }
@@ -1723,6 +1725,24 @@ namespace AlliancesPlugin
             List<MyPlayer> players = new List<MyPlayer>();
             foreach (MyPlayer player in MySession.Static.Players.GetOnlinePlayers())
             {
+                if (ticks % 512 == 0)
+                {
+                    if (MySession.Static.Factions.GetPlayerFaction(player.Identity.IdentityId) != null)
+                    {
+                        Alliance temp = GetAllianceNoLoading(MySession.Static.Factions.GetPlayerFaction(player.Identity.IdentityId));
+                        if (temp != null)
+                        {
+                            if (AllianceChat.PeopleInAllianceChat.ContainsKey(player.Id.SteamId))
+                            {
+                                AllianceCommands.SendStatusToClient(true, player.Id.SteamId);
+                            }
+                            else
+                            {
+                                AllianceCommands.SendStatusToClient(false, player.Id.SteamId);
+                            }
+                        }
+                    }
+                }
                 if (player?.Controller?.ControlledEntity is MyCockpit controller)
                 {
                     if (controller.CubeGrid.IsStatic)
@@ -1808,6 +1828,14 @@ namespace AlliancesPlugin
                     Alliance temp = GetAllianceNoLoading(MySession.Static.Factions.GetPlayerFaction(player.Identity.IdentityId));
                     if (temp != null)
                     {
+                        if (AllianceChat.PeopleInAllianceChat.ContainsKey(player.Id.SteamId))
+                        {
+                            AllianceCommands.SendStatusToClient(true, player.Id.SteamId);
+                        }
+                        else
+                        {
+                            AllianceCommands.SendStatusToClient(false, player.Id.SteamId);
+                        }
                         if (playersInAlliances.ContainsKey(temp.AllianceId))
                         {
                             if (!playersInAlliances[temp.AllianceId].Contains(player.Id.SteamId))
@@ -1843,7 +1871,7 @@ namespace AlliancesPlugin
 
 
             Dictionary<Guid, Dictionary<long, float>> taxes = new Dictionary<Guid, Dictionary<long, float>>();
-           
+
             foreach (TaxItem item in TerritoryTaxes)
             {
                 float tax;
@@ -1871,7 +1899,7 @@ namespace AlliancesPlugin
                             }
                             else
                             {
-                                 tax = item.price * ter.GetTaxRate(alliance.AllianceId);
+                                tax = item.price * ter.GetTaxRate(alliance.AllianceId);
                                 if (AlliancePlugin.TaxesToBeProcessed.ContainsKey(item.playerId))
                                 {
                                     AlliancePlugin.TaxesToBeProcessed[item.playerId] += Convert.ToInt64(item.price - tax);

@@ -16,7 +16,7 @@ namespace AlliancesPlugin.Hangar
    public class HangarData
     {
         public int SlotsAmount = 1;
-        public int SlotUpgradeNum = 0;
+        public int SlotUpgradeNum = 1;
         public Guid allianceId;
         FileUtils utils = new FileUtils();
         public Dictionary<int, HangarItem> ItemsInHangar = new Dictionary<int, HangarItem>();
