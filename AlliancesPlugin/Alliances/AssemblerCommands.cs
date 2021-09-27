@@ -156,7 +156,7 @@ namespace AlliancesPlugin.Alliances
                     {
                         if (b.Enabled)
                         {
-                            sb.AppendLine("Buffs speed by " + b.SubtypeId + " by " + buffed.UpgradeGivesSpeedBuuf * 100 + "%");
+                            sb.AppendLine("Buffs speed by " + b.SubtypeId + " by " + buffed.UpgradeGivesSpeedBuuf * 100 + "% and by " + buffed.UpgradeGivesBuffInTerritory * 100 + "% in owned territory.");
                         }
                     }
                 }

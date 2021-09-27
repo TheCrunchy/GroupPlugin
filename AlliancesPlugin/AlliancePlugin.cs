@@ -111,7 +111,7 @@ namespace AlliancesPlugin
         }
 
 
-        public static long AddToTaxes(ulong SteamId, long amount, string type, Vector3 Location)
+        public static long AddToTaxes(ulong SteamId, long amount, string type, Vector3D Location)
         {
             MyIdentity identityId = AlliancePlugin.GetIdentityByNameOrId(SteamId.ToString());
             IMyFaction fac = FacUtils.GetPlayersFaction(identityId.IdentityId);

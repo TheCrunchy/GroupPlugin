@@ -1222,7 +1222,7 @@ namespace AlliancesPlugin.Shipyard
             foreach (var block in grid.GetFatBlocks())
             {
                 //block.SlimBlock.GetMissingComponents()
-                block.SlimBlock.ComponentStack
+              //block.SlimBlock.ComponentStack
                 for (int i = 0; i < block.InventoryCount; i++)
                 {
                     VRage.Game.ModAPI.IMyInventory inv = ((VRage.Game.ModAPI.IMyCubeBlock)block).GetInventory(i);
@@ -1468,9 +1468,9 @@ namespace AlliancesPlugin.Shipyard
                                 gridCosts.setComponents(localGridCosts.getComponents());
                                 gridCosts.setCredits(localGridCosts.getCredits());
                                 int blockCount = blocks.Count;
-                                if (blockCount > AlliancePlugin.shipyardConfig.MaximumBlockSize)
+                                if (blockCount > printerConfig.MaximumBlockSize)
                                 {
-                                    Context.Respond("Projected grid exceeds maximum limit of " + AlliancePlugin.shipyardConfig.MaximumBlockSize);
+                                    Context.Respond("Projected grid exceeds maximum limit of " + printerConfig.MaximumBlockSize);
                                     return;
                                 }
                                 gridCosts.setPCU(blockCount);

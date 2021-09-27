@@ -16,6 +16,7 @@ namespace AlliancesPlugin.Alliances
         public List<ItemRequirement> items = new List<ItemRequirement>();
         public List<AssemblerBuffList> buffedRefineries = new List<AssemblerBuffList>();
         private Dictionary<string, double> buffed = new Dictionary<string, double>();
+        private Dictionary<string, double> buffedTerritory = new Dictionary<string, double>();
         public Dictionary<MyDefinitionId, int> getItemsRequired()
         {
             Dictionary<MyDefinitionId, int> temp = new Dictionary<MyDefinitionId, int>();
@@ -51,7 +52,18 @@ namespace AlliancesPlugin.Alliances
             }
             return 0;
         }
-
+        public double getAssemblerBuffTerritory(string subtype)
+        {
+            if (buffedTerritory.TryGetValue("all", out double b))
+            {
+                return b;
+            }
+            if (buffedTerritory.TryGetValue(subtype, out double num))
+            {
+                return num;
+            }
+            return 0;
+        }
         public void PutBuffedInDictionary()
         {
             foreach (AssemblerBuffList buff in buffedRefineries)
@@ -68,6 +80,10 @@ namespace AlliancesPlugin.Alliances
                         {
                             AlliancePlugin.Log.Error("Duplicate subtypeIds in this upgrade " + refin.SubtypeId);
                         }
+                        if (!buffedTerritory.ContainsKey(refin.SubtypeId))
+                        {
+                            buffedTerritory.Add(refin.SubtypeId, buff.UpgradeGivesSpeedBuuf);
+                        }
                     }
                 }
             }
@@ -75,6 +91,7 @@ namespace AlliancesPlugin.Alliances
         public class AssemblerBuffList
         {
             public double UpgradeGivesSpeedBuuf = 0.025;
+            public double UpgradeGivesBuffInTerritory = 0.03;
             public List<AssemblerBuff> buffs = new List<AssemblerBuff>();
         }
         public class AssemblerBuff

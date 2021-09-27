@@ -156,7 +156,7 @@ namespace AlliancesPlugin.Alliances
                     {
                         if (b.Enabled)
                         {
-                            sb.AppendLine("Buffs yield of " + b.SubtypeId + " by " + buffed.UpgradeAddsYield * 100 + "%");
+                            sb.AppendLine("Buffs yield of " + b.SubtypeId + " by " + buffed.UpgradeAddsYield * 100 + "% and by " + buffed.UpgradeGivesBuffInTerritory * 100 + "% in owned territory.");
                         }
                     }
                 }

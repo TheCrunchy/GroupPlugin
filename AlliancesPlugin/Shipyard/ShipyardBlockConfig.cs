@@ -13,6 +13,7 @@ namespace AlliancesPlugin.Shipyard
             SubtypeId = input;
         }
         public Boolean enabled = true;
+        public int MaximumBlockSize = 10000;
         public string SubtypeId;
         public float SecondsPerBlock = 1f;
         public int SCPerBlock = 5000;
