@@ -369,8 +369,12 @@ namespace AlliancesPlugin.Alliances
                 {
                     if (AlliancePlugin.GetAllianceNoLoading(playerFac as MyFaction) != null)
                     {
+                        AllianceCommands.SendStatusToClient(true, p.SteamId);
                         PeopleInAllianceChat.Remove(p.SteamId);
                         PeopleInAllianceChat.Add(p.SteamId, AlliancePlugin.GetAllianceNoLoading(playerFac as MyFaction).AllianceId);
+
+                        var status = MyAPIGateway.Utilities.SerializeFromBinary<Boolean>(rawData);
+
                     }
                 }
             }

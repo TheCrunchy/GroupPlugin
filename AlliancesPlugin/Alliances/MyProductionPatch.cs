@@ -4,6 +4,7 @@ using Sandbox.Definitions;
 using Sandbox.Game.Entities.Cube;
 using Sandbox.Game.Multiplayer;
 using Sandbox.Game.World;
+using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -59,6 +60,9 @@ namespace AlliancesPlugin.Alliances
                         //     AlliancePlugin.Log.Info("no refinery upgrade");
                         return;
                     }
+
+                   // MyAPIGateway.Multiplayer.RegisterMessageHandler(NET_ID, MessageHandler);
+
                     float buff = 1f;
                     //    AlliancePlugin.Log.Info("Buffed by " + buff.ToString());
                     if (assemblerupgrades.TryGetValue(alliance.AssemblerUpgradeLevel, out AssemblerUpgrade upgrade))
@@ -115,16 +119,16 @@ namespace AlliancesPlugin.Alliances
                                 if (isInside)
                                 {
 
-                                    buff += (float)upgrade.getAssemblerBuffTerritory(__instance.BlockDefinition.Id.SubtypeName);
+                                    buff -= (float)upgrade.getAssemblerBuffTerritory(__instance.BlockDefinition.Id.SubtypeName);
                                 }
                                 else
                                 {
-                                    buff += (float)upgrade.getAssemblerBuff(__instance.BlockDefinition.Id.SubtypeName);
+                                    buff -= (float)upgrade.getAssemblerBuff(__instance.BlockDefinition.Id.SubtypeName);
                                 }
                             }
                             else
                             {
-                                buff += (float)upgrade.getAssemblerBuff(__instance.BlockDefinition.Id.SubtypeName);
+                                buff -= (float)upgrade.getAssemblerBuff(__instance.BlockDefinition.Id.SubtypeName);
                             }
                             //      AlliancePlugin.Log.Info(refin.BlockDefinition.Id.SubtypeName);
                           

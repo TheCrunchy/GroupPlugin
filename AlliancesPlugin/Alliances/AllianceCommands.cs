@@ -2386,18 +2386,21 @@ namespace AlliancesPlugin.Alliances
                 AllianceChat.PeopleInAllianceChat.Remove(Context.Player.SteamUserId);
                 Context.Respond("Leaving alliance chat.", Color.Red);
                 utils.WriteToXmlFile<PlayerData>(AlliancePlugin.path + "//PlayerData//" + Context.Player.SteamUserId + ".xml", data);
+                SendStatusToClient(false, Context.Player.SteamUserId);
+                //leaving
                 return;
             }
             if (alliance != null)
             {
-                {
+                
                     AllianceChat.IdentityIds.Remove(Context.Player.SteamUserId);
                     AllianceChat.IdentityIds.Add(Context.Player.SteamUserId, Context.Player.Identity.IdentityId);
                     data.InAllianceChat = true;
                     AllianceChat.PeopleInAllianceChat.Add(Context.Player.SteamUserId, alliance.AllianceId);
                     Context.Respond("Entering alliance chat.", Color.Cyan);
                     utils.WriteToXmlFile<PlayerData>(AlliancePlugin.path + "//PlayerData//" + Context.Player.SteamUserId + ".xml", data);
-                }
+                    SendStatusToClient(true, Context.Player.SteamUserId);
+                
             }
             else
             {
@@ -2405,6 +2408,17 @@ namespace AlliancesPlugin.Alliances
             }
         }
 
+        public static void SendStatusToClient(Boolean status, ulong steamId)
+        {
+       
+                if (!MyAPIGateway.Multiplayer.IsServer)
+                    return;
+
+                var bytes = MyAPIGateway.Utilities.SerializeToBinary(status);
+
+                MyAPIGateway.Multiplayer.SendMessageTo(8543, bytes, steamId);
+            
+        }
         [Command("grant title", "change a title")]
         [Permission(MyPromoteLevel.None)]
         public void GiveTitleName(string playerName, string Title)
