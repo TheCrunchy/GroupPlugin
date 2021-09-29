@@ -193,6 +193,9 @@
     <Compile Include="Alliances\Database.cs" />
     <Compile Include="Alliances\DiscordStuff.cs" />
     <Compile Include="Alliances\Encryption.cs" />
+    <Compile Include="Alliances\GridRepair.cs" />
+    <Compile Include="Alliances\GridRepairUpgrades.cs" />
+    <Compile Include="Alliances\ItemRequirement.cs" />
     <Compile Include="Alliances\MyPlayerPatch.cs" />
     <Compile Include="Alliances\MyProductionPatch.cs" />
     <Compile Include="Alliances\PlayerData.cs" />

@@ -4,12 +4,14 @@ using DSharpPlus.Entities;
 using Newtonsoft.Json;
 using Sandbox.Engine.Multiplayer;
 using Sandbox.Game;
+using Sandbox.Game.Entities;
 using Sandbox.Game.GameSystems.BankingAndCurrency;
 using Sandbox.Game.Multiplayer;
 using Sandbox.Game.Screens.Helpers;
 using Sandbox.Game.World;
 using Sandbox.ModAPI;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -22,6 +24,7 @@ using Torch.Mod;
 using Torch.Mod.Messages;
 using VRage.Game;
 using VRage.Game.ModAPI;
+using VRage.Groups;
 using VRageMath;
 
 namespace AlliancesPlugin.Alliances
@@ -1806,6 +1809,22 @@ namespace AlliancesPlugin.Alliances
 
         }
 
+
+        [Command("repair", "repair grid near waystation")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void DoGridRepair()
+        {
+            //Do checks for if near a waystation and a member of the alliance
+            ConcurrentBag<MyGroups<MyCubeGrid, MyGridPhysicalGroupData>.Group> gridWithSubGrids = GridFinder.FindLookAtGridGroup(Context.Player.Character);
+            foreach (var item in gridWithSubGrids)
+            {
+                foreach (MyGroups<MyCubeGrid, MyGridPhysicalGroupData>.Node groupNodes in item.Nodes)
+                {
+                    GridRepair.Repair(item, Context.Player.SteamUserId);
+                }
+            }
+                   
+        }
         [Command("logsearch", "count the log")]
         [Permission(MyPromoteLevel.None)]
         public void BankLog(string targetnameOrSteamId, string action, string inputAmount = "1")

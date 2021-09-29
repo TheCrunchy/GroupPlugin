@@ -17,10 +17,11 @@ namespace AlliancesPlugin.Alliances
         public List<AssemblerBuffList> buffedRefineries = new List<AssemblerBuffList>();
         private Dictionary<string, double> buffed = new Dictionary<string, double>();
         private Dictionary<string, double> buffedTerritory = new Dictionary<string, double>();
+        public long AddsToUpkeep = 50;
         public Dictionary<MyDefinitionId, int> getItemsRequired()
         {
             Dictionary<MyDefinitionId, int> temp = new Dictionary<MyDefinitionId, int>();
-            foreach (AssemblerUpgrade.ItemRequirement item in this.items)
+            foreach (ItemRequirement item in this.items)
             {
                 if (item.Enabled)
                 {
@@ -98,14 +99,6 @@ namespace AlliancesPlugin.Alliances
         {
             public Boolean Enabled = false;
             public string SubtypeId = "LargeAssembler";
-        }
-        public class ItemRequirement
-        {
-            public Boolean Enabled = false;
-            public int RequiredAmount = 50;
-            public string TypeId = "Ingot";
-            public string SubTypeId = "Uranium";
-
         }
     }
 }

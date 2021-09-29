@@ -147,8 +147,8 @@ namespace AlliancesPlugin.Alliances
                 {
                    // ShipyardCommands.SendMessage("Alliance chat", "You are in alliance chat.", new Color(alliance.r, alliance.g, alliance.b), (long)player.Id.SteamId);
 
-                  //  NotificationMessage message2 = new NotificationMessage("You are in alliance chat", 5000, "Green");
-                //    ModCommunication.SendMessageTo(message2, player.Id.SteamId);
+                    NotificationMessage message2 = new NotificationMessage("You are in alliance chat", 5000, "Green");
+                    ModCommunication.SendMessageTo(message2, player.Id.SteamId);
  
                     continue;
                 }

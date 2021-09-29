@@ -134,6 +134,7 @@ namespace AlliancesPlugin.Alliances
             foreach (RefineryUpgrade upgrade in MyProductionPatch.upgrades.Values)
             {
                 sb.AppendLine("Upgrade number " + upgrade.UpgradeId);
+                sb.AppendLine("Adds to weekly upkeep " + String.Format("{0:n0}", upgrade.AddsToUpkeep) + " SC.");
                 if (upgrade.MoneyRequired > 0)
                 {
                     sb.AppendLine("Costs " + String.Format("{0:n0}", upgrade.MoneyRequired) + " SC.");
@@ -142,7 +143,7 @@ namespace AlliancesPlugin.Alliances
                 {
                     sb.AppendLine("Costs " + String.Format("{0:n0}", upgrade.MetaPointsRequired) + " Meta Points.");
                 }
-                foreach (RefineryUpgrade.ItemRequirement item in upgrade.items)
+                foreach (ItemRequirement item in upgrade.items)
                 {
                     if (item.Enabled)
                     {

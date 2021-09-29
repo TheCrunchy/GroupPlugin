@@ -35,7 +35,7 @@ namespace AlliancesPlugin.Alliances
         public int reputation = 0;
         public List<long> Invites = new List<long>();
         public List<long> AllianceMembers = new List<long>();
-
+        public int GridRepairUpgrade = 0;
         public long bankBalance = 0;
         public Boolean hasUnlockedShipyard = false;
         public Boolean hasUnlockedHangar = false;
@@ -63,6 +63,20 @@ namespace AlliancesPlugin.Alliances
 
             float upkeep = 0;
             int terCount = 0;
+            if (this.RefineryUpgradeLevel > 0)
+            {
+                if (MyProductionPatch.upgrades.ContainsKey(this.RefineryUpgradeLevel))
+                {
+                    upkeep += MyProductionPatch.upgrades[this.RefineryUpgradeLevel].AddsToUpkeep;
+                }
+            }
+            if (this.AssemblerUpgradeLevel > 0)
+            {
+                if (MyProductionPatch.assemblerupgrades.ContainsKey(this.AssemblerUpgradeLevel))
+                {
+                    upkeep += MyProductionPatch.assemblerupgrades[this.AssemblerUpgradeLevel].AddsToUpkeep;
+                }
+            }
             foreach (Territory ter in AlliancePlugin.Territories.Values)
             {
                 if (ter.Alliance.Equals(this.AllianceId))
@@ -107,6 +121,20 @@ namespace AlliancesPlugin.Alliances
 
             float upkeep = 0;
             int terCount = 0;
+            if (this.RefineryUpgradeLevel > 0)
+            {
+                if (MyProductionPatch.upgrades.ContainsKey(this.RefineryUpgradeLevel))
+                {
+                    upkeep += MyProductionPatch.upgrades[this.RefineryUpgradeLevel].AddsToUpkeep;
+                }
+            }
+            if (this.AssemblerUpgradeLevel > 0)
+            {
+                if (MyProductionPatch.assemblerupgrades.ContainsKey(this.AssemblerUpgradeLevel))
+                {
+                    upkeep += MyProductionPatch.assemblerupgrades[this.AssemblerUpgradeLevel].AddsToUpkeep;
+                }
+            }
             foreach (Territory ter in AlliancePlugin.Territories.Values)
             {
                 if (ter.Alliance.Equals(this.AllianceId))

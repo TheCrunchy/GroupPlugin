@@ -393,7 +393,7 @@ namespace AlliancesPlugin.Alliances
                     {
                         attempt++;
                         SendAllianceMessage(alliance, prefix, message);
-                        attempt = 0;
+                       // attempt = 0;
                     }
                     else
                     {

@@ -114,18 +114,27 @@ namespace AlliancesPlugin
         public static long AddToTaxes(ulong SteamId, long amount, string type, Vector3D Location)
         {
             MyIdentity identityId = AlliancePlugin.GetIdentityByNameOrId(SteamId.ToString());
+            Alliance alliance = null;
             IMyFaction fac = FacUtils.GetPlayersFaction(identityId.IdentityId);
             if (fac != null)
             {
-                Alliance alliance = GetAllianceNoLoading(fac as MyFaction);
+                alliance = GetAllianceNoLoading(fac as MyFaction);
                 if (alliance != null)
                 {
                     // alliance.reputation
                     //amount = Convert.ToInt64(amount * 1.05f);
                 }
             }
+
             foreach (Territory ter in AlliancePlugin.Territories.Values)
             {
+              if (alliance != null)
+                {
+                    if (ter.Alliance != Guid.Empty && ter.Alliance == alliance.AllianceId)
+                    {
+                        continue;
+                    }
+                }
                 if (ter.TaxesForStationsInTerritory && ter.Alliance != Guid.Empty)
                 {
                     float distance = Vector3.Distance(new Vector3(ter.x, ter.y, ter.z), Location);
@@ -810,7 +819,7 @@ namespace AlliancesPlugin
                     AssemblerUpgrade.AssemblerBuffList list = new AssemblerUpgrade.AssemblerBuffList();
                     list.buffs.Add(new AssemblerUpgrade.AssemblerBuff());
                     upgrade.buffedRefineries.Add(list);
-                    AssemblerUpgrade.ItemRequirement req = new AssemblerUpgrade.ItemRequirement();
+                   ItemRequirement req = new ItemRequirement();
                     upgrade.items.Add(req);
                     utils.WriteToXmlFile<AssemblerUpgrade>(path + "//AssemblerUpgrades//Example.xml", upgrade);
                     upgrade.UpgradeId = 2;
@@ -826,7 +835,7 @@ namespace AlliancesPlugin
                     RefineryUpgrade.RefineryBuffList list = new RefineryUpgrade.RefineryBuffList();
                     list.buffs.Add(new RefineryUpgrade.RefineryBuff());
                     upgrade.buffedRefineries.Add(list);
-                    RefineryUpgrade.ItemRequirement req = new RefineryUpgrade.ItemRequirement();
+                    ItemRequirement req = new ItemRequirement();
                     upgrade.items.Add(req);
                     utils.WriteToXmlFile<RefineryUpgrade>(path + "//RefineryUpgrades//Example.xml", upgrade);
                     upgrade.UpgradeId = 2;
@@ -4003,6 +4012,15 @@ namespace AlliancesPlugin
             }
             if (ticks % 32 == 0 && TorchState == TorchSessionState.Loaded)
             {
+                try
+                {
+                    GridRepair.DoRepairCycle();
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex);
+                    
+                }
                 if (config.JumpGatesEnabled)
                 {
                     try
