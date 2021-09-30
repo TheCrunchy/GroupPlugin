@@ -23,7 +23,7 @@ namespace AlliancesPlugin.Alliances
         public static Dictionary<long, DateTime> gridCooldowns = new Dictionary<long, DateTime>();
         public static Dictionary<long, Guid> AllianceIds = new Dictionary<long, Guid>();
         public static Dictionary<int, GridRepairUpgrades> upgrades = new Dictionary<int, GridRepairUpgrades>();
-        public long CalculatePriceForComponents(Dictionary<MyDefinitionId, int> components, long identityIdForAllianceChecks) 
+        public static long CalculatePriceForComponents(Dictionary<MyDefinitionId, int> components, long identityIdForAllianceChecks) 
         {
 
 
@@ -117,9 +117,16 @@ namespace AlliancesPlugin.Alliances
                     //check for components and if they can afford it
                     Dictionary<string, int> temp = new Dictionary<string, int>();
                     block.GetMissingComponents(temp);
+                    //CONVERT THE TEMP TO DEFINITION IDS, OR IDS TO STRINGS AND CHECK AGAINST THOSE
                     Dictionary<MyDefinitionId, int> converted = new Dictionary<MyDefinitionId, int>();
 
+
+                    PriceSoFar += CalculatePriceForComponents(converted, identityId);
+
+
                     block.ClearConstructionStockpile(null);
+
+
                     block.IncreaseMountLevel(block.MaxIntegrity, owner, null, 10000, true);
 
                     MyCubeBlock cubeBlock = block.FatBlock;
