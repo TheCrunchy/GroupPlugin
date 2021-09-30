@@ -21,8 +21,9 @@ namespace AlliancesPlugin.Alliances
     {
         public static Dictionary<long, long> gridsToRepair = new Dictionary<long, long>();
         public static Dictionary<long, DateTime> gridCooldowns = new Dictionary<long, DateTime>();
-
-        public long CalculatePriceForComponents(Dictionary<MyDefinitionId, int> components) 
+        public static Dictionary<long, Guid> AllianceIds = new Dictionary<long, Guid>();
+        public static Dictionary<int, GridRepairUpgrades> upgrades = new Dictionary<int, GridRepairUpgrades>();
+        public long CalculatePriceForComponents(Dictionary<MyDefinitionId, int> components, long identityIdForAllianceChecks) 
         {
 
 
@@ -42,9 +43,15 @@ namespace AlliancesPlugin.Alliances
                     {
                         if (MyAPIGateway.Entities.GetEntityById(pair.Key) != null && MyAPIGateway.Entities.GetEntityById(pair.Key) is MyCubeGrid grid)
                         {
-                         
-                            BuildProjected(grid, pair.Value);
-                            gridCooldowns[pair.Key] = DateTime.Now.AddSeconds(5);
+                            GridRepairUpgrades upgrade = upgrades[AlliancePlugin.GetAllianceNoLoading(AllianceIds[pair.Key]).GridRepairUpgrade];
+                            if (upgrade == null)
+                            {
+                                AlliancePlugin.Log.Error("Could find this uppgrade id " + AlliancePlugin.GetAllianceNoLoading(AllianceIds[pair.Key]).GridRepairUpgrade + " CANCELLING REPAIR");
+                                yeet.Add(pair.Key);
+                                return;
+                            }
+                            BuildProjected(grid, pair.Value, upgrade.RepairBlocksPerCycle, upgrade.ProjectedBuildPerCycle);
+                            gridCooldowns[pair.Key] = DateTime.Now.AddSeconds(upgrade.SecondsPerCycle);
                         }
                         else
                         {
@@ -88,14 +95,16 @@ namespace AlliancesPlugin.Alliances
 
         //now we want to build projected blocks
 
-        public static void BuildProjected(MyCubeGrid grid, long identityId)
+        public static void BuildProjected(MyCubeGrid grid, long identityId, int fixPerCycle, int buildPerCycle)
         {
             AlliancePlugin.Log.Info("Doing buildy shit");
             int blockCount = 0;
+            int fixedblocks = 0;
+            long PriceSoFar = 0;
             HashSet<MySlimBlock> blocks3 = grid.GetBlocks();
             foreach (MySlimBlock block in blocks3)
             {
-                if (blockCount >= 20)
+                if (fixedblocks >= fixPerCycle)
                 {
                     return;
                 }
@@ -122,7 +131,7 @@ namespace AlliancesPlugin.Alliances
                         if (owner != 0)
                             grid.ChangeOwnerRequest(grid, cubeBlock, owner, MyOwnershipShareModeEnum.Faction);
                     }
-                    blockCount++;
+                    fixedblocks++;
                 }
        
             }
@@ -160,7 +169,7 @@ namespace AlliancesPlugin.Alliances
                 foreach (VRage.Game.ModAPI.IMySlimBlock block2 in blocks)
                 {
 
-                    if (blockCount >= 10)
+                    if (blockCount >= buildPerCycle)
                     {
                         return;
                     }
@@ -188,13 +197,13 @@ namespace AlliancesPlugin.Alliances
                         AlliancePlugin.Log.Info("building");
                         blockCount++;
                     }
-                    if (blockCount >= 10)
+                    if (blockCount >= buildPerCycle)
                     {
                         return;
                     }
                     foreach (VRage.Game.ModAPI.IMySlimBlock block3 in notConnected)
                     {
-                        if (blockCount >= 10)
+                        if (blockCount >= buildPerCycle)
                         {
                             return;
                         }
