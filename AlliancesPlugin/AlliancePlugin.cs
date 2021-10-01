@@ -1881,68 +1881,71 @@ namespace AlliancesPlugin
 
             Dictionary<Guid, Dictionary<long, float>> taxes = new Dictionary<Guid, Dictionary<long, float>>();
 
-            foreach (TaxItem item in TerritoryTaxes)
-            {
-                float tax;
-                Territory ter = Territories[item.territory];
-                Alliance alliance1 = GetAllianceNoLoading(ter.Alliance);
-                if (alliance1 != null)
-                {
-                    if (MySession.Static.Factions.TryGetPlayerFaction(item.playerId) != null)
-                    {
 
-                        Alliance alliance = GetAllianceNoLoading(MySession.Static.Factions.TryGetPlayerFaction(item.playerId) as MyFaction);
-                        if (alliance != null)
-                        {
-                            if (alliance.AllianceId == ter.Id)
-                            {
-                                if (AlliancePlugin.TaxesToBeProcessed.ContainsKey(item.playerId))
-                                {
-                                    AlliancePlugin.TaxesToBeProcessed[item.playerId] += item.price;
-                                }
-                                else
-                                {
-                                    AlliancePlugin.TaxesToBeProcessed.Add(item.playerId, item.price);
-                                }
-                                continue;
-                            }
-                            else
-                            {
-                                tax = item.price * ter.GetTaxRate(alliance.AllianceId);
-                                if (AlliancePlugin.TaxesToBeProcessed.ContainsKey(item.playerId))
-                                {
-                                    AlliancePlugin.TaxesToBeProcessed[item.playerId] += Convert.ToInt64(item.price - tax);
-                                }
-                                else
-                                {
-                                    AlliancePlugin.TaxesToBeProcessed.Add(item.playerId, Convert.ToInt64(item.price - tax));
-                                }
-                            }
-                        }
+            //this is broken 
 
-                    }
-                    tax = item.price * ter.TaxPercent;
-                    if (EconUtils.getBalance(item.playerId) >= tax)
-                    {
-                        //add taxes to the dictionary
-                        if (taxes.ContainsKey(ter.Id))
-                        {
-                            Territory[ter.Id].Remove(item.playerId);
-                            taxes[ter.Id].Add(item.playerId, tax);
-                        }
-                        else
-                        {
-                            Dictionary<long, float> temp = new Dictionary<long, float>();
-                            temp.Add(item.playerId, tax);
-                            taxes.Add(ter.Id, temp);
-                        }
-                    }
-                }
-            }
-            //dont do an else, far too much effort 
+            //foreach (TaxItem item in TerritoryTaxes)
+            //{
+            //    float tax;
+            //    Territory ter = Territories[item.territory];
+            //    Alliance alliance1 = GetAllianceNoLoading(ter.Alliance);
+            //    if (alliance1 != null)
+            //    {
+            //        if (MySession.Static.Factions.TryGetPlayerFaction(item.playerId) != null)
+            //        {
 
-            DatabaseForBank.TerritoryTaxes(taxes);
-            TerritoryTaxes.Clear();
+            //            Alliance alliance = GetAllianceNoLoading(MySession.Static.Factions.TryGetPlayerFaction(item.playerId) as MyFaction);
+            //            if (alliance != null)
+            //            {
+            //                if (alliance.AllianceId == ter.Id)
+            //                {
+            //                    if (AlliancePlugin.TaxesToBeProcessed.ContainsKey(item.playerId))
+            //                    {
+            //                        AlliancePlugin.TaxesToBeProcessed[item.playerId] += item.price;
+            //                    }
+            //                    else
+            //                    {
+            //                        AlliancePlugin.TaxesToBeProcessed.Add(item.playerId, item.price);
+            //                    }
+            //                    continue;
+            //                }
+            //                else
+            //                {
+            //                    tax = item.price * ter.GetTaxRate(alliance.AllianceId);
+            //                    if (AlliancePlugin.TaxesToBeProcessed.ContainsKey(item.playerId))
+            //                    {
+            //                        AlliancePlugin.TaxesToBeProcessed[item.playerId] += Convert.ToInt64(item.price - tax);
+            //                    }
+            //                    else
+            //                    {
+            //                        AlliancePlugin.TaxesToBeProcessed.Add(item.playerId, Convert.ToInt64(item.price - tax));
+            //                    }
+            //                }
+            //            }
+
+            //        }
+            //        tax = item.price * ter.TaxPercent;
+            //        if (EconUtils.getBalance(item.playerId) >= tax)
+            //        {
+            //            //add taxes to the dictionary
+            //            if (taxes.ContainsKey(ter.Id))
+            //            {
+            //                Territory[ter.Id].Remove(item.playerId);
+            //                taxes[ter.Id].Add(item.playerId, tax);
+            //            }
+            //            else
+            //            {
+            //                Dictionary<long, float> temp = new Dictionary<long, float>();
+            //                temp.Add(item.playerId, tax);
+            //                taxes.Add(ter.Id, temp);
+            //            }
+            //        }
+            //    }
+            //}
+            ////dont do an else, far too much effort 
+
+            //DatabaseForBank.TerritoryTaxes(taxes);
+    
 
             foreach (long id in TaxesToBeProcessed.Keys)
             {
@@ -1982,7 +1985,7 @@ namespace AlliancesPlugin
             }
 
             DatabaseForBank.Taxes(taxes);
-
+            TerritoryTaxes.Clear();
             foreach (long id in Processed)
             {
                 TaxesToBeProcessed.Remove(id);

@@ -1028,7 +1028,7 @@ namespace AlliancesPlugin.Alliances
             alliance.AdminWithdraw(amount, 1);
             AlliancePlugin.SaveAllianceData(alliance);
             DatabaseForBank.RemoveFromBalance(alliance, amount);
-     
+
         }
         [Command("addmoney", "output info about an alliance")]
         [Permission(MyPromoteLevel.Admin)]
@@ -1102,7 +1102,7 @@ namespace AlliancesPlugin.Alliances
             else
             {
                 Context.Respond("Alliance Info" + " " + alliance.name + alliance.OutputAlliance());
-                
+
             }
         }
         [Command("leave", "leave the alliance")]
@@ -1823,7 +1823,184 @@ namespace AlliancesPlugin.Alliances
                     GridRepair.Repair(item, Context.Player.SteamUserId);
                 }
             }
-                   
+
+        }
+
+        [Command("sellrank", "count the log")]
+        [Permission(MyPromoteLevel.None)]
+        public void SellRank(string rankname, string action, string inputAmount = "100000000", bool dorankup = false)
+        {
+            Context.Respond("Valid actions are tax, deposited, shipyard fee, Example usage !alliance logsearch Crunch tax,deposited or !alliance logsearch 0 tax");
+            String timeformat = "MM-dd-yyyy";
+            Int64 amount;
+            inputAmount = inputAmount.Replace(",", "");
+            inputAmount = inputAmount.Replace(".", "");
+            inputAmount = inputAmount.Replace(" ", "");
+            try
+            {
+                amount = Int64.Parse(inputAmount);
+            }
+            catch (Exception)
+            {
+                Context.Respond("Error parsing amount", Color.Red, "Bank Man");
+                return;
+            }
+            if (Context.Player != null)
+            {
+
+                //Do stuff with taking components from grid storage
+                //GridCosts localGridCosts = GetComponentsAndCost(projectedGrid);
+                //gridCosts.setComponents(localGridCosts.getComponents());
+                IMyFaction faction = FacUtils.GetPlayersFaction(Context.Player.IdentityId);
+                if (faction == null)
+                {
+                    Context.Respond("You must be in a faction to use alliance features.");
+                    return;
+                }
+                Alliance alliance = AlliancePlugin.GetAlliance(faction as MyFaction);
+                if (alliance == null)
+                {
+                    Context.Respond("You are not a member of an alliance with an unlocked shipyard.");
+                    return;
+                }
+                if (!alliance.PlayersCustomRank.ContainsValue(rankname))
+                {
+                    Context.Respond("Cannot find that rank");
+                    return;
+                }
+                StringBuilder sb = new StringBuilder();
+                if (alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.GrantLowerTitle))
+                {
+
+
+                    BankLog log = alliance.GetLog();
+
+                    ulong targetId = 0;
+                    log.log.Reverse();
+                    Dictionary<ulong, long> temporaryCounter = new Dictionary<ulong, long>();
+                    List<ulong> promoted = new List<ulong>();
+                    long totalPaid = 0;
+
+
+
+
+                    if (!action.Contains(","))
+                    {
+                        foreach (BankLogItem item in log.log.Where(x => x.Action.Equals(action)))
+                        {
+                            if (temporaryCounter.TryGetValue(item.SteamId, out long current))
+                            {
+                                temporaryCounter[item.SteamId] += item.Amount;
+                            }
+                            else
+                            {
+                                temporaryCounter.Add(item.SteamId, item.Amount);
+                            }
+                        }
+
+                    }
+                    else
+                    {
+                        String[] actions = action.Split(',');
+                        foreach (String s in actions)
+                        {
+                            String s2 = s.Replace(" ", "");
+                            foreach (BankLogItem item in log.log.Where(x => x.Action.Equals(s2)))
+                            {
+                                if (temporaryCounter.TryGetValue(item.SteamId, out long current))
+                                {
+                                    temporaryCounter[item.SteamId] += item.Amount;
+                                }
+                                else
+                                {
+                                    temporaryCounter.Add(item.SteamId, item.Amount);
+                                }
+                            }
+                        }
+                    }
+
+
+
+                    foreach (KeyValuePair<ulong, long> pair in temporaryCounter)
+                    {
+                        if (pair.Value >= amount)
+                        {
+
+                            if (dorankup)
+                            {
+                                if (!alliance.PlayersCustomRank.ContainsKey(pair.Key))
+                                {
+                                    alliance.PlayersCustomRank.Add(pair.Key, rankname);
+                                    promoted.Add(pair.Key);
+                                    sb.AppendLine("Promoted " + AlliancePlugin.GetPlayerName(pair.Key) + " to " + rankname);
+                                }
+                                else
+                                {
+
+                                    RankPermissions thisGuy = alliance.CustomRankPermissions[alliance.PlayersCustomRank[pair.Key]];
+                                    RankPermissions newTitle = alliance.CustomRankPermissions[rankname];
+
+                                    if (newTitle.permissionLevel > thisGuy.permissionLevel)
+                                    {
+                                        alliance.SetTitle(pair.Key, rankname);
+                                        promoted.Add(pair.Key);
+                                        sb.AppendLine("Promoted " + AlliancePlugin.GetPlayerName(pair.Key) + " to " + rankname);
+                                    }
+
+
+                                }
+
+                            }
+                            else
+                            {
+                                if (!alliance.PlayersCustomRank.ContainsKey(pair.Key))
+                                {
+                                    sb.AppendLine("Eligible " + AlliancePlugin.GetPlayerName(pair.Key) + " to " + rankname + " " + String.Format("{0:n0}", pair.Value));
+                                }
+                                else
+                                {
+
+                                    RankPermissions thisGuy = alliance.CustomRankPermissions[alliance.PlayersCustomRank[pair.Key]];
+                                    RankPermissions newTitle = alliance.CustomRankPermissions[rankname];
+
+                                    if (newTitle.permissionLevel < thisGuy.permissionLevel)
+                                    {
+                                        sb.AppendLine("Eligible " + AlliancePlugin.GetPlayerName(pair.Key) + " to " + rankname + " " + String.Format("{0:n0}", pair.Value));
+                                    }
+                                }
+                               
+                            }
+
+                        }
+                    }
+
+                    AlliancePlugin.SaveAllianceData(alliance);
+
+                    foreach (ulong id in promoted)
+                    {
+                        if (dorankup)
+                        {
+                            sb.AppendLine("Promoted " + AlliancePlugin.GetPlayerName(id) + " to " + rankname);
+                        }
+                        else
+                        {
+
+                        }
+                    }
+
+                    DialogMessage m = new DialogMessage("Alliance Promotions", alliance.name, sb.ToString());
+                    ModCommunication.SendMessageTo(m, Context.Player.SteamUserId);
+                }
+                else
+                {
+                    Context.Respond("You dont have permission to do this. Required perm is GrantLowerTitle");
+                }
+
+                //output the people upgraded
+
+            }
+
+
         }
         [Command("logsearch", "count the log")]
         [Permission(MyPromoteLevel.None)]
@@ -2335,17 +2512,17 @@ namespace AlliancesPlugin.Alliances
                 //to lazy to make a switch/case
                 if (num == 0)
                 {
-                    MyVisualScriptLogicProvider.SendChatMessageColored("Can anyone see this message in a server that isnt " + MyMultiplayer.Static.HostName,Color.Pink, "TESTING", 0);
+                    MyVisualScriptLogicProvider.SendChatMessageColored("Can anyone see this message in a server that isnt " + MyMultiplayer.Static.HostName, Color.Pink, "TESTING", 0);
                 }
                 if (num == 1)
                 {
                     DiscordChannel chann = DiscordStuff.Discord.GetChannelAsync(AlliancePlugin.config.DiscordChannelId).Result;
 
-           
 
-                   DiscordStuff.Discord.SendMessageAsync(chann,"debug");
+
+                    DiscordStuff.Discord.SendMessageAsync(chann, "debug");
                 }
-               if (num == 2)
+                if (num == 2)
                 {
                     DiscordStuff.Discord.DisconnectAsync();
                 }
@@ -2368,7 +2545,7 @@ namespace AlliancesPlugin.Alliances
 
 
 
-                    DiscordStuff.Discord.SendMessageAsync(chann, " Checking SENDS"  + ServerNum);
+                    DiscordStuff.Discord.SendMessageAsync(chann, " Checking SENDS" + ServerNum);
                 }
             }
             else
@@ -2429,14 +2606,14 @@ namespace AlliancesPlugin.Alliances
 
         public static void SendStatusToClient(Boolean status, ulong steamId)
         {
-       
-                if (!MyAPIGateway.Multiplayer.IsServer)
-                    return;
 
-                var bytes = MyAPIGateway.Utilities.SerializeToBinary(status);
+            if (!MyAPIGateway.Multiplayer.IsServer)
+                return;
 
-                MyAPIGateway.Multiplayer.SendMessageTo(8544, bytes, steamId);
-            
+            var bytes = MyAPIGateway.Utilities.SerializeToBinary(status);
+
+            MyAPIGateway.Multiplayer.SendMessageTo(8544, bytes, steamId);
+
         }
 
         [Command("grant title", "change a title")]

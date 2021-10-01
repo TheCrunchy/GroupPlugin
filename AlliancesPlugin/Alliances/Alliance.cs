@@ -421,7 +421,7 @@ namespace AlliancesPlugin.Alliances
                 EconUtils.addMoney(id, amountToPay);
                 bankBalance -= amountToPay;
                 item.SteamId = steamid;
-                item.Amount = amount;
+                item.Amount = amount / ids.Count;
                 item.Action = "dividend";
                 item.PlayerPaid = MySession.Static.Players.TryGetSteamId(id);
                 item.TimeClaimed = DateTime.Now;

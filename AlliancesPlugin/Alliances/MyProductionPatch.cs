@@ -144,6 +144,8 @@ namespace AlliancesPlugin.Alliances
      MyBlueprintDefinitionBase queueItem,
      MyFixedPoint blueprintAmount, MyRefinery __instance)
         {
+          
+            
             MyRefinery refin = __instance;
             if (!Enabled)
             {
