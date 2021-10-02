@@ -35,6 +35,7 @@ namespace AlliancesPlugin
         public int UpkeepFailBeforeDelete = 3;
 
         public Boolean EnableAllianceSafeZones = false;
+        public Boolean RepairEnabled = false;
 
     }
 }

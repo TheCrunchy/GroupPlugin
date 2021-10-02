@@ -185,6 +185,7 @@
     <Compile Include="AlliancePlugin.cs" />
     <Compile Include="Alliances\AllianceChat.cs" />
     <Compile Include="Alliances\AllianceCommands.cs" />
+    <Compile Include="Alliances\GridRepairCommands.cs" />
     <Compile Include="Alliances\AssemblerCommands.cs" />
     <Compile Include="Alliances\AssemblerUpgrade.cs" />
     <Compile Include="Alliances\BankData.cs" />

@@ -797,6 +797,25 @@ namespace AlliancesPlugin
                     site.locations.Add(loc);
                     utils.WriteToXmlFile<CaptureSite>(path + "//CaptureSites//example2.xml", site, false);
                 }
+                if (!Directory.Exists(path + "//WaystationRepairUpgrades//"))
+                {
+                    Directory.CreateDirectory(path + "//WaystationRepairUpgrades//");
+                }
+                if (!File.Exists(path + "//WaystationRepairUpgrades//Base.xml"))
+                {
+                    GridRepairUpgrades upgrade = new GridRepairUpgrades();
+
+                    ItemRequirement req = new ItemRequirement();
+                    upgrade.items.Add(req);
+                    GridRepairUpgrades.ComponentCostForRepair cost = new GridRepairUpgrades.ComponentCostForRepair();
+                    cost.SubTypeId = "SteelPlate";
+                    cost.Cost = 100;
+                    upgrade.repairCost.Add(cost);
+                    upgrade.BannedComponents.Add("AdminKit");
+                    upgrade.BannedComponents.Add("ShitminKit");
+                    utils.WriteToXmlFile<GridRepairUpgrades>(path + "//WaystationRepairUpgrades//Base.xml", upgrade);
+
+                }
                 if (!File.Exists(basePath + "//Alliances//KOTH//example.xml"))
                 {
                     utils.WriteToXmlFile<KothConfig>(basePath + "//Alliances//KOTH//example.xml", new KothConfig(), false);
@@ -1099,6 +1118,23 @@ namespace AlliancesPlugin
         }
         public void LoadAllRefineryUpgrades()
         {
+            GridRepair.upgrades.Clear();
+            foreach (String s in Directory.GetFiles(path + "//WaystationRepairUpgrades//"))
+            {
+                GridRepairUpgrades upgrade = utils.ReadFromXmlFile<GridRepairUpgrades>(s);
+                if (upgrade.Enabled)
+                {
+                    upgrade.AddComponentCostToDictionary();
+                    if (!GridRepair.upgrades.ContainsKey(upgrade.UpgradeId))
+                    {
+                        GridRepair.upgrades.Add(upgrade.UpgradeId, upgrade);
+                    }
+                    else
+                    {
+                        Log.Error("Duplicate ID for upgrades " + s);
+                    }
+                }
+            }
             MyProductionPatch.upgrades.Clear();
             foreach (String s in Directory.GetFiles(path + "//RefineryUpgrades//"))
             {
@@ -2344,7 +2380,7 @@ namespace AlliancesPlugin
                                                                         ter.transferTo = alliance.AllianceId;
                                                                         try
                                                                         {
-                                                                            DiscordStuff.SendMessageToDiscord(ter.Name, "Waystation will be transferred to " + GetAllianceNoLoading(CapturingAlliance).name + " in 48 hours if territory is not recaptured.", config, true);
+                                                                            DiscordStuff.SendMessageToDiscord(ter.Name, "Waystation will be transferred to " + GetAllianceNoLoading(CapturingAlliance).name, config, true);
                                                                         }
                                                                         catch (Exception ex)
                                                                         {

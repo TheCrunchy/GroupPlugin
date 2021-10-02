@@ -504,6 +504,7 @@ namespace AlliancesPlugin.Alliances
                 {
                     foreach (AccessLevel level in alliance.CustomRankPermissions[key].permissions)
                     {
+                       
                         perms.Append(level.ToString() + ", ");
                     }
                     sb.AppendLine(key + " Permissions : " + perms.ToString());
@@ -1810,21 +1811,7 @@ namespace AlliancesPlugin.Alliances
         }
 
 
-        [Command("repair", "repair grid near waystation")]
-        [Permission(MyPromoteLevel.Admin)]
-        public void DoGridRepair()
-        {
-            //Do checks for if near a waystation and a member of the alliance
-            ConcurrentBag<MyGroups<MyCubeGrid, MyGridPhysicalGroupData>.Group> gridWithSubGrids = GridFinder.FindLookAtGridGroup(Context.Player.Character);
-            foreach (var item in gridWithSubGrids)
-            {
-                foreach (MyGroups<MyCubeGrid, MyGridPhysicalGroupData>.Node groupNodes in item.Nodes)
-                {
-                    GridRepair.Repair(item, Context.Player.SteamUserId);
-                }
-            }
 
-        }
 
         [Command("sellrank", "count the log")]
         [Permission(MyPromoteLevel.None)]
@@ -1963,7 +1950,11 @@ namespace AlliancesPlugin.Alliances
                                     RankPermissions thisGuy = alliance.CustomRankPermissions[alliance.PlayersCustomRank[pair.Key]];
                                     RankPermissions newTitle = alliance.CustomRankPermissions[rankname];
 
-                                    if (newTitle.permissionLevel < thisGuy.permissionLevel)
+                                    if (thisGuy.permissionLevel > newTitle.permissionLevel)
+                                    {
+                                       //this is weird code
+                                    }
+                                    else
                                     {
                                         sb.AppendLine("Eligible " + AlliancePlugin.GetPlayerName(pair.Key) + " to " + rankname + " " + String.Format("{0:n0}", pair.Value));
                                     }

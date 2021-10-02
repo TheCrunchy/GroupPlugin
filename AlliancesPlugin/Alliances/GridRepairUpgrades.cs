@@ -9,16 +9,15 @@ namespace AlliancesPlugin.Alliances
 {
     public class GridRepairUpgrades
     {
-        public int UpgradeId = 1;
+        public int UpgradeId = 0;
         public Boolean Enabled = false;
         public long MoneyRequired = 5000000;
         public int MetaPointsRequired = 500000;
         public List<ItemRequirement> items = new List<ItemRequirement>();
-        public List<MyDefinitionId> BannedComponents = new List<MyDefinitionId>();
-        public long AddsToUpkeep = 50;
+        //public long AddsToUpkeep = 50;
 
-        public int SecondsPerCycle = 60;
-        public int ProjectedBuildPerCycle = 5;
+        public int SecondsPerCycle = 20;
+        public int ProjectedBuildPerCycle = 10;
         public int RepairBlocksPerCycle = 10;
         public Dictionary<MyDefinitionId, int> getItemsRequired()
         {
@@ -35,7 +34,7 @@ namespace AlliancesPlugin.Alliances
                         }
                         else
                         {
-                            AlliancePlugin.Log.Error("Duplicate ID for refinery upgrade items " + item.SubTypeId + " in " + UpgradeId);
+                            AlliancePlugin.Log.Error("Duplicate ID for grid repair upgrade items " + item.SubTypeId + " in " + UpgradeId);
                         }
                     }
                 }
@@ -43,8 +42,36 @@ namespace AlliancesPlugin.Alliances
 
             return temp;
         }
-    
+        public long PriceIfNotDefined = 50000;
+        public long getCost(String id)
+        {
+            if (ComponentCosts.ContainsKey(id))
+            {
+                return ComponentCosts[id];
+            }
+            else
+            {
+                return PriceIfNotDefined;
+            }
+        }
+        private Dictionary<String, long> ComponentCosts = new Dictionary<string, long>();
+        public List<ComponentCostForRepair> repairCost = new List<ComponentCostForRepair>();
+        public void AddComponentCostToDictionary()
+        {
+            foreach (ComponentCostForRepair comp in repairCost)
+            {
+                if (!ComponentCosts.ContainsKey(comp.SubTypeId))
+                {
+                    ComponentCosts.Add(comp.SubTypeId, comp.Cost);
+                }
+            }
+        }
+        public class ComponentCostForRepair
+        {
+            public string SubTypeId;
+            public long Cost = 1000;
+        }
 
-
+        public List<String> BannedComponents = new List<String>();
     }
 }
