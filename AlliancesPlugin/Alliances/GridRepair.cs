@@ -61,15 +61,22 @@ namespace AlliancesPlugin.Alliances
                 Alliance alliance = AlliancePlugin.GetAllianceNoLoading(allianceId);
                 if (alliance != null)
                 {
-                    GridRepairUpgrades level = new GridRepairUpgrades();
-                    //upgrades[alliance.GridRepairUpgrade];
-
-                    foreach (KeyValuePair<String, int> pair in components)
+                    if (upgrades.TryGetValue(alliance.GridRepairUpgrade, out GridRepairUpgrades upgrade))
                     {
-                        if (level.BannedComponents.Contains(pair.Key))
+                     
+
+                        foreach (KeyValuePair<String, int> pair in components)
                         {
-                            return true;
+                            if (upgrade.BannedComponents.Contains(pair.Key))
+                            {
+                                return true;
+                            }
                         }
+                    }
+                    else
+                    {
+                        AlliancePlugin.Log.Info("Couldnt find the upgrade level");
+                        return true;
                     }
                 }
             }
@@ -157,6 +164,7 @@ namespace AlliancesPlugin.Alliances
 
         public static void BuildProjected(MyCubeGrid grid, long identityId, int fixPerCycle, int buildPerCycle)
         {
+            int BannedCount = 0;
             Territory ter = AlliancePlugin.Territories[location[grid.EntityId]];
             float distance = Vector3.Distance(grid.PositionComp.GetPosition(), new Vector3(ter.stationX, ter.stationY, ter.stationZ));
             if (distance >= 1000)
@@ -185,7 +193,7 @@ namespace AlliancesPlugin.Alliances
                 if (owner == 0)
                     owner = identityId;
 
-                if (block.CurrentDamage > 0 || block.HasDeformation)
+                if (block.CurrentDamage > 0 || block.HasDeformation || !block.IsFullIntegrity)
                 {
                     //check for components and if they can afford it
                     Dictionary<string, int> temp = new Dictionary<string, int>();
@@ -195,6 +203,7 @@ namespace AlliancesPlugin.Alliances
 
                     if (IsBannedComponent(temp, identityId))
                     {
+                        BannedCount++;
                         continue;
                     }
                     long tempPrice = CalculatePriceForComponents(temp, identityId);
@@ -232,6 +241,11 @@ namespace AlliancesPlugin.Alliances
                 }
 
             }
+            if (PriceSoFar > 0)
+            {
+                EconUtils.takeMoney(identityId, PriceSoFar);
+            }
+
             PriceSoFar = 0;
             IMyCubeGrid projectedGrid = null;
             IMyProjector projector = null;
@@ -239,7 +253,7 @@ namespace AlliancesPlugin.Alliances
             {
                 if (proj.IsFunctional && proj.ProjectedGrid != null && projector == null)
                 {
-
+                    
 
                     projector = proj as IMyProjector;
                     if (projector.BlockDefinition.SubtypeName != null && projector.BlockDefinition.SubtypeName.ToLower().Contains("console"))
@@ -251,7 +265,8 @@ namespace AlliancesPlugin.Alliances
                     projectedGrid = proj.ProjectedGrid;
                 }
             }
-
+            
+            List<VRage.Game.ModAPI.IMySlimBlock> remove = new List<IMySlimBlock>();
             List<VRage.Game.ModAPI.IMySlimBlock> notConnected = new List<IMySlimBlock>();
             if (projectedGrid != null)
             {
@@ -262,11 +277,27 @@ namespace AlliancesPlugin.Alliances
                 int Cycle = 0;
 
                 //im 100% sure this will be an infinite loop
-
+       
                 while (blockCount <= buildPerCycle)
                 {
+                    if (projector.RemainingBlocks == BannedCount)
+                    {
+                        yeet.Add(grid.EntityId);
+                        AllianceIds.Remove(identityId);
 
+                        ShipyardCommands.SendMessage("ACME", "Grid repair should be complete.", Color.Green, (long)MySession.Static.Players.TryGetSteamId(identityId));
+                        return;
+
+                    }
                     Cycle++;
+                    projectedGrid.GetBlocks(blocks);
+
+                    //foreach (VRage.Game.ModAPI.IMySlimBlock block in remove)
+                    //{
+
+                    //    projectedGrid.RemoveBlock(block);
+                    //    blocks.Remove(block);
+                    //}
 
                     if (Cycle >= 20)
                     {
@@ -274,20 +305,22 @@ namespace AlliancesPlugin.Alliances
                         {
                             EconUtils.takeMoney(identityId, PriceSoFar);
                         }
+                        if (BannedCount == blocks.Count)
+                        {
+                            yeet.Add(grid.EntityId);
+                            AllianceIds.Remove(identityId);
+                            ShipyardCommands.SendMessage("ACME", "Grid repair should be complete.", Color.Green, (long)MySession.Static.Players.TryGetSteamId(identityId));
+                        }
                         return;
+                     //   blockCount = buildPerCycle;
 
                     }
 
-                    projectedGrid.GetBlocks(blocks);
-
-                    int baseBlocks = grid.GetBlocks().Count;
-                    int Percent = Convert.ToInt32(blocks.Count * 0.5);
-                    if (baseBlocks < Percent)
-                    {
-                        yeet.Add(grid.EntityId);
-                        ShipyardCommands.SendMessage("ACME", "50 Percent of grid is not built. Cancelling repair. " + (Percent - baseBlocks) + " Built blocks are required", Color.Green, (long)MySession.Static.Players.TryGetSteamId(identityId));
-                        return;
-                    }
+          
+            
+                    int baseBlocks = grid.BlocksCount;
+                    
+                    int Percent = Convert.ToInt32(projector.TotalBlocks * 0.5);
                     if (blocks.Count == 0)
                     {
                         yeet.Add(grid.EntityId);
@@ -301,6 +334,13 @@ namespace AlliancesPlugin.Alliances
                         //   AlliancePlugin.Log.Info("No projected blocks so removing the grid from cycle");
                         return;
                     }
+                    if (baseBlocks < Percent)
+                    {
+                        yeet.Add(grid.EntityId);
+                        ShipyardCommands.SendMessage("ACME", "50 Percent of grid is not built. Cancelling repair. " + (Percent - baseBlocks) + " Built blocks are required", Color.Green, (long)MySession.Static.Players.TryGetSteamId(identityId));
+                        return;
+                    }
+             
                     foreach (VRage.Game.ModAPI.IMySlimBlock block2 in blocks)
                     {
 
@@ -333,6 +373,8 @@ namespace AlliancesPlugin.Alliances
                             }
                             if (IsBannedComponent(converted, identityId))
                             {
+                                remove.Add(block2);
+                                BannedCount++;
                                 continue;
                             }
                             long tempPrice = CalculatePriceForComponents(converted, identityId);
@@ -376,6 +418,7 @@ namespace AlliancesPlugin.Alliances
                     }
                 }
             }
+            
             yeet.Add(grid.EntityId);
             AllianceIds.Remove(identityId);
             ShipyardCommands.SendMessage("ACME", "Grid repair should be complete.", Color.Green, (long)MySession.Static.Players.TryGetSteamId(identityId));

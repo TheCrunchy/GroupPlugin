@@ -149,12 +149,12 @@ namespace AlliancesPlugin.Alliances
                             EconUtils.takeMoney(Context.Player.IdentityId, upgrade.MoneyRequired);
                             alliance.GridRepairUpgrade = newUpgrade;
                             AlliancePlugin.SaveAllianceData(alliance);
-                            ShipyardCommands.SendMessage("[Alliance Assemblers]", "Upgrading Assembler. Items taken.", Color.LightBlue, (long)Context.Player.SteamUserId);
+                            ShipyardCommands.SendMessage("[Grid Repair]", "Upgrading Grid Repair. Items taken.", Color.LightBlue, (long)Context.Player.SteamUserId);
                         }
                     }
                     else
                     {
-                        ShipyardCommands.SendMessage("[Alliance Refineries]", "You cant afford the upgrade price of: " + String.Format("{0:n0}", upgrade.MoneyRequired), Color.Red, (long)Context.Player.SteamUserId);
+                        ShipyardCommands.SendMessage("[Grid Repair]", "You cant afford the upgrade price of: " + String.Format("{0:n0}", upgrade.MoneyRequired), Color.Red, (long)Context.Player.SteamUserId);
                     }
                 }
                 else
@@ -163,7 +163,7 @@ namespace AlliancesPlugin.Alliances
                     {
                         alliance.CurrentMetaPoints -= upgrade.MetaPointsRequired;
                         alliance.GridRepairUpgrade = newUpgrade;
-                        ShipyardCommands.SendMessage("[Alliance Assemblers]", "Upgrading Assembler. Items taken.", Color.LightBlue, (long)Context.Player.SteamUserId);
+                        ShipyardCommands.SendMessage("[Grid Repair]", "Upgrading Grid Repair. Items taken.", Color.LightBlue, (long)Context.Player.SteamUserId);
                         AlliancePlugin.SaveAllianceData(alliance);
                     }
                 }

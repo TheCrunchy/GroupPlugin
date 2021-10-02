@@ -105,7 +105,7 @@ namespace AlliancesPlugin.Alliances
                     }
                     else
                     {
-                        ShipyardCommands.SendMessage("[Alliance Refineries]", "You cant afford the upgrade price of: " + String.Format("{0:n0}", upgrade.MoneyRequired), Color.Red, (long)Context.Player.SteamUserId);
+                        ShipyardCommands.SendMessage("[Alliance Assemblers]", "You cant afford the upgrade price of: " + String.Format("{0:n0}", upgrade.MoneyRequired), Color.Red, (long)Context.Player.SteamUserId);
                     }
                 }
                 else
