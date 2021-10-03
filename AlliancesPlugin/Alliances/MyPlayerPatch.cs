@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using AlliancesPlugin.Alliances;
+using HarmonyLib;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
@@ -9,6 +10,7 @@ using Sandbox.Game.GameSystems;
 using Sandbox.Game.SessionComponents;
 using Sandbox.Game.World;
 using Sandbox.ModAPI;
+using SpaceEngineers.Game.World;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -142,6 +144,26 @@ namespace AlliancesPlugin
         }
 
 
+        [HarmonyPatch(typeof(MySpaceRespawnComponent))]
+        [HarmonyPatch("RespawnRequest_Implementation")]
+        class RespawnPatchExistingBody
+        {
+            static void Postfix(ulong steamPlayerId, int serialId)
+            {
+             //   AlliancePlugin.Log.Info("DGSDGSDG");
+                if (AlliancePlugin.UpdateThese.ContainsKey(steamPlayerId))
+                {
+                    AlliancePlugin.UpdateThese[steamPlayerId] = DateTime.Now.AddSeconds(5);
+                }
+                else
+                {
+                    AlliancePlugin.UpdateThese.Add(steamPlayerId,DateTime.Now.AddSeconds(5));
+                }
+            
+                    return;
+                // make sure you only skip if really necessary
+            }
+        }
 
 
     }

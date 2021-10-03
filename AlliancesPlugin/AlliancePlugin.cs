@@ -54,6 +54,7 @@ using Sandbox.ModAPI.Weapons;
 using Sandbox.Game.Weapons;
 using Sandbox.Game;
 using static AlliancesPlugin.Alliances.StorePatchTaxes;
+using System.Threading.Tasks;
 
 namespace AlliancesPlugin
 {
@@ -128,7 +129,7 @@ namespace AlliancesPlugin
 
             foreach (Territory ter in AlliancePlugin.Territories.Values)
             {
-              if (alliance != null)
+                if (alliance != null)
                 {
                     if (ter.Alliance != Guid.Empty && ter.Alliance == alliance.AllianceId)
                     {
@@ -702,6 +703,8 @@ namespace AlliancesPlugin
         }
 
 
+
+
         private void SessionChanged(ITorchSession session, TorchSessionState state)
         {
             if (state == TorchSessionState.Unloading)
@@ -738,7 +741,9 @@ namespace AlliancesPlugin
 
                     session.Managers.GetManager<IMultiplayerManagerBase>().PlayerJoined += AllianceChat.Login;
                     session.Managers.GetManager<IMultiplayerManagerBase>().PlayerLeft += AllianceChat.Logout;
+
                 }
+
 
                 // MySession.Static.Config.
                 // MyMultiplayer.Static.SyncDistance
@@ -838,7 +843,7 @@ namespace AlliancesPlugin
                     AssemblerUpgrade.AssemblerBuffList list = new AssemblerUpgrade.AssemblerBuffList();
                     list.buffs.Add(new AssemblerUpgrade.AssemblerBuff());
                     upgrade.buffedRefineries.Add(list);
-                   ItemRequirement req = new ItemRequirement();
+                    ItemRequirement req = new ItemRequirement();
                     upgrade.items.Add(req);
                     utils.WriteToXmlFile<AssemblerUpgrade>(path + "//AssemblerUpgrades//Example.xml", upgrade);
                     upgrade.UpgradeId = 2;
@@ -1764,30 +1769,54 @@ namespace AlliancesPlugin
         public static Dictionary<long, long> TaxesToBeProcessed = new Dictionary<long, long>();
         public static Dictionary<long, DateTime> messageCooldowns = new Dictionary<long, DateTime>();
         public static List<TaxItem> TerritoryTaxes = new List<TaxItem>();
-
+        public static Dictionary<ulong, DateTime> yeet = new Dictionary<ulong, DateTime>();
         public void DoJumpGateStuff()
         {
             List<MyPlayer> players = new List<MyPlayer>();
             foreach (MyPlayer player in MySession.Static.Players.GetOnlinePlayers())
             {
-                if (ticks % 512 == 0)
-                {
-                    if (MySession.Static.Factions.GetPlayerFaction(player.Identity.IdentityId) != null)
-                    {
-                        Alliance temp = GetAllianceNoLoading(MySession.Static.Factions.GetPlayerFaction(player.Identity.IdentityId));
-                        if (temp != null)
-                        {
-                            if (AllianceChat.PeopleInAllianceChat.ContainsKey(player.Id.SteamId))
-                            {
-                                AllianceCommands.SendStatusToClient(true, player.Id.SteamId);
-                            }
-                            else
-                            {
-                                AllianceCommands.SendStatusToClient(false, player.Id.SteamId);
-                            }
-                        }
-                    }
-                }
+                //if (yeet.TryGetValue(player.Id.SteamId, out DateTime time))
+                //{
+                //    if (DateTime.Now >= time)
+                //    {
+                //        yeet[player.Id.SteamId] = DateTime.Now.AddSeconds(20);
+                //        if (MySession.Static.Factions.GetPlayerFaction(player.Identity.IdentityId) != null)
+                //        {
+                //            Alliance temp = GetAllianceNoLoading(MySession.Static.Factions.GetPlayerFaction(player.Identity.IdentityId));
+                //            if (temp != null)
+                //            {
+                //                if (AllianceChat.PeopleInAllianceChat.ContainsKey(player.Id.SteamId))
+                //                {
+                //                    AllianceCommands.SendStatusToClient(true, player.Id.SteamId);
+                //                }
+                //                else
+                //                {
+                //                    AllianceCommands.SendStatusToClient(false, player.Id.SteamId);
+                //                }
+                //            }
+                //        }
+                //    }
+                //}
+                //else
+                //{
+                //    yeet.Add(player.Id.SteamId, DateTime.Now.AddSeconds(20));
+                //    if (MySession.Static.Factions.GetPlayerFaction(player.Identity.IdentityId) != null)
+                //    {
+                //        Alliance temp = GetAllianceNoLoading(MySession.Static.Factions.GetPlayerFaction(player.Identity.IdentityId));
+                //        if (temp != null)
+                //        {
+                //            if (AllianceChat.PeopleInAllianceChat.ContainsKey(player.Id.SteamId))
+                //            {
+                //                AllianceCommands.SendStatusToClient(true, player.Id.SteamId);
+                //            }
+                //            else
+                //            {
+                //                AllianceCommands.SendStatusToClient(false, player.Id.SteamId);
+                //            }
+                //        }
+                //    }
+                //}
+
                 if (player?.Controller?.ControlledEntity is MyCockpit controller)
                 {
                     if (controller.CubeGrid.IsStatic)
@@ -1873,14 +1902,14 @@ namespace AlliancesPlugin
                     Alliance temp = GetAllianceNoLoading(MySession.Static.Factions.GetPlayerFaction(player.Identity.IdentityId));
                     if (temp != null)
                     {
-                        if (AllianceChat.PeopleInAllianceChat.ContainsKey(player.Id.SteamId))
-                        {
-                            AllianceCommands.SendStatusToClient(true, player.Id.SteamId);
-                        }
-                        else
-                        {
-                            AllianceCommands.SendStatusToClient(false, player.Id.SteamId);
-                        }
+                        //if (AllianceChat.PeopleInAllianceChat.ContainsKey(player.Id.SteamId))
+                        //{
+                        //    AllianceCommands.SendStatusToClient(true, player.Id.SteamId);
+                        //}
+                        //else
+                        //{
+                        //    AllianceCommands.SendStatusToClient(false, player.Id.SteamId);
+                        //}
                         if (playersInAlliances.ContainsKey(temp.AllianceId))
                         {
                             if (!playersInAlliances[temp.AllianceId].Contains(player.Id.SteamId))
@@ -1981,7 +2010,7 @@ namespace AlliancesPlugin
             ////dont do an else, far too much effort 
 
             //DatabaseForBank.TerritoryTaxes(taxes);
-    
+
 
             foreach (long id in TaxesToBeProcessed.Keys)
             {
@@ -3902,11 +3931,30 @@ namespace AlliancesPlugin
 
         public static DateTime chat = DateTime.Now;
 
+        public static Dictionary<ulong, DateTime> UpdateThese = new Dictionary<ulong, DateTime>();
 
         public override void Update()
         {
 
-
+            List<ulong> YEET = new List<ulong>();
+            foreach (KeyValuePair<ulong, DateTime> pair in UpdateThese)
+            {
+                if (DateTime.Now >= pair.Value)
+                {
+                    if (AllianceChat.PeopleInAllianceChat.ContainsKey(pair.Key))
+                    {
+                        AllianceCommands.SendStatusToClient(true, pair.Key);
+                    }
+                    else
+                    {
+                        AllianceCommands.SendStatusToClient(false, pair.Key);
+                    }
+                }
+            }
+            foreach (ulong id in YEET)
+            {
+                UpdateThese.Remove(id);
+            }
             ticks++;
 
             if (ticks % 512 == 0)
@@ -4058,7 +4106,7 @@ namespace AlliancesPlugin
                 catch (Exception ex)
                 {
                     Log.Error(ex);
-                    
+
                 }
                 if (config.JumpGatesEnabled)
                 {

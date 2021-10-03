@@ -371,7 +371,13 @@ namespace AlliancesPlugin.Alliances
                 {
                     if (AlliancePlugin.GetAllianceNoLoading(playerFac as MyFaction) != null)
                     {
-                        AllianceCommands.SendStatusToClient(true, p.SteamId);
+                        Task.Run(() =>
+                        {
+                            System.Threading.Thread.Sleep(1000);
+  
+                                AllianceCommands.SendStatusToClient(true, p.SteamId);
+               
+                        });
                         PeopleInAllianceChat.Remove(p.SteamId);
                         PeopleInAllianceChat.Add(p.SteamId, AlliancePlugin.GetAllianceNoLoading(playerFac as MyFaction).AllianceId);
 

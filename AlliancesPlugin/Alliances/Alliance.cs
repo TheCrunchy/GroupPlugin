@@ -63,18 +63,29 @@ namespace AlliancesPlugin.Alliances
 
             float upkeep = 0;
             int terCount = 0;
-            if (this.RefineryUpgradeLevel > 0)
+            bool hasTerritory = false;
+            foreach (Territory ter in AlliancePlugin.Territories.Values)
             {
-                if (MyProductionPatch.upgrades.ContainsKey(this.RefineryUpgradeLevel))
+                if (ter.Alliance == this.AllianceId)
                 {
-                    upkeep += MyProductionPatch.upgrades[this.RefineryUpgradeLevel].AddsToUpkeep;
+                    hasTerritory = true;
                 }
             }
-            if (this.AssemblerUpgradeLevel > 0)
+            if (hasTerritory)
             {
-                if (MyProductionPatch.assemblerupgrades.ContainsKey(this.AssemblerUpgradeLevel))
+                if (this.RefineryUpgradeLevel > 0)
                 {
-                    upkeep += MyProductionPatch.assemblerupgrades[this.AssemblerUpgradeLevel].AddsToUpkeep;
+                    if (MyProductionPatch.upgrades.ContainsKey(this.RefineryUpgradeLevel))
+                    {
+                        upkeep += MyProductionPatch.upgrades[this.RefineryUpgradeLevel].AddsToUpkeep;
+                    }
+                }
+                if (this.AssemblerUpgradeLevel > 0)
+                {
+                    if (MyProductionPatch.assemblerupgrades.ContainsKey(this.AssemblerUpgradeLevel))
+                    {
+                        upkeep += MyProductionPatch.assemblerupgrades[this.AssemblerUpgradeLevel].AddsToUpkeep;
+                    }
                 }
             }
             foreach (Territory ter in AlliancePlugin.Territories.Values)
@@ -121,18 +132,29 @@ namespace AlliancesPlugin.Alliances
 
             float upkeep = 0;
             int terCount = 0;
-            if (this.RefineryUpgradeLevel > 0)
+            bool hasTerritory = false;
+            foreach (Territory ter in AlliancePlugin.Territories.Values)
             {
-                if (MyProductionPatch.upgrades.ContainsKey(this.RefineryUpgradeLevel))
+                if (ter.Alliance == this.AllianceId)
                 {
-                    upkeep += MyProductionPatch.upgrades[this.RefineryUpgradeLevel].AddsToUpkeep;
+                    hasTerritory = true;
                 }
             }
-            if (this.AssemblerUpgradeLevel > 0)
+            if (hasTerritory)
             {
-                if (MyProductionPatch.assemblerupgrades.ContainsKey(this.AssemblerUpgradeLevel))
+                if (this.RefineryUpgradeLevel > 0)
                 {
-                    upkeep += MyProductionPatch.assemblerupgrades[this.AssemblerUpgradeLevel].AddsToUpkeep;
+                    if (MyProductionPatch.upgrades.ContainsKey(this.RefineryUpgradeLevel))
+                    {
+                        upkeep += MyProductionPatch.upgrades[this.RefineryUpgradeLevel].AddsToUpkeep;
+                    }
+                }
+                if (this.AssemblerUpgradeLevel > 0)
+                {
+                    if (MyProductionPatch.assemblerupgrades.ContainsKey(this.AssemblerUpgradeLevel))
+                    {
+                        upkeep += MyProductionPatch.assemblerupgrades[this.AssemblerUpgradeLevel].AddsToUpkeep;
+                    }
                 }
             }
             foreach (Territory ter in AlliancePlugin.Territories.Values)

@@ -1912,7 +1912,11 @@ namespace AlliancesPlugin.Alliances
                     {
                         if (pair.Value >= amount)
                         {
-
+                            if (alliance.PlayersCustomRank.TryGetValue(pair.Key, out string rank))
+                            {
+                                if (rank.Equals(rankname))
+                                    continue;
+                            }
                             if (dorankup)
                             {
                                 if (!alliance.PlayersCustomRank.ContainsKey(pair.Key))
