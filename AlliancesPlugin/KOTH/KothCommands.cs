@@ -1,5 +1,6 @@
 ﻿using AlliancesPlugin.Alliances;
 using AlliancesPlugin.NewCaptureSite;
+using Sandbox.Game.Screens.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +9,7 @@ using System.Threading.Tasks;
 using Torch.Commands;
 using Torch.Commands.Permissions;
 using VRage.Game.ModAPI;
+using VRageMath;
 
 namespace AlliancesPlugin.KOTH
 {
@@ -45,6 +47,58 @@ namespace AlliancesPlugin.KOTH
                 if (koth.KothName.Equals(name))
                 {
                     koth.enabled = !koth.enabled;
+                }
+
+            }
+        }
+
+        [Command("open", "open the specified koth")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void UnlockKoth(string name)
+        {
+            foreach (CaptureSite site in AlliancePlugin.sites)
+            {
+                if (site.Name.Equals(name))
+                {
+                    site.nextCaptureAvailable = DateTime.Now;
+                    site.nextCaptureInterval = DateTime.Now;
+                    site.CaptureStarted = false;
+                    site.CapturingAlliance = Guid.Empty;
+                    site.CapturingFaction = 0;
+                    site.FactionOwner = 0;
+                    // koth.owner = Guid.Empty;
+                    Location loc = site.GetCurrentLocation();
+                    MyGps gps = new MyGps();
+                    gps.Coords = new Vector3D(loc.X, loc.Y, loc.Z);
+                    gps.Name = loc.Name;
+                    DiscordStuff.SendMessageToDiscord(loc.Name, "Is now unlocked! Ownership reset to nobody. Find it here " + gps.ToString(), site, true);
+
+                    AlliancePlugin.SaveCaptureConfig(site.Name, site);
+                    Context.Respond("Unlocked the site");
+                }
+
+            }
+        }
+        [Command("close", "close the specified koth")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void LockKoth(string name)
+        {
+            foreach (CaptureSite site in AlliancePlugin.sites)
+            {
+                if (site.Name.Equals(name))
+                {
+                    site.nextCaptureAvailable = DateTime.Now.AddYears(5);
+                    site.nextCaptureInterval = DateTime.Now.AddYears(5);
+                    site.CaptureStarted = false;
+                    site.CapturingAlliance = Guid.Empty;
+                    site.CapturingFaction = 0;
+                    site.FactionOwner = 0;
+                    // koth.owner = Guid.Empty;
+                    Location loc = site.GetCurrentLocation();
+                    DiscordStuff.SendMessageToDiscord(loc.Name, "Is now locked!", site, true);
+
+                    AlliancePlugin.SaveCaptureConfig(site.Name, site);
+                    Context.Respond("Locked the site");
                 }
 
             }

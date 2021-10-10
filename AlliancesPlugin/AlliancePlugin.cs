@@ -328,6 +328,7 @@ namespace AlliancesPlugin
                 {
                     CaptureSite koth = utils.ReadFromXmlFile<CaptureSite>(s);
                     koth.LoadCapProgress();
+                    koth.caplog.LoadSorted();
                     //  DateTime now = DateTime.Now;
                     //if (now.Minute == 59 || now.Minute == 60)
                     //{
@@ -704,7 +705,7 @@ namespace AlliancesPlugin
 
 
 
-
+        public static Random rand = new Random();
         private void SessionChanged(ITorchSession session, TorchSessionState state)
         {
             if (state == TorchSessionState.Unloading)
@@ -716,11 +717,13 @@ namespace AlliancesPlugin
             if (state == TorchSessionState.Loaded)
             {
                 MyAPIGateway.Session.DamageSystem.RegisterBeforeDamageHandler(1, new BeforeDamageApplied(DamageHandler));
+
                 if (config != null && config.AllowDiscord && !DiscordStuff.Ready)
                 {
                     DiscordStuff.RegisterDiscord();
                 }
-
+                nextRegister = DateTime.Now;
+            //    rand.Next(1, 60);
 
                 LoadAllGates();
 
@@ -1050,7 +1053,7 @@ namespace AlliancesPlugin
                         //    {
                         //   botsTried.Add(alliance.AllianceId);
                         Log.Info("Registering bot for " + alliance.AllianceId);
-                        registerThese.Add(alliance.AllianceId, nextRegister.AddSeconds(30));
+                        registerThese.Add(alliance.AllianceId, nextRegister.AddSeconds(15));
 
 
 
@@ -2375,8 +2378,9 @@ namespace AlliancesPlugin
                                                         config.AllianceOwner = CapturingAlliance;
                                                         config.amountCaptured = 0;
                                                         config.CaptureStarted = false;
-
+                                                      
                                                         Alliance alliance = GetAllianceNoLoading(config.AllianceOwner);
+                                                        config.caplog.AddToCap(alliance.name);
                                                         if (loc.HasTerritory)
                                                         {
                                                             if (config.ChangeLocationAfterTerritoryCap)
@@ -2752,6 +2756,7 @@ namespace AlliancesPlugin
                                                             //broadcast that its locked
                                                             config.amountCaptured = 0;
                                                             config.CaptureStarted = false;
+
                                                             config.unlockTime = DateTime.Now.AddHours(config.hourCooldownAfterFail);
                                                             try
                                                             {
@@ -2798,6 +2803,7 @@ namespace AlliancesPlugin
                                                             config.amountCaptured = 0;
                                                             config.CaptureStarted = false;
                                                             config.unlockTime = DateTime.Now.AddHours(config.hoursToLockAfterNormalCap);
+                                                            config.caplog.AddToCap(capture.Name);
                                                             config.nextCaptureAvailable = DateTime.Now.AddHours(config.hoursToLockAfterNormalCap);
                                                             if (config.ChangeCapSiteOnUnlock)
                                                             {
@@ -3932,7 +3938,7 @@ namespace AlliancesPlugin
         public static DateTime chat = DateTime.Now;
 
         public static Dictionary<ulong, DateTime> UpdateThese = new Dictionary<ulong, DateTime>();
-
+        public static DateTime RegisterMainBot = DateTime.Now;
         public override void Update()
         {
 
@@ -4024,10 +4030,10 @@ namespace AlliancesPlugin
                 Log.Info("Doing alliance tasks");
 
                 DateTime now = DateTime.Now;
-                //  if (config != null && config.AllowDiscord && !DiscordStuff.Ready)
-                //  {
-                //      DiscordStuff.RegisterDiscord();
-                // }
+              //   if (config != null && config.AllowDiscord && !DiscordStuff.Ready && now >= RegisterMainBot)
+              //    {
+             //         DiscordStuff.RegisterDiscord();
+             //    }
                 NextUpdate = now.AddSeconds(60);
                 try
                 {
@@ -4420,12 +4426,13 @@ namespace AlliancesPlugin
         }
         public static Boolean DoesGridHaveCaptureBlock(MyCubeGrid grid, Location loc)
         {
-
             foreach (MyCubeBlock block in grid.GetFatBlocks())
             {
 
                 if (block.OwnerId > 0 && block.BlockDefinition.Id.TypeId.ToString().Replace("MyObjectBuilder_", "").Equals(loc.captureBlockType) && block.BlockDefinition.Id.SubtypeName.Equals(loc.captureBlockSubtype))
                 {
+                  //  MyRadioAntenna antenna;
+                    
                     if (block is Sandbox.ModAPI.IMyBeacon beacon)
                     {
                         // Log.Info(beacon.Radius);
@@ -4436,8 +4443,37 @@ namespace AlliancesPlugin
                             {
                                 return true;
                             }
+                            else
+                            {
+                                return false;
+                            }
+                        }
+                        else
+                        {
+                            return false;
                         }
                     }
+                    if (block is MyRadioAntenna antenna)
+                    {
+                        // Log.Info(beacon.Radius);
+
+                        if (antenna.IsFunctional && antenna.IsWorking)
+                        {
+                            if (antenna.GetRadius() >= loc.CaptureBlockRange - 1000)
+                            {
+                                return true;
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                    
                     if (block.IsFunctional && block.IsWorking)
                     {
                         return true;
@@ -4475,6 +4511,7 @@ namespace AlliancesPlugin
         {
             FileUtils utils = new FileUtils();
             config.SaveCapProgress();
+            config.caplog.SaveSorted();
             utils.WriteToXmlFile<CaptureSite>(path + "//CaptureSites//" + name + ".xml", config);
 
             return config;

@@ -7,6 +7,8 @@ using Sandbox.Game.Entities;
 using Sandbox.Game.Entities.Blocks;
 using Sandbox.Game.Entities.Cube;
 using Sandbox.Game.GameSystems;
+using Sandbox.Game.Gui;
+using Sandbox.Game.GUI;
 using Sandbox.Game.SessionComponents;
 using Sandbox.Game.World;
 using Sandbox.ModAPI;
@@ -150,6 +152,7 @@ namespace AlliancesPlugin
         {
             static void Postfix(ulong steamPlayerId, int serialId)
             {
+              
              //   AlliancePlugin.Log.Info("DGSDGSDG");
                 if (AlliancePlugin.UpdateThese.ContainsKey(steamPlayerId))
                 {

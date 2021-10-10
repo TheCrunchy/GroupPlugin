@@ -8,7 +8,54 @@ namespace AlliancesPlugin.NewCaptureSite
 {
     public class CaptureSite
     {
+        public class CaptureLog
+        {
 
+            public string siteName;
+            public int totalCaps;
+            public List<CaptureLogItem> caps = new List<CaptureLogItem>();
+
+            private Dictionary<string, int> SortedCaps = new Dictionary<string, int>();
+            public class CaptureLogItem
+            {
+                public string Name;
+                public int CapAmount;
+            }
+            public void AddToCap(string name)
+            {
+                totalCaps += 1;
+                if (SortedCaps.TryGetValue(name, out int value))
+                {
+                    SortedCaps[name] += 1;
+                }
+                else
+                {
+                    SortedCaps.Add(name, 1);
+                }
+            }
+            public void LoadSorted()
+            {
+                foreach (CaptureLogItem item in caps)
+                {
+                    if (!SortedCaps.ContainsKey(item.Name))
+                    {
+                        SortedCaps.Add(item.Name, item.CapAmount);
+                    }
+                }
+            }
+            public void SaveSorted()
+            {
+                caps.Clear();
+                foreach (KeyValuePair<string, int> pair in SortedCaps)
+                {
+                    CaptureLogItem item = new CaptureLogItem();
+                    item.Name = pair.Key;
+                    item.CapAmount = pair.Value;
+                    caps.Add(item);
+                }
+            }
+        }
+        public CaptureLog caplog = new CaptureLog();
         public Boolean LockOnFail = true;
         public string Name = "Default, change this";
         public byte FDiscordR = 255;

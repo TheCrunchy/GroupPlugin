@@ -563,8 +563,8 @@ namespace AlliancesPlugin.Alliances
             }
             catch (Exception ex)
             {
-                AlliancePlugin.Log.Error("Error with territory taxes");
-                AlliancePlugin.Log.Error(ex);
+         //       AlliancePlugin.Log.Error("Error with territory taxes");
+            //    AlliancePlugin.Log.Error(ex);
                 return false;
             }
             return true;
@@ -621,8 +621,8 @@ namespace AlliancesPlugin.Alliances
             }
             catch (Exception ex)
             {
-                AlliancePlugin.Log.Error("Error with taxes");
-                AlliancePlugin.Log.Error(ex);
+             //   AlliancePlugin.Log.Error("Error with taxes");
+             //   AlliancePlugin.Log.Error(ex);
                 return false;
             }
             return true;

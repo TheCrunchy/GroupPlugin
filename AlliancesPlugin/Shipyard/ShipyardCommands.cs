@@ -259,7 +259,7 @@ namespace AlliancesPlugin.Shipyard
                         }
                         if (DateTime.Now > end)
                         {
-                            SendMessage("[ " + i + " ]", slot.name.Split('_')[0] + " : " + slot.ownerName + " : Claim with !shipyard claim " + i, Color.Green, (long)Context.Player.SteamUserId);
+                            SendMessage("[ " + i + " ]", slot.name.Split('_')[0] + " : " + slot.ownerName + " : !shipyard claim " + i, Color.Green, (long)Context.Player.SteamUserId);
                         }
                         else
                         {
@@ -1204,7 +1204,7 @@ namespace AlliancesPlugin.Shipyard
                 }
                 else
                 {
-                    SendMessage("[Shipyard]", "That isnt yours to claim and you do not have the officer override.", Color.Red, (long)Context.Player.SteamUserId);
+                    SendMessage("[Shipyard]", "That isnt yours to claim and you do not have the permission required.", Color.Red, (long)Context.Player.SteamUserId);
                     return;
                 }
                 // 
