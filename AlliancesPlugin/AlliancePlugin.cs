@@ -686,11 +686,13 @@ namespace AlliancesPlugin
                         {
                             ShipyardCommands.SendMessage("CrunchEcon", "Alliances Taxes: " + String.Format("{0:n0}", change) + " SC", Color.HotPink, (long)pp.Id.SteamId);
                             TaxingId.Remove(pp.Identity.IdentityId);
+                            return;
                         }
                         if (OtherTaxingId.Contains(pp.Identity.IdentityId))
                         {
                             ShipyardCommands.SendMessage("CrunchEcon", "Territory Taxes: " + String.Format("{0:n0}", change) + " SC", Color.Red, (long)pp.Id.SteamId);
                             OtherTaxingId.Remove(pp.Identity.IdentityId);
+                            return;
                         }
 
                         ShipyardCommands.SendMessage("CrunchEcon", "Balance decreased by: " + String.Format("{0:n0}", change) + " SC", Color.Red, (long)pp.Id.SteamId);
@@ -2230,6 +2232,38 @@ namespace AlliancesPlugin
                                 {
                                     CapturingAlliance = config.CapturingAlliance;
                                 }
+
+                                //do suit shite
+
+                                //MyFaction PlayersFaction = MySession.Static.Factions.GetPlayerFaction(PlayerIdentityId);
+
+                                //foreach (MyCharacter Player in MyEntities.GetEntities().OfType<MyCharacter>())
+                                //{
+                                //    if (Player == null || Player.MarkedForClose)
+                                //        continue;
+
+                                //    long PlayerID = Player.GetPlayerIdentityId();
+                                //    if (PlayerID == 0L || PlayerID == PlayerIdentityId)
+                                //        continue;
+
+
+                                //    MyFaction CheckFaction = MySession.Static.Factions.GetPlayerFaction(PlayerID);
+                                //    if (PlayersFaction != null && CheckFaction != null)
+                                //    {
+                                //        if (PlayersFaction.FactionId == CheckFaction.FactionId)
+                                //            continue;
+
+                                //        MyRelationsBetweenFactions Relation = MySession.Static.Factions.GetRelationBetweenFactions(PlayersFaction.FactionId, CheckFaction.FactionId).Item1;
+                                //        if (Relation == MyRelationsBetweenFactions.Neutral || Relation == MyRelationsBetweenFactions.Friends)
+                                //            continue;
+                                //    }
+
+                                //    if (Vector3D.Distance(Position, Player.PositionComp.GetPosition()) <= 15000)
+                                //    {
+                                //        return false;
+                                //    }
+                                //}
+
                                 foreach (MyCubeGrid grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
                                 {
                                     if (grid.Projector != null)

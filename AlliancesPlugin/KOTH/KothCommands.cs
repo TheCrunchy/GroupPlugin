@@ -74,11 +74,28 @@ namespace AlliancesPlugin.KOTH
                     DiscordStuff.SendMessageToDiscord(loc.Name, "Is now unlocked! Ownership reset to nobody. Find it here " + gps.ToString(), site, true);
 
                     AlliancePlugin.SaveCaptureConfig(site.Name, site);
-                    Context.Respond("Unlocked the site");
+                    Context.Respond("Opened the site");
                 }
 
             }
         }
+
+        [Command("clearlog", "clear the log of target")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void ClearKothLog(string name)
+        {
+            foreach (CaptureSite site in AlliancePlugin.sites)
+            {
+                if (site.Name.Equals(name))
+                {
+                    site.caplog = new CaptureSite.CaptureLog();
+                    AlliancePlugin.SaveCaptureConfig(site.Name, site);
+                    Context.Respond("Cleared the log");
+                }
+
+            }
+        }
+
         [Command("close", "close the specified koth")]
         [Permission(MyPromoteLevel.Admin)]
         public void LockKoth(string name)
@@ -98,7 +115,7 @@ namespace AlliancesPlugin.KOTH
                     DiscordStuff.SendMessageToDiscord(loc.Name, "Is now locked!", site, true);
 
                     AlliancePlugin.SaveCaptureConfig(site.Name, site);
-                    Context.Respond("Locked the site");
+                    Context.Respond("Closed the site");
                 }
 
             }

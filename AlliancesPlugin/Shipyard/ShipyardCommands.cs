@@ -1425,7 +1425,7 @@ namespace AlliancesPlugin.Shipyard
                                 grids.Add(grid);
                         }
                     }
-                    foreach (MyCubeBlock proj in grid.GetFatBlocks().OfType<MyProjectorBase>())
+                    foreach (MyProjectorBase proj in grid.GetFatBlocks().OfType<MyProjectorBase>())
                     {
                         
                         if (proj != null && !found && store == null && proj is Sandbox.ModAPI.IMyProjector projector)
@@ -1447,12 +1447,13 @@ namespace AlliancesPlugin.Shipyard
 
                                 }
 
-                                store = grid;
+                                
                                 VRage.Game.ModAPI.IMyCubeGrid projectedGrid = projector.ProjectedGrid;
                                 if (projectedGrid == null || !projector.IsProjecting)
                                 {
                                     continue;
                                 }
+                                store = grid;
                                 found = true;
 
                                 List<VRage.Game.ModAPI.IMySlimBlock> blocks = new List<VRage.Game.ModAPI.IMySlimBlock>();
@@ -1504,7 +1505,7 @@ namespace AlliancesPlugin.Shipyard
 
             if (store == null)
             {
-                Context.Respond("No projector named Projector Printer.");
+                Context.Respond("No Functioning projector found.");
                 return;
             }
             if (gridsToSave.Count == 0)
