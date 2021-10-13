@@ -2712,10 +2712,74 @@ namespace AlliancesPlugin
                                         CapturingFaction = config.CapturingFaction;
                                         capture = MySession.Static.Factions.TryGetFactionById(config.CapturingFaction) as MyFaction;
                                     }
+                                    Boolean CanCapWithSuit = false;
+                                    if (config.DoSuitCaps)
+                                    {
+                                        foreach (MyCharacter Player in MyEntities.GetEntities().OfType<MyCharacter>())
+                                        {
+
+                                            if (CanCapWithSuit)
+                                            {
+                                                continue;
+                                            }
+                                            if (Player == null || Player.MarkedForClose)
+                                                continue;
+
+                                            long PlayerID = Player.GetPlayerIdentityId();
+                                            if (PlayerID == 0L)
+                                                continue;
+
+                                            MyFaction PlayersFaction = MySession.Static.Factions.GetPlayerFaction(PlayerID);
+                                            if (PlayersFaction == null)
+                                            {
+                                                continue;
+                                            }
+                                            if (Vector3D.Distance(position, Player.PositionComp.GetPosition()) <= loc.CaptureRadiusInMetre * 2)
+                                            {
+
+
+                                                if (PlayersFaction != null)
+                                                {
+                                                    
+                                                    if (yeet != null)
+                                                    {
+                                                        if (CapturingFaction == 0)
+                                                        {
+                                                            CapturingFaction = PlayersFaction.FactionId;
+                                                            CanCapWithSuit = true;
+                                                            continue;
+                                                        }
+                                                        else
+                                                        {
+                                                            if (!MySession.Static.Factions.AreFactionsEnemies(CapturingFaction, PlayersFaction.FactionId))
+                                                            {
+                                                                CanCapWithSuit = true;
+                                                                continue;
+                                                            }
+                                                            else
+                                                            {
+                                                                contested = true;
+                                                                CanCapWithSuit = false;
+                                                                continue;
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+
                                     foreach (MyCubeGrid grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
                                     {
                                         if (grid.Projector != null)
                                             continue;
+
+                                        if (CanCapWithSuit)
+                                        {
+                                            hasActiveCaptureBlock = true;
+                                            continue;
+                                        }
+
 
                                         IMyFaction fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
                                         if (fac != null && !fac.Tag.Equals(loc.KothBuildingOwner) && fac.Tag.Length == 3)
