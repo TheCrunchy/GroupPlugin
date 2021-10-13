@@ -725,7 +725,7 @@ namespace AlliancesPlugin
                     DiscordStuff.RegisterDiscord();
                 }
                 nextRegister = DateTime.Now;
-            //    rand.Next(1, 60);
+                //    rand.Next(1, 60);
 
                 LoadAllGates();
 
@@ -2232,42 +2232,66 @@ namespace AlliancesPlugin
                                 {
                                     CapturingAlliance = config.CapturingAlliance;
                                 }
+                                Boolean CanCapWithSuit = false;
+                                if (config.DoSuitCaps)
+                                {
+                                    foreach (MyCharacter Player in MyEntities.GetEntities().OfType<MyCharacter>())
+                                    {
 
-                                //do suit shite
+                                        if (CanCapWithSuit)
+                                        {
+                                            continue;
+                                        }
+                                        if (Player == null || Player.MarkedForClose)
+                                            continue;
 
-                                //MyFaction PlayersFaction = MySession.Static.Factions.GetPlayerFaction(PlayerIdentityId);
+                                        long PlayerID = Player.GetPlayerIdentityId();
+                                        if (PlayerID == 0L)
+                                            continue;
 
-                                //foreach (MyCharacter Player in MyEntities.GetEntities().OfType<MyCharacter>())
-                                //{
-                                //    if (Player == null || Player.MarkedForClose)
-                                //        continue;
+                                        MyFaction PlayersFaction = MySession.Static.Factions.GetPlayerFaction(PlayerID);
+                                        if (PlayersFaction == null)
+                                        {
+                                            continue;
+                                        }
+                                        if (Vector3D.Distance(position, Player.PositionComp.GetPosition()) <= loc.CaptureRadiusInMetre * 2)
+                                        {
 
-                                //    long PlayerID = Player.GetPlayerIdentityId();
-                                //    if (PlayerID == 0L || PlayerID == PlayerIdentityId)
-                                //        continue;
 
-
-                                //    MyFaction CheckFaction = MySession.Static.Factions.GetPlayerFaction(PlayerID);
-                                //    if (PlayersFaction != null && CheckFaction != null)
-                                //    {
-                                //        if (PlayersFaction.FactionId == CheckFaction.FactionId)
-                                //            continue;
-
-                                //        MyRelationsBetweenFactions Relation = MySession.Static.Factions.GetRelationBetweenFactions(PlayersFaction.FactionId, CheckFaction.FactionId).Item1;
-                                //        if (Relation == MyRelationsBetweenFactions.Neutral || Relation == MyRelationsBetweenFactions.Friends)
-                                //            continue;
-                                //    }
-
-                                //    if (Vector3D.Distance(Position, Player.PositionComp.GetPosition()) <= 15000)
-                                //    {
-                                //        return false;
-                                //    }
-                                //}
-
+                                            if (PlayersFaction != null)
+                                            {
+                                                Alliance yeet = AlliancePlugin.GetAllianceNoLoading(PlayersFaction);
+                                                if (yeet != null)
+                                                {
+                                                    if (CapturingAlliance != Guid.Empty)
+                                                    {
+                                                        CapturingAlliance = yeet.AllianceId;
+                                                        CanCapWithSuit = true;
+                                                        continue;
+                                                    }
+                                                    else
+                                                    {
+                                                        if (CapturingAlliance == yeet.AllianceId)
+                                                        {
+                                                            CanCapWithSuit = true;
+                                                            continue;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
                                 foreach (MyCubeGrid grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
                                 {
                                     if (grid.Projector != null)
                                         continue;
+
+                                    if (CanCapWithSuit)
+                                    {
+                                        hasActiveCaptureBlock = true;
+                                        continue;
+                                    }
 
                                     IMyFaction fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
                                     if (fac != null && !fac.Tag.Equals(loc.KothBuildingOwner) && fac.Tag.Length == 3)
@@ -2412,7 +2436,7 @@ namespace AlliancesPlugin
                                                         config.AllianceOwner = CapturingAlliance;
                                                         config.amountCaptured = 0;
                                                         config.CaptureStarted = false;
-                                                      
+
                                                         Alliance alliance = GetAllianceNoLoading(config.AllianceOwner);
                                                         config.caplog.AddToCap(alliance.name);
                                                         if (loc.HasTerritory)
@@ -4064,10 +4088,10 @@ namespace AlliancesPlugin
                 Log.Info("Doing alliance tasks");
 
                 DateTime now = DateTime.Now;
-              //   if (config != null && config.AllowDiscord && !DiscordStuff.Ready && now >= RegisterMainBot)
-              //    {
-             //         DiscordStuff.RegisterDiscord();
-             //    }
+                //   if (config != null && config.AllowDiscord && !DiscordStuff.Ready && now >= RegisterMainBot)
+                //    {
+                //         DiscordStuff.RegisterDiscord();
+                //    }
                 NextUpdate = now.AddSeconds(60);
                 try
                 {
@@ -4465,8 +4489,8 @@ namespace AlliancesPlugin
 
                 if (block.OwnerId > 0 && block.BlockDefinition.Id.TypeId.ToString().Replace("MyObjectBuilder_", "").Equals(loc.captureBlockType) && block.BlockDefinition.Id.SubtypeName.Equals(loc.captureBlockSubtype))
                 {
-                  //  MyRadioAntenna antenna;
-                    
+                    //  MyRadioAntenna antenna;
+
                     if (block is Sandbox.ModAPI.IMyBeacon beacon)
                     {
                         // Log.Info(beacon.Radius);
@@ -4507,7 +4531,7 @@ namespace AlliancesPlugin
                             return false;
                         }
                     }
-                    
+
                     if (block.IsFunctional && block.IsWorking)
                     {
                         return true;

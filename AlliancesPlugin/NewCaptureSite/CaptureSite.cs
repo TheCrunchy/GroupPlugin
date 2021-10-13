@@ -13,6 +13,7 @@ namespace AlliancesPlugin.NewCaptureSite
 
             public string siteName;
             public int totalCaps;
+           
             public List<CaptureLogItem> caps = new List<CaptureLogItem>();
 
             private Dictionary<string, int> SortedCaps = new Dictionary<string, int>();
@@ -55,6 +56,7 @@ namespace AlliancesPlugin.NewCaptureSite
                 }
             }
         }
+        public Boolean DoSuitCaps = false;
         public CaptureLog caplog = new CaptureLog();
         public Boolean LockOnFail = true;
         public string Name = "Default, change this";
