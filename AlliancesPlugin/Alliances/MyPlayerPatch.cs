@@ -167,7 +167,5 @@ namespace AlliancesPlugin
                 // make sure you only skip if really necessary
             }
         }
-
-
     }
 }

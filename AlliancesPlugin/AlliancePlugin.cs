@@ -2235,17 +2235,17 @@ namespace AlliancesPlugin
                                 Boolean CanCapWithSuit = false;
                                 if (config.DoSuitCaps)
                                 {
-                                    foreach (MyCharacter Player in MyEntities.GetEntities().OfType<MyCharacter>())
+                                    foreach (MyPlayer Player in MySession.Static.Players.GetOnlinePlayers())
                                     {
 
                                         if (CanCapWithSuit)
                                         {
                                             continue;
                                         }
-                                        if (Player == null || Player.MarkedForClose)
+                                        if (Player == null || Player.Character.MarkedForClose)
                                             continue;
 
-                                        long PlayerID = Player.GetPlayerIdentityId();
+                                        long PlayerID = Player.Identity.IdentityId;
                                         if (PlayerID == 0L)
                                             continue;
 
@@ -2254,7 +2254,7 @@ namespace AlliancesPlugin
                                         {
                                             continue;
                                         }
-                                        if (Vector3D.Distance(position, Player.PositionComp.GetPosition()) <= loc.CaptureRadiusInMetre * 2)
+                                        if (Vector3D.Distance(position, Player.GetPosition()) <= loc.CaptureRadiusInMetre * 2)
                                         {
 
 
@@ -2715,17 +2715,17 @@ namespace AlliancesPlugin
                                     Boolean CanCapWithSuit = false;
                                     if (config.DoSuitCaps)
                                     {
-                                        foreach (MyCharacter Player in MyEntities.GetEntities().OfType<MyCharacter>())
+                                        foreach (MyPlayer Player in MySession.Static.Players.GetOnlinePlayers())
                                         {
 
                                             if (CanCapWithSuit)
                                             {
                                                 continue;
                                             }
-                                            if (Player == null || Player.MarkedForClose)
+                                            if (Player == null || Player.Character.MarkedForClose)
                                                 continue;
 
-                                            long PlayerID = Player.GetPlayerIdentityId();
+                                            long PlayerID = Player.Identity.IdentityId;
                                             if (PlayerID == 0L)
                                                 continue;
 
@@ -2734,7 +2734,7 @@ namespace AlliancesPlugin
                                             {
                                                 continue;
                                             }
-                                            if (Vector3D.Distance(position, Player.PositionComp.GetPosition()) <= loc.CaptureRadiusInMetre * 2)
+                                            if (Vector3D.Distance(position, Player.GetPosition()) <= loc.CaptureRadiusInMetre * 2)
                                             {
 
 
@@ -4108,7 +4108,7 @@ namespace AlliancesPlugin
 
                                 DiscordStuff.RegisterAllianceBot(alliance, alliance.DiscordChannelId);
 
-                                temp.Add(alliance.AllianceId, DateTime.Now.AddMinutes(2));
+                              //  temp.Add(alliance.AllianceId, DateTime.Now.AddMinutes(2));
                                 Log.Info("Connecting bot.");
                             }
 
