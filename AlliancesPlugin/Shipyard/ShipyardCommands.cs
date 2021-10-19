@@ -238,13 +238,13 @@ namespace AlliancesPlugin.Shipyard
                 SendMessage("[Shipyard]", "Shipyard slots: " + queue.upgradeSlots, Color.Cyan, (long)Context.Player.SteamUserId);
                 if (speedUpgrades.ContainsKey(queue.SpeedUpgrade))
                 {
-                    SendMessage("[Shipyard]", "Shipyard speed: blockCount * base speed * " + speedUpgrades[queue.SpeedUpgrade].NewLevel, Color.Cyan, (long)Context.Player.SteamUserId);
+                    SendMessage("[Shipyard]", "Shipyard speed: blockCount * base speed * " + speedUpgrades[queue.SpeedUpgrade].NewSpeed, Color.Cyan, (long)Context.Player.SteamUserId);
                 }
                 else
                 {
                     SendMessage("[Shipyard]", "Shipyard speed: blockCount * base speed * " + queue.upgradeSpeed, Color.Cyan, (long)Context.Player.SteamUserId);
                 }
-             
+
                 for (int i = 1; i <= queue.upgradeSlots; i++)
                 {
                     if (queue.getQueue().ContainsKey(i))
@@ -273,13 +273,14 @@ namespace AlliancesPlugin.Shipyard
                         SendMessage("[ Y ]", i.ToString() + " : Empty - Can use", Color.Green, (long)Context.Player.SteamUserId);
                     }
                 }
-               
+
             }
 
         }
-        public static Dictionary<int, UpgradeCost> speedUpgrades = new Dictionary<int, UpgradeCost>();
-        public static Dictionary<int, UpgradeCost> slotUpgrades = new Dictionary<int, UpgradeCost>();
-        public static UpgradeCost LoadUpgradeCost(string path)
+        public static Dictionary<int, ShipyardSpeedUpgrade> speedUpgrades = new Dictionary<int, ShipyardSpeedUpgrade>();
+        public static Dictionary<int, ShipyardSlotUpgrade> slotUpgrades = new Dictionary<int, ShipyardSlotUpgrade>();
+
+        public static UpgradeCost ConvertUpgradeCost(string path)
         {
 
             if (!File.Exists(path))
@@ -327,13 +328,50 @@ namespace AlliancesPlugin.Shipyard
                         }
                     }
                 }
+
                 switch (cost.type.ToLower())
                 {
                     case "speed":
-                        speedUpgrades.Add(cost.id, cost);
+                        ShipyardSpeedUpgrade upgrade = new ShipyardSpeedUpgrade();
+                        upgrade.MoneyRequired = cost.MoneyRequired;
+                        upgrade.UpgradeId = cost.id;
+                        upgrade.NewSpeed = cost.NewLevel;
+                        List<ItemRequirement> items = new List<ItemRequirement>();
+                        foreach (KeyValuePair<MyDefinitionId, int> pair in cost.itemsRequired)
+                        {
+                            ItemRequirement item = new ItemRequirement();
+                            item.Enabled = true;
+                            item.RequiredAmount = pair.Value;
+                            item.SubTypeId = pair.Key.SubtypeName;
+                            item.TypeId = pair.Key.TypeId.ToString().Replace("MyObjectBuilder_", "");
+                            items.Add(item);
+                        }
+                        upgrade.items = items;
+                        speedUpgrades.Add(cost.id, upgrade);
+                        //  File.Delete(path);
+                        File.Move(path, AlliancePlugin.path + "//ShipyardUpgrades//OldFiles//speed_" + cost.id + ".txt");
+                        utils.WriteToXmlFile<ShipyardSpeedUpgrade>(AlliancePlugin.path + "//ShipyardUpgrades//Speed//SpeedUpgrade_" + upgrade.UpgradeId + ".xml", upgrade);
                         break;
                     case "slots":
-                        slotUpgrades.Add(cost.id, cost);
+                        ShipyardSlotUpgrade upgrade2 = new ShipyardSlotUpgrade();
+                        upgrade2.MoneyRequired = cost.MoneyRequired;
+                        upgrade2.NewSlots = (int)cost.NewLevel;
+                        upgrade2.UpgradeId = cost.id;
+                        List<ItemRequirement> items2 = new List<ItemRequirement>();
+                        foreach (KeyValuePair<MyDefinitionId, int> pair in cost.itemsRequired)
+                        {
+                            ItemRequirement item = new ItemRequirement();
+                            item.Enabled = true;
+                            item.RequiredAmount = pair.Value;
+                            item.SubTypeId = pair.Key.SubtypeName;
+                            item.TypeId = pair.Key.TypeId.ToString().Replace("MyObjectBuilder_", "");
+                            items2.Add(item);
+                        }
+                        upgrade2.items = items2;
+                        slotUpgrades.Add(cost.id, upgrade2);
+                        // File.Delete(path);
+                        File.Move(path, AlliancePlugin.path + "//ShipyardUpgrades//OldFiles//slot_" + cost.id + ".txt");
+                        utils.WriteToXmlFile<ShipyardSlotUpgrade>(AlliancePlugin.path + "//ShipyardUpgrades//Slot//SlotUpgrade_" + upgrade2.UpgradeId + ".xml", upgrade2);
                         break;
                     default:
                         AlliancePlugin.Log.Error("Upgrade file has no defined type");
@@ -347,199 +385,38 @@ namespace AlliancesPlugin.Shipyard
             }
             return cost;
         }
-
-        public static UpgradeCost LoadUnlockCost(string path)
+        static FileUtils utils = new FileUtils();
+        public static void LoadShipyardSpeedCost(string path)
         {
+
             if (!File.Exists(path))
             {
 
-                return null;
-            }
-            UpgradeCost cost = new UpgradeCost();
-            try
-            {
-                String[] line;
-                line = File.ReadAllLines(path);
-                for (int i = 1; i < line.Length; i++)
-                {
-
-                    String[] split = line[i].Split(',');
-                    foreach (String s in split)
-                    {
-                        s.Replace(" ", "");
-                    }
-                    if (split[0].ToLower().Contains("metapoints"))
-                    {
-                        cost.MetaPointCost += int.Parse(split[1]);
-                    }
-                    if (split[0].ToLower().Contains("money"))
-                    {
-                        cost.MoneyRequired += long.Parse(split[1]);
-                    }
-                    else
-                    {
-                        if (MyDefinitionId.TryParse(split[0], split[1], out MyDefinitionId id))
-                        {
-                            if (cost.itemsRequired.ContainsKey(id))
-                            {
-                                cost.itemsRequired[id] += int.Parse(split[2]);
-                            }
-                            else
-                            {
-                                cost.itemsRequired.Add(id, int.Parse(split[2]));
-                            }
-
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                AlliancePlugin.Log.Error("ERROR READING THIS FILE " + path);
-                AlliancePlugin.Log.Error(ex);
-            }
-            return cost;
-        }
-        [Command("unlock", "Unlock the shipyard")]
-        [Permission(MyPromoteLevel.None)]
-        public void Unlock()
-        {
-            if (!AlliancePlugin.config.ShipyardEnabled)
-            {
-                Context.Respond("Shipyard not enabled.");
                 return;
             }
-            if (Context.Player != null)
+            ShipyardSpeedUpgrade upgrade = utils.ReadFromXmlFile<ShipyardSpeedUpgrade>(path);
+            if (upgrade.Enabled && !speedUpgrades.ContainsKey(upgrade.UpgradeId))
             {
-                IMyFaction faction = FacUtils.GetPlayersFaction(Context.Player.IdentityId);
-                if (faction == null)
-                {
-
-                    SendMessage("[Shipyard]", " You arent in a faction.", Color.Red, (long)Context.Player.SteamUserId);
-                    return;
-                }
-                Alliance alliance = AlliancePlugin.GetAlliance(faction as MyFaction);
-                if (alliance == null)
-                {
-                    Context.Respond("You are not a member of an alliance with an unlocked shipyard.");
-                    return;
-                }
-                if (AlliancePlugin.HasFailedUpkeep(alliance))
-                {
-                    Context.Respond("Alliance failed to pay upkeep. Upgrades disabled.");
-                    return;
-                }
-                PrintQueue queue = alliance.LoadPrintQueue();
-                if (queue == null)
-                {
-                    queue = new PrintQueue();
-                    queue.allianceId = alliance.AllianceId;
-
-                }
-                if (!alliance.hasUnlockedShipyard)
-                {
-
-                    ConcurrentBag<MyGroups<MyCubeGrid, MyGridPhysicalGroupData>.Group> gridWithSubGrids = GridFinder.FindLookAtGridGroup(Context.Player.Character);
-
-
-                    List<MyCubeGrid> grids = new List<MyCubeGrid>();
-                    foreach (var item in gridWithSubGrids)
-                    {
-                        foreach (MyGroups<MyCubeGrid, MyGridPhysicalGroupData>.Node groupNodes in item.Nodes)
-                        {
-                            MyCubeGrid grid = groupNodes.NodeData;
-
-
-
-                            if (grid.Projector != null)
-                                continue;
-
-                            if (FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid)) != null)
-                            {
-                                if (FacUtils.InSameFaction(FacUtils.GetOwner(grid), Context.Player.IdentityId))
-                                {
-                                    if (!grids.Contains(grid))
-                                        grids.Add(grid);
-                                }
-                            }
-                            else
-                            {
-                                if (FacUtils.GetOwner(grid).Equals(Context.Player.Identity.IdentityId))
-                                {
-                                    if (!grids.Contains(grid))
-                                        grids.Add(grid);
-                                }
-                            }
-                        }
-                    }
-                    //Do stuff with taking components from grid storage
-                    //GridCosts localGridCosts = GetComponentsAndCost(projectedGrid);
-                    //gridCosts.setComponents(localGridCosts.getComponents());
-
-                    UpgradeCost cost = new UpgradeCost();
-                    List<VRage.Game.ModAPI.IMyInventory> invents = new List<VRage.Game.ModAPI.IMyInventory>();
-                    foreach (MyCubeGrid grid in grids)
-                    {
-                        invents.AddList(GetInventories(grid));
-                    }
-
-
-                    cost = LoadUnlockCost(AlliancePlugin.path + "//ShipyardUnlockCost.txt");
-                    if (cost != null)
-                    {
-                        if (cost.MetaPointCost > 0)
-                        {
-                            if (alliance.CurrentMetaPoints < cost.MetaPointCost)
-                            {
-                                Context.Respond("Cannot afford the meta point cost of " + cost.MetaPointCost);
-                                return;
-                            }
-                        }
-                        if (cost.MoneyRequired > 0)
-                        {
-                            if (EconUtils.getBalance(Context.Player.IdentityId) >= cost.MoneyRequired)
-                            {
-                                if (ConsumeComponents(invents, cost.itemsRequired, Context.Player.SteamUserId))
-                                {
-                                    alliance.CurrentMetaPoints -= cost.MetaPointCost;
-                                    EconUtils.takeMoney(Context.Player.IdentityId, cost.MoneyRequired);
-                                    alliance.hasUnlockedShipyard = true;
-                                    queue.upgradeSlots = 1;
-                                    alliance.SavePrintQueue(queue);
-                                    AlliancePlugin.SaveAllianceData(alliance);
-                                    SendMessage("[Shipyard]", "Unlocking the shipyard. You were charged: " + String.Format("{0:n0}", cost.MoneyRequired) + " and components taken", Color.Green, (long)Context.Player.SteamUserId);
-
-                                }
-                            }
-                            else
-                            {
-                                SendMessage("[Shipyard]", "You cant afford the upgrade price of: " + String.Format("{0:n0}", cost.MoneyRequired), Color.Red, (long)Context.Player.SteamUserId);
-                            }
-                        }
-                        else
-                        {
-                            if (ConsumeComponents(invents, cost.itemsRequired, Context.Player.SteamUserId))
-                            {
-                                alliance.hasUnlockedShipyard = true;
-                                queue.upgradeSlots = 1;
-                           
-                                alliance.CurrentMetaPoints -= cost.MetaPointCost;
-                                alliance.SavePrintQueue(queue);
-                                AlliancePlugin.SaveAllianceData(alliance);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        Context.Respond("Error loading upgrade details.");
-                        return;
-                    }
-
-
-
-                }
+                speedUpgrades.Add(upgrade.UpgradeId, upgrade);
             }
+
         }
+        public static void LoadShipyardSlotCost(string path)
+        {
+
+            if (!File.Exists(path))
+            {
+
+                return;
+            }
+            ShipyardSlotUpgrade upgrade = utils.ReadFromXmlFile<ShipyardSlotUpgrade>(path);
+            if (upgrade.Enabled && !speedUpgrades.ContainsKey(upgrade.UpgradeId))
+            {
+                slotUpgrades.Add(upgrade.UpgradeId, upgrade);
+            }
+
+        }
+
 
         [Command("upgrade", "Upgrade shipyard slots")]
         [Permission(MyPromoteLevel.None)]
@@ -594,23 +471,24 @@ namespace AlliancesPlugin.Shipyard
                     {
                         case "speed":
                             sb.AppendLine("Current upgrade number : " + queue.SpeedUpgrade);
-                            foreach (KeyValuePair<int,UpgradeCost> key in speedUpgrades)
+                         
+                            foreach (KeyValuePair<int, ShipyardSpeedUpgrade> key in speedUpgrades)
                             {
                                 sb.AppendLine("Upgrade number " + key.Key);
                                 if (key.Value.MoneyRequired > 0)
                                 {
                                     sb.AppendLine("Costs " + String.Format("{0:n0}", key.Value.MoneyRequired) + " SC.");
                                 }
-                                if (key.Value.MetaPointCost > 0)
+                                if (key.Value.MetaPointsRequired > 0)
                                 {
-                                    sb.AppendLine("Costs " + String.Format("{0:n0}", key.Value.MetaPointCost) + " Meta Points.");
+                                    sb.AppendLine("Costs " + String.Format("{0:n0}", key.Value.MetaPointsRequired) + " Meta Points.");
                                 }
                                 sb.AppendLine("Items required.");
-                                foreach (KeyValuePair<MyDefinitionId, int> id in key.Value.itemsRequired)
+                                foreach (KeyValuePair<MyDefinitionId, int> id in key.Value.getItemsRequired())
                                 {
                                     sb.AppendLine(id.Key.ToString() + " - " + id.Value);
                                 }
-                                sb.AppendLine("New Speed " + key.Value.NewLevel);
+                                sb.AppendLine("New Speed " + key.Value.NewSpeed);
                                 sb.AppendLine("");
                             }
 
@@ -624,23 +502,23 @@ namespace AlliancesPlugin.Shipyard
 
 
                             sb.AppendLine("Current upgrade number : " + queue.SlotsUpgrade);
-                            foreach (KeyValuePair<int, UpgradeCost> key in slotUpgrades)
+                            foreach (KeyValuePair<int, ShipyardSlotUpgrade> key in slotUpgrades)
                             {
                                 sb.AppendLine("Upgrade number " + key.Key);
                                 if (key.Value.MoneyRequired > 0)
                                 {
                                     sb.AppendLine("Costs " + String.Format("{0:n0}", key.Value.MoneyRequired) + " SC.");
                                 }
-                                if (key.Value.MetaPointCost > 0)
+                                if (key.Value.MetaPointsRequired > 0)
                                 {
-                                    sb.AppendLine("Costs " + String.Format("{0:n0}", key.Value.MetaPointCost) + " Meta Points.");
+                                    sb.AppendLine("Costs " + String.Format("{0:n0}", key.Value.MetaPointsRequired) + " Meta Points.");
                                 }
                                 sb.AppendLine("Items required.");
-                                foreach (KeyValuePair<MyDefinitionId, int> id in key.Value.itemsRequired)
+                                foreach (KeyValuePair<MyDefinitionId, int> id in key.Value.getItemsRequired())
                                 {
                                     sb.AppendLine(id.Key.ToString() + " - " + id.Value);
                                 }
-                                sb.AppendLine("New Slots " + key.Value.NewLevel);
+                                sb.AppendLine("New Slots " + key.Value.NewSlots);
                                 sb.AppendLine("");
                             }
 
@@ -691,7 +569,7 @@ namespace AlliancesPlugin.Shipyard
                     //Do stuff with taking components from grid storage
                     //GridCosts localGridCosts = GetComponentsAndCost(projectedGrid);
                     //gridCosts.setComponents(localGridCosts.getComponents());
-                    UpgradeCost cost = new UpgradeCost();
+                  
                     List<VRage.Game.ModAPI.IMyInventory> invents = new List<VRage.Game.ModAPI.IMyInventory>();
                     foreach (MyCubeGrid grid in grids)
                     {
@@ -702,7 +580,7 @@ namespace AlliancesPlugin.Shipyard
                     {
                         case "speed":
                             int upgradeNum = Convert.ToInt16(AlliancePlugin.shipyardConfig.StartingSpeedMultiply - queue.upgradeSpeed);
-
+                            ShipyardSpeedUpgrade cost = null;
                             try
                             {
                                 cost = speedUpgrades[queue.SpeedUpgrade + 1];
@@ -714,11 +592,11 @@ namespace AlliancesPlugin.Shipyard
                             }
                             if (cost != null)
                             {
-                                if (cost.MetaPointCost > 0)
+                                if (cost.MetaPointsRequired > 0)
                                 {
-                                    if (alliance.CurrentMetaPoints < cost.MetaPointCost)
+                                    if (alliance.CurrentMetaPoints < cost.MetaPointsRequired)
                                     {
-                                        Context.Respond("Cannot afford the meta point cost of " + cost.MetaPointCost);
+                                        Context.Respond("Cannot afford the meta point cost of " + cost.MetaPointsRequired);
                                         return;
                                     }
                                 }
@@ -726,11 +604,11 @@ namespace AlliancesPlugin.Shipyard
                                 {
                                     if (EconUtils.getBalance(Context.Player.IdentityId) >= cost.MoneyRequired)
                                     {
-                                        if (ConsumeComponents(invents, cost.itemsRequired, Context.Player.SteamUserId))
+                                        if (ConsumeComponents(invents, cost.getItemsRequired(), Context.Player.SteamUserId))
                                         {
-                                            alliance.CurrentMetaPoints -= cost.MetaPointCost;
+                                            alliance.CurrentMetaPoints -= cost.MetaPointsRequired;
                                             EconUtils.takeMoney(Context.Player.IdentityId, cost.MoneyRequired);
-                                            queue.upgradeSpeed = (float)cost.NewLevel;
+                                            queue.upgradeSpeed = (float)cost.NewSpeed;
                                             queue.SpeedUpgrade++;
                                             alliance.SavePrintQueue(queue);
                                             AlliancePlugin.SaveAllianceData(alliance);
@@ -744,10 +622,10 @@ namespace AlliancesPlugin.Shipyard
                                 }
                                 else
                                 {
-                                    if (ConsumeComponents(invents, cost.itemsRequired, Context.Player.SteamUserId))
+                                    if (ConsumeComponents(invents, cost.getItemsRequired(), Context.Player.SteamUserId))
                                     {
-                                        alliance.CurrentMetaPoints -= cost.MetaPointCost;
-                                        queue.upgradeSpeed = (float)cost.NewLevel;
+                                        alliance.CurrentMetaPoints -= cost.MetaPointsRequired;
+                                        queue.upgradeSpeed = (float)cost.NewSpeed;
                                         queue.SpeedUpgrade++;
                                         alliance.SavePrintQueue(queue);
                                         AlliancePlugin.SaveAllianceData(alliance);
@@ -761,53 +639,54 @@ namespace AlliancesPlugin.Shipyard
                             }
                             break;
                         case "slots":
+                            ShipyardSlotUpgrade cost2 = null;
                             try
                             {
-                                cost = slotUpgrades[queue.SlotsUpgrade + 1];
+                                cost2 = slotUpgrades[queue.SlotsUpgrade + 1];
                             }
                             catch (Exception)
                             {
                                 Context.Respond("Cannot upgrade any further as there are no more defined upgrade files.");
                                 return;
                             }
-                            if (cost != null)
+                            if (cost2 != null)
                             {
-                                if (cost.MetaPointCost > 0)
+                                if (cost2.MetaPointsRequired > 0)
                                 {
-                                    if (alliance.CurrentMetaPoints < cost.MetaPointCost)
+                                    if (alliance.CurrentMetaPoints < cost2.MetaPointsRequired)
                                     {
-                                        Context.Respond("Cannot afford the meta point cost of " + cost.MetaPointCost);
+                                        Context.Respond("Cannot afford the meta point cost2 of " + cost2.MetaPointsRequired);
                                         return;
                                     }
                                 }
-                                if (cost.MoneyRequired > 0)
+                                if (cost2.MoneyRequired > 0)
                                 {
-                                    if (EconUtils.getBalance(Context.Player.IdentityId) >= cost.MoneyRequired)
+                                    if (EconUtils.getBalance(Context.Player.IdentityId) >= cost2.MoneyRequired)
                                     {
-                                        if (ConsumeComponents(invents, cost.itemsRequired, Context.Player.SteamUserId))
+                                        if (ConsumeComponents(invents, cost2.getItemsRequired(), Context.Player.SteamUserId))
                                         {
-                                            alliance.CurrentMetaPoints -= cost.MetaPointCost;
-                            
-                                           
-                                            EconUtils.takeMoney(Context.Player.IdentityId, cost.MoneyRequired);
-                                           // queue.upgradeSlots = (int)cost.NewLevel;
+                                            alliance.CurrentMetaPoints -= cost2.MetaPointsRequired;
+
+
+                                            EconUtils.takeMoney(Context.Player.IdentityId, cost2.MoneyRequired);
+                                            // queue.upgradeSlots = (int)cost2.NewLevel;
                                             queue.SlotsUpgrade++;
                                             alliance.SavePrintQueue(queue);
                                             AlliancePlugin.SaveAllianceData(alliance);
-                                            SendMessage("[Shipyard]", "Upgrading slot increase. You were charged: " + String.Format("{0:n0}", cost.MoneyRequired), Color.Green, (long)Context.Player.SteamUserId);
+                                            SendMessage("[Shipyard]", "Upgrading slot increase. You were charged: " + String.Format("{0:n0}", cost2.MoneyRequired), Color.Green, (long)Context.Player.SteamUserId);
                                         }
                                     }
                                     else
                                     {
-                                        SendMessage("[Shipyard]", "You cant afford the upgrade price of: " + String.Format("{0:n0}", cost.MoneyRequired), Color.Red, (long)Context.Player.SteamUserId);
+                                        SendMessage("[Shipyard]", "You cant afford the upgrade price of: " + String.Format("{0:n0}", cost2.MoneyRequired), Color.Red, (long)Context.Player.SteamUserId);
                                     }
                                 }
                                 else
                                 {
-                                    if (ConsumeComponents(invents, cost.itemsRequired, Context.Player.SteamUserId))
+                                    if (ConsumeComponents(invents, cost2.getItemsRequired(), Context.Player.SteamUserId))
                                     {
-                                        alliance.CurrentMetaPoints -= cost.MetaPointCost;
-                                       // queue.upgradeSlots = (int)cost.NewLevel;
+                                        alliance.CurrentMetaPoints -= cost2.MetaPointsRequired;
+                                        // queue.upgradeSlots = (int)cost2.NewLevel;
                                         alliance.SavePrintQueue(queue);
                                         queue.SlotsUpgrade++;
                                         AlliancePlugin.SaveAllianceData(alliance);
@@ -967,7 +846,7 @@ namespace AlliancesPlugin.Shipyard
                     SendMessage("[Shipyard]", "You arent in a faction.", Color.Red, (long)Context.Player.SteamUserId);
                     return;
                 }
- 
+
 
                 Alliance alliance = AlliancePlugin.GetAlliance(faction as MyFaction);
                 if (alliance == null)
@@ -986,7 +865,8 @@ namespace AlliancesPlugin.Shipyard
                     AlliancePlugin.SaveAllianceData(alliance);
                     Context.Respond("Fee changed.");
                 }
-                else {
+                else
+                {
                     Context.Respond("You do not have permission to change the fee!, Must have bank withdraw perms.");
                 }
             }
@@ -1135,7 +1015,7 @@ namespace AlliancesPlugin.Shipyard
 
                 if (item.ownerSteam.Equals((long)Context.Player.SteamUserId) || alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.ShipyardClaimOther))
                 {
-               
+
                     DateTime start = item.startTime;
                     DateTime end = item.endTime;
                     if (start == null || end == null || item.name == null)
@@ -1145,7 +1025,8 @@ namespace AlliancesPlugin.Shipyard
                         SendMessage("[ " + slot + " ]", "Bugged grid deleted from queue.", Color.Green, (long)Context.Player.SteamUserId);
                         return;
                     }
-                    if (!item.ownerSteam.Equals((long)Context.Player.SteamUserId) && alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.ShipyardClaimOther)){
+                    if (!item.ownerSteam.Equals((long)Context.Player.SteamUserId) && alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.ShipyardClaimOther))
+                    {
                         end.AddDays(3);
                     }
                     if (DateTime.Now > end)
@@ -1158,9 +1039,9 @@ namespace AlliancesPlugin.Shipyard
                             if (distance > 2000)
                             {
                                 Context.Respond("Must be within 2km of the start position.");
-                                    MyAPIGateway.Session?.GPS.AddGps(Context.Player.Identity.IdentityId, item.GetGps());
-                                
-                              
+                                MyAPIGateway.Session?.GPS.AddGps(Context.Player.Identity.IdentityId, item.GetGps());
+
+
                                 return;
                             }
                         }
@@ -1183,8 +1064,8 @@ namespace AlliancesPlugin.Shipyard
                             queue.claimedGrids.Add(item.name);
 
 
-                                SendMessage("[Shipyard]", "Spawning the grid! It will be placed near you.", Color.Green, (long)Context.Player.SteamUserId);
-                            
+                            SendMessage("[Shipyard]", "Spawning the grid! It will be placed near you.", Color.Green, (long)Context.Player.SteamUserId);
+
                             queue.removeFromQueue(slot);
                             alliance.SavePrintQueue(queue);
                         }
@@ -1222,7 +1103,7 @@ namespace AlliancesPlugin.Shipyard
             foreach (var block in grid.GetFatBlocks())
             {
                 //block.SlimBlock.GetMissingComponents()
-              //block.SlimBlock.ComponentStack
+                //block.SlimBlock.ComponentStack
                 for (int i = 0; i < block.InventoryCount; i++)
                 {
                     VRage.Game.ModAPI.IMyInventory inv = ((VRage.Game.ModAPI.IMyCubeBlock)block).GetInventory(i);
@@ -1242,7 +1123,7 @@ namespace AlliancesPlugin.Shipyard
                 MyFixedPoint needed = CountComponents(inventories, c.Key, c.Value, toRemove);
                 if (needed > 0)
                 {
-                    SendMessage("[Shipyard]", "Missing " + needed + " " + c.Key.SubtypeName + " All components must be inside one grid.", Color.Red, (long) steamid);
+                    SendMessage("[Shipyard]", "Missing " + needed + " " + c.Key.SubtypeName + " All components must be inside one grid.", Color.Red, (long)steamid);
 
                     return false;
                 }
@@ -1427,7 +1308,7 @@ namespace AlliancesPlugin.Shipyard
                     }
                     foreach (MyProjectorBase proj in grid.GetFatBlocks().OfType<MyProjectorBase>())
                     {
-                        
+
                         if (proj != null && !found && store == null && proj is Sandbox.ModAPI.IMyProjector projector)
                         {
 
@@ -1447,7 +1328,7 @@ namespace AlliancesPlugin.Shipyard
 
                                 }
 
-                                
+
                                 VRage.Game.ModAPI.IMyCubeGrid projectedGrid = projector.ProjectedGrid;
                                 if (projectedGrid == null || !projector.IsProjecting)
                                 {
@@ -1463,7 +1344,7 @@ namespace AlliancesPlugin.Shipyard
                                 {
                                     pcu += grid2.BlocksPCU;
                                 }
-                    
+
                                 gridCosts.setGridName(name + "_" + string.Format("{0:yyyy-MM-dd_HH-mm-ss-fff}", DateTime.Now));
                                 GridCosts localGridCosts = GetComponentsAndCost(projectedGrid);
                                 gridCosts.setComponents(localGridCosts.getComponents());
@@ -1519,9 +1400,9 @@ namespace AlliancesPlugin.Shipyard
                 Context.Respond("Projected PCU exceeds the maximum of " + AlliancePlugin.shipyardConfig.MaximumPCU);
                 return;
             }
-                if (confirmations.ContainsKey(playerId))
+            if (confirmations.ContainsKey(playerId))
             {
-               // MyVisualScriptLogicProvider.add
+                // MyVisualScriptLogicProvider.add
 
                 confirmations.TryGetValue(playerId, out long time);
 
@@ -1543,7 +1424,7 @@ namespace AlliancesPlugin.Shipyard
                     NeedsFuel = true;
                 }
                 Int64 balance = EconUtils.getBalance(Context.Player.IdentityId);
-           
+
 
                 if (price < 0)
                 {
@@ -1588,13 +1469,13 @@ namespace AlliancesPlugin.Shipyard
                 double seconds;
                 if (speedUpgrades.ContainsKey(upgradeLevel))
                 {
-                    seconds = gridCosts.BlockCount * printerConfig.SecondsPerBlock * speedUpgrades[upgradeLevel].NewLevel;
-                } 
+                    seconds = gridCosts.BlockCount * printerConfig.SecondsPerBlock * speedUpgrades[upgradeLevel].NewSpeed;
+                }
                 else
                 {
                     seconds = gridCosts.BlockCount * printerConfig.SecondsPerBlock * queue.upgradeSpeed;
                 }
-              
+
                 DateTime end = DateTime.Now.AddSeconds(seconds);
                 int fuel = 0;
                 if (printerConfig.FuelPerInterval > 0)
@@ -1619,11 +1500,11 @@ namespace AlliancesPlugin.Shipyard
                     queue.SaveLog(alliance, log);
                     if (NeedsMoney)
                     {
-                    
+
                         if (alliance.ShipyardFee > 0 && DatabaseForBank.ReadyToSave)
                         {
-                       
-                             if (DatabaseForBank.PayShipyardFee(alliance, alliance.ShipyardFee, Context.Player.SteamUserId))
+
+                            if (DatabaseForBank.PayShipyardFee(alliance, alliance.ShipyardFee, Context.Player.SteamUserId))
                             {
                                 price += alliance.ShipyardFee;
                             }
@@ -1675,7 +1556,7 @@ namespace AlliancesPlugin.Shipyard
                 double seconds;
                 if (speedUpgrades.ContainsKey(upgradeLevel))
                 {
-                    seconds = gridCosts.BlockCount * printerConfig.SecondsPerBlock * speedUpgrades[upgradeLevel].NewLevel;
+                    seconds = gridCosts.BlockCount * printerConfig.SecondsPerBlock * speedUpgrades[upgradeLevel].NewSpeed;
                 }
                 else
                 {

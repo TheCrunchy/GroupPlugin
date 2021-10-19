@@ -834,6 +834,18 @@ namespace AlliancesPlugin
                 {
                     Directory.CreateDirectory(path + "//ShipyardUpgrades//");
                 }
+                if (!Directory.Exists(path + "//ShipyardUpgrades//Slot//"))
+                {
+                    Directory.CreateDirectory(path + "//ShipyardUpgrades//Slot//");
+                }
+                if (!Directory.Exists(path + "//ShipyardUpgrades//Speed//"))
+                {
+                    Directory.CreateDirectory(path + "//ShipyardUpgrades//Speed//");
+                }
+                if (!Directory.Exists(path + "//ShipyardUpgrades//OldFiles//"))
+                {
+                    Directory.CreateDirectory(path + "//ShipyardUpgrades//OldFiles//");
+                }
                 if (!Directory.Exists(path + "//RefineryUpgrades//"))
                 {
                     Directory.CreateDirectory(path + "//RefineryUpgrades//");
@@ -887,16 +899,24 @@ namespace AlliancesPlugin
                     File.WriteAllText(path + "//ItemUpkeep.txt", output.ToString());
 
                 }
-                if (!File.Exists(path + "//ShipyardUpgrades//SpeedUpgrade1.txt"))
+
+                //convert this to new format 
+                if (!File.Exists(path + "//ShipyardUpgrades//Speed//SpeedUpgrade_0.xml"))
                 {
 
-                    StringBuilder output = new StringBuilder();
-                    output.AppendLine("1,Speed,7");
-                    output.AppendLine("TypeId,SubtypeId,Amount");
-                    output.AppendLine("MyObjectBuilder_Ingot,Uranium,5000");
-                    output.AppendLine("Money,500000000");
-                    output.AppendLine("MetaPoints,50");
-                    File.WriteAllText(path + "//ShipyardUpgrades//SpeedUpgrade1.txt", output.ToString());
+                    ShipyardSpeedUpgrade upg = new ShipyardSpeedUpgrade();
+                    ItemRequirement req = new ItemRequirement();
+                    upg.items.Add(req);
+                    utils.WriteToXmlFile<ShipyardSpeedUpgrade>(path + "//ShipyardUpgrades//Speed//SpeedUpgrade_0.xml", upg);
+
+                }
+                if (!File.Exists(path + "//ShipyardUpgrades//Slot//SlotUpgrade_0.xml"))
+                {
+
+                    ShipyardSlotUpgrade upg = new ShipyardSlotUpgrade();
+                    ItemRequirement req = new ItemRequirement();
+                    upg.items.Add(req);
+                    utils.WriteToXmlFile<ShipyardSlotUpgrade>(path + "//ShipyardUpgrades//Slot//SlotUpgrade_0.xml", upg);
 
                 }
                 if (!File.Exists(path + "//HangarUnlockCost.txt"))
@@ -951,29 +971,7 @@ namespace AlliancesPlugin
                     File.WriteAllText(path + "//HangarUpgrades//SlotUpgrade1.txt", output.ToString());
 
                 }
-                if (!File.Exists(path + "//ShipyardUnlockCost.txt"))
-                {
 
-                    StringBuilder output = new StringBuilder();
-                    output.AppendLine("TypeId,SubtypeId,Amount");
-                    output.AppendLine("MyObjectBuilder_Ingot,Uranium,5000");
-                    output.AppendLine("Money,500000000");
-                    output.AppendLine("MetaPoints,50");
-                    File.WriteAllText(path + "//ShipyardUnlockCost.txt", output.ToString());
-
-                }
-                if (!File.Exists(path + "//ShipyardUpgrades//SlotUpgrade1.txt"))
-                {
-
-                    StringBuilder output = new StringBuilder();
-                    output.AppendLine("1,Slots,2");
-                    output.AppendLine("TypeId,SubtypeId,Amount");
-                    output.AppendLine("MyObjectBuilder_Ingot,Uranium,5000");
-                    output.AppendLine("Money,500000000");
-                    output.AppendLine("MetaPoints,50");
-                    File.WriteAllText(path + "//ShipyardUpgrades//SlotUpgrade1.txt", output.ToString());
-
-                }
                 if (!Directory.Exists(path + "//ShipyardBlocks//"))
                 {
                     Directory.CreateDirectory(path + "//ShipyardBlocks//");
@@ -1119,7 +1117,17 @@ namespace AlliancesPlugin
             }
             foreach (String s in Directory.GetFiles(path + "//ShipyardUpgrades//"))
             {
-                ShipyardCommands.LoadUpgradeCost(s);
+                    ShipyardCommands.ConvertUpgradeCost(s);
+            }
+            foreach (String s in Directory.GetFiles(path + "//ShipyardUpgrades//Slot//"))
+            {
+                ShipyardCommands.LoadShipyardSlotCost(s);
+
+            }
+            foreach (String s in Directory.GetFiles(path + "//ShipyardUpgrades//Speed//"))
+            {
+                ShipyardCommands.LoadShipyardSpeedCost(s);
+
             }
             foreach (String s in Directory.GetFiles(path + "//HangarUpgrades//"))
             {
@@ -3393,9 +3401,12 @@ namespace AlliancesPlugin
                                 }
                                 if (yeet)
                                 {
+                           
+                                    
                                     foreach (MyBeacon beacon in grid.GetFatBlocks().OfType<MyBeacon>())
                                     {
                                         beacon.Enabled = false;
+                                        
                                     }
                                     foreach (MyTimerBlock beacon in grid.GetFatBlocks().OfType<MyTimerBlock>())
                                     {

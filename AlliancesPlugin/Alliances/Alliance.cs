@@ -386,7 +386,7 @@ namespace AlliancesPlugin.Alliances
        
                     
                    PrintQueue queue = utils.ReadFromJsonFile<PrintQueue>(AlliancePlugin.path + "//ShipyardData//" + AllianceId + "//queue.json");
-                queue.upgradeSlots = (int)ShipyardCommands.slotUpgrades[queue.SlotsUpgrade].NewLevel;
+                queue.upgradeSlots = (int)ShipyardCommands.slotUpgrades[queue.SlotsUpgrade].NewSlots;
           
                 return queue;
             }
