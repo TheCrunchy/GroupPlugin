@@ -381,7 +381,7 @@ namespace AlliancesPlugin.Alliances
         }
         public PrintQueue LoadPrintQueue()
         {
-            if (hasUnlockedShipyard)
+            if (File.Exists(AlliancePlugin.path + "//ShipyardData//" + AllianceId + "//queue.json"))
             {
        
                     

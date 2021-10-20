@@ -4119,7 +4119,7 @@ namespace AlliancesPlugin
 
                                 DiscordStuff.RegisterAllianceBot(alliance, alliance.DiscordChannelId);
 
-                              //  temp.Add(alliance.AllianceId, DateTime.Now.AddMinutes(2));
+                               temp.Add(alliance.AllianceId, DateTime.Now.AddMinutes(10));
                                 Log.Info("Connecting bot.");
                             }
 

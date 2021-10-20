@@ -335,6 +335,7 @@ namespace AlliancesPlugin.Shipyard
                         ShipyardSpeedUpgrade upgrade = new ShipyardSpeedUpgrade();
                         upgrade.MoneyRequired = cost.MoneyRequired;
                         upgrade.UpgradeId = cost.id;
+                        upgrade.Enabled = true;
                         upgrade.NewSpeed = cost.NewLevel;
                         List<ItemRequirement> items = new List<ItemRequirement>();
                         foreach (KeyValuePair<MyDefinitionId, int> pair in cost.itemsRequired)
@@ -357,6 +358,7 @@ namespace AlliancesPlugin.Shipyard
                         upgrade2.MoneyRequired = cost.MoneyRequired;
                         upgrade2.NewSlots = (int)cost.NewLevel;
                         upgrade2.UpgradeId = cost.id;
+                        upgrade2.Enabled = true;
                         List<ItemRequirement> items2 = new List<ItemRequirement>();
                         foreach (KeyValuePair<MyDefinitionId, int> pair in cost.itemsRequired)
                         {
