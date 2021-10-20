@@ -454,15 +454,16 @@ namespace AlliancesPlugin.Shipyard
                     queue.allianceId = alliance.AllianceId;
 
                 }
-                if (!alliance.hasUnlockedShipyard)
+                
+                if (queue.SlotsUpgrade == 0 && !upgrade)
                 {
-                    SendMessage("[Shipyard]", "To upgrade use !shipyard unlock", Color.Cyan, (long)Context.Player.SteamUserId);
+                    SendMessage("[Shipyard]", "To unlock the shipyard, use !shipyard upgrade slots true", Color.Cyan, (long)Context.Player.SteamUserId);
                     return;
                 }
                 if (!upgrade)
                 {
                     UpgradeCost cost = new UpgradeCost();
-                    String[] line;
+                   
                     SendMessage("[Shipyard]", "To upgrade use !shipyard upgrade speed/slots true", Color.Cyan, (long)Context.Player.SteamUserId);
                     StringBuilder sb = new StringBuilder();
 
@@ -474,6 +475,10 @@ namespace AlliancesPlugin.Shipyard
                          
                             foreach (KeyValuePair<int, ShipyardSpeedUpgrade> key in speedUpgrades)
                             {
+                                if (key.Key == 0)
+                                {
+                                    continue;
+                                }
                                 sb.AppendLine("Upgrade number " + key.Key);
                                 if (key.Value.MoneyRequired > 0)
                                 {
@@ -504,6 +509,10 @@ namespace AlliancesPlugin.Shipyard
                             sb.AppendLine("Current upgrade number : " + queue.SlotsUpgrade);
                             foreach (KeyValuePair<int, ShipyardSlotUpgrade> key in slotUpgrades)
                             {
+                                if (key.Key == 0)
+                                {
+                                    continue;
+                                }
                                 sb.AppendLine("Upgrade number " + key.Key);
                                 if (key.Value.MoneyRequired > 0)
                                 {
@@ -772,8 +781,7 @@ namespace AlliancesPlugin.Shipyard
             int purged = 0;
             foreach (Alliance alliance in AlliancePlugin.AllAlliances.Values)
             {
-                if (!alliance.hasUnlockedShipyard)
-                    continue;
+
 
                 PrintQueue queue = alliance.LoadPrintQueue();
                 int beforePurge = 0;
@@ -1260,7 +1268,7 @@ namespace AlliancesPlugin.Shipyard
             PrintQueue queue = alliance.LoadPrintQueue();
             if (queue == null)
             {
-                SendMessage("[Shipyard]", "Alliance has no queue, to unlock use !shipyard upgrade", Color.Red, (long)Context.Player.SteamUserId);
+                SendMessage("[Shipyard]", "Alliance has no queue, to unlock use !shipyard upgrade slots true", Color.Red, (long)Context.Player.SteamUserId);
                 return;
             }
             int pcu = 0;

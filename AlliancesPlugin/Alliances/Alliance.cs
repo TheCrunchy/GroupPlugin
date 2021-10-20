@@ -121,10 +121,10 @@ namespace AlliancesPlugin.Alliances
             {
                 upkeep += AlliancePlugin.config.HangarUpkeep;
             }
-            if (this.hasUnlockedShipyard)
-            {
-                upkeep += AlliancePlugin.config.ShipyardUpkeep;
-            }
+         //   if (this.hasUnlockedShipyard)
+         //   {
+         //       upkeep += AlliancePlugin.config.ShipyardUpkeep;
+          //  }
             return (long)upkeep;
         }
         public long GetUpkeep()
@@ -203,10 +203,10 @@ namespace AlliancesPlugin.Alliances
             {
                 upkeep += AlliancePlugin.config.HangarUpkeep;
             }
-            if (this.hasUnlockedShipyard)
-            {
-                upkeep += AlliancePlugin.config.ShipyardUpkeep;
-            }
+         //   if (this.hasUnlockedShipyard)
+          //  {
+           ///     upkeep += AlliancePlugin.config.ShipyardUpkeep;
+           // }
             return (long)upkeep;
         }
 
