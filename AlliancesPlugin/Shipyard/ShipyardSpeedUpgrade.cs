@@ -12,7 +12,7 @@ namespace AlliancesPlugin.Shipyard
     {
         public int UpgradeId = 0;
         public Boolean Enabled = false;
-        public double NewSpeed = 0;
+        public double NewSpeed = 10;
         public long MoneyRequired = 5000000;
         public int MetaPointsRequired = 500000;
         public List<ItemRequirement> items = new List<ItemRequirement>();

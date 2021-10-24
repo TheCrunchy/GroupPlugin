@@ -1479,6 +1479,10 @@ namespace AlliancesPlugin.Shipyard
                 double seconds;
                 if (speedUpgrades.ContainsKey(upgradeLevel))
                 {
+                    if (speedUpgrades[upgradeLevel].NewSpeed == 0 && upgradeLevel == 0)
+                    {
+                        speedUpgrades[upgradeLevel].NewSpeed = 10;
+                    }
                     seconds = gridCosts.BlockCount * printerConfig.SecondsPerBlock * speedUpgrades[upgradeLevel].NewSpeed;
                 }
                 else
@@ -1566,6 +1570,10 @@ namespace AlliancesPlugin.Shipyard
                 double seconds;
                 if (speedUpgrades.ContainsKey(upgradeLevel))
                 {
+                    if (speedUpgrades[upgradeLevel].NewSpeed == 0 && upgradeLevel == 0)
+                    {
+                        speedUpgrades[upgradeLevel].NewSpeed = 10;
+                    }
                     seconds = gridCosts.BlockCount * printerConfig.SecondsPerBlock * speedUpgrades[upgradeLevel].NewSpeed;
                 }
                 else

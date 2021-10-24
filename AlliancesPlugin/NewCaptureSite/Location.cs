@@ -30,5 +30,12 @@ namespace AlliancesPlugin.NewCaptureSite
 
         public Boolean ChangeToDefinedTerritory = false;
         public int ChangeToThisNum = 1;
+
+        public Guid OwningAlliance = Guid.Empty;
+        public long MoneyForOwningIfOwnTerritory = 1000000;
+        //if they fail a cap, reset ownership of the previous cap point so defenders can retake it, if cap fails here, do nothing, attackers also have to retake it
+        public int LowerOnAttackSuccessBy = 1;
+        public int RaiseOnAttackFailBy = 1;
+        public int secondsToLock = 600;
     }
 }

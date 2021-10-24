@@ -1117,7 +1117,7 @@ namespace AlliancesPlugin
             }
             foreach (String s in Directory.GetFiles(path + "//ShipyardUpgrades//"))
             {
-                    ShipyardCommands.ConvertUpgradeCost(s);
+                ShipyardCommands.ConvertUpgradeCost(s);
             }
             foreach (String s in Directory.GetFiles(path + "//ShipyardUpgrades//Slot//"))
             {
@@ -2175,13 +2175,12 @@ namespace AlliancesPlugin
                                 foreach (MyCubeGrid grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
                                 {
 
-                                    if (grid.Projector != null)
-                                        continue;
 
                                     IMyFaction fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
                                     if (fac != null && !fac.Tag.Equals(loc.KothBuildingOwner) && fac.Tag.Length == 3)
                                     {
                                         Vector3 playerPos = new Vector3();
+                                        Boolean yeet = false;
                                         try
                                         {
                                             playerPos = MySession.Static.Players.TryGetPlayerBySteamId(MySession.Static.Players.TryGetSteamId(FacUtils.GetOwner(grid))).GetPosition();
@@ -2189,9 +2188,9 @@ namespace AlliancesPlugin
                                         catch (Exception)
                                         {
 
-
+                                            yeet = true;
                                         }
-                                        Boolean yeet = false;
+
                                         if (playerPos != null)
                                         {
                                             if (Vector3.Distance(playerPos, position) > loc.CaptureRadiusInMetre * 2)
@@ -2205,6 +2204,10 @@ namespace AlliancesPlugin
                                         }
                                         if (yeet)
                                         {
+                                            if (grid.IsPowered)
+                                            {
+                                                grid.SwitchPower();
+                                            }
                                             foreach (MyBeacon beacon in grid.GetFatBlocks().OfType<MyBeacon>())
                                             {
                                                 beacon.Enabled = false;
@@ -2290,32 +2293,46 @@ namespace AlliancesPlugin
                                         }
                                     }
                                 }
-                                foreach (MyCubeGrid grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
+                                if (!config.DoSuitCaps)
                                 {
-                                    if (grid.Projector != null)
-                                        continue;
-
-                                    if (CanCapWithSuit)
+                                    foreach (MyCubeGrid grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
                                     {
-                                        hasActiveCaptureBlock = true;
-                                        continue;
-                                    }
+                                        if (grid.Projector != null)
+                                            continue;
 
-                                    IMyFaction fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
-                                    if (fac != null && !fac.Tag.Equals(loc.KothBuildingOwner) && fac.Tag.Length == 3)
-                                    {
-                                        //do contested checks
-                                        if (GetNationTag(fac) != null)
+                                        if (CanCapWithSuit)
                                         {
-                                            if (CapturingAlliance != Guid.Empty)
-                                            {
-                                                if (!CapturingAlliance.Equals(GetNationTag(fac).AllianceId))
-                                                {
+                                            hasActiveCaptureBlock = true;
+                                            continue;
+                                        }
 
-                                                    //if its not the same alliance, contest it if they have a capture block
-                                                    if (DoesGridHaveCaptureBlock(grid, loc))
+                                        IMyFaction fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
+                                        if (fac != null && !fac.Tag.Equals(loc.KothBuildingOwner) && fac.Tag.Length == 3)
+                                        {
+                                            //do contested checks
+                                            if (GetNationTag(fac) != null)
+                                            {
+                                                if (CapturingAlliance != Guid.Empty)
+                                                {
+                                                    if (!CapturingAlliance.Equals(GetNationTag(fac).AllianceId))
                                                     {
-                                                        contested = true;
+
+                                                        //if its not the same alliance, contest it if they have a capture block
+                                                        if (DoesGridHaveCaptureBlock(grid, loc))
+                                                        {
+                                                            contested = true;
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        if (!hasActiveCaptureBlock)
+                                                        {
+                                                            if (DoesGridHaveCaptureBlock(grid, loc))
+                                                            {
+                                                                hasActiveCaptureBlock = true;
+                                                                CapturingAlliance = GetNationTag(fac).AllianceId;
+                                                            }
+                                                        }
                                                     }
                                                 }
                                                 else
@@ -2332,19 +2349,8 @@ namespace AlliancesPlugin
                                             }
                                             else
                                             {
-                                                if (!hasActiveCaptureBlock)
-                                                {
-                                                    if (DoesGridHaveCaptureBlock(grid, loc))
-                                                    {
-                                                        hasActiveCaptureBlock = true;
-                                                        CapturingAlliance = GetNationTag(fac).AllianceId;
-                                                    }
-                                                }
+                                                contested = true;
                                             }
-                                        }
-                                        else
-                                        {
-                                            contested = true;
                                         }
                                     }
                                 }
@@ -2748,7 +2754,7 @@ namespace AlliancesPlugin
 
                                                 if (PlayersFaction != null)
                                                 {
-                                                    
+
                                                     if (yeet != null)
                                                     {
                                                         if (CapturingFaction == 0)
@@ -2776,62 +2782,64 @@ namespace AlliancesPlugin
                                             }
                                         }
                                     }
-
-                                    foreach (MyCubeGrid grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
+                                    if (!config.DoSuitCaps)
                                     {
-                                        if (grid.Projector != null)
-                                            continue;
-
-                                        if (CanCapWithSuit)
+                                        foreach (MyCubeGrid grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
                                         {
-                                            hasActiveCaptureBlock = true;
-                                            continue;
-                                        }
+                                            if (grid.Projector != null)
+                                                continue;
 
-
-                                        IMyFaction fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
-                                        if (fac != null && !fac.Tag.Equals(loc.KothBuildingOwner) && fac.Tag.Length == 3)
-                                        {
-
-                                            //do contested checks
-                                            if (CapturingFaction > 0)
+                                            if (CanCapWithSuit)
                                             {
-                                                //  Log.Info("check if contested");
-                                                if (!CapturingFaction.Equals(fac.FactionId) && MySession.Static.Factions.AreFactionsEnemies(CapturingFaction, fac.FactionId))
+                                                hasActiveCaptureBlock = true;
+                                                continue;
+                                            }
+
+
+                                            IMyFaction fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
+                                            if (fac != null && !fac.Tag.Equals(loc.KothBuildingOwner) && fac.Tag.Length == 3)
+                                            {
+
+                                                //do contested checks
+                                                if (CapturingFaction > 0)
                                                 {
-                                                    //   Log.Info("not the capping fac, and enemies");
-                                                    //if its not the same alliance, contest it if they have a capture block
-                                                    if (DoesGridHaveCaptureBlock(grid, loc))
+                                                    //  Log.Info("check if contested");
+                                                    if (!CapturingFaction.Equals(fac.FactionId) && MySession.Static.Factions.AreFactionsEnemies(CapturingFaction, fac.FactionId))
                                                     {
-                                                        //     Log.Info("contested and has cap block");
-                                                        contested = true;
+                                                        //   Log.Info("not the capping fac, and enemies");
+                                                        //if its not the same alliance, contest it if they have a capture block
+                                                        if (DoesGridHaveCaptureBlock(grid, loc))
+                                                        {
+                                                            //     Log.Info("contested and has cap block");
+                                                            contested = true;
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        // Log.Info("friends");
+                                                        if (!hasActiveCaptureBlock)
+                                                        {
+                                                            if (DoesGridHaveCaptureBlock(grid, loc))
+                                                            {
+                                                                // Log.Info("has cap block");
+                                                                hasActiveCaptureBlock = true;
+                                                            }
+                                                        }
                                                     }
                                                 }
                                                 else
                                                 {
-                                                    // Log.Info("friends");
+                                                    // Log.Info("grab the first faction");
                                                     if (!hasActiveCaptureBlock)
                                                     {
+                                                        //   Log.Info("doesnt have a cap block, checking");
                                                         if (DoesGridHaveCaptureBlock(grid, loc))
                                                         {
-                                                            // Log.Info("has cap block");
+                                                            //     Log.Info("has cap block");
                                                             hasActiveCaptureBlock = true;
+                                                            CapturingFaction = fac.FactionId;
+                                                            capture = fac as MyFaction;
                                                         }
-                                                    }
-                                                }
-                                            }
-                                            else
-                                            {
-                                                // Log.Info("grab the first faction");
-                                                if (!hasActiveCaptureBlock)
-                                                {
-                                                    //   Log.Info("doesnt have a cap block, checking");
-                                                    if (DoesGridHaveCaptureBlock(grid, loc))
-                                                    {
-                                                        //     Log.Info("has cap block");
-                                                        hasActiveCaptureBlock = true;
-                                                        CapturingFaction = fac.FactionId;
-                                                        capture = fac as MyFaction;
                                                     }
                                                 }
                                             }
@@ -3401,12 +3409,12 @@ namespace AlliancesPlugin
                                 }
                                 if (yeet)
                                 {
-                           
-                                    
+
+
                                     foreach (MyBeacon beacon in grid.GetFatBlocks().OfType<MyBeacon>())
                                     {
                                         beacon.Enabled = false;
-                                        
+
                                     }
                                     foreach (MyTimerBlock beacon in grid.GetFatBlocks().OfType<MyTimerBlock>())
                                     {
@@ -4119,7 +4127,7 @@ namespace AlliancesPlugin
 
                                 DiscordStuff.RegisterAllianceBot(alliance, alliance.DiscordChannelId);
 
-                               temp.Add(alliance.AllianceId, DateTime.Now.AddMinutes(10));
+                                temp.Add(alliance.AllianceId, DateTime.Now.AddMinutes(10));
                                 Log.Info("Connecting bot.");
                             }
 

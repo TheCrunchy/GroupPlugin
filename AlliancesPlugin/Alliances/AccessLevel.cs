@@ -29,7 +29,8 @@ namespace AlliancesPlugin.Alliances
         TaxExempt,
         ChangeTax,
         GrindInSafeZone,
-        UnableToParse
+        UnableToParse,
+        Everything
 
     }
 }

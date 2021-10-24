@@ -243,6 +243,7 @@ namespace AlliancesPlugin.Alliances
         }
         public Boolean HasAccess(ulong id, AccessLevel level)
         {
+            
             if (SupremeLeader == id)
             {
                 return true;
@@ -250,6 +251,10 @@ namespace AlliancesPlugin.Alliances
 
             if (PlayersCustomRank.ContainsKey(id))
             {
+                if (CustomRankPermissions[PlayersCustomRank[id]].permissions.Contains(AccessLevel.Everything))
+                {
+                    return true;
+                }
                 if (CustomRankPermissions[PlayersCustomRank[id]].permissions.Contains(level))
                 {
                     return true;
@@ -264,6 +269,10 @@ namespace AlliancesPlugin.Alliances
             }
             if (playerPermissions.ContainsKey(id))
             {
+                if (playerPermissions[id].permissions.Contains(AccessLevel.Everything))
+                {
+                    return true;
+                }
                 if (playerPermissions[id].permissions.Contains(level))
                 {
                     return true;
@@ -386,7 +395,13 @@ namespace AlliancesPlugin.Alliances
        
                     
                    PrintQueue queue = utils.ReadFromJsonFile<PrintQueue>(AlliancePlugin.path + "//ShipyardData//" + AllianceId + "//queue.json");
-                queue.upgradeSlots = (int)ShipyardCommands.slotUpgrades[queue.SlotsUpgrade].NewSlots;
+                if (ShipyardCommands.slotUpgrades.ContainsKey(queue.SlotsUpgrade)){
+                    queue.upgradeSlots = (int)ShipyardCommands.slotUpgrades[queue.SlotsUpgrade].NewSlots;
+                }
+                else{
+                    queue.upgradeSlots = (int)ShipyardCommands.slotUpgrades[queue.SlotsUpgrade - 1].NewSlots;
+                }
+             
           
                 return queue;
             }

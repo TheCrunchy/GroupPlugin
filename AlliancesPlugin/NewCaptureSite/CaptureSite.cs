@@ -56,6 +56,9 @@ namespace AlliancesPlugin.NewCaptureSite
                 }
             }
         }
+        public Boolean IsChainCap = false;
+        public int ChainStartNumber = 30;
+        public int ChainEndNumber = 0;
         public Boolean DoSuitCaps = false;
         public CaptureLog caplog = new CaptureLog();
         public Boolean LockOnFail = true;
@@ -184,7 +187,7 @@ namespace AlliancesPlugin.NewCaptureSite
             int r = random.Next(temp.Count);
             return temp[r];
         }
-
+  
         public int SecondsBetweenCaptureCheck = 60;
         public int PointsPerCap = 10;
         public int PointsToCap = 100;

@@ -1,4 +1,5 @@
-﻿using AlliancesPlugin.Shipyard;
+﻿using AlliancesPlugin.Hangar;
+using AlliancesPlugin.Shipyard;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using Newtonsoft.Json;
@@ -2852,6 +2853,97 @@ namespace AlliancesPlugin.Alliances
             }
         }
 
+
+        [Command("resetupgrades", "reset and refund upgrade levels for shipyard and hangar")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void AllianceYeetUpgrades(string inputAmount, Boolean Reset = false)
+        {
+            Int64 amount;
+            inputAmount = inputAmount.Replace(",", "");
+            inputAmount = inputAmount.Replace(".", "");
+            inputAmount = inputAmount.Replace(" ", "");
+            try
+            {
+                amount = Int64.Parse(inputAmount);
+            }
+            catch (Exception)
+            {
+                Context.Respond("Error parsing amount", Color.Red, "Bank Man");
+                return;
+            }
+            if (amount < 0 || amount == 0)
+            {
+                Context.Respond("Must be a positive amount", Color.Red, "Bank Man");
+                return;
+            }
+            Dictionary<Guid, long> refunds = new Dictionary<Guid, long>();
+            foreach (Alliance alliance in AlliancePlugin.AllAlliances.Values)
+            {
+                PrintQueue queue = alliance.LoadPrintQueue();
+                long RefundAmount = 0;
+                if (queue != null)
+                {
+                    for (int i = 1; i < queue.SlotsUpgrade; i++) {
+                        if (ShipyardCommands.slotUpgrades.ContainsKey(i))
+                        {
+                            RefundAmount += ShipyardCommands.slotUpgrades[i].MoneyRequired;
+                            RefundAmount += ShipyardCommands.slotUpgrades[i].MetaPointsRequired * 5000000;
+                            foreach (KeyValuePair<MyDefinitionId, int> items in ShipyardCommands.slotUpgrades[i].getItemsRequired())
+                            {
+                                RefundAmount += items.Value * amount;
+                            }
+                        }
+                    }
+                    for (int i = 1; i < queue.SpeedUpgrade; i++)
+                    {
+                        if (ShipyardCommands.speedUpgrades.ContainsKey(i))
+                        {
+                            RefundAmount += ShipyardCommands.speedUpgrades[i].MoneyRequired;
+                            RefundAmount += ShipyardCommands.speedUpgrades[i].MetaPointsRequired * 5000000;
+                            foreach (KeyValuePair<MyDefinitionId, int> items in ShipyardCommands.speedUpgrades[i].getItemsRequired())
+                            {
+                                RefundAmount += items.Value * amount;
+                            }
+                        }
+                    }
+                }
+                HangarData hangar = alliance.LoadHangar();
+                if (hangar != null)
+                {
+                    for (int i = 1; i < hangar.SlotUpgradeNum; i++)
+                    {
+                        if (HangarCommands.slotUpgrades.ContainsKey(i))
+                        {
+                            RefundAmount += HangarCommands.slotUpgrades[i].MoneyRequired;
+                            RefundAmount += HangarCommands.slotUpgrades[i].MetaPointCost * 5000000;
+                            foreach (KeyValuePair<MyDefinitionId, int> items in HangarCommands.slotUpgrades[i].itemsRequired)
+                            {
+                                RefundAmount += items.Value * amount;
+                            }
+                        }
+                    }
+                }
+                refunds.Add(alliance.AllianceId, RefundAmount);
+               
+                if (Reset)
+                {
+                    queue.SlotsUpgrade = 0;
+                    queue.SpeedUpgrade = 0;
+                    hangar.SlotUpgradeNum = 0;
+                    Context.Respond("Reset complete. To refund money use !alliance addmoney " + alliance.name + " " + String.Format("{0:n0}", RefundAmount));
+                    alliance.SavePrintQueue(queue);
+                    hangar.SaveHangar(alliance);
+                    
+                }
+                else
+                {
+                    Context.Respond("With current settings refund will be " + alliance.name + " " + String.Format("{0:n0}", RefundAmount) + " SC. for " + alliance.name);
+                }
+                
+            }
+
+
+        }
 
         [Command("create", "create a new alliance")]
         [Permission(MyPromoteLevel.None)]
