@@ -706,7 +706,15 @@ namespace AlliancesPlugin
         }
 
 
+        public static void NEWSUIT(MyEntity entity)
+        {
+            if (entity is MyCharacter character)
+            {
+           //     AlliancePlugin.Log.Info("ITS A SUIT BITCH!");
 
+           
+            }
+        }
         public static Random rand = new Random();
         private void SessionChanged(ITorchSession session, TorchSessionState state)
         {
@@ -719,7 +727,7 @@ namespace AlliancesPlugin
             if (state == TorchSessionState.Loaded)
             {
                 MyAPIGateway.Session.DamageSystem.RegisterBeforeDamageHandler(1, new BeforeDamageApplied(DamageHandler));
-
+             //   MyEntities.OnEntityAdd += NEWSUIT;
                 if (config != null && config.AllowDiscord && !DiscordStuff.Ready)
                 {
                     DiscordStuff.RegisterDiscord();
@@ -1407,7 +1415,7 @@ namespace AlliancesPlugin
             return ids;
         }
 
-
+     
         public static void LoadAllTerritories()
         {
             Territories.Clear();
@@ -2293,6 +2301,11 @@ namespace AlliancesPlugin
                                         }
                                     }
                                 }
+                                if (CanCapWithSuit)
+                                {
+                                    hasActiveCaptureBlock = true;
+                                    //    continue;
+                                }
                                 if (!config.DoSuitCaps)
                                 {
                                     foreach (MyCubeGrid grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
@@ -2782,6 +2795,11 @@ namespace AlliancesPlugin
                                             }
                                         }
                                     }
+                                    if (CanCapWithSuit)
+                                    {
+                                        hasActiveCaptureBlock = true;
+                                    //    continue;
+                                    }
                                     if (!config.DoSuitCaps)
                                     {
                                         foreach (MyCubeGrid grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
@@ -2789,11 +2807,7 @@ namespace AlliancesPlugin
                                             if (grid.Projector != null)
                                                 continue;
 
-                                            if (CanCapWithSuit)
-                                            {
-                                                hasActiveCaptureBlock = true;
-                                                continue;
-                                            }
+                                  
 
 
                                             IMyFaction fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));

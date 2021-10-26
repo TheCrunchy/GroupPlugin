@@ -130,13 +130,13 @@ namespace AlliancesPlugin.Alliances
                             {
                                 buff -= (float)upgrade.getAssemblerBuff(__instance.BlockDefinition.Id.SubtypeName);
                             }
-                            //      AlliancePlugin.Log.Info(refin.BlockDefinition.Id.SubtypeName);
-                          
+                        //      AlliancePlugin.Log.Info(refin.BlockDefinition.Id.SubtypeName);
+
                         __result *= buff;
                     }
                 }
             }
-        }
+        } 
         public static Dictionary<long, bool> IsInsideTerritory = new Dictionary<long, bool>();
         public static Dictionary<long, DateTime> TimeChecks = new Dictionary<long, DateTime>();
         public static Dictionary<long, Guid> InsideHere = new Dictionary<long, Guid>();
