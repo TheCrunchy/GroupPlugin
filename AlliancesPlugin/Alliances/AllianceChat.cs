@@ -371,13 +371,10 @@ namespace AlliancesPlugin.Alliances
                 {
                     if (AlliancePlugin.GetAllianceNoLoading(playerFac as MyFaction) != null)
                     {
-                        Task.Run(() =>
-                        {
-                            System.Threading.Thread.Sleep(1000);
-  
-                                AllianceCommands.SendStatusToClient(true, p.SteamId);
-               
-                        });
+                        AlliancePlugin.statusUpdate.Remove(p.SteamId);
+                        AlliancePlugin.statusUpdate.Add(p.SteamId, true);
+                        AlliancePlugin.otherAllianceShit.Remove(p.SteamId);
+                        AlliancePlugin.otherAllianceShit.Add(p.SteamId, AlliancePlugin.GetAllianceNoLoading(playerFac as MyFaction).AllianceId);
                         PeopleInAllianceChat.Remove(p.SteamId);
                         PeopleInAllianceChat.Add(p.SteamId, AlliancePlugin.GetAllianceNoLoading(playerFac as MyFaction).AllianceId);
 

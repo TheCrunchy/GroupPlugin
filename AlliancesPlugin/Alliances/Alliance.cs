@@ -32,6 +32,8 @@ namespace AlliancesPlugin.Alliances
         public ulong DiscordChannelId = 0;
         public List<String> enemies = new List<String>();
         public List<long> EnemyFactions = new List<long>();
+        public List<String> friendlies = new List<String>();
+        public List<long> FriendlyFactions = new List<long>();
         public int reputation = 0;
         public List<long> Invites = new List<long>();
         public List<long> AllianceMembers = new List<long>();

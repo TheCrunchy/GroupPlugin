@@ -4094,6 +4094,8 @@ namespace AlliancesPlugin
 
         public static Dictionary<ulong, DateTime> UpdateThese = new Dictionary<ulong, DateTime>();
         public static DateTime RegisterMainBot = DateTime.Now;
+        public static Dictionary<ulong, Boolean> statusUpdate = new Dictionary<ulong, bool>();
+        public static Dictionary<ulong, Guid> otherAllianceShit = new Dictionary<ulong, Guid>();
         public override void Update()
         {
 
@@ -4102,6 +4104,19 @@ namespace AlliancesPlugin
             {
                 if (DateTime.Now >= pair.Value)
                 {
+                   if (statusUpdate.TryGetValue(pair.Key, out Boolean status))
+                    {
+                        AlliancePlugin.SendChatMessage("AllianceChatStatus", "true", pair.Key);
+                        statusUpdate.Remove(pair.Key);
+                    }
+                    if (otherAllianceShit.TryGetValue(pair.Key, out Guid allianceId))
+                    {
+                        Alliance alliance = GetAllianceNoLoading(allianceId);
+
+                        AlliancePlugin.SendChatMessage("AllianceColorConfig", alliance.r + " " + alliance.g + " " + alliance.b, pair.Key);
+                        AlliancePlugin.SendChatMessage("AllianceTitleConfig", "[A] " + alliance.GetTitle(pair.Key) + " ", pair.Key);
+                        otherAllianceShit.Remove(pair.Key);
+                    }
                     if (AllianceChat.PeopleInAllianceChat.ContainsKey(pair.Key))
                     {
                         AllianceCommands.SendStatusToClient(true, pair.Key);
@@ -4110,6 +4125,7 @@ namespace AlliancesPlugin
                     {
                         AllianceCommands.SendStatusToClient(false, pair.Key);
                     }
+              
                 }
             }
             foreach (ulong id in YEET)

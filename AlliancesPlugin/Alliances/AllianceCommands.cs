@@ -1473,8 +1473,8 @@ namespace AlliancesPlugin.Alliances
                     {
                         alliance.LeaderTitle = newName;
                         AlliancePlugin.SaveAllianceData(alliance);
-
-                        Context.Respond("Updated");
+                        AlliancePlugin.SendChatMessage("AllianceTitleConfig", "[A] " + newName + " ", Context.Player.SteamUserId);
+                      //  Context.Respond("Updated");
                         return;
                     }
                     else
@@ -1491,6 +1491,7 @@ namespace AlliancesPlugin.Alliances
                                 if (fuck.Value.Equals(title))
                                 {
                                     fuckfuck.Add(fuck.Key);
+                                    AlliancePlugin.SendChatMessage("AllianceTitleConfig", "[A] " + newName + " ", fuck.Key);
                                 }
                             }
                             foreach (ulong id in fuckfuck)
@@ -2664,6 +2665,8 @@ namespace AlliancesPlugin.Alliances
                         {
                             alliance.PlayersCustomRank[MySession.Static.Players.TryGetSteamId(id.IdentityId)] = Title;
                         }
+
+                        AlliancePlugin.SendChatMessage("AllianceTitleConfig", "[A] " + Title, MySession.Static.Players.TryGetSteamId(id.IdentityId));
                         AlliancePlugin.SaveAllianceData(alliance);
 
                         Context.Respond("Updated");
@@ -2680,6 +2683,7 @@ namespace AlliancesPlugin.Alliances
                                 alliance.SetTitle(MySession.Static.Players.TryGetSteamId(id.IdentityId), Title);
                                 AlliancePlugin.SaveAllianceData(alliance);
                                 Context.Respond("Title granted!");
+                                AlliancePlugin.SendChatMessage("AllianceTitleConfig", "[A] " + Title, MySession.Static.Players.TryGetSteamId(id.IdentityId));
                             }
                             else
                             {
@@ -2702,6 +2706,7 @@ namespace AlliancesPlugin.Alliances
                         alliance.SetTitle(MySession.Static.Players.TryGetSteamId(id.IdentityId), Title);
                         AlliancePlugin.SaveAllianceData(alliance);
                         Context.Respond("Title granted!");
+                        AlliancePlugin.SendChatMessage("AllianceTitleConfig", "[A] " + Title, MySession.Static.Players.TryGetSteamId(id.IdentityId));
                     }
                     else
                     {
@@ -2805,7 +2810,7 @@ namespace AlliancesPlugin.Alliances
                             alliance.PlayersCustomRank.Remove(MySession.Static.Players.TryGetSteamId(id.IdentityId));
                         }
                         AlliancePlugin.SaveAllianceData(alliance);
-
+                        AlliancePlugin.SendChatMessage("AllianceTitleConfig", "[A] ", MySession.Static.Players.TryGetSteamId(id.IdentityId));
                         Context.Respond("Updated");
                     }
                     else
@@ -2819,6 +2824,7 @@ namespace AlliancesPlugin.Alliances
                             {
                                 alliance.RemoveTitle(MySession.Static.Players.TryGetSteamId(id.IdentityId), Title);
                                 AlliancePlugin.SaveAllianceData(alliance);
+                                AlliancePlugin.SendChatMessage("AllianceTitleConfig", "[A] ", MySession.Static.Players.TryGetSteamId(id.IdentityId));
                             }
                             else
                             {
@@ -2841,7 +2847,7 @@ namespace AlliancesPlugin.Alliances
 
                         alliance.RemoveTitle(MySession.Static.Players.TryGetSteamId(id.IdentityId), Title);
                         AlliancePlugin.SaveAllianceData(alliance);
-
+                        AlliancePlugin.SendChatMessage("AllianceTitleConfig", "[A] ", MySession.Static.Players.TryGetSteamId(id.IdentityId));
                         Context.Respond("Revoked that guy.");
 
                     }
