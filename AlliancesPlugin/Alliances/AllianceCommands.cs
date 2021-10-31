@@ -2581,6 +2581,7 @@ namespace AlliancesPlugin.Alliances
                 utils.WriteToXmlFile<PlayerData>(AlliancePlugin.path + "//PlayerData//" + Context.Player.SteamUserId + ".xml", data);
                 SendStatusToClient(false, Context.Player.SteamUserId);
                 //leaving
+                AlliancePlugin.SendChatMessage("AllianceChatStatus", "false", Context.Player.SteamUserId);
                 return;
             }
             if (alliance != null)
@@ -2593,6 +2594,7 @@ namespace AlliancesPlugin.Alliances
                     Context.Respond("Entering alliance chat.", Color.Cyan);
                     utils.WriteToXmlFile<PlayerData>(AlliancePlugin.path + "//PlayerData//" + Context.Player.SteamUserId + ".xml", data);
                     SendStatusToClient(false, Context.Player.SteamUserId);
+                    AlliancePlugin.SendChatMessage("AllianceChatStatus", "true", Context.Player.SteamUserId);
                 }
             }
             else

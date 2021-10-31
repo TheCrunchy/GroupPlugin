@@ -4111,10 +4111,10 @@ namespace AlliancesPlugin
                     }
                     if (otherAllianceShit.TryGetValue(pair.Key, out Guid allianceId))
                     {
-                        Alliance alliance = GetAllianceNoLoading(allianceId);
+                        Alliance alliance = GetAlliance(allianceId);
 
                         AlliancePlugin.SendChatMessage("AllianceColorConfig", alliance.r + " " + alliance.g + " " + alliance.b, pair.Key);
-                        AlliancePlugin.SendChatMessage("AllianceTitleConfig", "[A] " + alliance.GetTitle(pair.Key) + " ", pair.Key);
+                        AlliancePlugin.SendChatMessage("AllianceTitleConfig", alliance.GetTitle(pair.Key) + " ", pair.Key);
                         otherAllianceShit.Remove(pair.Key);
                     }
                     if (AllianceChat.PeopleInAllianceChat.ContainsKey(pair.Key))

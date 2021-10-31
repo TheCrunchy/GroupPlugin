@@ -373,12 +373,20 @@ namespace AlliancesPlugin.Alliances
                     {
                         AlliancePlugin.statusUpdate.Remove(p.SteamId);
                         AlliancePlugin.statusUpdate.Add(p.SteamId, true);
-                        AlliancePlugin.otherAllianceShit.Remove(p.SteamId);
-                        AlliancePlugin.otherAllianceShit.Add(p.SteamId, AlliancePlugin.GetAllianceNoLoading(playerFac as MyFaction).AllianceId);
+       
                         PeopleInAllianceChat.Remove(p.SteamId);
                         PeopleInAllianceChat.Add(p.SteamId, AlliancePlugin.GetAllianceNoLoading(playerFac as MyFaction).AllianceId);
+                        AlliancePlugin.otherAllianceShit.Remove(p.SteamId);
+                        AlliancePlugin.otherAllianceShit.Add(p.SteamId, AlliancePlugin.GetAllianceNoLoading(playerFac as MyFaction).AllianceId);
 
-                  
+                    }
+                }
+                else
+                {
+                    if (AlliancePlugin.GetAllianceNoLoading(playerFac as MyFaction) != null)
+                    {
+                        AlliancePlugin.otherAllianceShit.Remove(p.SteamId);
+                        AlliancePlugin.otherAllianceShit.Add(p.SteamId, AlliancePlugin.GetAllianceNoLoading(playerFac as MyFaction).AllianceId);
                     }
                 }
             }
