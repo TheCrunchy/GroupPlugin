@@ -152,16 +152,17 @@ namespace AlliancesPlugin
         {
             static void Postfix(ulong steamPlayerId, int serialId)
             {
-              
-             //   AlliancePlugin.Log.Info("DGSDGSDG");
-                if (AlliancePlugin.UpdateThese.ContainsKey(steamPlayerId))
-                {
-                    AlliancePlugin.UpdateThese[steamPlayerId] = DateTime.Now.AddSeconds(5);
-                }
-                else
-                {
-                    AlliancePlugin.UpdateThese.Add(steamPlayerId,DateTime.Now.AddSeconds(5));
-                }
+
+                    //   AlliancePlugin.Log.Info("DGSDGSDG");
+                    if (AlliancePlugin.UpdateThese.ContainsKey(steamPlayerId))
+                    {
+                        AlliancePlugin.UpdateThese[steamPlayerId] = DateTime.Now.AddSeconds(15);
+                    }
+                    else
+                    {
+                        AlliancePlugin.UpdateThese.Add(steamPlayerId, DateTime.Now.AddSeconds(15));
+                    }
+                
             
                     return;
                 // make sure you only skip if really necessary

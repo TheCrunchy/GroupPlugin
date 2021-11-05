@@ -316,7 +316,8 @@ namespace AlliancesPlugin
 
             return config;
         }
-
+        public static Boolean YEETED = false;
+        public static int seconds = 15;
         public static void LoadAllCaptureSites()
         {
             sites.Clear();
@@ -329,6 +330,12 @@ namespace AlliancesPlugin
                     CaptureSite koth = utils.ReadFromXmlFile<CaptureSite>(s);
                     koth.LoadCapProgress();
                     koth.caplog.LoadSorted();
+                    if (!YEETED)
+                    {
+                        koth.nextCaptureAvailable = koth.nextCaptureAvailable.AddSeconds(seconds);
+                        koth.nextCaptureInterval = koth.nextCaptureInterval.AddSeconds(seconds);
+                        seconds += 15;
+                    }
                     //  DateTime now = DateTime.Now;
                     //if (now.Minute == 59 || now.Minute == 60)
                     //{
@@ -346,6 +353,7 @@ namespace AlliancesPlugin
 
                     Log.Error("Delete this file and generate a new one " + s);
                 }
+                YEETED = true;
 
             }
         }
@@ -710,9 +718,9 @@ namespace AlliancesPlugin
         {
             if (entity is MyCharacter character)
             {
-           //     AlliancePlugin.Log.Info("ITS A SUIT BITCH!");
+                //     AlliancePlugin.Log.Info("ITS A SUIT BITCH!");
 
-           
+
             }
         }
         public static Random rand = new Random();
@@ -727,7 +735,7 @@ namespace AlliancesPlugin
             if (state == TorchSessionState.Loaded)
             {
                 MyAPIGateway.Session.DamageSystem.RegisterBeforeDamageHandler(1, new BeforeDamageApplied(DamageHandler));
-             //   MyEntities.OnEntityAdd += NEWSUIT;
+                //   MyEntities.OnEntityAdd += NEWSUIT;
                 if (config != null && config.AllowDiscord && !DiscordStuff.Ready)
                 {
                     DiscordStuff.RegisterDiscord();
@@ -1415,7 +1423,7 @@ namespace AlliancesPlugin
             return ids;
         }
 
-     
+
         public static void LoadAllTerritories()
         {
             Territories.Clear();
@@ -1649,6 +1657,7 @@ namespace AlliancesPlugin
                     if (gate.CanBeRented && DateTime.Now >= gate.NextRentAvailable)
                     {
                         gate.OwnerAlliance = Guid.Empty;
+                        gate.fee = 0;
                     }
 
 
@@ -1747,7 +1756,7 @@ namespace AlliancesPlugin
                     }
                     else
                     {
-                        EconUtils.takeMoney(player.Identity.IdentityId, gate.fee);
+                       // EconUtils.takeMoney(player.Identity.IdentityId, gate.fee);
                         return true;
                     }
                     if (DatabaseForBank.AddToBalance(temp, gate.fee))
@@ -2798,7 +2807,7 @@ namespace AlliancesPlugin
                                     if (CanCapWithSuit)
                                     {
                                         hasActiveCaptureBlock = true;
-                                    //    continue;
+                                        //    continue;
                                     }
                                     if (!config.DoSuitCaps)
                                     {
@@ -2807,7 +2816,7 @@ namespace AlliancesPlugin
                                             if (grid.Projector != null)
                                                 continue;
 
-                                  
+
 
 
                                             IMyFaction fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
@@ -4099,38 +4108,66 @@ namespace AlliancesPlugin
         public override void Update()
         {
 
-            List<ulong> YEET = new List<ulong>();
-            foreach (KeyValuePair<ulong, DateTime> pair in UpdateThese)
+            if (ticks % 512 == 0)
             {
-                if (DateTime.Now >= pair.Value)
+                Dictionary<ulong, DateTime> YEET = new Dictionary<ulong, DateTime>();
+            List<ulong> oof = new List<ulong>();
+                List<ulong> OtherYeet = new List<ulong>();
+                foreach (KeyValuePair<ulong, DateTime> pair in UpdateThese)
                 {
-                   if (statusUpdate.TryGetValue(pair.Key, out Boolean status))
+                    if (DateTime.Now >= pair.Value)
                     {
-                        AlliancePlugin.SendChatMessage("AllianceChatStatus", "true", pair.Key);
-                        statusUpdate.Remove(pair.Key);
-                    }
-                    if (otherAllianceShit.TryGetValue(pair.Key, out Guid allianceId))
-                    {
-                        Alliance alliance = GetAlliance(allianceId);
+                        oof.Add(pair.Key);
+                        if (!YEET.ContainsKey(pair.Key))
+                        {
+                           YEET.Add(pair.Key, DateTime.Now.AddMinutes(1));
 
-                        AlliancePlugin.SendChatMessage("AllianceColorConfig", alliance.r + " " + alliance.g + " " + alliance.b, pair.Key);
-                        AlliancePlugin.SendChatMessage("AllianceTitleConfig", alliance.GetTitle(pair.Key) + " ", pair.Key);
-                        otherAllianceShit.Remove(pair.Key);
+                        }
+                        if (statusUpdate.TryGetValue(pair.Key, out Boolean status))
+                        {
+                            AlliancePlugin.SendChatMessage("AllianceChatStatus", "true", pair.Key);
+                            statusUpdate.Remove(pair.Key);
+                        }
+                        if (otherAllianceShit.TryGetValue(pair.Key, out Guid allianceId))
+                        {
+                            Alliance alliance = GetAlliance(allianceId);
+
+                            AlliancePlugin.SendChatMessage("AllianceColorConfig", alliance.r + " " + alliance.g + " " + alliance.b, pair.Key);
+                            AlliancePlugin.SendChatMessage("AllianceTitleConfig", alliance.GetTitle(pair.Key) + " ", pair.Key);
+                            otherAllianceShit.Remove(pair.Key);
+                        }
+                        if (AllianceChat.PeopleInAllianceChat.ContainsKey(pair.Key))
+                        {
+                            AllianceCommands.SendStatusToClient(true, pair.Key);
+                        }
+                        else
+                        {
+                            AllianceCommands.SendStatusToClient(false, pair.Key);
+                        }
+
                     }
-                    if (AllianceChat.PeopleInAllianceChat.ContainsKey(pair.Key))
-                    {
-                        AllianceCommands.SendStatusToClient(true, pair.Key);
-                    }
-                    else
-                    {
-                        AllianceCommands.SendStatusToClient(false, pair.Key);
-                    }
-              
                 }
-            }
-            foreach (ulong id in YEET)
-            {
-                UpdateThese.Remove(id);
+              foreach (ulong id in oof)
+                {
+                    if (UpdateThese.TryGetValue(id, out DateTime time))
+                    {
+                        UpdateThese[id] = time.AddSeconds(5);
+                    }
+                }
+                oof.Clear();
+                foreach (KeyValuePair<ulong, DateTime> pair in YEET)
+                {
+                    if (DateTime.Now > pair.Value)
+                    {
+                        OtherYeet.Add(pair.Key);
+                        UpdateThese.Remove(pair.Key);
+                    }
+                }
+                foreach (ulong id in OtherYeet)
+                {
+                    YEET.Remove(id);
+                }
+                OtherYeet.Clear();
             }
             ticks++;
 
@@ -4196,84 +4233,103 @@ namespace AlliancesPlugin
                 chat = chat.AddMinutes(10);
             }
 
-            if (DateTime.Now > NextUpdate && TorchState == TorchSessionState.Loaded)
+            if (TorchState == TorchSessionState.Loaded)
             {
-                Log.Info("Doing alliance tasks");
+                //Log.Info("Doing alliance tasks");
 
-                DateTime now = DateTime.Now;
+                //     DateTime now = DateTime.Now;
                 //   if (config != null && config.AllowDiscord && !DiscordStuff.Ready && now >= RegisterMainBot)
                 //    {
                 //         DiscordStuff.RegisterDiscord();
                 //    }
-                NextUpdate = now.AddSeconds(60);
-                try
-                {
-                    LoadAllCaptureSites();
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex);
-                }
 
+                if (DateTime.Now > NextUpdate)
+                {
+                    NextUpdate = DateTime.Now.AddSeconds(60);
+                    try
+                    {
+                        OrganisePlayers();
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex);
 
-                try
-                {
-                    LoadAllAlliances();
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex);
-                }
-                try
-                {
-
-                    LoadAllRefineryUpgrades();
-                }
-                catch (Exception ex)
-                {
-
-                    Log.Error(ex);
-                }
-                try
-                {
-                    LoadAllGates();
+                    }
+                    try
+                    {
+                        LoadAllCaptureSites();
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex);
+                    }
 
                 }
-                catch (Exception ex)
-                {
 
-                    Log.Error(ex);
-                }
-                try
+                if (DateTime.Now > NextUpdate.AddSeconds(5))
                 {
-                    Log.Info("Loading territories");
-                    LoadAllTerritories();
+                    try
+                    {
+                        LoadAllAlliances();
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex);
+                    }
                 }
-                catch (Exception ex)
+                if (DateTime.Now > NextUpdate.AddSeconds(10))
                 {
+                    try
+                    {
 
-                    Log.Error(ex);
-                }
-                try
-                {
-                    LoadAllJumpZones();
+                        LoadAllRefineryUpgrades();
+                    }
+                    catch (Exception ex)
+                    {
 
+                        Log.Error(ex);
+                    }
                 }
-                catch (Exception ex)
+                if (DateTime.Now > NextUpdate.AddSeconds(15))
                 {
-                    Log.Error(ex);
-                }
+                    try
+                    {
+                        LoadAllGates();
 
-                try
-                {
-                    OrganisePlayers();
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex);
+                    }
+                    catch (Exception ex)
+                    {
 
+                        Log.Error(ex);
+                    }
+                }
+                if (DateTime.Now > NextUpdate.AddSeconds(20))
+                {
+                    try
+                    {
+                        Log.Info("Loading territories");
+                        LoadAllTerritories();
+                    }
+                    catch (Exception ex)
+                    {
+
+                        Log.Error(ex);
+                    }
+                }
+                if (DateTime.Now > NextUpdate.AddSeconds(25))
+                {
+                    try
+                    {
+                        LoadAllJumpZones();
+
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex);
+                    }
                 }
             }
+
             if (ticks % 32 == 0 && TorchState == TorchSessionState.Loaded)
             {
                 try

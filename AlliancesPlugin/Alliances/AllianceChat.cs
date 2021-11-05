@@ -366,7 +366,9 @@ namespace AlliancesPlugin.Alliances
           
                 if (File.Exists(AlliancePlugin.path + "//PlayerData//" + p.SteamId + ".xml") && playerFac != null)
             {
-                PlayerData data = utils.ReadFromXmlFile<PlayerData>(AlliancePlugin.path + "//PlayerData//" + p.SteamId + ".xml");
+
+                AlliancePlugin.UpdateThese.Remove(p.SteamId);
+               PlayerData data = utils.ReadFromXmlFile<PlayerData>(AlliancePlugin.path + "//PlayerData//" + p.SteamId + ".xml");
                 if (data.InAllianceChat)
                 {
                     if (AlliancePlugin.GetAllianceNoLoading(playerFac as MyFaction) != null)

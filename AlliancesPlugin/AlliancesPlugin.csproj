@@ -185,6 +185,7 @@
     <Compile Include="AlliancePlugin.cs" />
     <Compile Include="Alliances\AllianceChat.cs" />
     <Compile Include="Alliances\AllianceCommands.cs" />
+    <Compile Include="Alliances\ShipClassDefinition.cs" />
     <Compile Include="Alliances\Upgrades\GridRepairCommands.cs" />
     <Compile Include="Alliances\Upgrades\AssemblerCommands.cs" />
     <Compile Include="Alliances\Upgrades\AssemblerUpgrade.cs" />
