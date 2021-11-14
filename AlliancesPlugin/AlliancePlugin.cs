@@ -98,7 +98,7 @@ namespace AlliancesPlugin
             }
 
         }
-
+        
         public static void BackupGridMethod(List<MyObjectBuilder_CubeGrid> Grids, long User)
         {
             try
