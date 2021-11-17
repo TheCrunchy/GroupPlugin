@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <PluginManifest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <Name>Draconis Alliance System</Name>
+  <Name>AlliancesPlugin</Name>
   <Guid>74796707-646f-4ebd-8700-d077a5f47af3</Guid>
-  <Version>v7.16</Version>
+  <Version>v7.17</Version>
 </PluginManifest>

@@ -78,7 +78,7 @@ Koth admin commands
 !koth meta - output every alliances points
 
 Hangar commands
-!ah unlock - unlock the hangar
+!ah upgrade true - unlock the hangar
 !ah upgrade - see the upgrade cost
 !ah ugprade true - do the upgrade
 !ah log - view the log

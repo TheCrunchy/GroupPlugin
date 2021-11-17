@@ -246,11 +246,6 @@ namespace AlliancesPlugin.Hangar
                     Context.Respond("Alliance failed to pay upkeep. Upgrades disabled.");
                     return;
                 }
-                if (!alliance.hasUnlockedHangar)
-                {
-                    ShipyardCommands.SendMessage("[Alliance Hangar]", "To unlock use !ah unlock", Color.Cyan, (long)Context.Player.SteamUserId);
-                    return;
-                }
                 HangarData hangar = alliance.LoadHangar();
                 UpgradeCost cost = new UpgradeCost();
                 if (!upgrade)
@@ -360,6 +355,7 @@ namespace AlliancesPlugin.Hangar
                                     EconUtils.takeMoney(Context.Player.IdentityId, cost.MoneyRequired);
                                     hangar.SlotsAmount = (int)cost.NewLevel;
                                     hangar.SlotUpgradeNum++;
+                                    alliance.hasUnlockedHangar = true;
                                     hangar.SaveHangar(alliance);
                                     AlliancePlugin.SaveAllianceData(alliance);
                                     ShipyardCommands.SendMessage("[Alliance Hangar]", "Upgrading slots. You were charged: " + String.Format("{0:n0}", cost.MoneyRequired), Color.LightBlue, (long)Context.Player.SteamUserId);
@@ -374,6 +370,7 @@ namespace AlliancesPlugin.Hangar
                         {
                             if (ShipyardCommands.ConsumeComponents(invents, cost.itemsRequired, Context.Player.SteamUserId))
                             {
+                                alliance.hasUnlockedHangar = true;
                                 alliance.CurrentMetaPoints -= cost.MetaPointCost;
                                 hangar.SlotsAmount = (int)cost.NewLevel;
                                 hangar.SlotUpgradeNum++;
@@ -705,7 +702,7 @@ namespace AlliancesPlugin.Hangar
             }
             else
             {
-                Context.Respond("Alliance has not unlocked the hangar to unlock use !ah unlock.");
+                Context.Respond("Alliance has not unlocked the hangar to unlock use !ah upgrade true");
             }
         }
     }
