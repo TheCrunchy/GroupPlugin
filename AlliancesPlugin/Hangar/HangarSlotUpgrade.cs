@@ -31,7 +31,7 @@ namespace AlliancesPlugin.Alliances
                         }
                         else
                         {
-                            AlliancePlugin.Log.Error("Duplicate ID for Assembler upgrade items " + item.SubTypeId + " in " + UpgradeId);
+                            AlliancePlugin.Log.Error("Duplicate ID for Hangar upgrade items " + item.SubTypeId + " in " + UpgradeId);
                         }
                     }
                 }

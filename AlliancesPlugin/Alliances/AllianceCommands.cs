@@ -2923,8 +2923,8 @@ namespace AlliancesPlugin.Alliances
                         if (HangarCommands.slotUpgrades.ContainsKey(i))
                         {
                             RefundAmount += HangarCommands.slotUpgrades[i].MoneyRequired;
-                            RefundAmount += HangarCommands.slotUpgrades[i].MetaPointCost * 5000000;
-                            foreach (KeyValuePair<MyDefinitionId, int> items in HangarCommands.slotUpgrades[i].itemsRequired)
+                            RefundAmount += HangarCommands.slotUpgrades[i].MetaPointsRequired * 5000000;
+                            foreach (KeyValuePair<MyDefinitionId, int> items in HangarCommands.slotUpgrades[i].getItemsRequired())
                             {
                                 RefundAmount += items.Value * amount;
                             }

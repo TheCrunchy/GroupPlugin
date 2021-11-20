@@ -935,17 +935,7 @@ namespace AlliancesPlugin
                     utils.WriteToXmlFile<ShipyardSlotUpgrade>(path + "//ShipyardUpgrades//Slot//SlotUpgrade_0.xml", upg);
 
                 }
-                if (!File.Exists(path + "//HangarUnlockCost.txt"))
-                {
 
-                    StringBuilder output = new StringBuilder();
-                    output.AppendLine("TypeId,SubtypeId,Amount");
-                    output.AppendLine("MyObjectBuilder_Ingot,Uranium,5000");
-                    output.AppendLine("Money,500000000");
-                    output.AppendLine("MetaPoints,50");
-                    File.WriteAllText(path + "//HangarUnlockCost.txt", output.ToString());
-
-                }
                 if (!File.Exists(path + "//HangarDeniedLocations.txt"))
                 {
 
@@ -975,18 +965,16 @@ namespace AlliancesPlugin
                         HangarDeniedLocations.Add(loc);
                     }
                 }
-                if (!File.Exists(path + "//HangarUpgrades//SlotUpgrade1.txt"))
+                if (!File.Exists(path + "//HangarUpgrades//SlotUpgrade_0.xml"))
                 {
 
-                    StringBuilder output = new StringBuilder();
-                    output.AppendLine("1,Slots,2");
-                    output.AppendLine("TypeId,SubtypeId,Amount");
-                    output.AppendLine("MyObjectBuilder_Ingot,Uranium,5000");
-                    output.AppendLine("Money,500000000");
-                    output.AppendLine("MetaPoints,50");
-                    File.WriteAllText(path + "//HangarUpgrades//SlotUpgrade1.txt", output.ToString());
+                    HangarUpgrade upg = new HangarUpgrade();
+                    ItemRequirement req = new ItemRequirement();
+                    upg.items.Add(req);
+                    utils.WriteToXmlFile<HangarUpgrade>(path + "//HangarUpgrades//SlotUpgrade_0.xml", upg);
 
                 }
+
 
                 if (!Directory.Exists(path + "//ShipyardBlocks//"))
                 {
@@ -1012,10 +1000,8 @@ namespace AlliancesPlugin
                     utils.WriteToXmlFile<ShipyardConfig>(path + "//ShipyardConfig.xml", new ShipyardConfig(), false);
 
                 }
-                else
-                {
-                    ReloadShipyard();
-                }
+
+                ReloadShipyard();
 
                 foreach (String s in Directory.GetFiles(basePath + "//Alliances//KOTH//"))
                 {
@@ -1147,7 +1133,7 @@ namespace AlliancesPlugin
             }
             foreach (String s in Directory.GetFiles(path + "//HangarUpgrades//"))
             {
-                HangarCommands.LoadUpgradeCost(s);
+                HangarCommands.LoadHangarUpgrade(s);
             }
         }
         public void LoadAllRefineryUpgrades()
@@ -4131,10 +4117,12 @@ namespace AlliancesPlugin
                         if (otherAllianceShit.TryGetValue(pair.Key, out Guid allianceId))
                         {
                             Alliance alliance = GetAlliance(allianceId);
-
-                            AlliancePlugin.SendChatMessage("AllianceColorConfig", alliance.r + " " + alliance.g + " " + alliance.b, pair.Key);
-                            AlliancePlugin.SendChatMessage("AllianceTitleConfig", alliance.GetTitle(pair.Key) + " ", pair.Key);
-                            otherAllianceShit.Remove(pair.Key);
+                            if (alliance != null)
+                            {
+                                AlliancePlugin.SendChatMessage("AllianceColorConfig", alliance.r + " " + alliance.g + " " + alliance.b, pair.Key);
+                                AlliancePlugin.SendChatMessage("AllianceTitleConfig", alliance.GetTitle(pair.Key) + " ", pair.Key);
+                                otherAllianceShit.Remove(pair.Key);
+                            }
                         }
                         if (AllianceChat.PeopleInAllianceChat.ContainsKey(pair.Key))
                         {

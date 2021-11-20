@@ -385,7 +385,7 @@ namespace AlliancesPlugin.Alliances
                     return data;
                 }
                 HangarData hangar = utils.ReadFromJsonFile<HangarData>(AlliancePlugin.path + "//HangarData//" + AllianceId + "//hangar.json");
-                hangar.SlotsAmount = (int) HangarCommands.slotUpgrades[hangar.SlotUpgradeNum].NewLevel;
+                hangar.SlotsAmount = (int) HangarCommands.slotUpgrades[hangar.SlotUpgradeNum].NewSlots;
                 return hangar;
             }
             return null;

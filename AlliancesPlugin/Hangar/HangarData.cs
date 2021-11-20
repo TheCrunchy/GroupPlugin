@@ -16,7 +16,7 @@ namespace AlliancesPlugin.Hangar
    public class HangarData
     {
         public int SlotsAmount = 1;
-        public int SlotUpgradeNum = 1;
+        public int SlotUpgradeNum = 0;
         public Guid allianceId;
         FileUtils utils = new FileUtils();
         public Dictionary<int, HangarItem> ItemsInHangar = new Dictionary<int, HangarItem>();
@@ -43,6 +43,10 @@ namespace AlliancesPlugin.Hangar
         }
         public void SaveHangar(Alliance alliance)
         {
+            if (!Directory.Exists(AlliancePlugin.path + "//HangarData//" + alliance.AllianceId+ "//"))
+            {
+                Directory.CreateDirectory(AlliancePlugin.path + "//HangarData//" + alliance.AllianceId + "//");
+            }
             utils.WriteToJsonFile<HangarData>(AlliancePlugin.path + "//HangarData//" + alliance.AllianceId + "//hangar.json", this);
         }
         public int getAvailableSlot()

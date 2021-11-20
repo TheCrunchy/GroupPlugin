@@ -32,7 +32,7 @@ namespace AlliancesPlugin.Shipyard
                         }
                         else
                         {
-                            AlliancePlugin.Log.Error("Duplicate ID for Assembler upgrade items " + item.SubTypeId + " in " + UpgradeId);
+                            AlliancePlugin.Log.Error("Duplicate ID for Shipyard upgrade items " + item.SubTypeId + " in " + UpgradeId);
                         }
                     }
                 }
