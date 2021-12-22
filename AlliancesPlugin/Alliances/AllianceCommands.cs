@@ -2612,6 +2612,7 @@ namespace AlliancesPlugin.Alliances
             var bytes = MyAPIGateway.Utilities.SerializeToBinary(status);
 
             MyAPIGateway.Multiplayer.SendMessageTo(8544, bytes, steamId);
+       
 
         }
 
