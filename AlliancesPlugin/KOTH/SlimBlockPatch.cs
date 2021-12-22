@@ -10,6 +10,8 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Torch.Managers.PatchManager;
+using Torch.Mod;
+using Torch.Mod.Messages;
 using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
@@ -30,6 +32,30 @@ throw new Exception("Failed to find patch method");
 
             ctx.GetPattern(DamageRequest).Prefixes.Add(patchSlimDamage);
         }
+
+        public static void SendPvEMessage(long attackerId)
+        {
+            if (blockCooldowns.TryGetValue(attackerId, out DateTime time))
+            {
+                if (DateTime.Now < time)
+                {
+
+                    return;
+                }
+            }
+
+            NotificationMessage message;
+         
+            message = new NotificationMessage("PvP Is not enabled.", 5000, "Red");
+            //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
+            ModCommunication.SendMessageTo(message, MySession.Static.Players.TryGetSteamId(attackerId));
+            blockCooldowns.Remove(attackerId);
+            blockCooldowns.Add(attackerId, DateTime.Now.AddSeconds(10));
+
+        }
+
+        private static Dictionary<long, DateTime> blockCooldowns = new Dictionary<long, DateTime>();
+
         public static Boolean OnDamageRequest(MySlimBlock __instance, float damage,
       MyStringHash damageType,
       bool sync,
@@ -39,70 +65,65 @@ throw new Exception("Failed to find patch method");
             MySlimBlock block = __instance;
             if (AlliancePlugin.config != null)
             {
-                if (AlliancePlugin.config.EnableAllianceSafeZones)
+                if (AlliancePlugin.config.DisablePvP)
                 {
                     long newattackerId = AlliancePlugin.GetAttacker(attackerId);
-                    //    Log.Info(attackerId);
-                   // Log.Info(info.Type.ToString());
-                    //check if in zone
-                    foreach (Territory ter in AlliancePlugin.Territories.Values)
+              
+
+                    if (__instance.OwnerId == newattackerId)
                     {
-                        if (ter.HasBigSafeZone && ter.Alliance != Guid.Empty)
-                        {
-                            //Log.Info("has zone");
-
-                          
-                                //    Log.Info("is an entity");
-                                float distance = Vector3.Distance(block.CubeGrid.PositionComp.GetPosition(), new Vector3(ter.stationX, ter.stationY, ter.stationZ));
-                                //    Log.Info(distance);
-                                if (distance <= ter.SafeZoneRadiusFromStationCoords)
-                                {
-                                    //     Log.Info("in distance");
-                                    if (!damageType.Equals("Grind"))
-                                    {
-                                        //        Log.Info("Denying damage");
-                                        damage = 0.0f;
-                                        return false;
-                                    }
-                                    //if in zone and damage type is from weapons/ramming deny it
-                                    if (newattackerId == 0L)
-                                    {
-                                        //      Log.Info("Denying damage");
-                                        damage = 0.0f;
-                                        return false;
-                                    }
-                                    MyFaction attacker = MySession.Static.Factions.GetPlayerFaction(newattackerId) as MyFaction;
-                                    if (attacker != null)
-                                    {
-                                        Alliance alliance = AlliancePlugin.GetAllianceNoLoading(attacker);
-                                        if (alliance != null && ter.Alliance == alliance.AllianceId)
-                                        {
-
-                                            if (!alliance.HasAccess(MySession.Static.Players.TryGetSteamId(newattackerId), AccessLevel.GrindInSafeZone))
-                                            {
-                                                damage = 0.0f;
-                                                return false;
-                                            }
-                                            else
-                                            {
-                                                return true;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            damage = 0.0f;
-                                            return false;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        damage = 0.0f;
-                                        return false;
-                                    }
-                                }
-                            
-                        }
+                        return true;
                     }
+                    //    Log.Info(attackerId);
+                    // Log.Info(info.Type.ToString());
+                    //check if in zone
+
+                    //Log.Info("has zone");
+
+
+                    //    Log.Info("is an entity");
+
+                    //     Log.Info("in distance");
+                    if (!damageType.Equals("Grind"))
+                    {
+                        //        Log.Info("Denying damage");
+                        damage = 0.0f;
+                        return false;
+                    }
+                    //if in zone and damage type is from weapons/ramming deny it
+                  
+
+                    Boolean DenyDamage = false;
+                    if (newattackerId == 0L)
+                    {
+                        //      Log.Info("Denying damage");
+                        DenyDamage = true;
+                    }
+
+                    MyFaction attacker = MySession.Static.Factions.GetPlayerFaction(newattackerId) as MyFaction;
+                    MyFaction defender = MySession.Static.Factions.GetPlayerFaction(FacUtils.GetOwner(__instance.CubeGrid));
+                    if (attacker != null)
+                    {
+                        if (defender != null)
+                        {
+                            if (attacker.FactionId == defender.FactionId)
+                            {
+                                return true;
+                            }
+                        }
+                        SendPvEMessage(newattackerId);
+                        damage = 0.0f;
+                        return false;
+                    }
+                    else
+                    {
+                        SendPvEMessage(newattackerId);
+                        damage = 0.0f;
+                        //send message about PvE
+                        return false;
+                    }
+
+
                 }
             }
             return true;

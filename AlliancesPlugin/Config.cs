@@ -36,6 +36,7 @@ namespace AlliancesPlugin
 
         public Boolean EnableAllianceSafeZones = false;
         public Boolean RepairEnabled = false;
+        public Boolean DisablePvP = false;
 
     }
 }
