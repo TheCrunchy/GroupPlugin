@@ -98,7 +98,7 @@ namespace AlliancesPlugin
             }
 
         }
-        
+
         public static void BackupGridMethod(List<MyObjectBuilder_CubeGrid> Grids, long User)
         {
             try
@@ -580,92 +580,141 @@ namespace AlliancesPlugin
 
             return 0L;
         }
-
+        public static Boolean Debug = false;
 
         private void DamageHandler(object target, ref MyDamageInformation info)
         {
+
             if (config == null)
             {
                 return;
             }
+         //   Log.Info(info.Type.String);
 
-
-            if (config.EnableAllianceSafeZones)
+            if (config.DisablePvP)
             {
                 long attackerId = GetAttacker(info.AttackerId);
                 //    Log.Info(attackerId);
-                Log.Info(info.Type.ToString());
+                //  Log.Info(info.Type.ToString());
                 //check if in zone
-                foreach (Territory ter in Territories.Values)
+                MyFaction attacker = MySession.Static.Factions.GetPlayerFaction(attackerId) as MyFaction;
+
+
+                if (target is MyCharacter character)
                 {
-                    if (ter.HasBigSafeZone && ter.Alliance != Guid.Empty)
+                 //   Log.Info(info.Type.ToString());
+                    if (info.Type.String.Equals("Environment") || info.Type.String.Equals("Asphyxia") || info.Type.String.Equals("LowPressure") || info.Type.String.Equals("Spider") || info.Type.String.Equals("Wolf") || info.Type.String.Equals("Fall") || info.Type.String.Equals("Suicide"))
                     {
-                        //Log.Info("has zone");
-                        if (target is MyCharacter character)
+                        return;
+                    }
+                    if (attacker != null)
+                    {
+                        if (attacker.Tag.Length > 3)
                         {
-                            float distance = Vector3.Distance(character.PositionComp.GetPosition(), new Vector3(ter.stationX, ter.stationY, ter.stationZ));
-                            //    Log.Info(distance);
-                            if (distance <= ter.SafeZoneRadiusFromStationCoords)
-                            {
-
-                                info.Amount = 0.0f;
-                                return;
-                            }
+                            return;
                         }
-                        if (target is MySlimBlock block)
+                        else
                         {
-                            //    Log.Info("is an entity");
-                            float distance = Vector3.Distance(block.CubeGrid.PositionComp.GetPosition(), new Vector3(ter.stationX, ter.stationY, ter.stationZ));
-                            //    Log.Info(distance);
-                            if (distance <= ter.SafeZoneRadiusFromStationCoords)
-                            {
-                                //     Log.Info("in distance");
-                                if (!info.Type.Equals("Grind"))
-                                {
-                                    //        Log.Info("Denying damage");
-                                    info.Amount = 0.0f;
-                                    return;
-                                }
-                                //if in zone and damage type is from weapons/ramming deny it
-                                if (attackerId == 0L)
-                                {
-                                    //      Log.Info("Denying damage");
-                                    info.Amount = 0.0f;
-                                    return;
-                                }
-                                MyFaction attacker = MySession.Static.Factions.GetPlayerFaction(attackerId) as MyFaction;
-                                if (attacker != null)
-                                {
-                                    Alliance alliance = GetAllianceNoLoading(attacker);
-                                    if (alliance != null && ter.Alliance == alliance.AllianceId)
-                                    {
-
-                                        if (!alliance.HasAccess(MySession.Static.Players.TryGetSteamId(attackerId), AccessLevel.GrindInSafeZone))
-                                        {
-                                            info.Amount = 0.0f;
-                                            return;
-                                        }
-                                        else
-                                        {
-                                            return;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        info.Amount = 0.0f;
-                                        return;
-                                    }
-                                }
-                                else
-                                {
-                                    info.Amount = 0.0f;
-                                    return;
-                                }
-                            }
+                            info.Amount = 0.0f;
+                            return;
                         }
                     }
+                    else
+                    {
+                        info.Amount = 0.0f;
+                        return;
+                    }
+
+                }
+                //  Log.Info(target.GetType().ToString());
+
+                if (target is MySlimBlock block)
+                {
+                    //   Log.Info("is an entity");
+                    if (FacUtils.GetOwner(block.CubeGrid) == 0L)
+                    {
+                        return;
+                    }
+                    if (block.OwnerId == attackerId)
+                    {
+                        return;
+                    }
+                    MyFaction defender = MySession.Static.Factions.GetPlayerFaction(FacUtils.GetOwner(block.CubeGrid));
+                    //    Log.Info("in distance");
+                    if (info.Type.String.Equals("Grind") || info.Type.String.Equals("Explosion"))
+                    {
+                        //  Log.Info("Grind damage");
+                        if (attacker != null)
+                        {
+                            if (Debug)
+                            {
+                                AlliancePlugin.Log.Info("attacker has faction");
+                            }
+                            if (attacker.Tag.Length > 3)
+                            {
+                                if (Debug)
+                                {
+                                    AlliancePlugin.Log.Info("NPC fac, allowing");
+                                }
+                                return;
+                            }
+                            if (defender != null)
+                            {
+                                if (Debug)
+                                {
+                                    AlliancePlugin.Log.Info("defender isnt null");
+                                }
+                                if (defender.Tag.Length > 3)
+                                {
+                                    if (Debug)
+                                    {
+                                        AlliancePlugin.Log.Info("defender is NPC");
+                                    }
+                                    return;
+                                }
+                                if (attacker.FactionId == defender.FactionId)
+                                {
+                                    if (Debug)
+                                    {
+                                        AlliancePlugin.Log.Info("attacker is defender");
+                                    }
+                                    return;
+                                }
+                            }
+                            SlimBlockPatch.SendPvEMessage(attackerId);
+                            info.Amount = 0.0f;
+                            return;
+                        }
+                        else
+                        {
+                            if (Debug)
+                            {
+                                AlliancePlugin.Log.Info("attacker has no faction");
+                            }
+                            if (defender != null)
+                            {
+                                if (defender.Tag.Length > 3)
+                                {
+                                    if (Debug)
+                                    {
+                                        AlliancePlugin.Log.Info("defender is npc");
+                                    }
+                                    return;
+                                }
+                            }
+                            
+                            SlimBlockPatch.SendPvEMessage(attackerId, true);
+                            info.Amount = 0.0f;
+                            return;
+                      
+                        }
+                 
+                    }
+
+                   
                 }
             }
+
         }
 
         public static void BalanceChangedMethod2(
@@ -1742,7 +1791,7 @@ namespace AlliancesPlugin
                     }
                     else
                     {
-                       // EconUtils.takeMoney(player.Identity.IdentityId, gate.fee);
+                        // EconUtils.takeMoney(player.Identity.IdentityId, gate.fee);
                         return true;
                     }
                     if (DatabaseForBank.AddToBalance(temp, gate.fee))
@@ -4097,7 +4146,7 @@ namespace AlliancesPlugin
             if (ticks % 512 == 0)
             {
                 Dictionary<ulong, DateTime> YEET = new Dictionary<ulong, DateTime>();
-            List<ulong> oof = new List<ulong>();
+                List<ulong> oof = new List<ulong>();
                 List<ulong> OtherYeet = new List<ulong>();
                 foreach (KeyValuePair<ulong, DateTime> pair in UpdateThese)
                 {
@@ -4106,7 +4155,7 @@ namespace AlliancesPlugin
                         oof.Add(pair.Key);
                         if (!YEET.ContainsKey(pair.Key))
                         {
-                           YEET.Add(pair.Key, DateTime.Now.AddMinutes(1));
+                            YEET.Add(pair.Key, DateTime.Now.AddMinutes(1));
 
                         }
                         if (statusUpdate.TryGetValue(pair.Key, out Boolean status))
@@ -4135,7 +4184,7 @@ namespace AlliancesPlugin
 
                     }
                 }
-              foreach (ulong id in oof)
+                foreach (ulong id in oof)
                 {
                     if (UpdateThese.TryGetValue(id, out DateTime time))
                     {

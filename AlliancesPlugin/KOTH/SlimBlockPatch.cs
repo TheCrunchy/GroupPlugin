@@ -31,9 +31,10 @@ throw new Exception("Failed to find patch method");
         {
 
             ctx.GetPattern(DamageRequest).Prefixes.Add(patchSlimDamage);
+            AlliancePlugin.Log.Info("Patching slim block");
         }
 
-        public static void SendPvEMessage(long attackerId)
+        public static void SendPvEMessage(long attackerId, bool makeFaction = false)
         {
             if (blockCooldowns.TryGetValue(attackerId, out DateTime time))
             {
@@ -45,8 +46,16 @@ throw new Exception("Failed to find patch method");
             }
 
             NotificationMessage message;
+            if (makeFaction)
+            {
+
          
-            message = new NotificationMessage("PvP Is not enabled.", 5000, "Red");
+            message = new NotificationMessage("PvP is not enabled, or you need a faction.", 5000, "Red");
+            }
+            else
+            {
+                message = new NotificationMessage("PvP is not enabled.", 5000, "Red");
+            }
             //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
             ModCommunication.SendMessageTo(message, MySession.Static.Players.TryGetSteamId(attackerId));
             blockCooldowns.Remove(attackerId);
@@ -55,59 +64,82 @@ throw new Exception("Failed to find patch method");
         }
 
         private static Dictionary<long, DateTime> blockCooldowns = new Dictionary<long, DateTime>();
-
+        public static Boolean Debug = false;
         public static Boolean OnDamageRequest(MySlimBlock __instance, float damage,
       MyStringHash damageType,
       bool sync,
       MyHitInfo? hitInfo,
       long attackerId, long realHitEntityId = 0)
         {
-            MySlimBlock block = __instance;
+          //  MySlimBlock block = __instance;
             if (AlliancePlugin.config != null)
             {
                 if (AlliancePlugin.config.DisablePvP)
                 {
-                    long newattackerId = AlliancePlugin.GetAttacker(attackerId);
-              
-
-                    if (__instance.OwnerId == newattackerId)
+                    if (Debug)
                     {
-                        return true;
+                        AlliancePlugin.Log.Info("damage");
                     }
-                    //    Log.Info(attackerId);
-                    // Log.Info(info.Type.ToString());
+                    long newattackerId = AlliancePlugin.GetAttacker(attackerId);
+                    if (Debug)
+                    {
+                        AlliancePlugin.Log.Info("got attacker");
+                    }
+
+
+                    if (Debug)
+                    {
+                        AlliancePlugin.Log.Info(attackerId);
+                    }
                     //check if in zone
 
                     //Log.Info("has zone");
-
+                    if (FacUtils.GetOwner(__instance.CubeGrid) == 0L)
+                    {
+                        return true;
+                    }
 
                     //    Log.Info("is an entity");
 
                     //     Log.Info("in distance");
-                    if (!damageType.Equals("Grind"))
-                    {
-                        //        Log.Info("Denying damage");
-                        damage = 0.0f;
-                        return false;
-                    }
-                    //if in zone and damage type is from weapons/ramming deny it
-                  
-
-                    Boolean DenyDamage = false;
-                    if (newattackerId == 0L)
-                    {
-                        //      Log.Info("Denying damage");
-                        DenyDamage = true;
-                    }
-
                     MyFaction attacker = MySession.Static.Factions.GetPlayerFaction(newattackerId) as MyFaction;
+
                     MyFaction defender = MySession.Static.Factions.GetPlayerFaction(FacUtils.GetOwner(__instance.CubeGrid));
+
                     if (attacker != null)
                     {
+                        if (Debug)
+                        {
+                            AlliancePlugin.Log.Info("attacker has faction");
+                        }
+                        if (attacker.Tag.Length > 3)
+                        {
+                            if (Debug)
+                            {
+                                AlliancePlugin.Log.Info("NPC fac, allowing");
+                            }
+                            return true;
+                        }
                         if (defender != null)
                         {
+                            if (Debug)
+                            {
+                                AlliancePlugin.Log.Info("defender isnt null");
+                            }
+                            if (defender.Tag.Length > 3)
+                            {
+                                if (Debug)
+                                {
+                                    AlliancePlugin.Log.Info("defender is NPC");
+                                }
+                                return true;
+                            }
                             if (attacker.FactionId == defender.FactionId)
                             {
+                                if (Debug)
+                                {
+                                    AlliancePlugin.Log.Info("attacker is defender");
+                                }
                                 return true;
                             }
                         }
@@ -117,11 +149,40 @@ throw new Exception("Failed to find patch method");
                     }
                     else
                     {
+                        if (Debug)
+                        {
+                            AlliancePlugin.Log.Info("attacker has no faction");
+                        }
+                        if (defender != null)
+                        {
+                            if (defender.Tag.Length > 3)
+                            {
+                                if (Debug)
+                                {
+                                    AlliancePlugin.Log.Info("defender is npc");
+                                }
+                                return true;
+                            }
+
+                        }
                         SendPvEMessage(newattackerId);
                         damage = 0.0f;
                         //send message about PvE
                         return false;
                     }
+
+                    if (!damageType.Equals("Grind"))
+                    {
+                        //        Log.Info("Denying damage");
+                        damage = 0.0f;
+                        return false;
+                    }
+                    //if in zone and damage type is from weapons/ramming deny it
+                  
+
+           
+
+      
 
 
                 }
