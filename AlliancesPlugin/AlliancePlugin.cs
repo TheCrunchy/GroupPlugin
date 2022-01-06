@@ -4301,10 +4301,10 @@ namespace AlliancesPlugin
                         Log.Error(ex);
                     }
 
-                }
+              
 
-                if (DateTime.Now > NextUpdate.AddSeconds(5))
-                {
+                //dont write code at 4am, this stuff was broken for like 3 months
+
                     try
                     {
                         LoadAllAlliances();
@@ -4313,9 +4313,8 @@ namespace AlliancesPlugin
                     {
                         Log.Error(ex);
                     }
-                }
-                if (DateTime.Now > NextUpdate.AddSeconds(10))
-                {
+                
+         
                     try
                     {
 
@@ -4326,9 +4325,9 @@ namespace AlliancesPlugin
 
                         Log.Error(ex);
                     }
-                }
-                if (DateTime.Now > NextUpdate.AddSeconds(15))
-                {
+                
+              
+              
                     try
                     {
                         LoadAllGates();
@@ -4339,9 +4338,8 @@ namespace AlliancesPlugin
 
                         Log.Error(ex);
                     }
-                }
-                if (DateTime.Now > NextUpdate.AddSeconds(20))
-                {
+                
+             
                     try
                     {
                         Log.Info("Loading territories");
@@ -4352,9 +4350,8 @@ namespace AlliancesPlugin
 
                         Log.Error(ex);
                     }
-                }
-                if (DateTime.Now > NextUpdate.AddSeconds(25))
-                {
+                
+            
                     try
                     {
                         LoadAllJumpZones();
@@ -4364,9 +4361,9 @@ namespace AlliancesPlugin
                     {
                         Log.Error(ex);
                     }
-                }
+                
             }
-
+            }
             if (ticks % 32 == 0 && TorchState == TorchSessionState.Loaded)
             {
                 try
