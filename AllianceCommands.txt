@@ -23,6 +23,7 @@ https://github.com/reactiflux/discord-irc/wiki/Creating-a-discord-bot-&-getting-
 !alliance token input - set the token for the bot, create and add a bot to your discord
 !alliance channel input - set the channel id for alliance chat to be sent to
 !alliance chatcolor <r> <g> <b> - change the chat colour
+!alliance opentoall - Toggle the status so the alliance is open to everyone, or closed so invites are required
 
 Vault
 !vault deposit Type SubType Amount

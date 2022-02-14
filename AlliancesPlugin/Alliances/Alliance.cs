@@ -20,6 +20,7 @@ namespace AlliancesPlugin.Alliances
 {
     public class Alliance
     {
+        public Boolean IsOpenToAll = false;
         public Guid AllianceId = System.Guid.NewGuid();
         public String name;
         public String description;
@@ -623,6 +624,7 @@ namespace AlliancesPlugin.Alliances
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("Alliance Leader: " + LeaderTitle + " " + AlliancePlugin.GetPlayerName(SupremeLeader));
+            sb.AppendLine("Open to All factions: " + IsOpenToAll);
             if (!String.IsNullOrEmpty(description))
             {
                 sb.AppendLine("");
@@ -931,7 +933,7 @@ namespace AlliancesPlugin.Alliances
             {
                 return false;
             }
-            if (Invites.Contains(fac.FactionId))
+            if (Invites.Contains(fac.FactionId) || IsOpenToAll)
             {
                 Invites.Remove(fac.FactionId);
                 AllianceMembers.Remove(fac.FactionId);

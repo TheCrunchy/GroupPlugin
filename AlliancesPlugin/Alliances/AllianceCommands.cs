@@ -259,6 +259,24 @@ namespace AlliancesPlugin.Alliances
                 Alliance alliance = AlliancePlugin.GetAlliance(name);
                 if (alliance != null)
                 {
+                    if (alliance.IsOpenToAll)
+                    {
+                        if (alliance.JoinAlliance(fac))
+                        {
+                            Context.Respond("Joined alliance!");
+
+                            AlliancePlugin.FactionsInAlliances.Remove(fac.FactionId);
+                            AlliancePlugin.FactionsInAlliances.Add(fac.FactionId, alliance.name);
+                            AlliancePlugin.SaveAllianceData(alliance);
+                            AllianceChat.SendChatMessage(alliance.AllianceId, "Alliance", fac.Tag + " has joined the alliance!", true, 0);
+                            cooldowns.Remove(Context.Player.IdentityId);
+                        }
+                        else
+                        {
+                            Context.Respond("Couldnt join alliance. Your faction may have been banned.");
+                        }
+                        return;
+                    }
                     if (alliance.Invites.Contains(fac.FactionId))
                     {
                         if (alliance.JoinAlliance(fac))
@@ -1614,7 +1632,33 @@ namespace AlliancesPlugin.Alliances
             }
 
         }
+        [Command("opentoall", "open the alliance to all")]
+        [Permission(MyPromoteLevel.None)]
+        public void OpenAll()
+        {
+            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
+            if (fac == null)
+            {
+                Context.Respond("Only factions can be in alliances.");
+                return;
+            }
 
+
+            Alliance alliance = AlliancePlugin.GetAlliance(fac);
+
+
+
+            if (alliance != null)
+            {
+
+                if (alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
+                {
+                    alliance.IsOpenToAll = !alliance.IsOpenToAll;
+                    Context.Respond("Changing the alliance open status to " + alliance.IsOpenToAll);
+                    AlliancePlugin.SaveAllianceData(alliance);
+                }
+            }
+        }
 
         [Command("disband", "disband the alliance")]
         [Permission(MyPromoteLevel.None)]
