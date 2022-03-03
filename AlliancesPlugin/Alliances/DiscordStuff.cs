@@ -561,6 +561,7 @@ namespace AlliancesPlugin.Alliances
                     //        return Task.CompletedTask;
                     //    }
                     //}
+                    
                     String[] split = e.Message.Content.Split(':');
                     int i = 0;
                     if (WorldName.Equals("") && MyMultiplayer.Static.HostName != null)
