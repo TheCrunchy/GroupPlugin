@@ -72,6 +72,7 @@ Shipyard stuff
 !shipyard upgrade speed/slots - output the costs for the next upgrade
 !shipyard upgrade speed/slots true - do the next upgrade
 !shipyard fee number - minimum 1, change the shipyard fee alliance members are charged
+!shipyard delete slotNumber
 
 Koth admin commands
 !koth unlock name
