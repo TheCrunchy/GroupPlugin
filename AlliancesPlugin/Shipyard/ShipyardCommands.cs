@@ -883,7 +883,7 @@ namespace AlliancesPlugin.Shipyard
         }
         [Command("delete", "delete a print")]
         [Permission(MyPromoteLevel.None)]
-        public void DeletePrint(string slotNumber)
+        public void DeletePrint(string slotNumber, Boolean Force = false)
         {
             if (!AlliancePlugin.config.ShipyardEnabled)
             {
@@ -929,7 +929,7 @@ namespace AlliancesPlugin.Shipyard
 
                 PrintQueueItem item;
                 queue.getQueue().TryGetValue(slot, out item);
-                if (item.name == null || item.startTime == null || item.endTime == null)
+                if (item.name == null || item.startTime == null || item.endTime == null || Force)
                 {
                     if (item.ownerSteam.Equals((long)Context.Player.SteamUserId) || alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.ShipyardClaimOther))
                     {
