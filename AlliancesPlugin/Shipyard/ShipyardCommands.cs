@@ -1147,6 +1147,7 @@ namespace AlliancesPlugin.Shipyard
             return true;
         }
 
+    
 
         public static MyFixedPoint CountComponents(IEnumerable<VRage.Game.ModAPI.IMyInventory> inventories, MyDefinitionId id, int amount, ICollection<MyTuple<VRage.Game.ModAPI.IMyInventory, VRage.Game.ModAPI.IMyInventoryItem, MyFixedPoint>> items)
         {

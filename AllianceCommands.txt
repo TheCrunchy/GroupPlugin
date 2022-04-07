@@ -1,3 +1,8 @@
+Admin commands
+!alliance adminchannel alliancename channelid
+!alliance admintoken alliancename bottoken
+
+
 Creation and invites/joining
 !alliance create <name> - create an alliance
 !alliance join <name> - join an alliance if invited

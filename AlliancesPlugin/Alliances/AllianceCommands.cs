@@ -78,6 +78,34 @@ namespace AlliancesPlugin.Alliances
                 Context.Respond("You dont have an alliance.");
             }
         }
+
+        [Command("admintoken", "set a discord token with admin perms")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void AllianceTokenAdmin(string allianceName, string token)
+        {
+ 
+            if (token.Length != 59)
+            {
+                Context.Respond("Token not a valid length!");
+                return;
+            }
+            Alliance alliance = AlliancePlugin.GetAlliance(allianceName);
+            if (alliance != null)
+            {
+              
+                    string encrypted = Encryption.EncryptString(alliance.AllianceId.ToString(), token);
+                    alliance.DiscordToken = encrypted;
+                    AlliancePlugin.SaveAllianceData(alliance);
+                    DiscordStuff.allianceBots.Remove(alliance.AllianceId);
+
+                    Context.Respond("Added token! If the channel Id is also set the bot should start working after next server restart.");
+      
+            }
+            else
+            {
+                Context.Respond("Alliance doesnt exist.");
+            }
+        }
         [Command("chatcolor", "change the alliance chat color")]
         [Permission(MyPromoteLevel.None)]
         public void AllianceColor(int r, int g, int b)
@@ -110,6 +138,39 @@ namespace AlliancesPlugin.Alliances
                 Context.Respond("You dont have an alliance.");
             }
         }
+        [Command("adminchannel", "set a discord channel id")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void AllianceChannelId(string allianceName, string channel)
+        {
+     
+
+            Alliance alliance = AlliancePlugin.GetAlliance(allianceName);
+            if (alliance != null)
+            {
+            
+
+                    try
+                    {
+                        alliance.DiscordChannelId = ulong.Parse(channel);
+                    }
+                    catch (Exception)
+                    {
+                        Context.Respond("Cannot parse that number.");
+                        Context.Respond("Example usage - !alliance channel 785562535494549505");
+                        return;
+                    }
+                    AlliancePlugin.SaveAllianceData(alliance);
+                    Context.Respond("Added Channel Id! If the token is also set the bot should start working after next server restart.");
+                
+           
+            }
+            else
+            {
+                Context.Respond("Couldnt find that alliance.");
+            }
+        }
+
+
         [Command("channel", "set a discord channel id")]
         [Permission(MyPromoteLevel.None)]
         public void AllianceChannelId(string channel)

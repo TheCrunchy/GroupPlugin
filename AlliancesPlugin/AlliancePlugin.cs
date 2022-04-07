@@ -55,6 +55,7 @@ using Sandbox.Game.Weapons;
 using Sandbox.Game;
 using static AlliancesPlugin.Alliances.StorePatchTaxes;
 using System.Threading.Tasks;
+using static AlliancesPlugin.JumpGates.JumpGate;
 
 namespace AlliancesPlugin
 {
@@ -589,7 +590,7 @@ namespace AlliancesPlugin
             {
                 return;
             }
-         //   Log.Info(info.Type.String);
+            //   Log.Info(info.Type.String);
 
             if (config.DisablePvP)
             {
@@ -602,7 +603,7 @@ namespace AlliancesPlugin
 
                 if (target is MyCharacter character)
                 {
-                 //   Log.Info(info.Type.ToString());
+                    //   Log.Info(info.Type.ToString());
                     if (info.Type.String.Equals("Environment") || info.Type.String.Equals("Asphyxia") || info.Type.String.Equals("LowPressure") || info.Type.String.Equals("Spider") || info.Type.String.Equals("Wolf") || info.Type.String.Equals("Fall") || info.Type.String.Equals("Suicide"))
                     {
                         return;
@@ -702,16 +703,16 @@ namespace AlliancesPlugin
                                     return;
                                 }
                             }
-                            
+
                             SlimBlockPatch.SendPvEMessage(attackerId, true);
                             info.Amount = 0.0f;
                             return;
-                      
+
                         }
-                 
+
                     }
 
-                   
+
                 }
             }
 
@@ -1744,6 +1745,33 @@ namespace AlliancesPlugin
                 return false;
             }
         }
+
+        public static Boolean EconGateCost(MyPlayer player, JumpGate gate, MyCockpit Controller)
+        {
+
+            return false;
+        }
+        public static bool ConsumeComponentsGateFee(IEnumerable<VRage.Game.ModAPI.IMyInventory> inventories, IDictionary<MyDefinitionId, int> components, ulong steamid)
+        {
+            List<MyTuple<VRage.Game.ModAPI.IMyInventory, VRage.Game.ModAPI.IMyInventoryItem, VRage.MyFixedPoint>> toRemove = new List<MyTuple<VRage.Game.ModAPI.IMyInventory, VRage.Game.ModAPI.IMyInventoryItem, VRage.MyFixedPoint>>();
+            foreach (KeyValuePair<MyDefinitionId, int> c in components)
+            {
+                MyFixedPoint needed = ShipyardCommands.CountComponents(inventories, c.Key, c.Value, toRemove);
+                if (needed > 0)
+                {
+                    ShipyardCommands.SendMessage("[Gate Fee]", "Missing " + needed + " " + c.Key.SubtypeName + " All components must be inside one grid.", Color.Red, (long)steamid);
+
+                    return false;
+                }
+            }
+
+            foreach (MyTuple<VRage.Game.ModAPI.IMyInventory, VRage.Game.ModAPI.IMyInventoryItem, MyFixedPoint> item in toRemove)
+                MyAPIGateway.Utilities.InvokeOnGameThread(() =>
+                {
+                    item.Item1.RemoveItemAmount(item.Item2, item.Item3);
+                });
+            return true;
+        }
         public static Boolean DoFeeStuff(MyPlayer player, JumpGate gate, MyCockpit Controller)
         {
             if (gate.RequireDrive)
@@ -1770,6 +1798,37 @@ namespace AlliancesPlugin
                     return false;
                 }
             }
+
+
+            if (gate.itemCostsForUse)
+            {
+                var items = new Dictionary<MyDefinitionId, int>();
+                foreach (ItemCost item in gate.itemCostsList)
+                {
+                   
+                    if (MyDefinitionId.TryParse("MyObjectBuilder_" + item.TypeId + "/" + item.SubTypeId, out MyDefinitionId id))
+                    {
+                        decimal multiplier = 1;
+                        multiplier += Controller.CubeGrid.BlocksCount / item.BlockCountDivision;
+                        var amount = item.BaseItemAmount * multiplier;
+                        items.Add(id, (int)amount);
+                    }
+                }
+                if (ConsumeComponentsGateFee(ShipyardCommands.GetInventories(Controller.CubeGrid), items, player.Client.SteamUserId))
+                {
+
+                    SendPlayerNotify(player, 1000, $"Item cost taken from cargo.", "Green");
+                    return true;
+
+                }
+                else
+                {
+                    SendPlayerNotify(player, 1000, "Gate is disabled. Alliance failed upkeep.", "Red");
+                    return false;
+                }
+
+            }
+
             if (gate.fee > 0)
             {
                 if (EconUtils.getBalance(player.Identity.IdentityId) >= gate.fee)
@@ -1820,6 +1879,16 @@ namespace AlliancesPlugin
 
         public static Boolean DoFeeMessage(MyPlayer player, JumpGate gate, float Distance)
         {
+            if (gate.itemCostsForUse)
+            {
+                SendPlayerNotify(player, 1000, "You will jump in " + Distance + " meters", "Green");
+                foreach (ItemCost item in gate.itemCostsList)
+                {
+                    SendPlayerNotify(player, 1000, $"It costs {item.SubTypeId} {item.TypeId} SC to jump.", "Green");
+                    return true;
+                }
+            }
+
             if (gate.fee > 0)
             {
                 if (EconUtils.getBalance(player.Identity.IdentityId) >= gate.fee)
@@ -4301,9 +4370,9 @@ namespace AlliancesPlugin
                         Log.Error(ex);
                     }
 
-              
 
-                //dont write code at 4am, this stuff was broken for like 3 months
+
+                    //dont write code at 4am, this stuff was broken for like 3 months
 
                     try
                     {
@@ -4313,8 +4382,8 @@ namespace AlliancesPlugin
                     {
                         Log.Error(ex);
                     }
-                
-         
+
+
                     try
                     {
 
@@ -4325,9 +4394,9 @@ namespace AlliancesPlugin
 
                         Log.Error(ex);
                     }
-                
-              
-              
+
+
+
                     try
                     {
                         LoadAllGates();
@@ -4338,8 +4407,8 @@ namespace AlliancesPlugin
 
                         Log.Error(ex);
                     }
-                
-             
+
+
                     try
                     {
                         Log.Info("Loading territories");
@@ -4350,8 +4419,8 @@ namespace AlliancesPlugin
 
                         Log.Error(ex);
                     }
-                
-            
+
+
                     try
                     {
                         LoadAllJumpZones();
@@ -4361,8 +4430,8 @@ namespace AlliancesPlugin
                     {
                         Log.Error(ex);
                     }
-                
-            }
+
+                }
             }
             if (ticks % 32 == 0 && TorchState == TorchSessionState.Loaded)
             {

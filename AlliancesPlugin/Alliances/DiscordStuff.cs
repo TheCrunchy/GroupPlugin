@@ -83,7 +83,7 @@ namespace AlliancesPlugin.Alliances
                 }
                 errors.Add("Registering the koth bot");
                 Discord.MessageCreated += Discord_MessageCreated;
-
+                registeredTokens.Add(AlliancePlugin.config.DiscordBotToken);
                 Ready = true;
             }
             return Task.CompletedTask;
@@ -159,8 +159,19 @@ namespace AlliancesPlugin.Alliances
         public static List<Guid> registered = new List<Guid>();
         public static List<string> temp = new List<string>();
 
+        private static List<string> registeredTokens = new List<string>();
+
         public static Task RegisterAllianceBot(Alliance alliance, ulong channelId)
         {
+            if (registeredTokens.Contains(alliance.DiscordToken))
+            {
+                if (!allianceChannels.ContainsKey(alliance.DiscordChannelId))
+                {
+                    allianceChannels.Add(channelId, alliance.AllianceId);
+                }
+                registered.Add(alliance.AllianceId);
+                return Task.CompletedTask;
+            }
             if (!allianceBots.ContainsKey(alliance.AllianceId) && Ready)
             {
                 DiscordClient bot;
@@ -237,7 +248,7 @@ namespace AlliancesPlugin.Alliances
                 allianceBots.Remove(alliance.AllianceId);
                 allianceBots.Add(alliance.AllianceId, bot);
                 allianceChannels.Remove(alliance.DiscordChannelId);
-
+                registeredTokens.Add(alliance.DiscordToken);
                 allianceChannels.Add(channelId, alliance.AllianceId);
 
             }

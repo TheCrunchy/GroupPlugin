@@ -38,5 +38,16 @@ namespace AlliancesPlugin.JumpGates
         {
             File.Delete(AlliancePlugin.path + "//JumpGates//" + GateId + ".xml");
         }
+
+        public Boolean itemCostsForUse = false;
+        public List<ItemCost> itemCostsList = new List<ItemCost>();
+
+        public class ItemCost
+        {
+            public int BaseItemAmount = 100;
+            public int BlockCountDivision = 1000;
+            public string TypeId = "Ore";
+            public string SubTypeId = "Iron";
+        }
     }
 }
