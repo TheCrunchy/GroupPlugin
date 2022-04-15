@@ -766,9 +766,9 @@ namespace AlliancesPlugin
 
         public static void NEWSUIT(MyEntity entity)
         {
-            if (entity is MyCharacter character)
+            if (entity is MySafeZoneBlock block)
             {
-                //     AlliancePlugin.Log.Info("ITS A SUIT BITCH!");
+         //   = AlliancePlugin.Log.Info("ITS A SUIT BITCH!");
 
 
             }
@@ -785,7 +785,7 @@ namespace AlliancesPlugin
             if (state == TorchSessionState.Loaded)
             {
                 MyAPIGateway.Session.DamageSystem.RegisterBeforeDamageHandler(1, new BeforeDamageApplied(DamageHandler));
-                //   MyEntities.OnEntityAdd += NEWSUIT;
+           //      MyEntities.OnEntityAdd += NEWSUIT;
                 if (config != null && config.AllowDiscord && !DiscordStuff.Ready)
                 {
                     DiscordStuff.RegisterDiscord();

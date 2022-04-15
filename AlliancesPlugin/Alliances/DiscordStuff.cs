@@ -163,7 +163,7 @@ namespace AlliancesPlugin.Alliances
 
         public static Task RegisterAllianceBot(Alliance alliance, ulong channelId)
         {
-            if (registeredTokens.Contains(alliance.DiscordToken))
+            if (registeredTokens.Contains(Encryption.DecryptString(alliance.AllianceId.ToString(), alliance.DiscordToken)))
             {
                 if (!allianceChannels.ContainsKey(alliance.DiscordChannelId))
                 {
@@ -178,27 +178,6 @@ namespace AlliancesPlugin.Alliances
 
                 try
                 {
-
-                    //// Windows Vista - 8.1
-                    //if (Environment.OSVersion.Platform.Equals(PlatformID.Win32NT) && Environment.OSVersion.Version.Major == 6)
-                    //{
-                    //    bot = new DiscordClient(new DiscordConfiguration
-                    //    {
-                    //        Token = Encryption.DecryptString(alliance.AllianceId.ToString(), alliance.DiscordToken),
-                    //        TokenType = TokenType.Bot,
-                    //        WebSocketClientFactory = WebSocket4NetClient.CreateNew,
-                    //        AutoReconnect = true
-                    //    });
-                    //}
-                    //else
-                    //{
-                    //    bot = new DiscordClient(new DiscordConfiguration
-                    //    {
-                    //        Token = Encryption.DecryptString(alliance.AllianceId.ToString(), alliance.DiscordToken),
-                    //        TokenType = TokenType.Bot,
-                    //        AutoReconnect = true
-                    //    });
-                    //}
                     DiscordConfiguration config = new DiscordConfiguration
                     {
                         Token = Encryption.DecryptString(alliance.AllianceId.ToString(), alliance.DiscordToken),
@@ -248,7 +227,7 @@ namespace AlliancesPlugin.Alliances
                 allianceBots.Remove(alliance.AllianceId);
                 allianceBots.Add(alliance.AllianceId, bot);
                 allianceChannels.Remove(alliance.DiscordChannelId);
-                registeredTokens.Add(alliance.DiscordToken);
+                registeredTokens.Add(Encryption.DecryptString(alliance.AllianceId.ToString(), alliance.DiscordToken));
                 allianceChannels.Add(channelId, alliance.AllianceId);
 
             }
@@ -537,6 +516,7 @@ namespace AlliancesPlugin.Alliances
             {
                 return Task.CompletedTask;
             }
+            
             if (debugMode)
             {
                 if (MySession.Static.Players.GetPlayerByName("Crunch") != null)
