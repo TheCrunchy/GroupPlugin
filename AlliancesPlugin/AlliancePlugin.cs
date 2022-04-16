@@ -56,6 +56,7 @@ using Sandbox.Game;
 using static AlliancesPlugin.Alliances.StorePatchTaxes;
 using System.Threading.Tasks;
 using static AlliancesPlugin.JumpGates.JumpGate;
+using AlliancesPlugin.Alliances.NewTerritories;
 
 namespace AlliancesPlugin
 {
@@ -329,7 +330,6 @@ namespace AlliancesPlugin
                 try
                 {
                     CaptureSite koth = utils.ReadFromXmlFile<CaptureSite>(s);
-                    koth.LoadCapProgress();
                     koth.caplog.LoadSorted();
                     if (!YEETED)
                     {
@@ -1476,181 +1476,11 @@ namespace AlliancesPlugin
                     }
 
                     Territories.Add(ter.Id, ter);
-
-                    //     Log.Info(ter.Name);
-                    if (DateTime.Now >= ter.DisableZoneAt && ter.ZoneIsEnabled)
+                    foreach (var city in ter.ActiveCities)
                     {
-                        //CONSUME CHIPS
-                        Vector3 Position = new Vector3(ter.stationX, ter.stationY, ter.stationZ);
-                        BoundingSphereD sphere = new BoundingSphereD(Position, 1000);
-                        Alliance alliance = AlliancePlugin.GetAlliance(ter.Alliance);
-                        if (alliance == null)
-                        {
-                            //  Log.Info("null alliance");
-                            continue;
-                        }
-                        List<VRage.Game.ModAPI.IMyInventory> zoneInvent = new List<VRage.Game.ModAPI.IMyInventory>();
-
-                        foreach (MyCubeGrid grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
-                        {
-                            IMyFaction fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
-                            //   Log.Info("Grid? " + grid.DisplayNameText);
-
-                            if (fac != null)
-                            {
-                                // Log.Info("Fac isnt null");
-                                if (!fac.Tag.Equals(ter.FactionTagForStationOwner))
-                                {
-                                    //    Log.Info("Fac isnt the configured owner");
-                                    continue;
-                                }
-                            }
-                            List<long> blockIds = new List<long>();
-                            foreach (MySafeZoneBlock block in grid.GetFatBlocks().OfType<MySafeZoneBlock>())
-                            {
-                                blockIds.Add(block.EntityId);
-                                for (int i = 0; i < block.InventoryCount; i++)
-                                {
-
-                                    VRage.Game.ModAPI.IMyInventory inv = ((VRage.Game.ModAPI.IMyCubeBlock)block).GetInventory(i);
-                                    zoneInvent.Add(inv);
-
-                                }
-                            }
-                            Dictionary<MyDefinitionId, int> chips = new Dictionary<MyDefinitionId, int>();
-                            MyDefinitionId.TryParse("MyObjectBuilder_Component/ZoneChip", out MyDefinitionId id);
-                            chips.Add(id, ter.ZoneChipUse);
-                            if (ShipyardCommands.ConsumeComponents(zoneInvent, chips, 0l))
-                            {
-                                ter.DisableZoneAt = DateTime.Now.AddHours(ter.HoursPerChip);
-                            }
-                            else
-                            {
-                                ter.ZoneIsEnabled = false;
-                                FunctionalBlockPatch.DisableThese.AddRange(blockIds);
-                            }
-
-                            utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + ter.Name + ".xml", ter);
-                            Territories[ter.Id] = ter;
-                        }
+                        CityHandler.ActiveCities.Add(city);
                     }
-                    if (DateTime.Now >= ter.transferTime)
-                    {
-                        //  Log.Info("Transferring? " + ter.Name);
-                        if (ter.transferTo == ter.previousOwner)
-                        {
-                            //   Log.Info("Same owner, not transferring.");
-                            continue;
-                        }
-                        Vector3 Position = new Vector3(ter.stationX, ter.stationY, ter.stationZ);
-                        BoundingSphereD sphere = new BoundingSphereD(Position, 1000);
-                        Alliance alliance = AlliancePlugin.GetAlliance(ter.transferTo);
-                        if (alliance == null)
-                        {
-                            //  Log.Info("null alliance");
-                            continue;
-                        }
-                        foreach (MyCubeGrid grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
-                        {
-                            IMyFaction fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
-                            //   Log.Info("Grid? " + grid.DisplayNameText);
-
-                            if (fac != null)
-                            {
-                                // Log.Info("Fac isnt null");
-                                if (!fac.Tag.Equals(ter.FactionTagForStationOwner))
-                                {
-                                    //    Log.Info("Fac isnt the configured owner");
-                                    continue;
-                                }
-
-                                Sandbox.ModAPI.IMyGridTerminalSystem gridTerminalSys = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(grid);
-
-                                List<Sandbox.ModAPI.IMyTerminalBlock> blocks = new List<Sandbox.ModAPI.IMyTerminalBlock>();
-
-
-
-
-                                gridTerminalSys.GetBlocksOfType<MyStoreBlock>(blocks);
-                                bool transferred = false;
-                                foreach (MySafeZoneBlock block in grid.GetFatBlocks().OfType<MySafeZoneBlock>())
-                                {
-                                    FunctionalBlockPatch.transferList.Add(block.EntityId, alliance.SupremeLeader);
-
-                                    block.Enabled = false;
-                                    foreach (MySafeZone zone in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MySafeZone>())
-                                    {
-                                        zone.Factions.Clear();
-                                        zone.Players.Clear();
-                                        zone.Entities.Clear();
-                                        zone.AccessTypeFactions = MySafeZoneAccess.Blacklist;
-                                        zone.AccessTypePlayers = MySafeZoneAccess.Blacklist;
-                                        zone.AccessTypeGrids = MySafeZoneAccess.Blacklist;
-                                        zone.AccessTypeFloatingObjects = MySafeZoneAccess.Blacklist;
-                                    }
-                                    DiscordStuff.SendMessageToDiscord("Transfer of " + grid.DisplayName + " complete.");
-                                }
-                                foreach (MyBeacon Beacon in grid.GetFatBlocks().OfType<MyBeacon>())
-                                {
-
-                                    // Beacon.DisplayNameText = "Beacon - Owned by " + alliance.name;
-                                    try
-                                    {
-
-                                        StringBuilder sb = new StringBuilder();
-                                        sb.Append("Owned by " + alliance.name);
-                                        MethodInfo methodInfo = typeof(MyBeacon).GetMethod("SetHudText", BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof(String) }, null);
-                                        object[] MethodInput = new object[] { sb.ToString() };
-                                        //  parameters.AddItem
-                                        methodInfo.Invoke(Beacon, MethodInput);
-                                    }
-                                    catch (Exception ex)
-                                    {
-
-                                        Log.Error(ex);
-                                    }
-                                }
-
-                                foreach (MyStoreBlock block in grid.GetFatBlocks().OfType<MyStoreBlock>())
-                                {
-
-                                    FunctionalBlockPatch.transferList.Add(block.EntityId, alliance.SupremeLeader);
-                                }
-
-                                foreach (MyShipConnector block in grid.GetFatBlocks().OfType<MyShipConnector>())
-                                {
-
-                                    FunctionalBlockPatch.transferList.Add(block.EntityId, alliance.SupremeLeader);
-                                }
-
-
-                                foreach (MyRefinery block in grid.GetFatBlocks().OfType<MyRefinery>())
-                                {
-
-                                    FunctionalBlockPatch.transferList.Add(block.EntityId, alliance.SupremeLeader);
-                                }
-
-                                foreach (MyAssembler block in grid.GetFatBlocks().OfType<MyAssembler>())
-                                {
-
-                                    FunctionalBlockPatch.transferList.Add(block.EntityId, alliance.SupremeLeader);
-                                }
-
-                                foreach (MyCargoContainer block in grid.GetFatBlocks().OfType<MyCargoContainer>())
-                                {
-
-                                    FunctionalBlockPatch.transferList.Add(block.EntityId, alliance.SupremeLeader);
-                                }
-
-                                ter.previousOwner = ter.transferTo;
-                                ter.transferTo = Guid.Empty;
-                                ter.transferTime = DateTime.Now.AddYears(1);
-                                utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + ter.Name + ".xml", ter);
-                                Territories[ter.Id] = ter;
-                                continue;
-                            }
-                        }
-                    }
+              
                 }
                 catch (Exception ex)
                 {
@@ -2579,92 +2409,8 @@ namespace AlliancesPlugin
 
                                                         Alliance alliance = GetAllianceNoLoading(config.AllianceOwner);
                                                         config.caplog.AddToCap(alliance.name);
-                                                        if (loc.HasTerritory)
-                                                        {
-                                                            if (config.ChangeLocationAfterTerritoryCap)
-                                                            {
-                                                                config.PickNewSiteOnUnlock = true;
-                                                            }
-                                                            config.AddCapProgress(alliance.AllianceId, 1);
-                                                            if (config.GetCapProgress(alliance.AllianceId) >= config.CapturesRequiredForTerritory)
-                                                            {
-                                                                config.nextCaptureAvailable = DateTime.Now.AddHours(config.hoursToLockAfterTerritoryCap);
-                                                                config.unlockTime = DateTime.Now.AddHours(config.hoursToLockAfterTerritoryCap);
-                                                                config.ClearCapProgress();
-                                                                try
-                                                                {
-                                                                    DiscordStuff.SendMessageToDiscord(loc.Name, GetAllianceNoLoading(CapturingAlliance).name + " has captured " + loc.Name + ". It is now locked for " + config.hoursToLockAfterTerritoryCap + " hours.", config, true);
-                                                                }
-                                                                catch (Exception e)
-                                                                {
-
-                                                                    Log.Error("Cant do discord message for koth. " + e.ToString());
-                                                                    SendChatMessage(loc.Name, GetAllianceNoLoading(CapturingAlliance).name + " has captured " + loc.Name + ". It is now locked for " + config.hoursToLockAfterTerritoryCap + " hours.");
-                                                                }
-                                                                if (File.Exists(AlliancePlugin.path + "//Territories//" + loc.LinkedTerritory + ".xml"))
-                                                                {
-                                                                    Territory ter = utils.ReadFromXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + loc.LinkedTerritory + ".xml");
-                                                                    if (ter.HasStation)
-                                                                    {
-                                                                        ter.previousOwner = ter.Alliance;
-                                                                        ter.transferTime = DateTime.Now.AddHours(48);
-                                                                        ter.transferTo = alliance.AllianceId;
-                                                                        try
-                                                                        {
-                                                                            DiscordStuff.SendMessageToDiscord(ter.Name, "Waystation will be transferred to " + GetAllianceNoLoading(CapturingAlliance).name, config, true);
-                                                                        }
-                                                                        catch (Exception ex)
-                                                                        {
-                                                                            SendChatMessage(loc.Name, "Waystation will be transferred to " + GetAllianceNoLoading(CapturingAlliance).name + " in 48 hours if territory is not recaptured.");
-
-                                                                        }
-                                                                    }
-                                                                    ter.Alliance = alliance.AllianceId;
-                                                                    utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + loc.LinkedTerritory + ".xml", ter);
-
-                                                                    if (Territories.ContainsKey(ter.Id))
-                                                                    {
-                                                                        Territories[ter.Id] = ter;
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        Territories.Add(ter.Id, ter);
-                                                                    }
-
-                                                                }
-                                                                else
-                                                                {
-                                                                    Log.Error("TERRITORY FILE DID NOT EXIST.");
-                                                                    Territory ter = new Territory();
-                                                                    ter.Name = loc.LinkedTerritory;
-                                                                    ter.x = loc.X;
-                                                                    ter.y = loc.Y;
-                                                                    ter.z = loc.Y;
-                                                                    ter.Alliance = alliance.AllianceId;
-
-                                                                    utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + loc.LinkedTerritory + ".xml", ter);
-                                                                    Territories.Add(ter.Id, ter);
-
-                                                                }
-                                                            }
-                                                            else
-                                                            {
-                                                                config.nextCaptureAvailable = DateTime.Now.AddHours(config.hoursToLockAfterNormalCap);
-                                                                config.unlockTime = DateTime.Now.AddHours(config.hoursToLockAfterNormalCap);
-                                                                try
-                                                                {
-                                                                    DiscordStuff.SendMessageToDiscord(loc.Name, GetAllianceNoLoading(CapturingAlliance).name + " has captured " + loc.Name + ". It is now locked for " + config.hoursToLockAfterNormalCap + " hours. Territory will be captured in " + (config.CapturesRequiredForTerritory - config.GetCapProgress(alliance.AllianceId)) + " more captures", config, true);
-                                                                }
-                                                                catch (Exception e)
-                                                                {
-
-                                                                    Log.Error("Cant do discord message for koth. " + e.ToString());
-                                                                    SendChatMessage(loc.Name, GetAllianceNoLoading(CapturingAlliance).name + " has captured " + loc.Name + ". It is now locked for " + config.hoursToLockAfterNormalCap + " hours. Territory will be captured in " + (config.CapturesRequiredForTerritory - config.GetCapProgress(alliance.AllianceId)) + " more captures");
-                                                                }
-                                                            }
-                                                        }
-                                                        else
-                                                        {
+                                                 
+                                                        
                                                             config.nextCaptureAvailable = DateTime.Now.AddHours(config.hoursToLockAfterNormalCap);
                                                             config.unlockTime = DateTime.Now.AddHours(config.hoursToLockAfterNormalCap);
                                                             if (config.OnlyDoLootOnceAfterCap)
@@ -2690,7 +2436,7 @@ namespace AlliancesPlugin
                                                                     SendChatMessage(loc.Name, GetAllianceNoLoading(CapturingAlliance).name + " has captured " + loc.Name + ". It is now locked for " + config.hoursToLockAfterNormalCap + " hours.");
                                                                 }
                                                             }
-                                                        }
+                                                        
 
 
                                                         foreach (JumpGate gate in AllGates.Values)
@@ -3766,12 +3512,7 @@ namespace AlliancesPlugin
                                                         if (File.Exists(AlliancePlugin.path + "//Territories//" + config.LinkedTerritory + ".xml"))
                                                         {
                                                             Territory ter = utils.ReadFromXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + config.LinkedTerritory + ".xml");
-                                                            if (ter.HasStation)
-                                                            {
-                                                                ter.previousOwner = ter.Alliance;
-                                                                ter.transferTime = DateTime.Now.AddHours(48);
-                                                                ter.transferTo = alliance.AllianceId;
-                                                            }
+       
                                                             ter.Alliance = alliance.AllianceId;
                                                             utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + config.LinkedTerritory + ".xml", ter);
 
@@ -4106,25 +3847,6 @@ namespace AlliancesPlugin
 
                 if (DateTime.Now < InTerritory[player.Identity.IdentityId])
                     return;
-                if (ter.HasBigSafeZone)
-                {
-                    float distance = Vector3.Distance(player.GetPosition(), new Vector3(ter.stationX, ter.stationY, ter.stationZ));
-                    if (distance <= ter.SafeZoneRadiusFromStationCoords)
-                    {
-                        if (ter.ZoneIsEnabled)
-                        {
-                            ShipyardCommands.SendMessage(ter.MessagePrefix, "Safezone is enabled, combat is disabled.", Color.LimeGreen, (long)player.Id.SteamId);
-                            InSafeZone.Remove(player.Id.SteamId);
-                            InSafeZone.Add(player.Id.SteamId);
-                            return;
-                        }
-                        else
-                        {
-                            ShipyardCommands.SendMessage(ter.MessagePrefix, "Safezone is NOT enabled.", Color.DarkRed, (long)player.Id.SteamId);
-                            InSafeZone.Remove(player.Id.SteamId);
-                        }
-                    }
-                }
                 message2 = new NotificationMessage(ter.EntryMessage.Replace("{name}", ter.Name), 10000, "Green");
                 //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
 
@@ -4183,17 +3905,6 @@ namespace AlliancesPlugin
                 InTerritory.Remove(player.Identity.IdentityId);
                 TerritoryInside.Remove(player.Id.SteamId);
                 return;
-            }
-            if (ter.HasBigSafeZone && InSafeZone.Contains(player.Id.SteamId))
-            {
-                float distance = Vector3.Distance(player.GetPosition(), new Vector3(ter.stationX, ter.stationY, ter.stationZ));
-                if (distance > ter.SafeZoneRadiusFromStationCoords)
-                {
-
-                    ShipyardCommands.SendMessage(ter.MessagePrefix, "You have left the safezone, combat is enabled.", Color.DarkRed, (long)player.Id.SteamId);
-                    InSafeZone.Remove(player.Id.SteamId);
-                    return;
-                }
             }
             NotificationMessage message2 = new NotificationMessage(ter.ExitMessage.Replace("{name}", ter.Name), 10000, "White");
 
@@ -4437,7 +4148,7 @@ namespace AlliancesPlugin
             {
                 try
                 {
-                    GridRepair.DoRepairCycle();
+                    //GridRepair.DoRepairCycle();
                 }
                 catch (Exception ex)
                 {
@@ -4840,7 +4551,6 @@ namespace AlliancesPlugin
         public static CaptureSite SaveCaptureConfig(String name, CaptureSite config)
         {
             FileUtils utils = new FileUtils();
-            config.SaveCapProgress();
             config.caplog.SaveSorted();
             utils.WriteToXmlFile<CaptureSite>(path + "//CaptureSites//" + name + ".xml", config);
 

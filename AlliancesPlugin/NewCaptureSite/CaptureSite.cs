@@ -72,7 +72,6 @@ namespace AlliancesPlugin.NewCaptureSite
 
         public int MinutesBeforeCaptureStarts = 10;
         public Boolean ChangeCapSiteOnUnlock = true;
-        public Boolean ChangeLocationAfterTerritoryCap = false;
         public Boolean LockAfterSoManyHoursOpen = false;
         public int LockAgainAfterThisManyHours = 2;
         public Boolean CaptureStarted = false;
@@ -82,61 +81,7 @@ namespace AlliancesPlugin.NewCaptureSite
         public int SecondsForOneLootSpawnAfterCap = 600;
         //    public Boolean UnlockAtTheseTimes = false;
         //     public List<int> HoursToUnlockAfter = new List<int>();
-        public int CapturesRequiredForTerritory = 3;
-        public List<TerritoryProgress> TerritoryCapProgress = new List<TerritoryProgress>();
-        private Dictionary<Guid, int> CapProgress = new Dictionary<Guid, int>();
-        public void SaveCapProgress()
-        {
-            TerritoryCapProgress.Clear();
-            foreach (KeyValuePair<Guid, int> pair in CapProgress)
-            {
-                TerritoryProgress prog = new TerritoryProgress();
-                prog.setTerritoryProgress(pair.Key, pair.Value);
-                TerritoryCapProgress.Add(prog);
-            }
-        }
-        public void LoadCapProgress()
-        {
-            foreach (TerritoryProgress progress in TerritoryCapProgress)
-            {
-                AddCapProgress(progress.AllianceId, progress.Progress);
-            }
-        }
-        public void ClearCapProgress()
-        {
-            this.TerritoryCapProgress.Clear();
-            this.CapProgress.Clear();
-        }
-        public int GetCapProgress(Guid allianceId)
-        {
-            if (CapProgress.TryGetValue(allianceId, out int prog))
-            {
-                return prog;
-            }
 
-            return 0;
-        }
-        public void AddCapProgress(Guid allianceId, int num = 1)
-        {
-            if (CapProgress.TryGetValue(allianceId, out int prog))
-            {
-                CapProgress[allianceId] += num;
-            }
-            else
-            {
-                CapProgress.Add(allianceId, num);
-            }
-        }
-        public class TerritoryProgress
-        {
-            public void setTerritoryProgress(Guid allianceid, int progress)
-            {
-                AllianceId = allianceid;
-                Progress = progress;
-            }
-            public Guid AllianceId = Guid.Empty;
-            public int Progress = 0;
-        }
         private LootLocation currentLoot = null;
         public LootLocation GetLootSite()
         {
@@ -156,17 +101,6 @@ namespace AlliancesPlugin.NewCaptureSite
         }
         public Location GetNewCapSite(Location ignore)
         {
-            if (ignore.ChangeToDefinedTerritory)
-            {
-                foreach (Location loc in locations)
-                {
-                    if (loc.Num == ignore.ChangeToThisNum)
-                    {
-                        return loc;
-                    }
-                }
-
-            }
             Random random = new Random();
             List<Location> temp = new List<Location>();
             foreach (Location loc in locations)
@@ -197,7 +131,6 @@ namespace AlliancesPlugin.NewCaptureSite
         public long FactionOwner = 1;
         public long CapturingFaction = 0;
         public int hourCooldownAfterFail = 1;
-        public int hoursToLockAfterTerritoryCap = 12;
         public int hoursToLockAfterNormalCap = 12;
         public DateTime nextCaptureAvailable = DateTime.Now;
         public Boolean doChatMessages = true;

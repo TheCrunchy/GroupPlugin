@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AlliancesPlugin.Alliances.NewTerritories;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,30 +14,22 @@ namespace AlliancesPlugin.KOTH
         public int Radius = 50000;
         public bool enabled = true;
         public Guid Alliance = Guid.Empty;
+
         public string EntryMessage = "You are in {name} Territory";
         public string ControlledMessage = "Controlled by {alliance}";
         public string ExitMessage = "You have left {name} Territory";
         public double x;
         public double y;
         public double z;
-        public float ShipyardReductionPercent = 0;
-        public Boolean HasStation = false;
-        public long AddToUpkeepIfStationAboveLimit = 50000000;
-        public double stationX = 0;
-        public double stationY = 0;
-        public double stationZ = 0;
-        public string MessagePrefix = "ASS";
-        public DateTime transferTime = DateTime.Now;
-        public Guid transferTo = Guid.Empty;
-        public Guid previousOwner = Guid.Empty;
-        public string FactionTagForStationOwner = "ACME";
-        public Boolean HasBigSafeZone = false;
-        public int SafeZoneRadiusFromStationCoords = 50000;
-        public DateTime DisableZoneAt = DateTime.Now.AddHours(1);
-        public Boolean ZoneIsEnabled = true;
-        public int ZoneChipUse = 1;
-        public int HoursPerChip = 1;
+
+        public bool CountsForRefineryBuffs { get; set; }
+        public bool CountsForAssemblerBuffs { get; set; }
+
+        public List<City> ActiveCities = new List<City>();
+        public int MaximumCities = 5;
+
         public Boolean TaxesForStationsInTerritory = false;
+
         public float TaxPercent = 0.02f;
         public List<TaxPercentAlliance> AllianceRates = new List<TaxPercentAlliance>();
         public float GetTaxRate(Guid allianceId)

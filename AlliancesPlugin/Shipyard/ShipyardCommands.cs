@@ -39,6 +39,8 @@ using VRage;
 using Torch.Mod.Messages;
 using Torch.Mod;
 using AlliancesPlugin.Alliances;
+using SpaceEngineers.Game.Entities.Blocks.SafeZone;
+using AlliancesPlugin.Alliances.NewTerritories;
 
 namespace AlliancesPlugin.Shipyard
 {
@@ -456,7 +458,7 @@ namespace AlliancesPlugin.Shipyard
                     queue.allianceId = alliance.AllianceId;
 
                 }
-                
+
                 if (queue.SlotsUpgrade == 0 && !upgrade)
                 {
                     SendMessage("[Shipyard]", "To unlock the shipyard, use !shipyard upgrade slots true", Color.Cyan, (long)Context.Player.SteamUserId);
@@ -465,7 +467,7 @@ namespace AlliancesPlugin.Shipyard
                 if (!upgrade)
                 {
                     UpgradeCost cost = new UpgradeCost();
-                   
+
                     SendMessage("[Shipyard]", "To upgrade use !shipyard upgrade speed/slots true", Color.Cyan, (long)Context.Player.SteamUserId);
                     StringBuilder sb = new StringBuilder();
 
@@ -474,7 +476,7 @@ namespace AlliancesPlugin.Shipyard
                     {
                         case "speed":
                             sb.AppendLine("Current upgrade number : " + queue.SpeedUpgrade);
-                         
+
                             foreach (KeyValuePair<int, ShipyardSpeedUpgrade> key in speedUpgrades)
                             {
                                 if (key.Key == 0)
@@ -580,7 +582,7 @@ namespace AlliancesPlugin.Shipyard
                     //Do stuff with taking components from grid storage
                     //GridCosts localGridCosts = GetComponentsAndCost(projectedGrid);
                     //gridCosts.setComponents(localGridCosts.getComponents());
-                  
+
                     List<VRage.Game.ModAPI.IMyInventory> invents = new List<VRage.Game.ModAPI.IMyInventory>();
                     foreach (MyCubeGrid grid in grids)
                     {
@@ -1147,7 +1149,7 @@ namespace AlliancesPlugin.Shipyard
             return true;
         }
 
-    
+
 
         public static MyFixedPoint CountComponents(IEnumerable<VRage.Game.ModAPI.IMyInventory> inventories, MyDefinitionId id, int amount, ICollection<MyTuple<VRage.Game.ModAPI.IMyInventory, VRage.Game.ModAPI.IMyInventoryItem, MyFixedPoint>> items)
         {
@@ -1202,6 +1204,7 @@ namespace AlliancesPlugin.Shipyard
             });
             return comps;
         }
+
 
         private static Dictionary<long, long> confirmations = new Dictionary<long, long>();
         [Command("start", "start to print a projection")]

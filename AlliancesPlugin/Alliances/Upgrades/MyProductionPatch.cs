@@ -140,6 +140,7 @@ namespace AlliancesPlugin.Alliances
         public static Dictionary<long, bool> IsInsideTerritory = new Dictionary<long, bool>();
         public static Dictionary<long, DateTime> TimeChecks = new Dictionary<long, DateTime>();
         public static Dictionary<long, Guid> InsideHere = new Dictionary<long, Guid>();
+
         public static Boolean ChangeRequirementsToResults(
      MyBlueprintDefinitionBase queueItem,
      MyFixedPoint blueprintAmount, MyRefinery __instance)

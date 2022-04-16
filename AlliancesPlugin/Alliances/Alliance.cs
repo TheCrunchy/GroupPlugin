@@ -15,6 +15,7 @@ using VRage.Game;
 using System.Numerics;
 using VRageMath;
 using AlliancesPlugin.KOTH;
+using AlliancesPlugin.Alliances.NewTerritories;
 
 namespace AlliancesPlugin.Alliances
 {
@@ -91,17 +92,6 @@ namespace AlliancesPlugin.Alliances
                     }
                 }
             }
-            foreach (Territory ter in AlliancePlugin.Territories.Values)
-            {
-                if (ter.Alliance.Equals(this.AllianceId))
-                {
-                    terCount++;
-                    if (terCount > 1)
-                    {
-                        upkeep += ter.AddToUpkeepIfStationAboveLimit * terCount - 1;
-                    }
-                }
-            }
             var cutoff = DateTime.Now - TimeSpan.FromDays(3);
             upkeep += AlliancePlugin.config.BaseUpkeepFee;
             foreach (long id in AllianceMembers)
@@ -160,17 +150,7 @@ namespace AlliancesPlugin.Alliances
                     }
                 }
             }
-            foreach (Territory ter in AlliancePlugin.Territories.Values)
-            {
-                if (ter.Alliance.Equals(this.AllianceId))
-                {
-                    terCount++;
-                    if (terCount > 1)
-                    {
-                        upkeep += ter.AddToUpkeepIfStationAboveLimit * terCount - 1;
-                    }
-                }
-            }
+ 
             var cutoff = DateTime.Now - TimeSpan.FromDays(3);
             upkeep += AlliancePlugin.config.BaseUpkeepFee;
             foreach (long id in AllianceMembers)
@@ -404,8 +384,7 @@ namespace AlliancesPlugin.Alliances
                 else{
                     queue.upgradeSlots = (int)ShipyardCommands.slotUpgrades[queue.SlotsUpgrade - 1].NewSlots;
                 }
-             
-          
+         
                 return queue;
             }
             return null;

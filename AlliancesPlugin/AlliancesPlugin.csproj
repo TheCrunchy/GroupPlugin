@@ -186,7 +186,8 @@
     <Compile Include="AlliancePlugin.cs" />
     <Compile Include="Alliances\AllianceChat.cs" />
     <Compile Include="Alliances\AllianceCommands.cs" />
-    <Compile Include="Alliances\NewTerritories\NewTerritory.cs" />
+    <Compile Include="Alliances\NewTerritories\City.cs" />
+    <Compile Include="Alliances\NewTerritories\CityHandler.cs" />
     <Compile Include="Alliances\NewTerritories\SafezoneBlockPatch.cs" />
     <Compile Include="Alliances\Upgrades\GridRepairCommands.cs" />
     <Compile Include="Alliances\Upgrades\AssemblerCommands.cs" />
@@ -213,7 +214,7 @@
     <Compile Include="JumpZones\JumpThing.cs" />
     <Compile Include="KOTH\FunctionalBlockPatch.cs" />
     <Compile Include="KOTH\SlimBlockPatch.cs" />
-    <Compile Include="KOTH\Territory.cs" />
+    <Compile Include="Alliances\NewTerritories\Territory.cs" />
     <Compile Include="MiscCommands.cs" />
     <Compile Include="Alliances\RankPermissions.cs" />
     <Compile Include="Alliances\StorePatchTaxes.cs" />

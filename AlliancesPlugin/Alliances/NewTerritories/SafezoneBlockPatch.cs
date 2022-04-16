@@ -1,4 +1,7 @@
-﻿using AlliancesPlugin.KOTH;
+﻿using AlliancesPlugin.Alliances;
+using AlliancesPlugin.Alliances.NewTerritories;
+using AlliancesPlugin.KOTH;
+using Sandbox.Engine.Multiplayer;
 using Sandbox.Game.Entities;
 using Sandbox.Game.Entities.Blocks;
 using Sandbox.Game.SessionComponents;
@@ -39,14 +42,92 @@ namespace AlliancesPlugin.NewTerritories
             public long price;
             public Guid territory;
         }
-
-        public static void SafezoneBlockPatchMethod(MySafeZoneComponent __instance)
+        public static void SendErrorMessageMaximumCities()
         {
-            AlliancePlugin.Log.Info("SAFE ZONE INIT");
-            if (__instance != null)
+
+        }
+
+        public static void SendErrorMessageNotInRadius()
+        {
+
+        }
+
+        public static bool GenerateCity(MySafeZoneBlock SZBlock, Territory territory, Alliance alliance)
+        {
+            var template = CityHandler.CityTemplates.FirstOrDefault(x => x.SafeZoneSubTypeId == SZBlock.BlockDefinition.Id.SubtypeName);
+            if (template == null)
             {
-                AlliancePlugin.Log.Info("SAFE ZONE ISNT NULL");
+                return false;
             }
+            {
+                City city = new City();
+                city.AllianceId = alliance.AllianceId;
+                city.CityRadius = template.CityRadius;
+                city.CityType = template.CityType;
+                city.CraftableItems = template.CraftableItems;
+                city.DiscordChannelId = template.DiscordChannelId;
+                city.EnableStationCrafting = template.EnableStationCrafting;
+                city.GridId = SZBlock.Parent.EntityId;
+                city.HasInit = false;
+                city.nextCraftRefresh = DateTime.Now.AddSeconds(template.SecondsBeforeCityOperational);
+                city.NextPayoutTime = DateTime.Now.AddSeconds(template.SecondsBeforeCityOperational);
+                city.SafeZoneBlockId = SZBlock.EntityId;
+                city.SecondsBetweenCrafting = template.SecondsBetweenCrafting;
+                city.SecondsBetweenCreditPayout = template.SecondsBetweenCreditPayout;
+                city.ShipyardSpeedBuffPercent = template.ShipyardSpeedBuffPercent;
+                city.SiegePointsToDropSafeZone = template.SiegePointsToDropSafeZone;
+                city.SpaceCreditsToCityOwners = template.SpaceCreditsToCityOwners;
+                city.SpawnedItems = template.SpawnedItems;
+                city.TimeCanInit = DateTime.Now.AddSeconds(template.SecondsBeforeCityOperational);
+                city.WorldName = MyMultiplayer.Static.HostName;
+                city.CityId = Guid.NewGuid();
+                territory.ActiveCities.Add(city);
+                CityHandler.ActiveCities.Add(city);
+                return true;
+            }
+        }
+
+        public static bool SafezoneBlockPatchMethod(MySafeZoneComponent __instance)
+        {
+            MySafeZoneBlock SZBlock = __instance.Entity as MySafeZoneBlock;
+            Alliance alliance = AlliancePlugin.GetAlliance(SZBlock.GetOwnerFactionTag());
+
+            if (alliance == null)
+            {
+                return false;
+            }
+
+            foreach (Territory ter in AlliancePlugin.Territories.Values.Where(x => x.Alliance == alliance.AllianceId))
+            {
+                //location check   
+                float distance = Vector3.Distance(__instance.Entity.PositionComp.GetPosition(), new Vector3(ter.x, ter.y, ter.z));
+                if (distance <= ter.Radius)
+                {
+                    if (ter.ActiveCities.Count > 4)
+                    {
+                        SendErrorMessageMaximumCities();
+                        return false;
+                    }
+                    ////lets save a new city
+                    if (GenerateCity(SZBlock, ter, alliance))
+                    {
+                        AlliancePlugin.utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + ter.Name + ".xml", ter);
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    SendErrorMessageNotInRadius();
+                    return false;
+                }
+            }
+
+            return true;
+            //wasnt one of those territories, now lets check if its in another that has no active cities
         }
 
     }

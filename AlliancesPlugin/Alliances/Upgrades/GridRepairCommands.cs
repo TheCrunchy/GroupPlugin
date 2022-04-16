@@ -25,6 +25,8 @@ namespace AlliancesPlugin.Alliances
         [Permission(MyPromoteLevel.None)]
         public void DoGridRepair()
         {
+            Context.Respond("Reworking implementation, feature not enabled.");
+            return;
             if (!AlliancePlugin.config.RepairEnabled)
             {
                 Context.Respond("Grid repair not enabled.");
@@ -46,23 +48,7 @@ namespace AlliancesPlugin.Alliances
             }
             foreach (Territory ter in AlliancePlugin.Territories.Values)
             {
-                if (ter.HasStation && ter.Alliance == alliance.AllianceId)
-                {
-                    float distance = Vector3.Distance(new Vector3(ter.stationX, ter.stationY, ter.stationZ), Context.Player.GetPosition());
-                    if (distance <= 500)
-                    {
-                        ConcurrentBag<MyGroups<MyCubeGrid, MyGridPhysicalGroupData>.Group> gridWithSubGrids = GridFinder.FindLookAtGridGroup(Context.Player.Character);
-                        foreach (var item in gridWithSubGrids)
-                        {
-                            foreach (MyGroups<MyCubeGrid, MyGridPhysicalGroupData>.Node groupNodes in item.Nodes)
-                            {
-                                GridRepair.Repair(item, Context.Player.SteamUserId, alliance.AllianceId, ter.Id);
-                                Context.Respond("Starting grid repair.");
-                            }
-                        }
-                        return;
-                    }
-                }
+
             }
             Context.Respond("You do not own this waystation.");
    
@@ -73,6 +59,8 @@ namespace AlliancesPlugin.Alliances
         [Permission(MyPromoteLevel.None)]
         public void BuyUpgrades()
         {
+            Context.Respond("Reworking implementation, feature not enabled.");
+            return;
             MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
             if (fac == null)
             {
@@ -179,6 +167,8 @@ namespace AlliancesPlugin.Alliances
         [Permission(MyPromoteLevel.None)]
         public void ViewUpgrades()
         {
+            Context.Respond("Reworking implementation, feature not enabled.");
+            return;
             StringBuilder sb = new StringBuilder();
             foreach (GridRepairUpgrades upgrade in GridRepair.upgrades.Values)
             {

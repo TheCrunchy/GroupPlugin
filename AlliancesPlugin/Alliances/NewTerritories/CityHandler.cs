@@ -1,11 +1,22 @@
-﻿using Sandbox.Game.Entities;
+﻿using Sandbox.Engine.Multiplayer;
+using Sandbox.Game.Entities;
+using Sandbox.Game.World;
 using Sandbox.ModAPI;
+using Sandbox.ModAPI.Ingame;
+using SpaceEngineers.Game.Entities.Blocks.SafeZone;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using VRage;
+using VRage.Game;
+using VRage.Game.ModAPI.Ingame;
+using VRage.Network;
+using VRage.ObjectBuilders;
 using VRageMath;
+using static AlliancesPlugin.Alliances.NewTerritories.City;
 
 namespace AlliancesPlugin.Alliances.NewTerritories
 {
@@ -13,59 +24,129 @@ namespace AlliancesPlugin.Alliances.NewTerritories
     {
         public static List<City> ActiveCities = new List<City>();
         public static List<SiegeBeacon> SiegeBeacons = new List<SiegeBeacon>();
+        public static MethodInfo enabledSafeZoneMethod;
+
+        public static List<City> CityTemplates = new List<City>();
+
+
+        public async static Task LoadCityTemplates()
+        {
+
+        }
+
+        public async static Task<List<Vector3>> GetAllCityLocations(Alliance alliance)
+        {
+            List<Vector3> locations = new List<Vector3>();
+            foreach (City city in ActiveCities.Where(x => x.AllianceId == alliance.AllianceId && x.HasInit))
+            {
+                MyCubeGrid grid = MyAPIGateway.Entities.GetEntityById(city.GridId) as MyCubeGrid;
+                if (grid == null)
+                {
+                    continue ;
+                }
+                locations.Add(grid.PositionComp.GetPosition());
+            }
+
+            return locations;
+        }
+
         public async static Task HandleCitiesMain()
         {
             await HandleCitiesSiegeCycle();
+            await HandleCityInitSZ();
             await Task.Run(async () =>
             {
-                foreach (City city in ActiveCities)
+                foreach (City city in ActiveCities.Where(x => x.WorldName == MyMultiplayer.Static.HostName))
                 {
                     await HandleCitiesCraftingCycle(city);
                     await HandleCitiesItemSpawnCycle(city);
-                  
                 }
             });
 
         }
 
+        public async static Task HandleCityInitSZ()
+        {
+            await Task.Run(() =>
+            {
+                foreach (City city in ActiveCities.Where(x => DateTime.Now >= x.TimeCanInit && !x.HasInit))
+                {
+                    MyCubeGrid grid = MyAPIGateway.Entities.GetEntityById(city.GridId) as MyCubeGrid;
+                    if (grid == null)
+                    {
+                        return;
+                    }
+                    MySafeZoneBlock SZ = MyAPIGateway.Entities.GetEntityById(city.SafeZoneBlockId) as MySafeZoneBlock;
+                    if (SZ == null)
+                    {
+                        return;
+                    }
+                    SZ.Enabled = true;
+                    SendCityOperationalMessage(city);
+                }
+            });
+        }
+
+        public static void SendCityOperationalMessage(City city)
+        {
+            // DiscordStuff.SendMessageToDiscord($"{city.CityType} now operational.");
+            Alliance alliance = AlliancePlugin.GetAllianceNoLoading(city.AllianceId);
+            DiscordStuff.SendAllianceMessage(alliance, "[City Alerts]", $"{city.CityType} now operational.");
+        }
         public async static Task HandleCitiesSiegeCycle()
         {
-            //invoke item shit on game thread?
-            foreach (SiegeBeacon beacon in SiegeBeacons.Where(x => ActiveCities.Any(c => c.CityId == x.TargetCity)))
+            await Task.Run(() =>
             {
-                if (DateTime.Now >= beacon.NextCycle)
+                //invoke item shit on game thread?
+                foreach (SiegeBeacon beacon in SiegeBeacons.Where(x => ActiveCities.Any(c => c.CityId == x.TargetCity)))
                 {
-                    //location checks before adding progress 
-                    var beaconEnt = MyAPIGateway.Entities.GetEntityById(beacon.BeaconEntityId) as IMyBeacon;
-                    if (beaconEnt != null)
+                    if (DateTime.Now >= beacon.NextCycle)
                     {
-                        if (!beaconEnt.Enabled || beaconEnt.Radius < 45000)
+                        //location checks before adding progress 
+                        var beaconEnt = MyAPIGateway.Entities.GetEntityById(beacon.BeaconEntityId) as Sandbox.ModAPI.IMyBeacon;
+                        if (beaconEnt != null)
+                        {
+                            if (!beaconEnt.Enabled || beaconEnt.Radius < 45000)
+                            {
+                                SendBeaconFailMessage(beacon);
+                                continue;
+                            }
+                            City city = ActiveCities.FirstOrDefault(x => x.CityId == beacon.TargetCity);
+                            if (CanBeaconAddSiegePoint(beacon, city, beaconEnt))
+                            {
+                                city.SiegeProgress += 1;
+                                beacon.NextCycle = DateTime.Now.AddSeconds(60);
+                                if (city.SiegeProgress >= city.SiegePointsToDropSafeZone)
+                                {
+                                    MySafeZoneBlock SZ = MyAPIGateway.Entities.GetEntityById(city.SafeZoneBlockId) as MySafeZoneBlock;
+                                    if (SZ == null)
+                                    {
+                                        return;
+                                    }
+                                    SZ.Enabled = false;
+                                    SendBeaconSuccessMessage(beacon);
+                                }
+                            }
+                        }
+                        else
                         {
                             SendBeaconFailMessage(beacon);
                             continue;
                         }
-                        City city = ActiveCities.FirstOrDefault(x => x.CityId == beacon.TargetCity);
-                        if (CanBeaconAddSiegePoint(beacon, city, beaconEnt))
-                        {
-                            city.SiegeProgress += 1;
-                            beacon.NextCycle = DateTime.Now.AddSeconds(60);
-                        }
-                    }
-                    else
-                    {
-                        SendBeaconFailMessage(beacon);
-                        continue;
                     }
                 }
-            }
+            });
         }
+        public static void SendBeaconSuccessMessage(SiegeBeacon beacon)
+        {
 
+        }
         public static void SendBeaconFailMessage(SiegeBeacon beacon)
         {
 
         }
 
-        public static bool CanBeaconAddSiegePoint(SiegeBeacon beacon, City city, IMyBeacon beaconEnt)
+        public static bool CanBeaconAddSiegePoint(SiegeBeacon beacon, City city, Sandbox.ModAPI.IMyBeacon beaconEnt)
         {
             bool CanAdd = true;
 
@@ -86,7 +167,7 @@ namespace AlliancesPlugin.Alliances.NewTerritories
 
             foreach (SiegeBeacon otherBeacon in SiegeBeacons.Where(x => x.TargetCity == city.CityId))
             {
-                var otherBeaconEnt = MyAPIGateway.Entities.GetEntityById(otherBeacon.BeaconEntityId) as IMyBeacon;
+                var otherBeaconEnt = MyAPIGateway.Entities.GetEntityById(otherBeacon.BeaconEntityId) as Sandbox.ModAPI.IMyBeacon;
                 if (otherBeaconEnt != null)
                 {
                     float distance = Vector3.Distance(otherBeaconEnt.CubeGrid.PositionComp.GetPosition(), beaconEnt.CubeGrid.PositionComp.GetPosition());
@@ -99,15 +180,129 @@ namespace AlliancesPlugin.Alliances.NewTerritories
 
             return true;
         }
-
-        public async static Task HandleCitiesCraftingCycle(City city)
+        public static List<VRage.Game.ModAPI.IMyInventory> GetInventories(MyCubeGrid grid)
         {
-            //invoke item shit on game thread?
+            List<VRage.Game.ModAPI.IMyInventory> inventories = new List<VRage.Game.ModAPI.IMyInventory>();
+
+            foreach (var block in grid.GetFatBlocks())
+            {
+                if (block is MyReactor reactor)
+                {
+                    continue;
+                }
+                for (int i = 0; i < block.InventoryCount; i++)
+                {
+
+                    VRage.Game.ModAPI.IMyInventory inv = ((VRage.Game.ModAPI.IMyCubeBlock)block).GetInventory(i);
+                    inventories.Add(inv);
+                }
+
+            }
+            return inventories;
         }
 
+        public static Random rnd = new Random();
+        public async static Task HandleCitiesCraftingCycle(City city)
+        {
+            await Task.Run(() =>
+            {
+                MyCubeGrid cityGrid = MyAPIGateway.Entities.GetEntityById(city.GridId) as MyCubeGrid;
+
+                if (cityGrid == null)
+                {
+                    return;
+                }
+
+                if (DateTime.Now >= city.nextCraftRefresh)
+                {
+                    city.nextCraftRefresh = DateTime.Now.AddSeconds(city.SecondsBetweenCrafting);
+                    foreach (CraftedItem item in city.CraftableItems.Where(x => DateTime.Now >= x.NextCraftCycle))
+                    {
+                        List<VRage.Game.ModAPI.IMyInventory> inventories = new List<VRage.Game.ModAPI.IMyInventory>();
+                        item.NextCraftCycle = DateTime.Now.AddSeconds(item.SecondsBetweenCycles);
+                        double yeet = rnd.NextDouble();
+                        if (yeet <= item.ChanceToCraft)
+                        {
+
+                            var comps = new Dictionary<MyDefinitionId, int>();
+                            inventories.AddRange(GetInventories(cityGrid));
+                            long TotalCraftCost = 0;
+                            if (MyDefinitionId.TryParse("MyObjectBuilder_" + item.TypeId, item.SubtypeId, out MyDefinitionId id))
+                            {
+                                foreach (RecipeItem recipe in item.RequiredItems)
+                                {
+                                    if (recipe.SpaceCreditsPerCraft > 0)
+                                    {
+                                        if (EconUtils.getBalance(FacUtils.GetPlayersFaction(FacUtils.GetOwner(cityGrid)).FactionId) >= recipe.SpaceCreditsPerCraft)
+                                        {
+                                            long newTotal = TotalCraftCost + recipe.SpaceCreditsPerCraft;
+                                            if (EconUtils.getBalance(FacUtils.GetPlayersFaction(FacUtils.GetOwner(cityGrid)).FactionId) < newTotal)
+                                            {
+                                                continue;
+                                            }
+                                            TotalCraftCost += recipe.SpaceCreditsPerCraft;
+                                        }
+                                    }
+                                    if (MyDefinitionId.TryParse("MyObjectBuilder_" + recipe.TypeId, recipe.SubtypeId, out MyDefinitionId id2))
+                                    {
+                                        comps.Add(id2, recipe.Amount);
+                                    }
+                                }
+                                if (ConsumeComponents(inventories, comps, 0l))
+                                {
+                                    EconUtils.takeMoney(FacUtils.GetPlayersFaction(FacUtils.GetOwner(cityGrid)).FactionId, TotalCraftCost);
+                                    if (item.AmountPerCraft > 0)
+                                    {
+                                        SpawnItems(cityGrid, id, item.AmountPerCraft);
+                                    }
+                                    if (item.SpaceCreditsPerCraft > 0)
+                                    {
+                                        EconUtils.addMoney(FacUtils.GetPlayersFaction(FacUtils.GetOwner(cityGrid)).FactionId, item.SpaceCreditsPerCraft);
+                                    }
+                                    comps.Clear();
+                                    inventories.Clear();
+                                }
+                            }
+                        }
+
+                    }
+                }
+            });
+        }
+        public async static Task HandleCitiesSpaceCreditCycle(City city)
+        {
+            if (DateTime.Now >= city.NextPayoutTime)
+            {
+                MyCubeGrid cityGrid = MyAPIGateway.Entities.GetEntityById(city.GridId) as MyCubeGrid;
+
+                if (cityGrid == null)
+                {
+                    return;
+                }
+                EconUtils.addMoney(FacUtils.GetPlayersFaction(FacUtils.GetOwner(cityGrid)).FactionId, city.SpaceCreditsToCityOwners);
+                city.NextPayoutTime = DateTime.Now.AddSeconds(city.SecondsBetweenCreditPayout);
+            }
+        }
         public async static Task HandleCitiesItemSpawnCycle(City city)
         {
             //invoke item shit on game thread?
+            await Task.Run(() =>
+            {
+                MyCubeGrid cityGrid = MyAPIGateway.Entities.GetEntityById(city.GridId) as MyCubeGrid;
+
+                if (cityGrid == null)
+                {
+                    return;
+                }
+                foreach (SpawnedItem item in city.SpawnedItems.Where(x => DateTime.Now >= x.NextSpawn))
+                {
+                    item.NextSpawn = DateTime.Now.AddSeconds(item.SecondsBetweenSpawns);
+                    if (MyDefinitionId.TryParse("MyObjectBuilder_" + item.TypeId, item.SubtypeId, out MyDefinitionId id))
+                    {
+                        SpawnItems(cityGrid, id, item.AmountPerSpawn);
+                    }
+                }
+            });
         }
 
         public static int GetAdditionalShipyardSlots(Alliance alliance)
@@ -115,7 +310,7 @@ namespace AlliancesPlugin.Alliances.NewTerritories
             int additional = 0;
             foreach (City city in ActiveCities.Where(x => x.AllianceId == alliance.AllianceId))
             {
-                additional += city.ShipyardSlotsProvided;
+                additional += city.ShipyardSpeedBuffPercent;
             }
             return additional;
         }
@@ -125,6 +320,87 @@ namespace AlliancesPlugin.Alliances.NewTerritories
             public long BeaconEntityId;
             public Guid TargetCity;
             public DateTime NextCycle;
+        }
+
+
+        public static bool ConsumeComponents(IEnumerable<VRage.Game.ModAPI.IMyInventory> inventories, IDictionary<MyDefinitionId, int> components, ulong steamid)
+        {
+            List<MyTuple<VRage.Game.ModAPI.IMyInventory, VRage.Game.ModAPI.IMyInventoryItem, VRage.MyFixedPoint>> toRemove = new List<MyTuple<VRage.Game.ModAPI.IMyInventory, VRage.Game.ModAPI.IMyInventoryItem, VRage.MyFixedPoint>>();
+            foreach (KeyValuePair<MyDefinitionId, int> c in components)
+            {
+                MyFixedPoint needed = CountComponentsTwo(inventories, c.Key, c.Value, toRemove);
+                if (needed > 0)
+                {
+                    return false;
+                }
+            }
+
+            foreach (MyTuple<VRage.Game.ModAPI.IMyInventory, VRage.Game.ModAPI.IMyInventoryItem, MyFixedPoint> item in toRemove)
+                MyAPIGateway.Utilities.InvokeOnGameThread(() =>
+                {
+                    item.Item1.RemoveItemAmount(item.Item2, item.Item3);
+                });
+            return true;
+        }
+        public static MyFixedPoint CountComponentsTwo(IEnumerable<VRage.Game.ModAPI.IMyInventory> inventories, MyDefinitionId id, int amount, ICollection<MyTuple<VRage.Game.ModAPI.IMyInventory, VRage.Game.ModAPI.IMyInventoryItem, MyFixedPoint>> items)
+        {
+            MyFixedPoint targetAmount = amount;
+            foreach (VRage.Game.ModAPI.IMyInventory inv in inventories)
+            {
+                VRage.Game.ModAPI.IMyInventoryItem invItem = inv.FindItem(id);
+                if (invItem != null)
+                {
+                    if (invItem.Amount >= targetAmount)
+                    {
+                        items.Add(new MyTuple<VRage.Game.ModAPI.IMyInventory, VRage.Game.ModAPI.IMyInventoryItem, MyFixedPoint>(inv, invItem, targetAmount));
+                        targetAmount = 0;
+                        break;
+                    }
+                    else
+                    {
+                        items.Add(new MyTuple<VRage.Game.ModAPI.IMyInventory, VRage.Game.ModAPI.IMyInventoryItem, MyFixedPoint>(inv, invItem, invItem.Amount));
+                        targetAmount -= invItem.Amount;
+                    }
+                }
+            }
+            return targetAmount;
+        }
+
+
+        public static bool SpawnItems(MyCubeGrid grid, MyDefinitionId id, MyFixedPoint amount)
+        {
+            //  CrunchEconCore.Log.Info("SPAWNING 1 " + amount);
+            if (grid != null)
+            {
+
+                //   CrunchEconCore.Log.Info("GRID NO NULL?");
+                foreach (var block in grid.GetFatBlocks())
+                {
+                    for (int i = 0; i < block.InventoryCount; i++)
+                    {
+                        //    CrunchEconCore.Log.Info("SPAWNING 2 " + amount);
+                        VRage.Game.ModAPI.IMyInventory inv = ((VRage.Game.ModAPI.IMyCubeBlock)block).GetInventory(i);
+
+                        MyItemType itemType = new MyInventoryItemFilter(id.TypeId + "/" + id.SubtypeName).ItemType;
+                        if (inv.CanItemsBeAdded(amount, itemType))
+                        {
+                            inv.AddItems(amount, (MyObjectBuilder_PhysicalObject)MyObjectBuilderSerializer.CreateNewObject(id));
+                            //      CrunchEconCore.Log.Info("SPAWNING 3 " + amount);
+                            return true;
+                        }
+                        continue;
+
+                    }
+                }
+                //   Log.Info("Should spawn item");
+
+
+            }
+            else
+            {
+
+            }
+            return false;
         }
 
     }
