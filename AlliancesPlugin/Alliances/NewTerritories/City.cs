@@ -8,9 +8,14 @@ namespace AlliancesPlugin.Alliances.NewTerritories
 {
     public class City
     {
+        public Guid CityId = Guid.NewGuid();
         public long GridId { get; set; }
         public string SafeZoneSubTypeId { get; set; }
         public DateTime TimeCanInit { get; set; }
+
+        public int SiegeProgress = 0;
+
+        public string WorldName { get; set; }
 
         public Guid AllianceId { get; set; }
 
@@ -20,6 +25,8 @@ namespace AlliancesPlugin.Alliances.NewTerritories
         public DateTime nextCraftRefresh = DateTime.Now;
         public long SpaceCreditsToCityOwners = 0;
         public int SecondsBetweenCreditPayout = 3600;
+
+        public int ShipyardSlotsProvided = 0;
 
         public Boolean EnableStationCrafting = false;
         public DateTime NextPayoutTime;
