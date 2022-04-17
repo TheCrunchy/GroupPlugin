@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AlliancesPlugin.KOTH
+namespace AlliancesPlugin.Alliances.NewTerritories
 {
     public class Territory
     {

@@ -57,6 +57,7 @@ using static AlliancesPlugin.Alliances.StorePatchTaxes;
 using System.Threading.Tasks;
 using static AlliancesPlugin.JumpGates.JumpGate;
 using AlliancesPlugin.Alliances.NewTerritories;
+using static AlliancesPlugin.Alliances.NewTerritories.City;
 
 namespace AlliancesPlugin
 {
@@ -204,9 +205,39 @@ namespace AlliancesPlugin
                 example.enabled = false;
                 utils.WriteToXmlFile<Territory>(path + "//Territories//Example.xml", example, false);
             }
-
-
-
+            if (!Directory.Exists(path + "//Territories//CityConfigs//"))
+            {
+                Directory.CreateDirectory(path + "//Territories//CityConfigs//");
+            }
+            if (!File.Exists(path + "//Territories//CityConfigs//Example.xml"))
+            {
+                City template = new City();
+                CraftedItem item = new CraftedItem();
+                item.SubtypeId = "Iron";
+                item.TypeId = "Ore";
+                item.AmountPerCraft = 50;
+                item.ChanceToCraft = 1;
+                item.SecondsBetweenCycles = 60;
+                item.SpaceCreditsPerCraft = 0;
+                RecipeItem rec = new RecipeItem();
+                rec.TypeId = "Ingot";
+                rec.SubtypeId = "Iron";
+                rec.Amount = 1;
+                rec.SpaceCreditsPerCraft = 0;
+                item.RequiredItems.Add(rec);
+                template.CraftableItems.Add(item);
+                template.SpawnedItems.Add(new SpawnedItem()
+                {
+                    TypeId = "Ingot",
+                    SubtypeId = "Iron",
+                    AmountPerSpawn = 1,
+                    SecondsBetweenSpawns = 60
+                });
+                template.CityRadius = 50000;
+                template.CityType = "Default Example";
+                template.SafeZoneSubTypeId = "SafeZoneBlock";
+                utils.WriteToXmlFile<City>(path + "//Territories//CityConfigs//Example.xml", template, false);
+            }
 
             if (!Directory.Exists(path + "//PlayerData//"))
             {
@@ -768,7 +799,7 @@ namespace AlliancesPlugin
         {
             if (entity is MySafeZoneBlock block)
             {
-         //   = AlliancePlugin.Log.Info("ITS A SUIT BITCH!");
+                //   = AlliancePlugin.Log.Info("ITS A SUIT BITCH!");
 
 
             }
@@ -780,12 +811,16 @@ namespace AlliancesPlugin
             {
 
                 // DiscordStuff.DisconnectDiscord();
+                foreach (Territory ter in AlliancePlugin.Territories.Values)
+                {
+                    AlliancePlugin.utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + ter.Name + ".xml", ter);
+                }
                 TorchState = TorchSessionState.Unloading;
             }
             if (state == TorchSessionState.Loaded)
             {
                 MyAPIGateway.Session.DamageSystem.RegisterBeforeDamageHandler(1, new BeforeDamageApplied(DamageHandler));
-           //      MyEntities.OnEntityAdd += NEWSUIT;
+                //      MyEntities.OnEntityAdd += NEWSUIT;
                 if (config != null && config.AllowDiscord && !DiscordStuff.Ready)
                 {
                     DiscordStuff.RegisterDiscord();
@@ -1464,7 +1499,12 @@ namespace AlliancesPlugin
         {
             Territories.Clear();
             FileUtils jsonStuff = new FileUtils();
-
+            CityHandler.CityTemplates.Clear();
+            foreach (String s in Directory.GetFiles(path + "//Territories//CityConfigs"))
+            {
+                City template = jsonStuff.ReadFromXmlFile<City>(s);
+                CityHandler.CityTemplates.Add(template);
+            }
             foreach (String s in Directory.GetFiles(path + "//Territories//"))
             {
                 try
@@ -1476,11 +1516,11 @@ namespace AlliancesPlugin
                     }
 
                     Territories.Add(ter.Id, ter);
-                    foreach (var city in ter.ActiveCities)
+                    foreach (var city in ter.ActiveCities.Where(x => !CityHandler.ActiveCities.Any(z => z.CityId == x.CityId)))
                     {
                         CityHandler.ActiveCities.Add(city);
                     }
-              
+
                 }
                 catch (Exception ex)
                 {
@@ -1635,7 +1675,7 @@ namespace AlliancesPlugin
                 var items = new Dictionary<MyDefinitionId, int>();
                 foreach (ItemCost item in gate.itemCostsList)
                 {
-                   
+
                     if (MyDefinitionId.TryParse("MyObjectBuilder_" + item.TypeId + "/" + item.SubTypeId, out MyDefinitionId id))
                     {
                         decimal multiplier = 1;
@@ -2409,34 +2449,34 @@ namespace AlliancesPlugin
 
                                                         Alliance alliance = GetAllianceNoLoading(config.AllianceOwner);
                                                         config.caplog.AddToCap(alliance.name);
-                                                 
-                                                        
-                                                            config.nextCaptureAvailable = DateTime.Now.AddHours(config.hoursToLockAfterNormalCap);
-                                                            config.unlockTime = DateTime.Now.AddHours(config.hoursToLockAfterNormalCap);
-                                                            if (config.OnlyDoLootOnceAfterCap)
-                                                            {
-                                                                LootLocation l = config.GetLootSite();
-                                                                if (l != null)
-                                                                {
-                                                                    DiscordStuff.SendMessageToDiscord(loc.Name, GetAllianceNoLoading(CapturingAlliance).name + " has captured " + loc.Name + ". It is now locked for " + config.hoursToLockAfterNormalCap + " hours. Loot will spawn in " + config.SecondsForOneLootSpawnAfterCap + " seconds.", config);
-                                                                    l.nextCoreSpawn = DateTime.Now.AddSeconds(config.SecondsForOneLootSpawnAfterCap);
-                                                                    SendChatMessage(loc.Name, "Loot will spawn in " + config.SecondsForOneLootSpawnAfterCap + " seconds.");
-                                                                }
-                                                            }
-                                                            else
-                                                            {
-                                                                try
-                                                                {
-                                                                    DiscordStuff.SendMessageToDiscord(loc.Name, GetAllianceNoLoading(CapturingAlliance).name + " has captured " + loc.Name + ". It is now locked for " + config.hoursToLockAfterNormalCap + " hours.", config, true);
-                                                                }
-                                                                catch (Exception)
-                                                                {
 
-                                                                    Log.Error("Cant do discord message for koth.");
-                                                                    SendChatMessage(loc.Name, GetAllianceNoLoading(CapturingAlliance).name + " has captured " + loc.Name + ". It is now locked for " + config.hoursToLockAfterNormalCap + " hours.");
-                                                                }
+
+                                                        config.nextCaptureAvailable = DateTime.Now.AddHours(config.hoursToLockAfterNormalCap);
+                                                        config.unlockTime = DateTime.Now.AddHours(config.hoursToLockAfterNormalCap);
+                                                        if (config.OnlyDoLootOnceAfterCap)
+                                                        {
+                                                            LootLocation l = config.GetLootSite();
+                                                            if (l != null)
+                                                            {
+                                                                DiscordStuff.SendMessageToDiscord(loc.Name, GetAllianceNoLoading(CapturingAlliance).name + " has captured " + loc.Name + ". It is now locked for " + config.hoursToLockAfterNormalCap + " hours. Loot will spawn in " + config.SecondsForOneLootSpawnAfterCap + " seconds.", config);
+                                                                l.nextCoreSpawn = DateTime.Now.AddSeconds(config.SecondsForOneLootSpawnAfterCap);
+                                                                SendChatMessage(loc.Name, "Loot will spawn in " + config.SecondsForOneLootSpawnAfterCap + " seconds.");
                                                             }
-                                                        
+                                                        }
+                                                        else
+                                                        {
+                                                            try
+                                                            {
+                                                                DiscordStuff.SendMessageToDiscord(loc.Name, GetAllianceNoLoading(CapturingAlliance).name + " has captured " + loc.Name + ". It is now locked for " + config.hoursToLockAfterNormalCap + " hours.", config, true);
+                                                            }
+                                                            catch (Exception)
+                                                            {
+
+                                                                Log.Error("Cant do discord message for koth.");
+                                                                SendChatMessage(loc.Name, GetAllianceNoLoading(CapturingAlliance).name + " has captured " + loc.Name + ". It is now locked for " + config.hoursToLockAfterNormalCap + " hours.");
+                                                            }
+                                                        }
+
 
 
                                                         foreach (JumpGate gate in AllGates.Values)
@@ -3512,7 +3552,7 @@ namespace AlliancesPlugin
                                                         if (File.Exists(AlliancePlugin.path + "//Territories//" + config.LinkedTerritory + ".xml"))
                                                         {
                                                             Territory ter = utils.ReadFromXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + config.LinkedTerritory + ".xml");
-       
+
                                                             ter.Alliance = alliance.AllianceId;
                                                             utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + config.LinkedTerritory + ".xml", ter);
 
@@ -3920,9 +3960,19 @@ namespace AlliancesPlugin
         public static DateTime RegisterMainBot = DateTime.Now;
         public static Dictionary<ulong, Boolean> statusUpdate = new Dictionary<ulong, bool>();
         public static Dictionary<ulong, Guid> otherAllianceShit = new Dictionary<ulong, Guid>();
-        public override void Update()
+        public async override void Update()
         {
-
+            if (ticks % 64 == 0)
+            {
+                try
+                {
+                    CityHandler.HandleCitiesMain();
+                }
+                catch (Exception e)
+                {
+                    AlliancePlugin.Log.Error("City error " + e);
+                }
+            }
             if (ticks % 512 == 0)
             {
                 Dictionary<ulong, DateTime> YEET = new Dictionary<ulong, DateTime>();

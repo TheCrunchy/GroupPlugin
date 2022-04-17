@@ -1,4 +1,5 @@
-﻿using AlliancesPlugin.KOTH;
+﻿using AlliancesPlugin.Alliances.NewTerritories;
+using AlliancesPlugin.KOTH;
 using Sandbox.Game.Entities.Blocks;
 using Sandbox.Game.SessionComponents;
 using Sandbox.Game.World;

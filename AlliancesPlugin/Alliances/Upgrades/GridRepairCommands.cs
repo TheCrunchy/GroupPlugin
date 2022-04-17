@@ -1,4 +1,5 @@
-﻿using AlliancesPlugin.KOTH;
+﻿using AlliancesPlugin.Alliances.NewTerritories;
+using AlliancesPlugin.KOTH;
 using AlliancesPlugin.Shipyard;
 using Sandbox.Game.Entities;
 using Sandbox.Game.World;

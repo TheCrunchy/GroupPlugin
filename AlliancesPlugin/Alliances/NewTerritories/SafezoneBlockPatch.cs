@@ -49,14 +49,19 @@ namespace AlliancesPlugin.NewTerritories
 
         public static void SendErrorMessageNotInRadius()
         {
-
+         //   AlliancePlugin.Log.Info("Not in radius");
         }
 
         public static bool GenerateCity(MySafeZoneBlock SZBlock, Territory territory, Alliance alliance)
         {
             var template = CityHandler.CityTemplates.FirstOrDefault(x => x.SafeZoneSubTypeId == SZBlock.BlockDefinition.Id.SubtypeName);
+            if (territory.ActiveCities.Any(x => x.SafeZoneBlockId == SZBlock.EntityId))
+            {
+                return false;
+            }
             if (template == null)
             {
+    //   AlliancePlugin.Log.Info("Null template");
                 return false;
             }
             {
@@ -78,11 +83,15 @@ namespace AlliancesPlugin.NewTerritories
                 city.SiegePointsToDropSafeZone = template.SiegePointsToDropSafeZone;
                 city.SpaceCreditsToCityOwners = template.SpaceCreditsToCityOwners;
                 city.SpawnedItems = template.SpawnedItems;
+                city.SecondsBeforeCityOperational = template.SecondsBeforeCityOperational;
                 city.TimeCanInit = DateTime.Now.AddSeconds(template.SecondsBeforeCityOperational);
                 city.WorldName = MyMultiplayer.Static.HostName;
                 city.CityId = Guid.NewGuid();
+                city.OwningTerritory = territory.Id;
                 territory.ActiveCities.Add(city);
                 CityHandler.ActiveCities.Add(city);
+                CityHandler.SendCityWillBeOperationalMessage(city);
+                AlliancePlugin.Log.Info("this shit should work");
                 return true;
             }
         }
@@ -90,15 +99,22 @@ namespace AlliancesPlugin.NewTerritories
         public static bool SafezoneBlockPatchMethod(MySafeZoneComponent __instance)
         {
             MySafeZoneBlock SZBlock = __instance.Entity as MySafeZoneBlock;
-            Alliance alliance = AlliancePlugin.GetAlliance(SZBlock.GetOwnerFactionTag());
-
-            if (alliance == null)
+            MyFaction fac = MySession.Static.Factions.TryGetFactionByTag(SZBlock.GetOwnerFactionTag());
+            if (fac == null)
             {
                 return false;
             }
+            Alliance alliance = AlliancePlugin.GetAlliance(fac);
 
+            if (alliance == null)
+            {
+                AlliancePlugin.Log.Info("alliance null");
+                return false;
+            }
+          //  AlliancePlugin.Log.Info(SZBlock.Parent.GetType());
             foreach (Territory ter in AlliancePlugin.Territories.Values.Where(x => x.Alliance == alliance.AllianceId))
             {
+                AlliancePlugin.Log.Info("territory");
                 //location check   
                 float distance = Vector3.Distance(__instance.Entity.PositionComp.GetPosition(), new Vector3(ter.x, ter.y, ter.z));
                 if (distance <= ter.Radius)

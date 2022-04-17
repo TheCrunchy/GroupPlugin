@@ -28,13 +28,7 @@ namespace AlliancesPlugin.Alliances.NewTerritories
 
         public static List<City> CityTemplates = new List<City>();
 
-
-        public async static Task LoadCityTemplates()
-        {
-
-        }
-
-        public async static Task<List<Vector3>> GetAllCityLocations(Alliance alliance)
+        public static List<Vector3> GetAllCityLocations(Alliance alliance)
         {
             List<Vector3> locations = new List<Vector3>();
             foreach (City city in ActiveCities.Where(x => x.AllianceId == alliance.AllianceId && x.HasInit))
@@ -42,7 +36,7 @@ namespace AlliancesPlugin.Alliances.NewTerritories
                 MyCubeGrid grid = MyAPIGateway.Entities.GetEntityById(city.GridId) as MyCubeGrid;
                 if (grid == null)
                 {
-                    continue ;
+                    continue;
                 }
                 locations.Add(grid.PositionComp.GetPosition());
             }
@@ -50,53 +44,141 @@ namespace AlliancesPlugin.Alliances.NewTerritories
             return locations;
         }
 
-        public async static Task HandleCitiesMain()
+        public static void DeleteInactiveCities()
         {
-            await HandleCitiesSiegeCycle();
-            await HandleCityInitSZ();
-            await Task.Run(async () =>
+            List<City> YeetTheseCities = new List<City>();
+            foreach (City city in ActiveCities.Where(x => x.HasInit && x.WorldName == MyMultiplayer.Static.HostName))
             {
+                MySafeZoneBlock SZBlock = MyAPIGateway.Entities.GetEntityById(city.SafeZoneBlockId) as MySafeZoneBlock;
+                if (SZBlock == null)
+                {
+                   // AlliancePlugin.Log.Info("SZ null");
+                    YeetTheseCities.Add(city);
+                    continue;
+                }
+         
+                foreach (var comp in SZBlock.Components)
+                {
+                    if (comp is MySafeZoneComponent SZComp)
+                    {
+                        if (!SZComp.IsSafeZoneEnabled())
+                        {
+                      //      AlliancePlugin.Log.Info("SZ not enabled");
+                            YeetTheseCities.Add(city);
+                            continue;
+                        }
+                    }
+                }
+                if (!SZBlock.Enabled)
+                {
+                    YeetTheseCities.Add(city);
+                    continue;
+                }
+            }
+            foreach (City city in YeetTheseCities)
+            {
+                ActiveCities.Remove(city);
+                Territory ter = AlliancePlugin.Territories.Values.FirstOrDefault(x => x.Id == city.OwningTerritory);
+                if (ter != null)
+                {
+                    SendCityDisabledMessage(city);
+                    ter.ActiveCities.Remove(city);
+                    AlliancePlugin.utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + ter.Name + ".xml", ter);
+                }
+
+            }
+        }
+
+        public static DateTime NextSave = DateTime.Now;
+        public static void HandleCitiesMain()
+        {
+         //   AlliancePlugin.Log.Info(ActiveCities.Count + " count");
+            DeleteInactiveCities();
+            HandleCitiesSiegeCycle();
+            HandleCityInitSZ();
+       
                 foreach (City city in ActiveCities.Where(x => x.WorldName == MyMultiplayer.Static.HostName))
                 {
-                    await HandleCitiesCraftingCycle(city);
-                    await HandleCitiesItemSpawnCycle(city);
+                   HandleCitiesCraftingCycle(city);
+                   HandleCitiesItemSpawnCycle(city);
                 }
-            });
+
+            if (DateTime.Now >= NextSave)
+            {
+                NextSave = DateTime.Now.AddMinutes(1);
+                foreach (Territory ter in AlliancePlugin.Territories.Values)
+                {
+                    AlliancePlugin.utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + ter.Name + ".xml", ter);
+                }
+            }
 
         }
 
-        public async static Task HandleCityInitSZ()
+        public static void HandleCityInitSZ()
         {
-            await Task.Run(() =>
-            {
+
+               // AlliancePlugin.Log.Info("City init shit ");
                 foreach (City city in ActiveCities.Where(x => DateTime.Now >= x.TimeCanInit && !x.HasInit))
                 {
-                    MyCubeGrid grid = MyAPIGateway.Entities.GetEntityById(city.GridId) as MyCubeGrid;
-                    if (grid == null)
-                    {
-                        return;
-                    }
-                    MySafeZoneBlock SZ = MyAPIGateway.Entities.GetEntityById(city.SafeZoneBlockId) as MySafeZoneBlock;
+                //    AlliancePlugin.Log.Info("Should be initing");
+                    AlliancePlugin.Log.Info(city.GridId);
+              MyCubeGrid cityGrid = MyAPIGateway.Entities.GetEntityById(city.GridId) as MyCubeGrid;
+
+                if (cityGrid == null)
+                {
+                  //  AlliancePlugin.Log.Info("grid null");
+                    return;
+                }
+                MySafeZoneBlock SZ = MyAPIGateway.Entities.GetEntityById(city.SafeZoneBlockId) as MySafeZoneBlock;
                     if (SZ == null)
                     {
+                      //  AlliancePlugin.Log.Info("SZ null");
                         return;
                     }
-                    SZ.Enabled = true;
+                    city.HasInit = true;
+                    //var index = ActiveCities.FindIndex(x => x.CityId == city.CityId);
+                    //ActiveCities[index] = city;
                     SendCityOperationalMessage(city);
+                    Territory ter = AlliancePlugin.Territories[city.OwningTerritory];
+                    if (ter != null)
+                    {
+                        AlliancePlugin.utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + ter.Name + ".xml", ter);
+                    }
                 }
-            });
+        }
+        public static void SendCityWillBeOperationalMessage(City city)
+        {
+            // DiscordStuff.SendMessageToDiscord($"{city.CityType} now operational.");
+            Alliance alliance = AlliancePlugin.GetAllianceNoLoading(city.AllianceId);
+            AlliancePlugin.SendChatMessage("[City Alerts]", $"{city.CityType} will be operational in {city.SecondsBeforeCityOperational} seconds. Owned by {alliance.name}");
+            if (city.DiscordChannelId > 0)
+            {
+                DiscordStuff.SendAllianceMessage(alliance, "[City Alerts]", $"{city.CityType} will be operational in {city.SecondsBeforeCityOperational} seconds. Owned by {alliance.name}");
+            }
+        }
+        public static void SendCityDisabledMessage(City city)
+        {
+            // DiscordStuff.SendMessageToDiscord($"{city.CityType} now operational.");
+            Alliance alliance = AlliancePlugin.GetAllianceNoLoading(city.AllianceId);
+            AlliancePlugin.SendChatMessage("[City Alerts]", $"{city.CityType} Owned by {alliance.name} is now disabled");
+            if (city.DiscordChannelId > 0)
+            {
+                DiscordStuff.SendAllianceMessage(alliance, "[City Alerts]", $"{city.CityType} Owned by {alliance.name} is now disabled");
+            }
         }
 
         public static void SendCityOperationalMessage(City city)
         {
             // DiscordStuff.SendMessageToDiscord($"{city.CityType} now operational.");
             Alliance alliance = AlliancePlugin.GetAllianceNoLoading(city.AllianceId);
-            DiscordStuff.SendAllianceMessage(alliance, "[City Alerts]", $"{city.CityType} now operational.");
-        }
-        public async static Task HandleCitiesSiegeCycle()
-        {
-            await Task.Run(() =>
+            AlliancePlugin.SendChatMessage("[City Alerts]", $"{city.CityType} now operational. Owned by {alliance.name}");
+            if (city.DiscordChannelId > 0)
             {
+                DiscordStuff.SendAllianceMessage(alliance, "[City Alerts]", $"{city.CityType} now operational. Owned by {alliance.name}");
+            }
+        }
+        public static void HandleCitiesSiegeCycle()
+        {
                 //invoke item shit on game thread?
                 foreach (SiegeBeacon beacon in SiegeBeacons.Where(x => ActiveCities.Any(c => c.CityId == x.TargetCity)))
                 {
@@ -135,7 +217,6 @@ namespace AlliancesPlugin.Alliances.NewTerritories
                         }
                     }
                 }
-            });
         }
         public static void SendBeaconSuccessMessage(SiegeBeacon beacon)
         {
@@ -202,15 +283,15 @@ namespace AlliancesPlugin.Alliances.NewTerritories
         }
 
         public static Random rnd = new Random();
-        public async static Task HandleCitiesCraftingCycle(City city)
+        public static void HandleCitiesCraftingCycle(City city)
         {
-            await Task.Run(() =>
-            {
+
                 MyCubeGrid cityGrid = MyAPIGateway.Entities.GetEntityById(city.GridId) as MyCubeGrid;
 
                 if (cityGrid == null)
                 {
-                    return;
+               // AlliancePlugin.Log.Info("Null city grid");
+                return;
                 }
 
                 if (DateTime.Now >= city.nextCraftRefresh)
@@ -220,16 +301,18 @@ namespace AlliancesPlugin.Alliances.NewTerritories
                     {
                         List<VRage.Game.ModAPI.IMyInventory> inventories = new List<VRage.Game.ModAPI.IMyInventory>();
                         item.NextCraftCycle = DateTime.Now.AddSeconds(item.SecondsBetweenCycles);
-                        double yeet = rnd.NextDouble();
+                  // AlliancePlugin.Log.Info("1");
+                    double yeet = rnd.NextDouble();
                         if (yeet <= item.ChanceToCraft)
                         {
-
-                            var comps = new Dictionary<MyDefinitionId, int>();
+                    //   AlliancePlugin.Log.Info("2");
+                        var comps = new Dictionary<MyDefinitionId, int>();
                             inventories.AddRange(GetInventories(cityGrid));
                             long TotalCraftCost = 0;
                             if (MyDefinitionId.TryParse("MyObjectBuilder_" + item.TypeId, item.SubtypeId, out MyDefinitionId id))
                             {
-                                foreach (RecipeItem recipe in item.RequiredItems)
+                        //    AlliancePlugin.Log.Info("3");
+                            foreach (RecipeItem recipe in item.RequiredItems)
                                 {
                                     if (recipe.SpaceCreditsPerCraft > 0)
                                     {
@@ -250,7 +333,8 @@ namespace AlliancesPlugin.Alliances.NewTerritories
                                 }
                                 if (ConsumeComponents(inventories, comps, 0l))
                                 {
-                                    EconUtils.takeMoney(FacUtils.GetPlayersFaction(FacUtils.GetOwner(cityGrid)).FactionId, TotalCraftCost);
+                          //      AlliancePlugin.Log.Info("4");
+                                EconUtils.takeMoney(FacUtils.GetPlayersFaction(FacUtils.GetOwner(cityGrid)).FactionId, TotalCraftCost);
                                     if (item.AmountPerCraft > 0)
                                     {
                                         SpawnItems(cityGrid, id, item.AmountPerCraft);
@@ -267,9 +351,8 @@ namespace AlliancesPlugin.Alliances.NewTerritories
 
                     }
                 }
-            });
         }
-        public async static Task HandleCitiesSpaceCreditCycle(City city)
+        public static void HandleCitiesSpaceCreditCycle(City city)
         {
             if (DateTime.Now >= city.NextPayoutTime)
             {
@@ -283,15 +366,15 @@ namespace AlliancesPlugin.Alliances.NewTerritories
                 city.NextPayoutTime = DateTime.Now.AddSeconds(city.SecondsBetweenCreditPayout);
             }
         }
-        public async static Task HandleCitiesItemSpawnCycle(City city)
+        public static void HandleCitiesItemSpawnCycle(City city)
         {
             //invoke item shit on game thread?
-            await Task.Run(() =>
-            {
+
                 MyCubeGrid cityGrid = MyAPIGateway.Entities.GetEntityById(city.GridId) as MyCubeGrid;
 
                 if (cityGrid == null)
                 {
+             //   AlliancePlugin.Log.Info("Null city grid");
                     return;
                 }
                 foreach (SpawnedItem item in city.SpawnedItems.Where(x => DateTime.Now >= x.NextSpawn))
@@ -302,12 +385,11 @@ namespace AlliancesPlugin.Alliances.NewTerritories
                         SpawnItems(cityGrid, id, item.AmountPerSpawn);
                     }
                 }
-            });
         }
 
-        public static int GetAdditionalShipyardSlots(Alliance alliance)
+        public static double GetAdditionalShipyardSpeed(Alliance alliance)
         {
-            int additional = 0;
+            double additional = 0;
             foreach (City city in ActiveCities.Where(x => x.AllianceId == alliance.AllianceId))
             {
                 additional += city.ShipyardSpeedBuffPercent;
