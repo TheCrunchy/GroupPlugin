@@ -9,7 +9,11 @@ namespace AlliancesPlugin.Alliances.NewTerritories
     public class City
     {
         public Guid CityId = Guid.NewGuid();
+
+        public string SiegeBeaconSubTypeId = "Beacon";
+
         public long GridId { get; set; }
+        public string CityName = "This will pull from SZ block";
         public string SafeZoneSubTypeId { get; set; }
         public string CityType = "Put a name here like manufacturing tier 8145";
         public int CityRadius = 50000;

@@ -4,8 +4,10 @@ using AlliancesPlugin.KOTH;
 using Sandbox.Engine.Multiplayer;
 using Sandbox.Game.Entities;
 using Sandbox.Game.Entities.Blocks;
+using Sandbox.Game.Entities.Cube;
 using Sandbox.Game.SessionComponents;
 using Sandbox.Game.World;
+using Sandbox.ModAPI;
 using SpaceEngineers.Game.Entities.Blocks.SafeZone;
 using System;
 using System.Collections.Generic;
@@ -16,6 +18,7 @@ using System.Threading.Tasks;
 using Torch.Managers.PatchManager;
 using VRage.Game;
 using VRageMath;
+using static AlliancesPlugin.Alliances.NewTerritories.CityHandler;
 
 namespace AlliancesPlugin.NewTerritories
 {
@@ -32,9 +35,66 @@ namespace AlliancesPlugin.NewTerritories
             typeof(SafezoneBlockPatch).GetMethod(nameof(SafezoneBlockPatchMethod), BindingFlags.Static | BindingFlags.Public) ??
             throw new Exception("Failed to find patch method");
 
+
+        internal static readonly MethodInfo enabledUpdate =
+     typeof(MyFunctionalBlock).GetMethod("OnEnabledChanged", BindingFlags.Instance | BindingFlags.NonPublic) ??
+     throw new Exception("Failed to find patch method");
+
+        internal static readonly MethodInfo functionalBlockPatch =
+            typeof(SafezoneBlockPatch).GetMethod(nameof(PatchTurningOn), BindingFlags.Static | BindingFlags.Public) ??
+            throw new Exception("Failed to find patch method");
+
+        public static bool PatchTurningOn(MyFunctionalBlock __instance)
+        {
+            // Log.Info("Button");
+
+            MyFunctionalBlock block = __instance;
+            if (block is Sandbox.ModAPI.IMyBeacon beacon)
+            {
+
+                MyFaction fac = MySession.Static.Factions.TryGetFactionByTag(beacon.GetOwnerFactionTag());
+                if (fac == null)
+                {
+                    return true;
+                }
+                Alliance alliance = AlliancePlugin.GetAlliance(fac);
+                if (alliance == null)
+                {
+                    return true;
+                }
+                if (beacon.Radius < 45001)
+                {
+                    return true;
+                }
+                var city = CityHandler.GetNearestCity(block.CubeGrid.PositionComp.GetPosition(), alliance);
+                if (city != null)
+                {
+                    SiegeBeacon siege = new SiegeBeacon()
+                    {
+                        BeaconEntityId = beacon.EntityId,
+                        TargetCity = city.CityId,
+                        NextCycle = DateTime.Now.AddSeconds(60)
+                    };
+                    if (CityHandler.CanStartSiege(siege, city, beacon))
+                    {
+                        CityHandler.StartSiege(siege, city, beacon);
+                    }
+                    else
+                    {
+                        //do a fail message
+                        return false;
+                    }
+                }
+                return false;
+            }
+
+            return true;
+        }
+
         public static void Patch(PatchContext ctx)
         {
             ctx.GetPattern(update2).Prefixes.Add(safezonePatch);
+            ctx.GetPattern(enabledUpdate).Prefixes.Add(functionalBlockPatch);
         }
         public class TaxItem
         {
@@ -49,7 +109,7 @@ namespace AlliancesPlugin.NewTerritories
 
         public static void SendErrorMessageNotInRadius()
         {
-         //   AlliancePlugin.Log.Info("Not in radius");
+            //   AlliancePlugin.Log.Info("Not in radius");
         }
 
         public static bool GenerateCity(MySafeZoneBlock SZBlock, Territory territory, Alliance alliance)
@@ -61,7 +121,7 @@ namespace AlliancesPlugin.NewTerritories
             }
             if (template == null)
             {
-    //   AlliancePlugin.Log.Info("Null template");
+                //   AlliancePlugin.Log.Info("Null template");
                 return false;
             }
             {
@@ -88,6 +148,7 @@ namespace AlliancesPlugin.NewTerritories
                 city.WorldName = MyMultiplayer.Static.HostName;
                 city.CityId = Guid.NewGuid();
                 city.OwningTerritory = territory.Id;
+                city.CityName = SZBlock.DisplayNameText;
                 territory.ActiveCities.Add(city);
                 CityHandler.ActiveCities.Add(city);
                 CityHandler.SendCityWillBeOperationalMessage(city);
@@ -111,7 +172,7 @@ namespace AlliancesPlugin.NewTerritories
                 AlliancePlugin.Log.Info("alliance null");
                 return false;
             }
-          //  AlliancePlugin.Log.Info(SZBlock.Parent.GetType());
+            //  AlliancePlugin.Log.Info(SZBlock.Parent.GetType());
             foreach (Territory ter in AlliancePlugin.Territories.Values.Where(x => x.Alliance == alliance.AllianceId))
             {
                 AlliancePlugin.Log.Info("territory");
