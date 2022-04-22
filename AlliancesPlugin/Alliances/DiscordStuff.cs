@@ -69,8 +69,8 @@ namespace AlliancesPlugin.Alliances
                     errors.Add(ex.ToString());
                     return Task.CompletedTask;
                 }
-      
-        
+
+
                 try
                 {
                     Discord.ConnectAsync();
@@ -134,7 +134,7 @@ namespace AlliancesPlugin.Alliances
         //private static Task Client_SocketClosed(SocketCloseEventArgs e)
         //{
 
-   
+
         //    foreach (KeyValuePair<Guid, DiscordClient> clients in allianceBots)
         //    {
         //        if (e.Client == clients.Value)
@@ -160,18 +160,27 @@ namespace AlliancesPlugin.Alliances
         public static List<string> temp = new List<string>();
 
         private static List<string> registeredTokens = new List<string>();
-
+        private static Dictionary<string, DiscordClient> BotsStoredByTokens = new Dictionary<string, DiscordClient>();
         public static Task RegisterAllianceBot(Alliance alliance, ulong channelId)
         {
-            if (registeredTokens.Contains(Encryption.DecryptString(alliance.AllianceId.ToString(), alliance.DiscordToken)))
+
+         //   AlliancePlugin.Log.Info($"debug {alliance.name} 1");
+            var t = Encryption.DecryptString(alliance.AllianceId.ToString(), alliance.DiscordToken);
+         //   AlliancePlugin.Log.Info($"debug {t}");
+            if (BotsStoredByTokens.TryGetValue(t, out DiscordClient discord))
             {
+             //   AlliancePlugin.Log.Info($"debug {alliance.name} 2");
                 if (!allianceChannels.ContainsKey(alliance.DiscordChannelId))
                 {
                     allianceChannels.Add(channelId, alliance.AllianceId);
                 }
+
+                
+                allianceBots.Add(alliance.AllianceId, discord);
                 registered.Add(alliance.AllianceId);
                 return Task.CompletedTask;
             }
+
             if (!allianceBots.ContainsKey(alliance.AllianceId) && Ready)
             {
                 DiscordClient bot;
@@ -183,7 +192,7 @@ namespace AlliancesPlugin.Alliances
                         Token = Encryption.DecryptString(alliance.AllianceId.ToString(), alliance.DiscordToken),
                         TokenType = TokenType.Bot,
                     };
-                   bot = new DiscordClient(config);
+                    bot = new DiscordClient(config);
 
                 }
                 catch (Exception ex)
@@ -201,7 +210,7 @@ namespace AlliancesPlugin.Alliances
                     return Task.CompletedTask;
                 }
 
-             
+
                 try
                 {
                     bot.ConnectAsync();
@@ -219,13 +228,14 @@ namespace AlliancesPlugin.Alliances
                     }
                     return Task.CompletedTask;
                 }
-
-
-
+         
+               // AlliancePlugin.Log.Info($"debug {alliance.name} registered");
                 temp.Add("Registered " + alliance.name + " BOT");
                 bot.MessageCreated += Discord_AllianceMessage;
                 allianceBots.Remove(alliance.AllianceId);
                 allianceBots.Add(alliance.AllianceId, bot);
+                BotsStoredByTokens.Remove(t);
+                BotsStoredByTokens.Add(t, bot);
                 allianceChannels.Remove(alliance.DiscordChannelId);
                 registeredTokens.Add(Encryption.DecryptString(alliance.AllianceId.ToString(), alliance.DiscordToken));
                 allianceChannels.Add(channelId, alliance.AllianceId);
@@ -332,7 +342,7 @@ namespace AlliancesPlugin.Alliances
                     Color = new DiscordColor(255, 255, 255)
 
                 };
-               chann.SendMessageAsync(embed);
+                chann.SendMessageAsync(embed);
             }
         }
         private static int attempt = 0;
@@ -383,7 +393,7 @@ namespace AlliancesPlugin.Alliances
                     {
                         attempt++;
                         SendAllianceMessage(alliance, prefix, message);
-                       // attempt = 0;
+                        // attempt = 0;
                     }
                     else
                     {
@@ -479,8 +489,8 @@ namespace AlliancesPlugin.Alliances
 
                 File.WriteAllText(AlliancePlugin.path + "//temp.txt", output);
                 FileStream stream = new FileStream(AlliancePlugin.path + "//temp.txt", FileMode.Open);
-             
-            //    chann.SendFileAsync("LOG.txt", stream);
+
+                //    chann.SendFileAsync("LOG.txt", stream);
 
 
             }
@@ -516,7 +526,7 @@ namespace AlliancesPlugin.Alliances
             {
                 return Task.CompletedTask;
             }
-            
+
             if (debugMode)
             {
                 if (MySession.Static.Players.GetPlayerByName("Crunch") != null)
@@ -552,7 +562,7 @@ namespace AlliancesPlugin.Alliances
                     //        return Task.CompletedTask;
                     //    }
                     //}
-                    
+
                     String[] split = e.Message.Content.Split(':');
                     int i = 0;
                     if (WorldName.Equals("") && MyMultiplayer.Static.HostName != null)
@@ -695,7 +705,7 @@ namespace AlliancesPlugin.Alliances
             }
             return Task.CompletedTask;
         }
-       static bool tried = false;
+        static bool tried = false;
         public static DateTime nextMention = DateTime.Now;
         public static Task Discord_MessageCreated(DiscordClient discord, DSharpPlus.EventArgs.MessageCreateEventArgs e)
         {
@@ -733,7 +743,7 @@ namespace AlliancesPlugin.Alliances
             }
             if (e.Message == null)
             {
-               
+
                 errors.Add("Null message? " + DateTime.Now.ToString());
                 //if (DateTime.Now >= nextMention)
                 //{
@@ -749,7 +759,7 @@ namespace AlliancesPlugin.Alliances
             if (e.Message.Channel == null)
             {
                 errors.Add("Null channel? " + DateTime.Now.ToString());
-              
+
                 //if (DateTime.Now >= nextMention)
                 //{
                 //    tried = true;
@@ -764,9 +774,9 @@ namespace AlliancesPlugin.Alliances
             }
             if (e.Message.Content.Equals("Connection Check"))
             {
-                  DiscordChannel chann = discord.GetChannelAsync(AlliancePlugin.config.DiscordChannelId).Result;
+                DiscordChannel chann = discord.GetChannelAsync(AlliancePlugin.config.DiscordChannelId).Result;
 
-                  discord.SendMessageAsync(chann, "**[" + WorldName + "] " + "Connected");
+                discord.SendMessageAsync(chann, "**[" + WorldName + "] " + "Connected");
             }
             if (e.Message.Content.Contains("Checking Server "))
             {
@@ -841,7 +851,7 @@ namespace AlliancesPlugin.Alliances
             catch (Exception ex)
             {
                 errors.Add("Error reading normal discord message " + ex.ToString());
-                
+
             }
 
 
