@@ -47,7 +47,10 @@ namespace AlliancesPlugin.NewTerritories
         public static bool PatchTurningOn(MyFunctionalBlock __instance)
         {
             // Log.Info("Button");
-
+            if (AlliancePlugin.config != null || !AlliancePlugin.config.SafeZonesRequireTerritory)
+            {
+                return true;
+            }
             MyFunctionalBlock block = __instance;
             if (block is Sandbox.ModAPI.IMyBeacon beacon)
             {
@@ -159,6 +162,10 @@ namespace AlliancesPlugin.NewTerritories
 
         public static bool SafezoneBlockPatchMethod(MySafeZoneComponent __instance)
         {
+            if (AlliancePlugin.config != null || !AlliancePlugin.config.SafeZonesRequireTerritory)
+            {
+                return true;
+            }
             MySafeZoneBlock SZBlock = __instance.Entity as MySafeZoneBlock;
             MyFaction fac = MySession.Static.Factions.TryGetFactionByTag(SZBlock.GetOwnerFactionTag());
             if (fac == null)

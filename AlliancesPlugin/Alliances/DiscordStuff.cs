@@ -166,6 +166,10 @@ namespace AlliancesPlugin.Alliances
 
          //   AlliancePlugin.Log.Info($"debug {alliance.name} 1");
             var t = Encryption.DecryptString(alliance.AllianceId.ToString(), alliance.DiscordToken);
+            if (allianceBots.ContainsKey(alliance.AllianceId))
+            {
+                return Task.CompletedTask;
+            }
          //   AlliancePlugin.Log.Info($"debug {t}");
             if (BotsStoredByTokens.TryGetValue(t, out DiscordClient discord))
             {
@@ -175,7 +179,7 @@ namespace AlliancesPlugin.Alliances
                     allianceChannels.Add(channelId, alliance.AllianceId);
                 }
 
-                
+                allianceBots.Remove(alliance.AllianceId);
                 allianceBots.Add(alliance.AllianceId, discord);
                 registered.Add(alliance.AllianceId);
                 return Task.CompletedTask;
