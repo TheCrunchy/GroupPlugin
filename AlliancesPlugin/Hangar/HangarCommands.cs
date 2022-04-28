@@ -553,7 +553,7 @@ namespace AlliancesPlugin.Hangar
                     MyGpsCollection gpscol = (MyGpsCollection)MyAPIGateway.Session?.GPS;
 
 
-                    gpscol.SendAddGps(Context.Player.IdentityId, ref gps);
+                    gpscol.SendAddGpsRequest(Context.Player.IdentityId, ref gps);
                 }
 
 

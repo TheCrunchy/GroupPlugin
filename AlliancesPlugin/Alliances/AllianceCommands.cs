@@ -241,7 +241,7 @@ namespace AlliancesPlugin.Alliances
             MyGpsCollection gpsCollection = (MyGpsCollection)MyAPIGateway.Session?.GPS;
             foreach (MyPlayer p in MySession.Static.Players.GetOnlinePlayers())
             {
-                gpsCollection.SendAddGps(p.Identity.IdentityId, ref gpsRef, entityId, true);
+                gpsCollection.SendAddGpsRequest(p.Identity.IdentityId, ref gpsRef, entityId, true);
                 // NationsPlugin.signalsToClear.Add(gps, DateTime.Now.AddMilliseconds(NationsPlugin.file.MillisecondsTimeItLasts));
                 ShipyardCommands.SendMessage(messagename, message, Color.Red, (long)p.Id.SteamId);
             }
@@ -903,7 +903,7 @@ namespace AlliancesPlugin.Alliances
                     alliance.ForceAddMember(fac2.FactionId);
                     AlliancePlugin.SaveAllianceData(alliance);
 
-                    Context.Respond("Invite sent, they can join using !alliance join " + alliance.name);
+                    Context.Respond($"Invite sent, they can join using !alliance join \"{alliance.name}\"");
                 }
                 else
                 {

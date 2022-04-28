@@ -47,7 +47,7 @@ namespace AlliancesPlugin.NewTerritories
         public static bool PatchTurningOn(MyFunctionalBlock __instance)
         {
             // Log.Info("Button");
-            if (AlliancePlugin.config != null || !AlliancePlugin.config.SafeZonesRequireTerritory)
+            if (AlliancePlugin.config == null || !AlliancePlugin.config.SafeZonesRequireTerritory)
             {
                 return true;
             }
@@ -155,14 +155,14 @@ namespace AlliancesPlugin.NewTerritories
                 territory.ActiveCities.Add(city);
                 CityHandler.ActiveCities.Add(city);
                 CityHandler.SendCityWillBeOperationalMessage(city);
-                AlliancePlugin.Log.Info("this shit should work");
+               // AlliancePlugin.Log.Info("this shit should work");
                 return true;
             }
         }
 
         public static bool SafezoneBlockPatchMethod(MySafeZoneComponent __instance)
         {
-            if (AlliancePlugin.config != null || !AlliancePlugin.config.SafeZonesRequireTerritory)
+            if (AlliancePlugin.config == null || !AlliancePlugin.config.SafeZonesRequireTerritory)
             {
                 return true;
             }
@@ -176,13 +176,13 @@ namespace AlliancesPlugin.NewTerritories
 
             if (alliance == null)
             {
-                AlliancePlugin.Log.Info("alliance null");
+            //    AlliancePlugin.Log.Info("alliance null");
                 return false;
             }
             //  AlliancePlugin.Log.Info(SZBlock.Parent.GetType());
             foreach (Territory ter in AlliancePlugin.Territories.Values.Where(x => x.Alliance == alliance.AllianceId))
             {
-                AlliancePlugin.Log.Info("territory");
+              //  AlliancePlugin.Log.Info("territory");
                 //location check   
                 float distance = Vector3.Distance(__instance.Entity.PositionComp.GetPosition(), new Vector3(ter.x, ter.y, ter.z));
                 if (distance <= ter.Radius)

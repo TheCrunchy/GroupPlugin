@@ -176,7 +176,7 @@ namespace AlliancesPlugin.Alliances
                         gpsRef.ShowOnHud = true;
 
                         long idenId = MySession.Static.Players.TryGetIdentityId(id);
-                        gpscol.SendAddGps(idenId, ref gpsRef);
+                        gpscol.SendAddGpsRequest(idenId, ref gpsRef);
                     }
                 
             }
@@ -229,7 +229,7 @@ namespace AlliancesPlugin.Alliances
                     long idenId = MySession.Static.Players.TryGetIdentityId(id);
                     MyAPIGateway.Utilities.InvokeOnGameThread(() =>
                     {
-                        gpscol.SendAddGps(idenId, ref gpsRef);
+                        gpscol.SendAddGpsRequest(idenId, ref gpsRef);
                     });
 
                 }

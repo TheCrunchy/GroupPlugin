@@ -186,7 +186,7 @@ namespace AlliancesPlugin.Alliances.NewTerritories
             foreach (City city in ActiveCities.Where(x => DateTime.Now >= x.TimeCanInit && !x.HasInit))
             {
                 //    AlliancePlugin.Log.Info("Should be initing");
-                AlliancePlugin.Log.Info(city.GridId);
+             //   AlliancePlugin.Log.Info(city.GridId);
                 MyCubeGrid cityGrid = MyAPIGateway.Entities.GetEntityById(city.GridId) as MyCubeGrid;
 
                 if (cityGrid == null)

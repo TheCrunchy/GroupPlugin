@@ -426,7 +426,7 @@ namespace AlliancesPlugin
                 MyGps gpsRef = gps;
                 long entityId = 0L;
                 entityId = gps.EntityId;
-                gpsCollection.SendAddGps(player.GetPlayerIdentityId(), ref gpsRef, entityId, true);
+                gpsCollection.SendAddGpsRequest(player.GetPlayerIdentityId(), ref gpsRef, entityId, true);
             }
             else if (!force)
             {

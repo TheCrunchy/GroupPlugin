@@ -10,7 +10,7 @@ namespace AlliancesPlugin.Alliances.NewTerritories
     {
         public Guid CityId = Guid.NewGuid();
 
-        public string SiegeBeaconSubTypeId = "Beacon";
+        public string SiegeBeaconSubTypeId = "LargeBlockBeacon";
 
         public long GridId { get; set; }
         public string CityName = "This will pull from SZ block";

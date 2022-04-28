@@ -1216,6 +1216,11 @@ namespace AlliancesPlugin.Shipyard
                 Context.Respond("Shipyard not enabled.");
                 return;
             }
+            if (MyGravityProviderSystem.IsPositionInNaturalGravity(Context.Player.GetPosition()))
+            {
+                SendMessage("[Shipyard]", "You cannot use this command in natural gravity!", Color.Red, (long)Context.Player.SteamUserId);
+                return;
+            }
             Regex regex = new Regex("^[0-9a-zA-Z ]{3,25}$");
             Match match = Regex.Match(name, "^[0-9a-zA-Z ]{3,25}$", RegexOptions.IgnoreCase);
 
