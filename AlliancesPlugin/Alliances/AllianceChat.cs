@@ -366,8 +366,8 @@ namespace AlliancesPlugin.Alliances
           
                 if (File.Exists(AlliancePlugin.path + "//PlayerData//" + p.SteamId + ".xml") && playerFac != null)
             {
+                AlliancePlugin.UpdateThese[p.SteamId] = DateTime.Now.AddSeconds(60);
 
-                AlliancePlugin.UpdateThese.Remove(p.SteamId);
                PlayerData data = utils.ReadFromXmlFile<PlayerData>(AlliancePlugin.path + "//PlayerData//" + p.SteamId + ".xml");
                 if (data.InAllianceChat)
                 {
@@ -391,6 +391,7 @@ namespace AlliancesPlugin.Alliances
                         AlliancePlugin.otherAllianceShit.Add(p.SteamId, AlliancePlugin.GetAllianceNoLoading(playerFac as MyFaction).AllianceId);
                     }
                 }
+
             }
         }
 

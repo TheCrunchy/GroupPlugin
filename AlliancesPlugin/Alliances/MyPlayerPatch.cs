@@ -146,27 +146,27 @@ namespace AlliancesPlugin
         }
 
 
-        [HarmonyPatch(typeof(MySpaceRespawnComponent))]
-        [HarmonyPatch("RespawnRequest_Implementation")]
-        class RespawnPatchExistingBody
-        {
-            static void Postfix(ulong steamPlayerId, int serialId)
-            {
+        //[HarmonyPatch(typeof(MySpaceRespawnComponent))]
+        //[HarmonyPatch("RespawnRequest_Implementation")]
+        //class RespawnPatchExistingBody
+        //{
+        //    static void Postfix(ulong steamPlayerId, int serialId)
+        //    {
 
-                    //   AlliancePlugin.Log.Info("DGSDGSDG");
-                    if (AlliancePlugin.UpdateThese.ContainsKey(steamPlayerId))
-                    {
-                        AlliancePlugin.UpdateThese[steamPlayerId] = DateTime.Now.AddSeconds(15);
-                    }
-                    else
-                    {
-                        AlliancePlugin.UpdateThese.Add(steamPlayerId, DateTime.Now.AddSeconds(15));
-                    }
+        //            //   AlliancePlugin.Log.Info("DGSDGSDG");
+        //            if (AlliancePlugin.UpdateThese.ContainsKey(steamPlayerId))
+        //            {
+        //                AlliancePlugin.UpdateThese[steamPlayerId] = DateTime.Now.AddSeconds(15);
+        //            }
+        //            else
+        //            {
+        //                AlliancePlugin.UpdateThese.Add(steamPlayerId, DateTime.Now.AddSeconds(15));
+        //            }
                 
             
-                    return;
-                // make sure you only skip if really necessary
-            }
-        }
+        //            return;
+        //        // make sure you only skip if really necessary
+        //    }
+        //}
     }
 }
