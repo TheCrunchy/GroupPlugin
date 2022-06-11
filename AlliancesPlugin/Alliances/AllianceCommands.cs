@@ -1,5 +1,6 @@
 ﻿using AlliancesPlugin.Hangar;
 using AlliancesPlugin.Shipyard;
+using AlliancesPlugin.WarOptIn;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using Newtonsoft.Json;
@@ -959,6 +960,7 @@ namespace AlliancesPlugin.Alliances
         {
             AlliancePlugin.LoadConfig();
             Context.Respond("Reloaded");
+            OptinCore.config = AlliancePlugin.utils.ReadFromJsonFile<WarConfig>(AlliancePlugin.path + "//Alliances//OptionalWar//WarConfig.json");
         }
         [Command("takepoints", "take points from an alliance")]
         [Permission(MyPromoteLevel.Admin)]

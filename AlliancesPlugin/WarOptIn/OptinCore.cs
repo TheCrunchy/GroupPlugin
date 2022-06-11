@@ -90,7 +90,7 @@ namespace AlliancesPlugin.WarOptIn
                     {
                         if (!FactionsOptedIn.Contains(fromFacId))
                         {
-                            AlliancePlugin.SendChatMessage("War Gods", $"You have not opted in to war. To opt in type !enablewar", (ulong) senderId);
+                            AlliancePlugin.SendChatMessage("War Gods", $"You have not opted in to war. To opt in type !war enable", (ulong) senderId);
                             DoNeutralUpdate(fromFacId, toFacId);
                             break;
                         }
@@ -119,12 +119,12 @@ namespace AlliancesPlugin.WarOptIn
             if (faction != null)
             {
                 AllFactionIds.Add(newid);
-                foreach (long id in AllFactionIds)
+                foreach (MyFaction fac in MySession.Static.Factions.GetAllFactions())
                 {
-                    var OtherFacs = MySession.Static.Factions.TryGetFactionById(id);
-                    if (OtherFacs != null && OtherFacs.Tag.Length == 3)
+      
+                    if (fac.FactionId != newid && fac.Tag.Length == 3)
                     {
-                        DoNeutralUpdate(faction.FactionId, id);
+                        DoNeutralUpdate(faction.FactionId, fac.FactionId);
                     }
                 }
             }
