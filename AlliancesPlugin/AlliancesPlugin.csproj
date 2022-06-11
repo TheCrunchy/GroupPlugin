@@ -254,6 +254,10 @@
     <Compile Include="Shipyard\ShipyardCommands.cs" />
     <Compile Include="Shipyard\ShipyardConfig.cs" />
     <Compile Include="Shipyard\UpgradeCost.cs" />
+    <Compile Include="WarOptIn\WarConfig.cs" />
+    <Compile Include="WarOptIn\WarCommands.cs" />
+    <Compile Include="WarOptIn\ListOfWarParticipants.cs" />
+    <Compile Include="WarOptIn\OptinCore.cs" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Connected Services\" />

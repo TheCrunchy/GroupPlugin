@@ -58,6 +58,7 @@ using System.Threading.Tasks;
 using static AlliancesPlugin.JumpGates.JumpGate;
 using AlliancesPlugin.Alliances.NewTerritories;
 using static AlliancesPlugin.Alliances.NewTerritories.City;
+using AlliancesPlugin.WarOptIn;
 
 namespace AlliancesPlugin
 {
@@ -505,7 +506,7 @@ namespace AlliancesPlugin
         private static List<Vector3> StationLocations = new List<Vector3>();
         public static MyGps ScanChat(string input, string desc = null)
         {
-
+            
             int num = 0;
             bool flag = true;
             MatchCollection matchCollection = Regex.Matches(input, "GPS:([^:]{0,32}):([\\d\\.-]*):([\\d\\.-]*):([\\d\\.-]*):");
@@ -819,6 +820,18 @@ namespace AlliancesPlugin
             }
             if (state == TorchSessionState.Loaded)
             {
+                if (!File.Exists(AlliancePlugin.path + "//Alliances//OptionalWar//WarConfig.json"))
+                {
+                    AlliancePlugin.utils.WriteToJsonFile<WarConfig>(AlliancePlugin.path + "//Alliances//WarConfig.json", new WarConfig());
+
+                }
+                Directory.CreateDirectory(AlliancePlugin.path + "//Alliances//OptionalWar//");
+                var warconfig = AlliancePlugin.utils.ReadFromJsonFile<WarConfig>(AlliancePlugin.path + "//Alliances//OptionalWar//WarConfig.json");
+                if (warconfig.EnableOptionalWar)
+                {
+                    MySession.Static.Factions.FactionStateChanged += OptinCore.StateChange;
+                    MySession.Static.Factions.FactionCreated += OptinCore.ProcessNewFaction;
+                }
                 MyAPIGateway.Session.DamageSystem.RegisterBeforeDamageHandler(1, new BeforeDamageApplied(DamageHandler));
                 //      MyEntities.OnEntityAdd += NEWSUIT;
                 if (config != null && config.AllowDiscord && !DiscordStuff.Ready)
@@ -1534,6 +1547,10 @@ namespace AlliancesPlugin
         public static void LoadAllGates()
         {
             if (TorchState != TorchSessionState.Loaded)
+            {
+                return;
+            }
+            if (MyMultiplayer.Static.HostName.ToLower().Contains("drac"))
             {
                 return;
             }
@@ -4679,6 +4696,11 @@ namespace AlliancesPlugin
 
             }
             return null;
+        }
+
+        internal static void SendChatMessage(string v1, string v2, long senderId)
+        {
+            throw new NotImplementedException();
         }
     }
 }
