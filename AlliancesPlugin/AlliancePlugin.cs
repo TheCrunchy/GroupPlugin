@@ -828,8 +828,8 @@ namespace AlliancesPlugin
                     AlliancePlugin.utils.WriteToJsonFile<WarConfig>(AlliancePlugin.path + "//OptionalWar//WarConfig.json", new WarConfig());
 
                 }
-                var warconfig = AlliancePlugin.utils.ReadFromJsonFile<WarConfig>(AlliancePlugin.path + "//OptionalWar//WarConfig.json");
-                if (warconfig.EnableOptionalWar)
+                warcore.config = AlliancePlugin.utils.ReadFromJsonFile<WarConfig>(AlliancePlugin.path + "//OptionalWar//WarConfig.json");
+                if (warcore.config.EnableOptionalWar)
                 {
                     MySession.Static.Factions.FactionStateChanged += warcore.StateChange;
                     MySession.Static.Factions.FactionCreated += warcore.ProcessNewFaction;

@@ -13,10 +13,11 @@ namespace AlliancesPlugin.WarOptIn
 {
     public class OptinCore
     {
+
         public static List<long> AllFactionIds = new List<long>();
         public static List<long> FactionsOptedIn = new List<long>();
         public static ListOfWarParticipants participants = new ListOfWarParticipants();
-        public static WarConfig config = new WarConfig();
+        public WarConfig config = new WarConfig();
         public void DoNeutralUpdate(long firstId, long SecondId)
         {
             MyAPIGateway.Utilities.InvokeOnGameThread(() =>
@@ -38,30 +39,24 @@ namespace AlliancesPlugin.WarOptIn
             });
         }
 
-        public static void SaveFile()
+        public void SaveFile()
         {
             AlliancePlugin.utils.WriteToJsonFile<ListOfWarParticipants>(AlliancePlugin.path + "//OptionalWar//WarParticipants.json", participants);
         }
-        public static ListOfWarParticipants LoadFile()
+        public ListOfWarParticipants LoadFile()
         {
             if (!File.Exists(AlliancePlugin.path + "//OptionalWar//WarParticipants.json"))
             {
                 AlliancePlugin.utils.WriteToJsonFile<ListOfWarParticipants>(AlliancePlugin.path + "//OptionalWar//WarParticipants.json", new ListOfWarParticipants());
             }
-            if (!File.Exists(AlliancePlugin.path + "//Alliances//OptionalWar//WarConfig.json"))
-            {
-                AlliancePlugin.utils.WriteToJsonFile<WarConfig>(AlliancePlugin.path + "//OptionalWar//WarConfig.json", new WarConfig());
-         
-            }
             config = AlliancePlugin.utils.ReadFromJsonFile<WarConfig>(AlliancePlugin.path + "//OptionalWar//WarConfig.json");
-
             return AlliancePlugin.utils.ReadFromJsonFile<ListOfWarParticipants>(AlliancePlugin.path + "//OptionalWar//WarParticipants.json");
         }
 
-        public static bool AddToWarParticipants(long id)
+        public bool AddToWarParticipants(long id)
         {
             participants = LoadFile();
-            if (!participants.FactionsAtWar.Contains(id))
+            if (participants.FactionsAtWar.Contains(id))
             {
                 return false;
             }
@@ -73,7 +68,7 @@ namespace AlliancesPlugin.WarOptIn
                 return true;
             }
         }
-        public static bool RemoveFromWarParticipants(long id)
+        public bool RemoveFromWarParticipants(long id)
         {
             participants = LoadFile();
             if (participants.FactionsAtWar.Contains(id))

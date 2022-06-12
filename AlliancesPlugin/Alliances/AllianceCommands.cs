@@ -960,7 +960,7 @@ namespace AlliancesPlugin.Alliances
         {
             AlliancePlugin.LoadConfig();
             Context.Respond("Reloaded");
-            OptinCore.config = AlliancePlugin.utils.ReadFromJsonFile<WarConfig>(AlliancePlugin.path + "//OptionalWar//WarConfig.json");
+            AlliancePlugin.warcore.config = AlliancePlugin.utils.ReadFromJsonFile<WarConfig>(AlliancePlugin.path + "//OptionalWar//WarConfig.json");
         }
         [Command("takepoints", "take points from an alliance")]
         [Permission(MyPromoteLevel.Admin)]

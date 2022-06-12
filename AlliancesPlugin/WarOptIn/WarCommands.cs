@@ -1,6 +1,9 @@
 ﻿using Sandbox.Game.World;
+using System.Text;
 using Torch.Commands;
 using Torch.Commands.Permissions;
+using Torch.Mod;
+using Torch.Mod.Messages;
 using VRage.Game.ModAPI;
 
 namespace AlliancesPlugin.WarOptIn
@@ -12,7 +15,7 @@ namespace AlliancesPlugin.WarOptIn
         [Permission(MyPromoteLevel.None)]
         public void EnableWar()
         {
-            if (!OptinCore.config.EnableOptionalWar)
+            if (!AlliancePlugin.warcore.config.EnableOptionalWar)
             {
                 Context.Respond("Optional war is not enabled.");
                 return;
@@ -25,11 +28,11 @@ namespace AlliancesPlugin.WarOptIn
             }
 
             if (fac.IsFounder(Context.Player.IdentityId) || fac.IsLeader(Context.Player.IdentityId)) {
-                if (EconUtils.getBalance(Context.Player.IdentityId) >= OptinCore.config.EnableWarCost)
+                if (EconUtils.getBalance(Context.Player.IdentityId) >= AlliancePlugin.warcore.config.EnableWarCost)
                 {
-                    if (OptinCore.AddToWarParticipants(fac.FactionId))
+                    if (AlliancePlugin.warcore.AddToWarParticipants(fac.FactionId))
                     {
-                        EconUtils.takeMoney(Context.Player.IdentityId, OptinCore.config.EnableWarCost);
+                        EconUtils.takeMoney(Context.Player.IdentityId, AlliancePlugin.warcore.config.EnableWarCost);
                         Context.Respond("War is now enabled.");
                     }
                     else
@@ -39,7 +42,7 @@ namespace AlliancesPlugin.WarOptIn
                 }
                 else
                 {
-                    Context.Respond($"Cannot afford the cost of {OptinCore.config.EnableWarCost:C}");
+                    Context.Respond($"Cannot afford the cost of {AlliancePlugin.warcore.config.EnableWarCost:C}");
                 }
             }
             else
@@ -49,11 +52,59 @@ namespace AlliancesPlugin.WarOptIn
             }
         }
 
+        [Command("list", "List factions with war enabled.")]
+        [Permission(MyPromoteLevel.None)]
+        public void ListWar()
+        {
+            if (!AlliancePlugin.warcore.config.EnableOptionalWar)
+            {
+                Context.Respond("Optional war is not enabled.");
+                return;
+            }
+            StringBuilder sb = new StringBuilder();
+            foreach (long id in OptinCore.participants.FactionsAtWar)
+            {
+                var fac = MySession.Static.Factions.TryGetFactionById(id);
+                if (fac != null)
+                {
+                    sb.AppendLine($"{fac.Name} - {fac.Tag}");
+                }
+            }
+            DialogMessage m = new DialogMessage("Factions Opted in", "", sb.ToString());
+            ModCommunication.SendMessageTo(m, Context.Player.SteamUserId);
+        }
+
+        [Command("search", "Check if a faction has enabled war")]
+        [Permission(MyPromoteLevel.None)]
+        public void ListWar(string tag)
+        {
+            if (!AlliancePlugin.warcore.config.EnableOptionalWar)
+            {
+                Context.Respond("Optional war is not enabled.");
+                return;
+            }
+            
+            StringBuilder sb = new StringBuilder();
+            foreach (long id in OptinCore.participants.FactionsAtWar)
+            {
+                var fac = MySession.Static.Factions.TryGetFactionById(id);
+                if (fac != null)
+                {
+                    if (fac.Tag == tag)
+                    {
+                        Context.Respond("Faction has enabled war.");
+                        return;
+                    }
+                }
+            }
+            Context.Respond("Faction has not enabled war.");
+        }
+
         [Command("disable", "disable war.")]
         [Permission(MyPromoteLevel.None)]
         public void DisableWar()
         {
-            if (!OptinCore.config.EnableOptionalWar)
+            if (!AlliancePlugin.warcore.config.EnableOptionalWar)
             {
                 Context.Respond("Optional war is not enabled.");
                 return;
@@ -67,11 +118,11 @@ namespace AlliancesPlugin.WarOptIn
 
             if (fac.IsFounder(Context.Player.IdentityId) || fac.IsLeader(Context.Player.IdentityId))
             {
-                if (EconUtils.getBalance(Context.Player.IdentityId) >= OptinCore.config.DisableWarCost)
+                if (EconUtils.getBalance(Context.Player.IdentityId) >= AlliancePlugin.warcore.config.DisableWarCost)
                 {
-                    if (OptinCore.RemoveFromWarParticipants(fac.FactionId))
+                    if (AlliancePlugin.warcore.RemoveFromWarParticipants(fac.FactionId))
                     {
-                        EconUtils.takeMoney(Context.Player.IdentityId, OptinCore.config.DisableWarCost);
+                        EconUtils.takeMoney(Context.Player.IdentityId, AlliancePlugin.warcore.config.DisableWarCost);
                         Context.Respond("War is now disabled.");
                     }
                     else
@@ -81,7 +132,7 @@ namespace AlliancesPlugin.WarOptIn
                 }
                 else
                 {
-                    Context.Respond($"Cannot afford the cost of {OptinCore.config.DisableWarCost:C}");
+                    Context.Respond($"Cannot afford the cost of {AlliancePlugin.warcore.config.DisableWarCost:C}");
                 }
             }
             else
@@ -96,7 +147,7 @@ namespace AlliancesPlugin.WarOptIn
         [Permission(MyPromoteLevel.Admin)]
         public void ForceAllNeutrals()
         {
-            if (!OptinCore.config.EnableOptionalWar)
+            if (!AlliancePlugin.warcore.config.EnableOptionalWar)
             {
                 Context.Respond("Optional war is not enabled.");
                 return;
