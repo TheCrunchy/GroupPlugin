@@ -1,4 +1,5 @@
 ﻿using Sandbox.Game.World;
+using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -6,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using VRage.Game.ModAPI;
+using static Sandbox.Game.Multiplayer.MyFactionCollection;
 
 namespace AlliancesPlugin.WarOptIn
 {
@@ -15,8 +17,16 @@ namespace AlliancesPlugin.WarOptIn
         public static List<long> FactionsOptedIn = new List<long>();
         public static ListOfWarParticipants participants = new ListOfWarParticipants();
         public static WarConfig config = new WarConfig();
-        public static void DoNeutralUpdate(long firstId, long SecondId)
+        public void DoNeutralUpdate(long firstId, long SecondId)
         {
+            MyAPIGateway.Utilities.InvokeOnGameThread(() =>
+            {
+                MyFactionPeaceRequestState state = MySession.Static.Factions.GetRequestState(firstId, SecondId);
+            if (state != MyFactionPeaceRequestState.Sent)
+            {
+                Sandbox.Game.Multiplayer.MyFactionCollection.SendPeaceRequest(firstId, SecondId);
+                Sandbox.Game.Multiplayer.MyFactionCollection.AcceptPeace(firstId, SecondId);
+            }
             MyFactionStateChange change = MyFactionStateChange.SendPeaceRequest;
             MyFactionStateChange change2 = MyFactionStateChange.AcceptPeace;
             List<object[]> Input = new List<object[]>();
@@ -25,26 +35,27 @@ namespace AlliancesPlugin.WarOptIn
             object[] MethodInput2 = new object[] { change2, SecondId, firstId, 0L };
             AlliancePlugin.sendChange?.Invoke(null, MethodInput2);
             MySession.Static.Factions.SetReputationBetweenFactions(firstId, SecondId, 0);
+            });
         }
 
         public static void SaveFile()
         {
-            AlliancePlugin.utils.WriteToJsonFile<ListOfWarParticipants>(AlliancePlugin.path + "//Alliances//OptionalWar//WarParticipants.json", participants);
+            AlliancePlugin.utils.WriteToJsonFile<ListOfWarParticipants>(AlliancePlugin.path + "//OptionalWar//WarParticipants.json", participants);
         }
         public static ListOfWarParticipants LoadFile()
         {
-            if (!File.Exists(AlliancePlugin.path + "//Alliances//OptionalWar//WarParticipants.json"))
+            if (!File.Exists(AlliancePlugin.path + "//OptionalWar//WarParticipants.json"))
             {
-                AlliancePlugin.utils.WriteToJsonFile<ListOfWarParticipants>(AlliancePlugin.path + "//Alliances//OptionalWar//WarParticipants.json", new ListOfWarParticipants());
+                AlliancePlugin.utils.WriteToJsonFile<ListOfWarParticipants>(AlliancePlugin.path + "//OptionalWar//WarParticipants.json", new ListOfWarParticipants());
             }
             if (!File.Exists(AlliancePlugin.path + "//Alliances//OptionalWar//WarConfig.json"))
             {
-                AlliancePlugin.utils.WriteToJsonFile<WarConfig>(AlliancePlugin.path + "//Alliances//OptionalWar//WarConfig.json", new WarConfig());
+                AlliancePlugin.utils.WriteToJsonFile<WarConfig>(AlliancePlugin.path + "//OptionalWar//WarConfig.json", new WarConfig());
          
             }
-            config = AlliancePlugin.utils.ReadFromJsonFile<WarConfig>(AlliancePlugin.path + "//Alliances//OptionalWar//WarConfig.json");
+            config = AlliancePlugin.utils.ReadFromJsonFile<WarConfig>(AlliancePlugin.path + "//OptionalWar//WarConfig.json");
 
-            return AlliancePlugin.utils.ReadFromJsonFile<ListOfWarParticipants>(AlliancePlugin.path + "//Alliances//OptionalWar//WarParticipants.json");
+            return AlliancePlugin.utils.ReadFromJsonFile<ListOfWarParticipants>(AlliancePlugin.path + "//OptionalWar//WarParticipants.json");
         }
 
         public static bool AddToWarParticipants(long id)
@@ -77,7 +88,7 @@ namespace AlliancesPlugin.WarOptIn
                 return false;
             }
         }
-        public static void StateChange(MyFactionStateChange change, long fromFacId, long toFacId, long playerId, long senderId)
+        public void StateChange(MyFactionStateChange change, long fromFacId, long toFacId, long playerId, long senderId)
         {
             IMyFaction fac1;
             IMyFaction fac2;
@@ -113,7 +124,7 @@ namespace AlliancesPlugin.WarOptIn
 
         }
 
-        public static void ProcessNewFaction(long newid)
+        public void ProcessNewFaction(long newid)
         {
             var faction = MySession.Static.Factions.TryGetFactionById(newid);
             if (faction != null)

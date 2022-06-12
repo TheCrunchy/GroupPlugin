@@ -91,6 +91,7 @@ namespace AlliancesPlugin.WarOptIn
             }
         }
 
+
         [Command("forceneutral", "force all neutrals")]
         [Permission(MyPromoteLevel.Admin)]
         public void ForceAllNeutrals()
@@ -107,7 +108,7 @@ namespace AlliancesPlugin.WarOptIn
                 {
                     if (fac != fac2)
                     {
-                        OptinCore.DoNeutralUpdate(fac.FactionId, fac2.FactionId);
+                        AlliancePlugin.warcore.DoNeutralUpdate(fac.FactionId, fac2.FactionId);
                     }
                 }
                 processed += 1;

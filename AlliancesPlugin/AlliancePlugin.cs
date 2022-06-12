@@ -805,6 +805,8 @@ namespace AlliancesPlugin
 
             }
         }
+        public static OptinCore warcore = new OptinCore();
+
         public static Random rand = new Random();
         private void SessionChanged(ITorchSession session, TorchSessionState state)
         {
@@ -820,17 +822,17 @@ namespace AlliancesPlugin
             }
             if (state == TorchSessionState.Loaded)
             {
-                if (!File.Exists(AlliancePlugin.path + "//Alliances//OptionalWar//WarConfig.json"))
+                Directory.CreateDirectory(AlliancePlugin.path + "//OptionalWar//");
+                if (!File.Exists(AlliancePlugin.path + "//OptionalWar//WarConfig.json"))
                 {
-                    AlliancePlugin.utils.WriteToJsonFile<WarConfig>(AlliancePlugin.path + "//Alliances//WarConfig.json", new WarConfig());
+                    AlliancePlugin.utils.WriteToJsonFile<WarConfig>(AlliancePlugin.path + "//OptionalWar//WarConfig.json", new WarConfig());
 
                 }
-                Directory.CreateDirectory(AlliancePlugin.path + "//Alliances//OptionalWar//");
-                var warconfig = AlliancePlugin.utils.ReadFromJsonFile<WarConfig>(AlliancePlugin.path + "//Alliances//OptionalWar//WarConfig.json");
+                var warconfig = AlliancePlugin.utils.ReadFromJsonFile<WarConfig>(AlliancePlugin.path + "//OptionalWar//WarConfig.json");
                 if (warconfig.EnableOptionalWar)
                 {
-                    MySession.Static.Factions.FactionStateChanged += OptinCore.StateChange;
-                    MySession.Static.Factions.FactionCreated += OptinCore.ProcessNewFaction;
+                    MySession.Static.Factions.FactionStateChanged += warcore.StateChange;
+                    MySession.Static.Factions.FactionCreated += warcore.ProcessNewFaction;
                 }
                 MyAPIGateway.Session.DamageSystem.RegisterBeforeDamageHandler(1, new BeforeDamageApplied(DamageHandler));
                 //      MyEntities.OnEntityAdd += NEWSUIT;
