@@ -37,7 +37,7 @@ namespace AlliancesPlugin.WarOptIn
                     }
                     else
                     {
-                        Context.Respond("War could not be enabled.");
+                        Context.Respond($"War could not be enabled. Current status: {AlliancePlugin.warcore.getStatus(fac.FactionId)}");
                     }
                 }
                 else
@@ -62,7 +62,8 @@ namespace AlliancesPlugin.WarOptIn
                 return;
             }
             StringBuilder sb = new StringBuilder();
-            foreach (long id in OptinCore.participants.FactionsAtWar)
+
+            foreach (long id in AlliancePlugin.warcore.participants.FactionsAtWar)
             {
                 var fac = MySession.Static.Factions.TryGetFactionById(id);
                 if (fac != null)
@@ -85,7 +86,8 @@ namespace AlliancesPlugin.WarOptIn
             }
             
             StringBuilder sb = new StringBuilder();
-            foreach (long id in OptinCore.participants.FactionsAtWar)
+   
+            foreach (long id in AlliancePlugin.warcore.participants.FactionsAtWar)
             {
                 var fac = MySession.Static.Factions.TryGetFactionById(id);
                 if (fac != null)
@@ -127,7 +129,7 @@ namespace AlliancesPlugin.WarOptIn
                     }
                     else
                     {
-                        Context.Respond("War could not be disabled.");
+                        Context.Respond($"War could not be disabled. Current status: {AlliancePlugin.warcore.getStatus(fac.FactionId)}");
                     }
                 }
                 else

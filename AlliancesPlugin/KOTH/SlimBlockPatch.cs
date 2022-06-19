@@ -34,7 +34,7 @@ throw new Exception("Failed to find patch method");
             AlliancePlugin.Log.Info("Patching slim block");
         }
 
-        public static void SendPvEMessage(long attackerId, bool makeFaction = false)
+        public static void SendPvEMessage(long attackerId)
         {
             if (blockCooldowns.TryGetValue(attackerId, out DateTime time))
             {
@@ -46,16 +46,8 @@ throw new Exception("Failed to find patch method");
             }
 
             NotificationMessage message;
-            if (makeFaction)
-            {
 
-         
-            message = new NotificationMessage("PvP is not enabled, or you need a faction.", 5000, "Red");
-            }
-            else
-            {
-                message = new NotificationMessage("PvP is not enabled.", 5000, "Red");
-            }
+            message = new NotificationMessage("War is not enabled, or you need a faction.", 5000, "Red");
             //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
             ModCommunication.SendMessageTo(message, MySession.Static.Players.TryGetSteamId(attackerId));
             blockCooldowns.Remove(attackerId);
@@ -64,127 +56,56 @@ throw new Exception("Failed to find patch method");
         }
 
         private static Dictionary<long, DateTime> blockCooldowns = new Dictionary<long, DateTime>();
-        public static Boolean Debug = false;
+        public static Boolean Debug = true;
         public static Boolean OnDamageRequest(MySlimBlock __instance, float damage,
       MyStringHash damageType,
       bool sync,
       MyHitInfo? hitInfo,
       long attackerId, long realHitEntityId = 0, bool shouldDetonateAmmo = true)
         {
-          //  MySlimBlock block = __instance;
+            //  MySlimBlock block = __instance;
             if (AlliancePlugin.config != null)
             {
                 if (AlliancePlugin.config.DisablePvP)
                 {
-                    if (Debug)
-                    {
-                        AlliancePlugin.Log.Info("damage");
-                    }
                     long newattackerId = AlliancePlugin.GetAttacker(attackerId);
-                    if (Debug)
+                    if (newattackerId == 0L)
                     {
-                        AlliancePlugin.Log.Info("got attacker");
+                        damage = 0.0f;
+                     //   AlliancePlugin.Log.Info("not 1");
+                       return false;
                     }
-
-
-                    if (Debug)
-                    {
-                        AlliancePlugin.Log.Info(attackerId);
-                    }
-                    //check if in zone
-
-                    //Log.Info("has zone");
                     if (FacUtils.GetOwner(__instance.CubeGrid) == 0L)
                     {
-                        return true;
+                        damage = 0.0f;
+                        SendPvEMessage(newattackerId);
+                     //   AlliancePlugin.Log.Info("not 2");
+                        return false;
                     }
-
-                    //    Log.Info("is an entity");
-
-                    //     Log.Info("in distance");
                     MyFaction attacker = MySession.Static.Factions.GetPlayerFaction(newattackerId) as MyFaction;
 
                     MyFaction defender = MySession.Static.Factions.GetPlayerFaction(FacUtils.GetOwner(__instance.CubeGrid));
 
-                    if (attacker != null)
+                    if (attacker == null || defender == null)
                     {
-                        if (Debug)
-                        {
-                            AlliancePlugin.Log.Info("attacker has faction");
-                        }
-                        if (attacker.Tag.Length > 3)
-                        {
-                            if (Debug)
-                            {
-                                AlliancePlugin.Log.Info("NPC fac, allowing");
-                            }
-                            return true;
-                        }
-                        if (defender != null)
-                        {
-                            if (Debug)
-                            {
-                                AlliancePlugin.Log.Info("defender isnt null");
-                            }
-                            if (defender.Tag.Length > 3)
-                            {
-                                if (Debug)
-                                {
-                                    AlliancePlugin.Log.Info("defender is NPC");
-                                }
-                                return true;
-                            }
-                            if (attacker.FactionId == defender.FactionId)
-                            {
-                                if (Debug)
-                                {
-                                    AlliancePlugin.Log.Info("attacker is defender");
-                                }
-                                return true;
-                            }
-                        }
+                      //  AlliancePlugin.Log.Info("not 3");
+                        SendPvEMessage(newattackerId);
+                        damage = 0.0f;
+                        return false;
+                    }
+
+                    if (!MySession.Static.Factions.AreFactionsEnemies(attacker.FactionId, defender.FactionId))
+                    {
+                     //   AlliancePlugin.Log.Info("not 4");
                         SendPvEMessage(newattackerId);
                         damage = 0.0f;
                         return false;
                     }
                     else
                     {
-                        if (Debug)
-                        {
-                            AlliancePlugin.Log.Info("attacker has no faction");
-                        }
-                        if (defender != null)
-                        {
-                            if (defender.Tag.Length > 3)
-                            {
-                                if (Debug)
-                                {
-                                    AlliancePlugin.Log.Info("defender is npc");
-                                }
-                                return true;
-                            }
-
-                        }
-                        SendPvEMessage(newattackerId);
-                        damage = 0.0f;
-                        //send message about PvE
-                        return false;
+                      //  AlliancePlugin.Log.Info("is 5");
+                        return true;
                     }
-
-                    if (!damageType.Equals("Grind"))
-                    {
-                        //        Log.Info("Denying damage");
-                        damage = 0.0f;
-                        return false;
-                    }
-                    //if in zone and damage type is from weapons/ramming deny it
-                  
-
-           
-
-      
-
-
                 }
             }
             return true;

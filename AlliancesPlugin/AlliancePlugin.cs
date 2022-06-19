@@ -586,6 +586,7 @@ namespace AlliancesPlugin
                 return shipTool.OwnerId;
             }
 
+ 
             if (entity is IMyGunBaseUser gunUser)
             {
 
@@ -593,7 +594,11 @@ namespace AlliancesPlugin
 
             }
 
+            if (entity is MyFunctionalBlock block)
+            {
 
+                return block.OwnerId;
+            }
 
             if (entity is MyCubeGrid grid)
             {
@@ -630,53 +635,59 @@ namespace AlliancesPlugin
                 //    Log.Info(attackerId);
                 //  Log.Info(info.Type.ToString());
                 //check if in zone
-                MyFaction attacker = MySession.Static.Factions.GetPlayerFaction(attackerId) as MyFaction;
 
 
-                if (target is MyCharacter character)
-                {
-                    //   Log.Info(info.Type.ToString());
-                    if (info.Type.String.Equals("Environment") || info.Type.String.Equals("Asphyxia") || info.Type.String.Equals("LowPressure") || info.Type.String.Equals("Spider") || info.Type.String.Equals("Wolf") || info.Type.String.Equals("Fall") || info.Type.String.Equals("Suicide"))
-                    {
-                        return;
-                    }
-                    if (attacker != null)
-                    {
-                        if (attacker.Tag.Length > 3)
-                        {
-                            return;
-                        }
-                        else
-                        {
-                            info.Amount = 0.0f;
-                            return;
-                        }
-                    }
-                    else
-                    {
-                        info.Amount = 0.0f;
-                        return;
-                    }
 
-                }
-                //  Log.Info(target.GetType().ToString());
+                //if (target is MyCharacter character)
+                //{
+                //    //   Log.Info(info.Type.ToString());
+                //    if (info.Type.String.Equals("Environment") || info.Type.String.Equals("Asphyxia") || info.Type.String.Equals("LowPressure") || info.Type.String.Equals("Spider") || info.Type.String.Equals("Wolf") || info.Type.String.Equals("Fall") || info.Type.String.Equals("Suicide"))
+                //    {
+                //        return;
+                //    }
+                //    if (attacker != null)
+                //    {
+                //        if (attacker.Tag.Length > 3)
+                //        {
+                //            return;
+                //        }
+                //        else
+                //        {
+                //            info.Amount = 0.0f;
+                //            return;
+                //        }
+                //    }
+                //    else
+                //    {
+                //        info.Amount = 0.0f;
+                //        return;
+                //    }
+
+                //}
+                // Log.Info(info.Type.ToString());
 
                 if (target is MySlimBlock block)
                 {
-                    //   Log.Info("is an entity");
+                    //  Log.Info("is an entity");
                     if (FacUtils.GetOwner(block.CubeGrid) == 0L)
                     {
+                    //    Log.Info("no owner");
                         return;
                     }
                     if (block.OwnerId == attackerId)
                     {
+                    //    Log.Info("owner is attacker");
                         return;
                     }
+                    MyFaction attacker = MySession.Static.Factions.GetPlayerFaction(attackerId) as MyFaction;
                     MyFaction defender = MySession.Static.Factions.GetPlayerFaction(FacUtils.GetOwner(block.CubeGrid));
+
+                    
+
                     //    Log.Info("in distance");
-                    if (info.Type.String.Equals("Grind") || info.Type.String.Equals("Explosion"))
+                    if (info.Type.ToString().Trim().Equals("Grind") || info.Type.ToString().Trim().Equals("Explosion"))
                     {
-                        //  Log.Info("Grind damage");
+                      //   Log.Info("Grind damage");
                         if (attacker != null)
                         {
                             if (Debug)
@@ -714,9 +725,14 @@ namespace AlliancesPlugin
                                     return;
                                 }
                             }
-                            SlimBlockPatch.SendPvEMessage(attackerId);
-                            info.Amount = 0.0f;
-                            return;
+                            if (!MySession.Static.Factions.AreFactionsEnemies(attacker.FactionId, defender.FactionId))
+                            {
+                              //  AlliancePlugin.Log.Info("not 4");
+                                SlimBlockPatch.SendPvEMessage(attackerId);
+                                info.Amount = 0.0f;
+                                return ;
+                            }
+   
                         }
                         else
                         {
@@ -736,7 +752,7 @@ namespace AlliancesPlugin
                                 }
                             }
 
-                            SlimBlockPatch.SendPvEMessage(attackerId, true);
+                            SlimBlockPatch.SendPvEMessage(attackerId);
                             info.Amount = 0.0f;
                             return;
 
@@ -4132,6 +4148,16 @@ namespace AlliancesPlugin
                 if (DateTime.Now > NextUpdate)
                 {
                     NextUpdate = DateTime.Now.AddSeconds(60);
+               
+                    try
+                    {
+                        warcore.LoadFile();
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex);
+
+                    }
                     try
                     {
                         OrganisePlayers();

@@ -16,7 +16,7 @@ namespace AlliancesPlugin.WarOptIn
 
         public static List<long> AllFactionIds = new List<long>();
         public static List<long> FactionsOptedIn = new List<long>();
-        public static ListOfWarParticipants participants = new ListOfWarParticipants();
+        public ListOfWarParticipants participants = new ListOfWarParticipants();
         public WarConfig config = new WarConfig();
         public void DoNeutralUpdate(long firstId, long SecondId)
         {
@@ -51,6 +51,18 @@ namespace AlliancesPlugin.WarOptIn
             }
             config = AlliancePlugin.utils.ReadFromJsonFile<WarConfig>(AlliancePlugin.path + "//OptionalWar//WarConfig.json");
             return AlliancePlugin.utils.ReadFromJsonFile<ListOfWarParticipants>(AlliancePlugin.path + "//OptionalWar//WarParticipants.json");
+        }
+
+        public String getStatus(long id)
+        {
+            if (participants.FactionsAtWar.Contains(id))
+            {
+                return "Enabled.";
+            }
+            else
+            {
+                return "Disabled.";
+            }
         }
 
         public bool AddToWarParticipants(long id)
