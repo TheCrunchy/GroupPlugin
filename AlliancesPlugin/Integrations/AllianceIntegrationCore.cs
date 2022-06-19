@@ -44,7 +44,7 @@ namespace AlliancesPlugin.Integrations
             {
                 return 0;
             }
-
+            alliance.LoadShipClassLimits();
             return alliance.GetShipClassLimit(classType);
         }
     }

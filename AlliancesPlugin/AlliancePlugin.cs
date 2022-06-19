@@ -1437,6 +1437,7 @@ namespace AlliancesPlugin
                                 }
                             }
                         }
+                        alliance.LoadShipClassLimits();
 
                     }
                 }
