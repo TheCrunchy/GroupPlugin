@@ -16,6 +16,7 @@ using System.Numerics;
 using VRageMath;
 using AlliancesPlugin.KOTH;
 using AlliancesPlugin.Alliances.NewTerritories;
+using AlliancesPlugin.Alliances.Upgrades;
 
 namespace AlliancesPlugin.Alliances
 {
@@ -62,6 +63,39 @@ namespace AlliancesPlugin.Alliances
         public int AssemblerUpgradeLevel = 0;
 
         public Boolean ForceFriends = true;
+
+        private ShipClassLimits _classLimits;
+
+        public ShipClassLimits GetShipClassLimits()
+        {
+            if (_classLimits != null)
+            {
+                return _classLimits;
+            }
+            return LoadShipClassLimits();
+        
+        }
+
+        public int GetShipClassLimit(string className)
+        {
+            return _classLimits.GetLimitForClass(className);
+        }
+
+        public ShipClassLimits LoadShipClassLimits()
+        {
+            var path = $"{AlliancePlugin.path}//ShipClassLimits//{AllianceId}.xml";
+            if (!File.Exists(path))
+            {
+                ShipClassLimits templimits = new ShipClassLimits();
+                AlliancePlugin.utils.WriteToXmlFile<ShipClassLimits>(path, templimits);
+                return templimits;
+            }
+           var limits = AlliancePlugin.utils.ReadFromXmlFile<ShipClassLimits>(path);
+            limits.PutLimitsInDictionary();
+            _classLimits = limits;
+            return limits;
+        }
+
         public long GetExpectedUpkeep()
         {
 
