@@ -157,8 +157,12 @@ namespace AlliancesPlugin.WarOptIn
             int processed = 0;
             foreach (MyFaction fac in MySession.Static.Factions.GetAllFactions())
             {
+                if (fac.Tag.Length > 3)
+                    continue;
                 foreach (MyFaction fac2 in MySession.Static.Factions.GetAllFactions())
                 {
+                    if (fac2.Tag.Length > 3)
+                        continue;
                     if (fac != fac2)
                     {
                         AlliancePlugin.warcore.DoNeutralUpdate(fac.FactionId, fac2.FactionId);

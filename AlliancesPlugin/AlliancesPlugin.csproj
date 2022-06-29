@@ -111,6 +111,14 @@
     <Reference Include="NLog">
       <HintPath>..\..\FixPlayerCommand\FixPlayerCommand\bin\Debug\NLog.dll</HintPath>
     </Reference>
+    <Reference Include="ProtoBuf.Net, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\4 Torch Server\DedicatedServer64\ProtoBuf.Net.dll</HintPath>
+    </Reference>
+    <Reference Include="ProtoBuf.Net.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\4 Torch Server\DedicatedServer64\ProtoBuf.Net.Core.dll</HintPath>
+    </Reference>
     <Reference Include="Sandbox.Common, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\4 Torch Server\DedicatedServer64\Sandbox.Common.dll</HintPath>
@@ -202,11 +210,17 @@
     <Compile Include="Alliances\Upgrades\GridRepairUpgrades.cs" />
     <Compile Include="Alliances\ItemRequirement.cs" />
     <Compile Include="Alliances\MyPlayerPatch.cs" />
+    <Compile Include="Alliances\Upgrades\ShipClasses\LoadedShipLimits.cs" />
+    <Compile Include="Alliances\Upgrades\ShipClasses\ShipClassLimits.cs" />
+    <Compile Include="Alliances\Upgrades\ShipClasses\ShipClassUpgrade.cs" />
     <Compile Include="Hangar\HangarSlotUpgrade.cs" />
     <Compile Include="Alliances\Upgrades\MyProductionPatch.cs" />
     <Compile Include="Alliances\PlayerData.cs" />
     <Compile Include="Alliances\RefineryCommands.cs" />
     <Compile Include="Alliances\Upgrades\RefineryUpgrade.cs" />
+    <Compile Include="Integrations\AllianceIntegrationCore.cs" />
+    <Compile Include="KamikazeTerritories\ClaimBlockSettings.cs" />
+    <Compile Include="KamikazeTerritories\MessageHandler.cs" />
     <Compile Include="Shipyard\ShipyardSpeedUpgrade.cs" />
     <Compile Include="Shipyard\ShipyardSlotUpgrade.cs" />
     <Compile Include="Alliances\VaultCommands.cs" />
@@ -280,5 +294,6 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -106,6 +106,10 @@ namespace AlliancesPlugin.WarOptIn
                     fac2 = MySession.Static.Factions.TryGetFactionById(toFacId);
                     if (fac1 != null && fac2 != null)
                     {
+                        if (fac1.Tag.Length > 3 || fac2.Tag.Length > 3)
+                        {
+                            return;
+                        } 
                         if (!FactionsOptedIn.Contains(fromFacId))
                         {
                             AlliancePlugin.SendChatMessage("War Gods", $"You have not opted in to war. To opt in type !war enable", (ulong) senderId);

@@ -9,7 +9,7 @@ namespace AlliancesPlugin.Integrations
 {
     public class AllianceIntegrationCore
     {
-        public Guid GetAllianceId(string factionTag)
+        public static Guid GetAllianceId(string factionTag)
         {
             var alliance = AlliancePlugin.GetAllianceNoLoading(factionTag);
             if (alliance == null)
@@ -23,7 +23,7 @@ namespace AlliancesPlugin.Integrations
             return alliance.AllianceId;
         }
 
-        public Alliance GetAllianceObj(string factionTag)
+        public static Alliance GetAllianceObj(string factionTag)
         {
             var alliance = AlliancePlugin.GetAllianceNoLoading(factionTag);
             if (alliance == null)
@@ -37,7 +37,7 @@ namespace AlliancesPlugin.Integrations
             return alliance;
         }
 
-        public int GetMaximumForShipClassType(string factionTag, string classType)
+        public static int GetMaximumForShipClassType(string factionTag, string classType)
         {
             var alliance = GetAllianceObj(factionTag);
             if (alliance == null)

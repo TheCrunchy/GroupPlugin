@@ -59,7 +59,7 @@ using static AlliancesPlugin.JumpGates.JumpGate;
 using AlliancesPlugin.Alliances.NewTerritories;
 using static AlliancesPlugin.Alliances.NewTerritories.City;
 using AlliancesPlugin.WarOptIn;
-
+using AlliancesPlugin.KamikazeTerritories;
 namespace AlliancesPlugin
 {
     public class AlliancePlugin : TorchPluginBase
@@ -183,33 +183,34 @@ namespace AlliancesPlugin
             basePath = StoragePath;
             SetupConfig();
             path = CreatePath();
-            if (!Directory.Exists(path + "//CaptureSites//"))
-            {
-                Directory.CreateDirectory(path + "//CaptureSites//");
+            Directory.CreateDirectory($"{AlliancePlugin.path}//ShipClassLimits//");
 
-            }
-            if (!Directory.Exists(path + "//JumpGates//"))
-            {
-                Directory.CreateDirectory(path + "//JumpGates//");
-            }
-            if (!Directory.Exists(path + "//Vaults//"))
-            {
-                Directory.CreateDirectory(path + "//Vaults//");
-            }
-            if (!Directory.Exists(path + "//Territories//"))
-            {
-                Directory.CreateDirectory(path + "//Territories//");
-            }
+            Directory.CreateDirectory(path + "//CaptureSites//");
+            Directory.CreateDirectory(path + "//Territories//CityConfigs//");
+            Directory.CreateDirectory(path + "//JumpGates//");
+
+            Directory.CreateDirectory(path + "//Vaults//");
+
+            Directory.CreateDirectory(path + "//Territories//");
+
+            Directory.CreateDirectory(path + "//PlayerData//");
+
+            Directory.CreateDirectory(path + "//ShipMarket//");
+
+            Directory.CreateDirectory(path + "//ShipMarket//ForSale//");
+
+            Directory.CreateDirectory(path + "//ShipMarket//Sold//");
+
+            Directory.CreateDirectory(path + "//ShipMarket//Grids//");
             if (!File.Exists(path + "//Territories//Example.xml"))
             {
                 Territory example = new Territory();
                 example.enabled = false;
                 utils.WriteToXmlFile<Territory>(path + "//Territories//Example.xml", example, false);
             }
-            if (!Directory.Exists(path + "//Territories//CityConfigs//"))
-            {
-                Directory.CreateDirectory(path + "//Territories//CityConfigs//");
-            }
+
+
+
             if (!File.Exists(path + "//Territories//CityConfigs//Example.xml"))
             {
                 City template = new City();
@@ -240,26 +241,8 @@ namespace AlliancesPlugin
                 utils.WriteToXmlFile<City>(path + "//Territories//CityConfigs//Example.xml", template, false);
             }
 
-            if (!Directory.Exists(path + "//PlayerData//"))
-            {
-                Directory.CreateDirectory(path + "//PlayerData//");
-            }
-            if (!Directory.Exists(path + "//ShipMarket//"))
-            {
-                Directory.CreateDirectory(path + "//ShipMarket//");
-            }
-            if (!Directory.Exists(path + "//ShipMarket//ForSale//"))
-            {
-                Directory.CreateDirectory(path + "//ShipMarket//ForSale//");
-            }
-            if (!Directory.Exists(path + "//ShipMarket//Sold//"))
-            {
-                Directory.CreateDirectory(path + "//ShipMarket//Sold//");
-            }
-            if (!Directory.Exists(path + "//ShipMarket//Grids//"))
-            {
-                Directory.CreateDirectory(path + "//ShipMarket//Grids//");
-            }
+
+
             TorchBase = Torch;
             LoadAllAlliances();
 
@@ -506,7 +489,7 @@ namespace AlliancesPlugin
         private static List<Vector3> StationLocations = new List<Vector3>();
         public static MyGps ScanChat(string input, string desc = null)
         {
-            
+
             int num = 0;
             bool flag = true;
             MatchCollection matchCollection = Regex.Matches(input, "GPS:([^:]{0,32}):([\\d\\.-]*):([\\d\\.-]*):([\\d\\.-]*):");
@@ -586,7 +569,7 @@ namespace AlliancesPlugin
                 return shipTool.OwnerId;
             }
 
- 
+
             if (entity is IMyGunBaseUser gunUser)
             {
 
@@ -671,23 +654,23 @@ namespace AlliancesPlugin
                     //  Log.Info("is an entity");
                     if (FacUtils.GetOwner(block.CubeGrid) == 0L)
                     {
-                    //    Log.Info("no owner");
+                        //    Log.Info("no owner");
                         return;
                     }
                     if (block.OwnerId == attackerId)
                     {
-                    //    Log.Info("owner is attacker");
+                        //    Log.Info("owner is attacker");
                         return;
                     }
                     MyFaction attacker = MySession.Static.Factions.GetPlayerFaction(attackerId) as MyFaction;
                     MyFaction defender = MySession.Static.Factions.GetPlayerFaction(FacUtils.GetOwner(block.CubeGrid));
 
-                    
+
 
                     //    Log.Info("in distance");
                     if (info.Type.ToString().Trim().Equals("Grind") || info.Type.ToString().Trim().Equals("Explosion"))
                     {
-                      //   Log.Info("Grind damage");
+                        //   Log.Info("Grind damage");
                         if (attacker != null)
                         {
                             if (Debug)
@@ -727,12 +710,12 @@ namespace AlliancesPlugin
                             }
                             if (!MySession.Static.Factions.AreFactionsEnemies(attacker.FactionId, defender.FactionId))
                             {
-                              //  AlliancePlugin.Log.Info("not 4");
+                                //  AlliancePlugin.Log.Info("not 4");
                                 SlimBlockPatch.SendPvEMessage(attackerId);
                                 info.Amount = 0.0f;
-                                return ;
+                                return;
                             }
-   
+
                         }
                         else
                         {
@@ -823,6 +806,8 @@ namespace AlliancesPlugin
         }
         public static OptinCore warcore = new OptinCore();
 
+  
+
         public static Random rand = new Random();
         private void SessionChanged(ITorchSession session, TorchSessionState state)
         {
@@ -838,6 +823,7 @@ namespace AlliancesPlugin
             }
             if (state == TorchSessionState.Loaded)
             {
+                MyAPIGateway.Multiplayer.RegisterMessageHandler(4910, MessageHandler.ReceiveTerritory);
                 Directory.CreateDirectory(AlliancePlugin.path + "//OptionalWar//");
                 if (!File.Exists(AlliancePlugin.path + "//OptionalWar//WarConfig.json"))
                 {
@@ -2178,7 +2164,7 @@ namespace AlliancesPlugin
 
                                     config.PickNewSiteOnUnlock = false;
                                     Location newloc = config.GetNewCapSite(loc);
-                                    if (newloc != null)
+                                    if (newloc == null)
                                     {
                                         Log.Error("Failed to change capture site");
                                     }
@@ -2305,6 +2291,7 @@ namespace AlliancesPlugin
                                                     {
                                                         CapturingAlliance = yeet.AllianceId;
                                                         CanCapWithSuit = true;
+
                                                         continue;
                                                     }
                                                     else
@@ -2684,7 +2671,7 @@ namespace AlliancesPlugin
                                             {
                                                 continue;
                                             }
-                                            if (Player == null || Player.Character.MarkedForClose)
+                                            if (Player == null || Player.Character == null || Player.Character.MarkedForClose)
                                                 continue;
 
                                             long PlayerID = Player.Identity.IdentityId;
@@ -2716,6 +2703,7 @@ namespace AlliancesPlugin
                                                             if (!MySession.Static.Factions.AreFactionsEnemies(CapturingFaction, PlayersFaction.FactionId))
                                                             {
                                                                 CanCapWithSuit = true;
+                                                                capture = PlayersFaction;
                                                                 continue;
                                                             }
                                                             else
@@ -2733,6 +2721,7 @@ namespace AlliancesPlugin
                                     if (CanCapWithSuit)
                                     {
                                         hasActiveCaptureBlock = true;
+
                                         //    continue;
                                     }
                                     if (!config.DoSuitCaps)
@@ -2772,6 +2761,7 @@ namespace AlliancesPlugin
                                                             {
                                                                 // Log.Info("has cap block");
                                                                 hasActiveCaptureBlock = true;
+
                                                             }
                                                         }
                                                     }
@@ -2816,7 +2806,7 @@ namespace AlliancesPlugin
                                                 catch (Exception e)
                                                 {
                                                     Log.Error("Cant do discord message for koth. " + e.ToString());
-                                                    SendChatMessage(loc.Name, "Capture can begin in " + config.MinutesBeforeCaptureStarts + " minutes. By " + capture.Name);
+                                                    SendChatMessage(loc.Name, "Capture can begin in " + config.MinutesBeforeCaptureStarts + " minutes.");
                                                 }
                                             }
                                         }
@@ -3118,10 +3108,12 @@ namespace AlliancesPlugin
                             }
 
                         }
-                        SaveCaptureConfig(config.Name, config);
+
                         Vector3 lootGrid = new Vector3(loot.X, loot.Y, loot.Z);
                         MyCubeGrid lootgrid = GetLootboxGrid(lootGrid, loot);
                         //spawn the cores
+                        loot.LootboxGridEntityId = lootgrid.EntityId;
+                        SaveCaptureConfig(config.Name, config);
                         Boolean hasCap = false;
                         Boolean hasCapNotOwner = false;
                         foreach (MyCubeGrid grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
@@ -4149,7 +4141,7 @@ namespace AlliancesPlugin
                 if (DateTime.Now > NextUpdate)
                 {
                     NextUpdate = DateTime.Now.AddSeconds(60);
-               
+
                     try
                     {
                         warcore.LoadFile();
@@ -4384,7 +4376,7 @@ namespace AlliancesPlugin
         }
         public static MyCubeGrid GetLootboxGrid(Vector3 position, LootLocation config)
         {
-            if (MyAPIGateway.Entities.GetEntityById(config.LootboxGridEntityId) != null)
+            if (MyAPIGateway.Entities.GetEntityById(config.LootboxGridEntityId) != null && config.LootboxGridEntityId > 0)
             {
                 if (MyAPIGateway.Entities.GetEntityById(config.LootboxGridEntityId) is MyCubeGrid grid)
                     return grid;
@@ -4466,11 +4458,10 @@ namespace AlliancesPlugin
                             {
                                 if (block != null)
                                 {
-                                    //   Log.Info("Should spawn item");
+                                    Log.Info("Should spawn item");
 
                                     MyItemType itemType = new MyInventoryItemFilter(item.TypeId + "/" + item.SubTypeId).ItemType;
                                     int amount = random.Next(item.ItemMinAmount, item.ItemMaxAmount);
-                                    block.GetInventory().CanItemsBeAdded((MyFixedPoint)amount, itemType);
                                     block.GetInventory().AddItems((MyFixedPoint)amount, (MyObjectBuilder_PhysicalObject)MyObjectBuilderSerializer.CreateNewObject(id));
                                 }
                             }
