@@ -220,6 +220,7 @@
     <Compile Include="Alliances\Upgrades\RefineryUpgrade.cs" />
     <Compile Include="Integrations\AllianceIntegrationCore.cs" />
     <Compile Include="KamikazeTerritories\ClaimBlockSettings.cs" />
+    <Compile Include="KamikazeTerritories\KamikazeTerritory.cs" />
     <Compile Include="KamikazeTerritories\MessageHandler.cs" />
     <Compile Include="Shipyard\ShipyardSpeedUpgrade.cs" />
     <Compile Include="Shipyard\ShipyardSlotUpgrade.cs" />

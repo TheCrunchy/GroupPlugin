@@ -9,25 +9,31 @@ namespace AlliancesPlugin.KamikazeTerritories
 {
     public static class MessageHandler
     {
+        public static List<KamikazeTerritory> Territories = new List<KamikazeTerritory>();
+
         public static void ReceiveTerritory(byte[] data)
         {
-            AlliancePlugin.Log.Info("GOT A TERRITORY MESSAGE");
             var message = MyAPIGateway.Utilities.SerializeFromBinary<CommsPackage>(data);
             try
             {
                 var package = MyAPIGateway.Utilities.SerializeFromBinary<CommsPackage>(data);
                 if (package == null) return;
-                AlliancePlugin.Log.Info("GOT A TERRITORY MESSAGE 1");
+              
                 if (package.Type == DataType.AddTerritory)
                 {
-                    AlliancePlugin.Log.Info("ADD A TERRITORY");
+           
                     var encasedData = MyAPIGateway.Utilities.SerializeFromBinary<ObjectContainer>(package.Data);
                     if (encasedData == null) return;
-                    AlliancePlugin.Log.Info(encasedData.settings._claimRadius + " RADIUS");
-                   
 
-
-
+                    if (!Territories.Any(x => x.EntityId == encasedData.entityId))
+                    {
+                        Territories.Add(new KamikazeTerritory()
+                        {
+                            EntityId = encasedData.entityId,
+                            Radius = encasedData.settings._claimRadius,
+                            Position = encasedData.settings._blockPos
+                        });
+                    }
                     return;
                 }
             }

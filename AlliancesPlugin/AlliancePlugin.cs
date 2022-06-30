@@ -662,6 +662,15 @@ namespace AlliancesPlugin
                         //    Log.Info("owner is attacker");
                         return;
                     }
+                    var loc = block.CubeGrid.PositionComp.GetPosition();
+                    foreach (var territory in KamikazeTerritories.MessageHandler.Territories)
+                    {
+                        var distance = Vector3.Distance(loc, territory.Position);
+                        if (distance <= territory.Radius)
+                        {
+                            return;
+                        }
+                    }
                     MyFaction attacker = MySession.Static.Factions.GetPlayerFaction(attackerId) as MyFaction;
                     MyFaction defender = MySession.Static.Factions.GetPlayerFaction(FacUtils.GetOwner(block.CubeGrid));
 

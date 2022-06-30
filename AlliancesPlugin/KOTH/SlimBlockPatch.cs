@@ -68,6 +68,15 @@ throw new Exception("Failed to find patch method");
             {
                 if (AlliancePlugin.config.DisablePvP)
                 {
+                    var loc = __instance.CubeGrid.PositionComp.GetPosition();
+                    foreach (var territory in KamikazeTerritories.MessageHandler.Territories)
+                    {
+                        var distance = Vector3.Distance(loc, territory.Position);
+                        if (distance <= territory.Radius)
+                        {
+                            return true;
+                        }
+                    }
                     long newattackerId = AlliancePlugin.GetAttacker(attackerId);
                     if (newattackerId == 0L)
                     {
