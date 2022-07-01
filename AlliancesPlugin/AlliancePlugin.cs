@@ -717,6 +717,11 @@ namespace AlliancesPlugin
                                     return;
                                 }
                             }
+                            if (defender == null)
+                            {
+                                info.Amount = 0.0f;
+                                return;
+                            }
                             if (!MySession.Static.Factions.AreFactionsEnemies(attacker.FactionId, defender.FactionId))
                             {
                                 //  AlliancePlugin.Log.Info("not 4");
