@@ -112,13 +112,21 @@ namespace AlliancesPlugin.WarOptIn
                         } 
                         if (!FactionsOptedIn.Contains(fromFacId))
                         {
-                            AlliancePlugin.SendChatMessage("War Gods", $"You have not opted in to war. To opt in type !war enable", (ulong) senderId);
+                            if (senderId > 0)
+                            {
+
+                         
+                            AlliancePlugin.SendChatMessage("War Gods", $"You have not opted in to war. To opt in type !war enable", (ulong) playerId);
+                            }
                             DoNeutralUpdate(fromFacId, toFacId);
                             break;
                         }
                         if (!FactionsOptedIn.Contains(toFacId))
                         {
-                            AlliancePlugin.SendChatMessage("War Gods", $"Target faction has not opted in to war.", (ulong)senderId);
+                            if (senderId > 0)
+                            {
+                                AlliancePlugin.SendChatMessage("War Gods", $"Target faction has not opted in to war.", (ulong)playerId);
+                            }
                             DoNeutralUpdate(fromFacId, toFacId);
                             break;
                         }
