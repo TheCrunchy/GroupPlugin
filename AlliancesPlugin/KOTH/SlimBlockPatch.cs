@@ -77,7 +77,14 @@ throw new Exception("Failed to find patch method");
                             return true;
                         }
                     }
+                    List<String> DamageTypesToIgnore = new List<string>()
+                    {
+                        "Deformation", "Suicide", "Temperature", "Asphyxia"
+                    };
                     long newattackerId = AlliancePlugin.GetAttacker(attackerId);
+                    if (DamageTypesToIgnore.Contains(damageType.ToString().Trim())){
+                        return true;
+                    }
                     if (newattackerId == 0L)
                     {
                         damage = 0.0f;

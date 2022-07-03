@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VRage.Game;
 using VRage.Game.ModAPI;
 using static Sandbox.Game.Multiplayer.MyFactionCollection;
 
@@ -23,19 +24,19 @@ namespace AlliancesPlugin.WarOptIn
             MyAPIGateway.Utilities.InvokeOnGameThread(() =>
             {
                 MyFactionPeaceRequestState state = MySession.Static.Factions.GetRequestState(firstId, SecondId);
-            if (state != MyFactionPeaceRequestState.Sent)
-            {
-                Sandbox.Game.Multiplayer.MyFactionCollection.SendPeaceRequest(firstId, SecondId);
-                Sandbox.Game.Multiplayer.MyFactionCollection.AcceptPeace(firstId, SecondId);
-            }
-            MyFactionStateChange change = MyFactionStateChange.SendPeaceRequest;
-            MyFactionStateChange change2 = MyFactionStateChange.AcceptPeace;
-            List<object[]> Input = new List<object[]>();
-            object[] MethodInput = new object[] { change, firstId, SecondId, 0L };
-            AlliancePlugin.sendChange?.Invoke(null, MethodInput);
-            object[] MethodInput2 = new object[] { change2, SecondId, firstId, 0L };
-            AlliancePlugin.sendChange?.Invoke(null, MethodInput2);
-            MySession.Static.Factions.SetReputationBetweenFactions(firstId, SecondId, 0);
+                if (state != MyFactionPeaceRequestState.Sent)
+                {
+                    Sandbox.Game.Multiplayer.MyFactionCollection.SendPeaceRequest(firstId, SecondId);
+                    Sandbox.Game.Multiplayer.MyFactionCollection.AcceptPeace(firstId, SecondId);
+                }
+                MyFactionStateChange change = MyFactionStateChange.SendPeaceRequest;
+                MyFactionStateChange change2 = MyFactionStateChange.AcceptPeace;
+                List<object[]> Input = new List<object[]>();
+                object[] MethodInput = new object[] { change, firstId, SecondId, 0L };
+                AlliancePlugin.sendChange?.Invoke(null, MethodInput);
+                object[] MethodInput2 = new object[] { change2, SecondId, firstId, 0L };
+                AlliancePlugin.sendChange?.Invoke(null, MethodInput2);
+                MySession.Static.Factions.SetReputationBetweenFactions(firstId, SecondId, 0);
             });
         }
 
@@ -91,7 +92,7 @@ namespace AlliancesPlugin.WarOptIn
                 return true;
             }
             else
-            { 
+            {
                 return false;
             }
         }
@@ -109,26 +110,34 @@ namespace AlliancesPlugin.WarOptIn
                         if (fac1.Tag.Length > 3 || fac2.Tag.Length > 3)
                         {
                             return;
-                        } 
+                        }
                         if (!FactionsOptedIn.Contains(fromFacId))
                         {
-                            if (senderId > 0)
+                            foreach (MyFactionMember m in fac1.Members.Values)
                             {
-
-                         
-                            AlliancePlugin.SendChatMessage("War Gods", $"You have not opted in to war. To opt in type !war enable", (ulong) playerId);
+                                var id = MySession.Static.Players.TryGetSteamId(m.PlayerId);
+                                if (id > 0)
+                                {
+                                    AlliancePlugin.SendChatMessage("War Gods", $"You have not opted in to war. To opt in type !war enable", id);
+                                }
+                               
                             }
                             DoNeutralUpdate(fromFacId, toFacId);
-                            break;
+                            return;
                         }
                         if (!FactionsOptedIn.Contains(toFacId))
                         {
-                            if (senderId > 0)
+                            foreach (MyFactionMember m in fac1.Members.Values)
                             {
-                                AlliancePlugin.SendChatMessage("War Gods", $"Target faction has not opted in to war.", (ulong)playerId);
+                                var id = MySession.Static.Players.TryGetSteamId(m.PlayerId);
+                                if (id > 0)
+                                {
+                                    AlliancePlugin.SendChatMessage("War Gods", $"Target faction has not opted in to war.", id);
+                                }
+
                             }
                             DoNeutralUpdate(fromFacId, toFacId);
-                            break;
+                            return;
                         }
                     }
                     break;
@@ -151,7 +160,7 @@ namespace AlliancesPlugin.WarOptIn
                 AllFactionIds.Add(newid);
                 foreach (MyFaction fac in MySession.Static.Factions.GetAllFactions())
                 {
-      
+
                     if (fac.FactionId != newid && fac.Tag.Length == 3)
                     {
                         DoNeutralUpdate(faction.FactionId, fac.FactionId);

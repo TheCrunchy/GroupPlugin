@@ -52,7 +52,7 @@ namespace AlliancesPlugin.Alliances
                 Context.Respond("Only factions can be in alliances.");
                 return;
             }
-            if (token.Length != 59)
+            if (token.Length < 59)
             {
                 Context.Respond("Token not a valid length!");
                 return;
@@ -85,7 +85,7 @@ namespace AlliancesPlugin.Alliances
         public void AllianceTokenAdmin(string allianceName, string token)
         {
  
-            if (token.Length != 59)
+            if (token.Length < 59)
             {
                 Context.Respond("Token not a valid length!");
                 return;

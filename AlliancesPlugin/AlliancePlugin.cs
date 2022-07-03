@@ -610,44 +610,10 @@ namespace AlliancesPlugin
             {
                 return;
             }
-            //   Log.Info(info.Type.String);
 
             if (config.DisablePvP)
             {
                 long attackerId = GetAttacker(info.AttackerId);
-                //    Log.Info(attackerId);
-                //  Log.Info(info.Type.ToString());
-                //check if in zone
-
-
-
-                //if (target is MyCharacter character)
-                //{
-                //    //   Log.Info(info.Type.ToString());
-                //    if (info.Type.String.Equals("Environment") || info.Type.String.Equals("Asphyxia") || info.Type.String.Equals("LowPressure") || info.Type.String.Equals("Spider") || info.Type.String.Equals("Wolf") || info.Type.String.Equals("Fall") || info.Type.String.Equals("Suicide"))
-                //    {
-                //        return;
-                //    }
-                //    if (attacker != null)
-                //    {
-                //        if (attacker.Tag.Length > 3)
-                //        {
-                //            return;
-                //        }
-                //        else
-                //        {
-                //            info.Amount = 0.0f;
-                //            return;
-                //        }
-                //    }
-                //    else
-                //    {
-                //        info.Amount = 0.0f;
-                //        return;
-                //    }
-
-                //}
-                // Log.Info(info.Type.ToString());
 
                 if (target is MySlimBlock block)
                 {
@@ -676,7 +642,7 @@ namespace AlliancesPlugin
 
 
 
-                    //    Log.Info("in distance");
+                      // Log.Info(info.Type.ToString().Trim());
                     if (info.Type.ToString().Trim().Equals("Grind") || info.Type.ToString().Trim().Equals("Explosion"))
                     {
                         //   Log.Info("Grind damage");
@@ -756,8 +722,6 @@ namespace AlliancesPlugin
                         }
 
                     }
-
-
                 }
             }
 
@@ -1154,7 +1118,7 @@ namespace AlliancesPlugin
 
                         try
                         {
-                            if (Encryption.DecryptString(alliance.AllianceId.ToString(), alliance.DiscordToken).Length != 59)
+                            if (Encryption.DecryptString(alliance.AllianceId.ToString(), alliance.DiscordToken).Length < 59)
                             {
                                 Log.Error("Invalid bot token for " + alliance.AllianceId);
                                 continue;
@@ -1462,7 +1426,7 @@ namespace AlliancesPlugin
 
                         try
                         {
-                            if (Encryption.DecryptString(alliance.AllianceId.ToString(), alliance.DiscordToken).Length != 59)
+                            if (Encryption.DecryptString(alliance.AllianceId.ToString(), alliance.DiscordToken).Length < 59)
                             {
                                 Log.Error("Invalid bot token for " + alliance.AllianceId);
 
