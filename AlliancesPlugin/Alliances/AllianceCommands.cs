@@ -79,7 +79,16 @@ namespace AlliancesPlugin.Alliances
                 Context.Respond("You dont have an alliance.");
             }
         }
-
+        [Command("ter", "output loaded territories")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void outputTerritories()
+        {
+            foreach (var ter in KamikazeTerritories.MessageHandler.Territories)
+            {
+                Context.Respond(ter.EntityId + "");
+            }
+            Context.Respond(KamikazeTerritories.MessageHandler.Territories.Count + " Loaded territories");
+        }
         [Command("admintoken", "set a discord token with admin perms")]
         [Permission(MyPromoteLevel.Admin)]
         public void AllianceTokenAdmin(string allianceName, string token)

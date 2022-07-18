@@ -111,7 +111,7 @@ namespace AlliancesPlugin.WarOptIn
                         {
                             return;
                         }
-                        if (!FactionsOptedIn.Contains(fromFacId))
+                        if (!participants.FactionsAtWar.Contains(fromFacId))
                         {
                             foreach (MyFactionMember m in fac1.Members.Values)
                             {
@@ -125,7 +125,7 @@ namespace AlliancesPlugin.WarOptIn
                             DoNeutralUpdate(fromFacId, toFacId);
                             return;
                         }
-                        if (!FactionsOptedIn.Contains(toFacId))
+                        if (!participants.FactionsAtWar.Contains(toFacId))
                         {
                             foreach (MyFactionMember m in fac1.Members.Values)
                             {

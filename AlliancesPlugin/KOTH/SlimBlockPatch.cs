@@ -101,7 +101,10 @@ throw new Exception("Failed to find patch method");
                     MyFaction attacker = MySession.Static.Factions.GetPlayerFaction(newattackerId) as MyFaction;
 
                     MyFaction defender = MySession.Static.Factions.GetPlayerFaction(FacUtils.GetOwner(__instance.CubeGrid));
-
+                    if (defender != null && defender.Tag.Length > 3)
+                    {
+                        return true;
+                    }
                     if (attacker == null || defender == null)
                     {
                       //  AlliancePlugin.Log.Info("not 3");
