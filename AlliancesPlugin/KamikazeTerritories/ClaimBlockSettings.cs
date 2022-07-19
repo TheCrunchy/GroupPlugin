@@ -24,8 +24,38 @@ namespace AlliancesPlugin.KamikazeTerritories
     public enum DataType
     {
         MyString,
-        AddTerritory
-
+        ClaimSettings,
+        InitClaim,
+        InitSiege,
+        Sync,
+        SingleSync,
+        ColorGps,
+        RemoveClaimSettings,
+        SendClientSettings,
+        RequestSettings,
+        UpdateDetailInfo,
+        UpdateBlockText,
+        CreateTrigger,
+        RemoveTrigger,
+        SendGps,
+        AddTerritory,
+        SendAudio,
+        UpdateEmissives,
+        ResetTerritory,
+        SyncBillboard,
+        SyncParticle,
+        UpdateProduction,
+        SyncProduction,
+        AddProduction,
+        RemoveProduction,
+        ManualTerritory,
+        InitFinalSiege,
+        ConsumeDelayTokens,
+        UpdateSafeZoneAllies,
+        DisableSafeZone,
+        EnableSafeZone,
+        ResetModData,
+        PBMonitor
     }
     public enum NexusDataType
     {

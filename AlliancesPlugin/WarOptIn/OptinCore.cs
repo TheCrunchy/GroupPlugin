@@ -1,4 +1,5 @@
-﻿using Sandbox.Game.World;
+﻿using AlliancesPlugin.Shipyard;
+using Sandbox.Game.World;
 using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
@@ -8,15 +9,13 @@ using System.Text;
 using System.Threading.Tasks;
 using VRage.Game;
 using VRage.Game.ModAPI;
+using VRageMath;
 using static Sandbox.Game.Multiplayer.MyFactionCollection;
 
 namespace AlliancesPlugin.WarOptIn
 {
     public class OptinCore
     {
-
-        public static List<long> AllFactionIds = new List<long>();
-        public static List<long> FactionsOptedIn = new List<long>();
         public ListOfWarParticipants participants = new ListOfWarParticipants();
         public WarConfig config = new WarConfig();
         public void DoNeutralUpdate(long firstId, long SecondId)
@@ -51,7 +50,8 @@ namespace AlliancesPlugin.WarOptIn
                 AlliancePlugin.utils.WriteToJsonFile<ListOfWarParticipants>(AlliancePlugin.path + "//OptionalWar//WarParticipants.json", new ListOfWarParticipants());
             }
             config = AlliancePlugin.utils.ReadFromJsonFile<WarConfig>(AlliancePlugin.path + "//OptionalWar//WarConfig.json");
-            return AlliancePlugin.utils.ReadFromJsonFile<ListOfWarParticipants>(AlliancePlugin.path + "//OptionalWar//WarParticipants.json");
+            participants = AlliancePlugin.utils.ReadFromJsonFile<ListOfWarParticipants>(AlliancePlugin.path + "//OptionalWar//WarParticipants.json");
+            return participants;
         }
 
         public String getStatus(long id)
@@ -76,7 +76,7 @@ namespace AlliancesPlugin.WarOptIn
             else
             {
                 participants.FactionsAtWar.Add(id);
-                FactionsOptedIn.Add(id);
+                
                 SaveFile();
                 return true;
             }
@@ -87,7 +87,7 @@ namespace AlliancesPlugin.WarOptIn
             if (participants.FactionsAtWar.Contains(id))
             {
                 participants.FactionsAtWar.Remove(id);
-                FactionsOptedIn.Remove(id);
+             
                 SaveFile();
                 return true;
             }
@@ -105,14 +105,25 @@ namespace AlliancesPlugin.WarOptIn
                 case MyFactionStateChange.DeclareWar:
                     fac1 = MySession.Static.Factions.TryGetFactionById(fromFacId);
                     fac2 = MySession.Static.Factions.TryGetFactionById(toFacId);
+                    //AlliancePlugin.Log.Info($"{playerId} {senderId}");
                     if (fac1 != null && fac2 != null)
                     {
                         if (fac1.Tag.Length > 3 || fac2.Tag.Length > 3)
                         {
                             return;
                         }
+                        if (senderId == 0)
+                        {
+                            return;
+                        }
                         if (!participants.FactionsAtWar.Contains(fromFacId))
                         {
+                            if (MySession.Static.Players.GetPlayerByName("Crunch") != null)
+                            {
+                                MyPlayer player = MySession.Static.Players.GetPlayerByName("Crunch");
+                                ShipyardCommands.SendMessage("War", "" + "Declarer Not opted in", Color.Blue, (long)player.Id.SteamId);
+                            }
+                           
                             foreach (MyFactionMember m in fac1.Members.Values)
                             {
                                 var id = MySession.Static.Players.TryGetSteamId(m.PlayerId);
@@ -127,6 +138,12 @@ namespace AlliancesPlugin.WarOptIn
                         }
                         if (!participants.FactionsAtWar.Contains(toFacId))
                         {
+                            if (MySession.Static.Players.GetPlayerByName("Crunch") != null)
+                            {
+                                MyPlayer player = MySession.Static.Players.GetPlayerByName("Crunch");
+                                ShipyardCommands.SendMessage("War", "" + "Target Not opted in", Color.Blue, (long)player.Id.SteamId);
+                            }
+                           
                             foreach (MyFactionMember m in fac1.Members.Values)
                             {
                                 var id = MySession.Static.Players.TryGetSteamId(m.PlayerId);
@@ -142,11 +159,6 @@ namespace AlliancesPlugin.WarOptIn
                     }
                     break;
                 case MyFactionStateChange.RemoveFaction:
-                    fac1 = MySession.Static.Factions.TryGetFactionById(fromFacId);
-                    if (fac1 != null)
-                    {
-                        AllFactionIds.Remove(fromFacId);
-                    }
                     break;
             }
 
@@ -157,7 +169,6 @@ namespace AlliancesPlugin.WarOptIn
             var faction = MySession.Static.Factions.TryGetFactionById(newid);
             if (faction != null)
             {
-                AllFactionIds.Add(newid);
                 foreach (MyFaction fac in MySession.Static.Factions.GetAllFactions())
                 {
 
