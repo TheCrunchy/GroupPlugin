@@ -37,7 +37,7 @@ namespace AlliancesPlugin.WarOptIn
                     }
                     else
                     {
-                        Context.Respond($"War could not be enabled. Current status: {AlliancePlugin.warcore.getStatus(fac.FactionId)}");
+                        Context.Respond($"War could not be enabled. Current status: {AlliancePlugin.warcore.GetStatus(fac.FactionId)}");
                     }
                 }
                 else
@@ -129,7 +129,7 @@ namespace AlliancesPlugin.WarOptIn
                     }
                     else
                     {
-                        Context.Respond($"War could not be disabled. Current status: {AlliancePlugin.warcore.getStatus(fac.FactionId)}");
+                        Context.Respond($"War could not be disabled. Current status: {AlliancePlugin.warcore.GetStatus(fac.FactionId)}");
                     }
                 }
                 else
@@ -149,17 +149,12 @@ namespace AlliancesPlugin.WarOptIn
         [Permission(MyPromoteLevel.Admin)]
         public void ForceAllNeutrals()
         {
-            if (!AlliancePlugin.warcore.config.EnableOptionalWar)
-            {
-                Context.Respond("Optional war is not enabled.");
-                return;
-            }
-            int processed = 0;
-            foreach (MyFaction fac in MySession.Static.Factions.GetAllFactions())
+            var processed = 0;
+            foreach (var fac in MySession.Static.Factions.GetAllFactions())
             {
                 if (fac.Tag.Length > 3)
                     continue;
-                foreach (MyFaction fac2 in MySession.Static.Factions.GetAllFactions())
+                foreach (var fac2 in MySession.Static.Factions.GetAllFactions())
                 {
                     if (fac2.Tag.Length > 3)
                         continue;

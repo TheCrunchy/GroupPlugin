@@ -642,7 +642,7 @@ namespace AlliancesPlugin
 
 
 
-                      // Log.Info(info.Type.ToString().Trim());
+                    // Log.Info(info.Type.ToString().Trim());
                     if (info.Type.ToString().Trim().Equals("Grind") || info.Type.ToString().Trim().Equals("Explosion"))
                     {
                         //   Log.Info("Grind damage");
@@ -784,7 +784,7 @@ namespace AlliancesPlugin
         }
         public static OptinCore warcore = new OptinCore();
 
-  
+
 
         public static Random rand = new Random();
         private void SessionChanged(ITorchSession session, TorchSessionState state)
@@ -799,354 +799,383 @@ namespace AlliancesPlugin
                 }
                 TorchState = TorchSessionState.Unloading;
             }
-            if (state == TorchSessionState.Loaded)
+
+            if (state != TorchSessionState.Loaded) return;
+
+            MyAPIGateway.Multiplayer.RegisterMessageHandler(4910, MessageHandler.ReceiveTerritory);
+            KamikazeTerritories.MessageHandler.LoadFile();
+            Directory.CreateDirectory(AlliancePlugin.path + "//OptionalWar//");
+            if (!File.Exists(AlliancePlugin.path + "//OptionalWar//WarConfig.json"))
             {
-                MyAPIGateway.Multiplayer.RegisterMessageHandler(4910, MessageHandler.ReceiveTerritory);
-                KamikazeTerritories.MessageHandler.LoadFile();
-                Directory.CreateDirectory(AlliancePlugin.path + "//OptionalWar//");
-                if (!File.Exists(AlliancePlugin.path + "//OptionalWar//WarConfig.json"))
-                {
-                    AlliancePlugin.utils.WriteToJsonFile<WarConfig>(AlliancePlugin.path + "//OptionalWar//WarConfig.json", new WarConfig());
+                AlliancePlugin.utils.WriteToJsonFile<WarConfig>(AlliancePlugin.path + "//OptionalWar//WarConfig.json", new WarConfig());
 
-                }
-                warcore.config = AlliancePlugin.utils.ReadFromJsonFile<WarConfig>(AlliancePlugin.path + "//OptionalWar//WarConfig.json");
-                if (warcore.config.EnableOptionalWar)
+            }
+            warcore.config = AlliancePlugin.utils.ReadFromJsonFile<WarConfig>(AlliancePlugin.path + "//OptionalWar//WarConfig.json");
+            if (!AlliancePlugin.config.ConvertedFromOldWarFile)
+            {
+                AlliancePlugin.config.EnableOptionalWar = warcore.config.EnableOptionalWar;
+                AlliancePlugin.config.ConvertedFromOldWarFile = true;
+                AlliancePlugin.saveConfig();
+            }
+            if (AlliancePlugin.config.EnableOptionalWar)
+            {
+                MySession.Static.Factions.FactionStateChanged += warcore.StateChange;
+                MySession.Static.Factions.FactionCreated += warcore.ProcessNewFaction;
+                warcore.config.EnableOptionalWar = true;
+                foreach (var fac in MySession.Static.Factions.GetAllFactions())
                 {
-                    MySession.Static.Factions.FactionStateChanged += warcore.StateChange;
-                    MySession.Static.Factions.FactionCreated += warcore.ProcessNewFaction;
-                }
-                MyAPIGateway.Session.DamageSystem.RegisterBeforeDamageHandler(1, new BeforeDamageApplied(DamageHandler));
-                //      MyEntities.OnEntityAdd += NEWSUIT;
-                if (config != null && config.AllowDiscord && !DiscordStuff.Ready)
-                {
-                    DiscordStuff.RegisterDiscord();
-                }
-                nextRegister = DateTime.Now;
-                //    rand.Next(1, 60);
-
-                LoadAllGates();
-
-                MyBankingSystem.Static.OnAccountBalanceChanged += BalanceChangedMethod2;
-
-                AllianceChat.ApplyLogging();
-                InitPluginDependencies(Torch.Managers.GetManager<PluginManager>());
-                TorchState = TorchSessionState.Loaded;
-                _chatmanager = Torch.CurrentSession.Managers.GetManager<ChatManagerServer>();
-
-                if (_chatmanager == null)
-                {
-                    Log.Warn("No chat manager loaded!");
-                }
-                else
-                {
-                    _chatmanager.MessageProcessing += AllianceChat.DoChatMessage;
-
-                    session.Managers.GetManager<IMultiplayerManagerBase>().PlayerJoined += AllianceChat.Login;
-                    session.Managers.GetManager<IMultiplayerManagerBase>().PlayerLeft += AllianceChat.Logout;
-
-                }
-
-
-                // MySession.Static.Config.
-                // MyMultiplayer.Static.SyncDistance
-                if (!Directory.Exists(path + "//JumpZones//"))
-                {
-                    Directory.CreateDirectory(path + "//JumpZones//");
-                }
-                if (!Directory.Exists(path + "//UpkeepBackups//"))
-                {
-                    Directory.CreateDirectory(path + "//UpkeepBackups//");
-                }
-                if (!File.Exists(path + "//JumpZones//example.xml"))
-                {
-                    utils.WriteToXmlFile<JumpZone>(path + "//JumpZones//example.xml", new JumpZone(), false);
-                }
-                //      if (!File.Exists(path + "//bank.db"))
-                //    {
-                //     File.Create(path + "//bank.db");
-                // }
-                if (!Directory.Exists(basePath + "//Alliances"))
-                {
-                    Directory.CreateDirectory(basePath + "//Alliances//");
-                }
-
-
-                if (!File.Exists(path + "//CaptureSites//Example.xml"))
-                {
-                    CaptureSite site = new CaptureSite();
-                    //  site.HoursToUnlockAfter.Add(5);
-                    //site.HoursToUnlockAfter.Add(7);
-                    Location loc = new Location();
-                    site.locations.Add(loc);
-                    LootLocation loot = new LootLocation();
-                    RewardItem reward = new RewardItem();
-                    reward.CreditReward = 5000000;
-                    loc.LinkedLootLocation = 1;
-                    loot.loot.Add(reward);
-                    reward = new RewardItem();
-                    reward.ItemMaxAmount = 5;
-                    reward.ItemMinAmount = 1;
-                    reward.SubTypeId = "Uranium";
-                    reward.TypeId = "Ingot";
-                    loot.loot.Add(reward);
-                    reward = new RewardItem();
-
-                    reward.MetaPoint = 50;
-                    loot.loot.Add(reward);
-                    site.loot.Add(loot);
-                    utils.WriteToXmlFile<CaptureSite>(path + "//CaptureSites//example.xml", site, false);
-                    loc.X = 2;
-                    loc.Y = 2;
-                    loc.LinkedLootLocation = 1;
-                    loc.Z = 2;
-                    loc.Num = 2;
-                    loc.Name = "Example 2";
-                    site.locations.Add(loc);
-                    utils.WriteToXmlFile<CaptureSite>(path + "//CaptureSites//example2.xml", site, false);
-                }
-                if (!Directory.Exists(path + "//WaystationRepairUpgrades//"))
-                {
-                    Directory.CreateDirectory(path + "//WaystationRepairUpgrades//");
-                }
-                if (!File.Exists(path + "//WaystationRepairUpgrades//Base.xml"))
-                {
-                    GridRepairUpgrades upgrade = new GridRepairUpgrades();
-
-                    ItemRequirement req = new ItemRequirement();
-                    upgrade.items.Add(req);
-                    GridRepairUpgrades.ComponentCostForRepair cost = new GridRepairUpgrades.ComponentCostForRepair();
-                    cost.SubTypeId = "SteelPlate";
-                    cost.Cost = 100;
-                    upgrade.repairCost.Add(cost);
-                    upgrade.BannedComponents.Add("AdminKit");
-                    upgrade.BannedComponents.Add("ShitminKit");
-                    utils.WriteToXmlFile<GridRepairUpgrades>(path + "//WaystationRepairUpgrades//Base.xml", upgrade);
-
-                }
-                if (!File.Exists(basePath + "//Alliances//KOTH//example.xml"))
-                {
-                    utils.WriteToXmlFile<KothConfig>(basePath + "//Alliances//KOTH//example.xml", new KothConfig(), false);
-                }
-                if (!Directory.Exists(path + "//ShipyardUpgrades//"))
-                {
-                    Directory.CreateDirectory(path + "//ShipyardUpgrades//");
-                }
-                if (!Directory.Exists(path + "//ShipyardUpgrades//Slot//"))
-                {
-                    Directory.CreateDirectory(path + "//ShipyardUpgrades//Slot//");
-                }
-                if (!Directory.Exists(path + "//ShipyardUpgrades//Speed//"))
-                {
-                    Directory.CreateDirectory(path + "//ShipyardUpgrades//Speed//");
-                }
-                if (!Directory.Exists(path + "//ShipyardUpgrades//OldFiles//"))
-                {
-                    Directory.CreateDirectory(path + "//ShipyardUpgrades//OldFiles//");
-                }
-                if (!Directory.Exists(path + "//RefineryUpgrades//"))
-                {
-                    Directory.CreateDirectory(path + "//RefineryUpgrades//");
-                }
-                if (!Directory.Exists(path + "//AssemblerUpgrades//"))
-                {
-                    Directory.CreateDirectory(path + "//AssemblerUpgrades//");
-                }
-                if (!File.Exists(path + "//AssemblerUpgrades//Example.xml"))
-                {
-                    AssemblerUpgrade upgrade = new AssemblerUpgrade();
-                    AssemblerUpgrade.AssemblerBuffList list = new AssemblerUpgrade.AssemblerBuffList();
-                    list.buffs.Add(new AssemblerUpgrade.AssemblerBuff());
-                    upgrade.buffedRefineries.Add(list);
-                    ItemRequirement req = new ItemRequirement();
-                    upgrade.items.Add(req);
-                    utils.WriteToXmlFile<AssemblerUpgrade>(path + "//AssemblerUpgrades//Example.xml", upgrade);
-                    upgrade.UpgradeId = 2;
-                    list.buffs.Add(new AssemblerUpgrade.AssemblerBuff());
-                    upgrade.buffedRefineries.Add(list);
-                    upgrade.items.Add(req);
-                    utils.WriteToXmlFile<AssemblerUpgrade>(path + "//AssemblerUpgrades//Example2.xml", upgrade);
-
-                }
-                if (!File.Exists(path + "//RefineryUpgrades//Example.xml"))
-                {
-                    RefineryUpgrade upgrade = new RefineryUpgrade();
-                    RefineryUpgrade.RefineryBuffList list = new RefineryUpgrade.RefineryBuffList();
-                    list.buffs.Add(new RefineryUpgrade.RefineryBuff());
-                    upgrade.buffedRefineries.Add(list);
-                    ItemRequirement req = new ItemRequirement();
-                    upgrade.items.Add(req);
-                    utils.WriteToXmlFile<RefineryUpgrade>(path + "//RefineryUpgrades//Example.xml", upgrade);
-                    upgrade.UpgradeId = 2;
-                    list.buffs.Add(new RefineryUpgrade.RefineryBuff());
-                    upgrade.buffedRefineries.Add(list);
-                    upgrade.items.Add(req);
-                    utils.WriteToXmlFile<RefineryUpgrade>(path + "//RefineryUpgrades//Example2.xml", upgrade);
-
-                }
-                if (!Directory.Exists(path + "//HangarUpgrades//"))
-                {
-                    Directory.CreateDirectory(path + "//HangarUpgrades//");
-                }
-                if (!File.Exists(path + "//ItemUpkeep.txt"))
-                {
-
-                    StringBuilder output = new StringBuilder();
-                    output.AppendLine("TypeId,SubtypeId,Amount");
-                    output.AppendLine("MyObjectBuilder_Ingot,Uranium,1");
-                    File.WriteAllText(path + "//ItemUpkeep.txt", output.ToString());
-
-                }
-
-                //convert this to new format 
-                if (!File.Exists(path + "//ShipyardUpgrades//Speed//SpeedUpgrade_0.xml"))
-                {
-
-                    ShipyardSpeedUpgrade upg = new ShipyardSpeedUpgrade();
-                    ItemRequirement req = new ItemRequirement();
-                    upg.items.Add(req);
-                    utils.WriteToXmlFile<ShipyardSpeedUpgrade>(path + "//ShipyardUpgrades//Speed//SpeedUpgrade_0.xml", upg);
-
-                }
-                if (!File.Exists(path + "//ShipyardUpgrades//Slot//SlotUpgrade_0.xml"))
-                {
-
-                    ShipyardSlotUpgrade upg = new ShipyardSlotUpgrade();
-                    ItemRequirement req = new ItemRequirement();
-                    upg.items.Add(req);
-                    utils.WriteToXmlFile<ShipyardSlotUpgrade>(path + "//ShipyardUpgrades//Slot//SlotUpgrade_0.xml", upg);
-
-                }
-
-                if (!File.Exists(path + "//HangarDeniedLocations.txt"))
-                {
-
-                    StringBuilder output = new StringBuilder();
-                    output.AppendLine("Name,X,Y,Z,Radius");
-                    output.AppendLine("Fred,0,0,0,50000");
-                    File.WriteAllText(path + "//HangarDeniedLocations.txt", output.ToString());
-
-                }
-                else
-                {
-                    String[] line;
-                    line = File.ReadAllLines(path + "//HangarDeniedLocations.txt");
-                    for (int i = 1; i < line.Length; i++)
+                    if (fac.Tag.Length > 3)
+                        continue;
+                    foreach (var fac2 in MySession.Static.Factions.GetAllFactions())
                     {
-                        DeniedLocation loc = new DeniedLocation();
-                        String[] split = line[i].Split(',');
-                        foreach (String s in split)
+                        if (fac2.Tag.Length > 3)
+                            continue;
+
+                        if (fac == fac2) continue;
+
+                        if (warcore.GetStatus(fac.FactionId) is "Disabled." || warcore.GetStatus(fac2.FactionId) is "Disabled.")
                         {
-                            s.Replace(" ", "");
+                            AlliancePlugin.warcore.DoNeutralUpdate(fac.FactionId, fac2.FactionId);
                         }
-                        loc.name = split[0];
-                        loc.x = Double.Parse(split[1]);
-                        loc.y = Double.Parse(split[2]);
-                        loc.z = Double.Parse(split[3]);
-                        loc.radius = double.Parse(split[4]);
-                        HangarDeniedLocations.Add(loc);
                     }
                 }
-                if (!File.Exists(path + "//HangarUpgrades//SlotUpgrade_0.xml"))
+            }
+            else
+            {
+                warcore.config.EnableOptionalWar = false;
+            }
+
+            MyAPIGateway.Session.DamageSystem.RegisterBeforeDamageHandler(1, new BeforeDamageApplied(DamageHandler));
+            //      MyEntities.OnEntityAdd += NEWSUIT;
+            if (config != null && config.AllowDiscord && !DiscordStuff.Ready)
+            {
+                DiscordStuff.RegisterDiscord();
+            }
+            nextRegister = DateTime.Now;
+            //    rand.Next(1, 60);
+
+            LoadAllGates();
+
+            MyBankingSystem.Static.OnAccountBalanceChanged += BalanceChangedMethod2;
+
+            AllianceChat.ApplyLogging();
+            InitPluginDependencies(Torch.Managers.GetManager<PluginManager>());
+            TorchState = TorchSessionState.Loaded;
+            _chatmanager = Torch.CurrentSession.Managers.GetManager<ChatManagerServer>();
+
+            if (_chatmanager == null)
+            {
+                Log.Warn("No chat manager loaded!");
+            }
+            else
+            {
+                _chatmanager.MessageProcessing += AllianceChat.DoChatMessage;
+
+                session.Managers.GetManager<IMultiplayerManagerBase>().PlayerJoined += AllianceChat.Login;
+                session.Managers.GetManager<IMultiplayerManagerBase>().PlayerLeft += AllianceChat.Logout;
+
+            }
+
+
+            // MySession.Static.Config.
+            // MyMultiplayer.Static.SyncDistance
+            if (!Directory.Exists(path + "//JumpZones//"))
+            {
+                Directory.CreateDirectory(path + "//JumpZones//");
+            }
+            if (!Directory.Exists(path + "//UpkeepBackups//"))
+            {
+                Directory.CreateDirectory(path + "//UpkeepBackups//");
+            }
+            if (!File.Exists(path + "//JumpZones//example.xml"))
+            {
+                utils.WriteToXmlFile<JumpZone>(path + "//JumpZones//example.xml", new JumpZone(), false);
+            }
+            //      if (!File.Exists(path + "//bank.db"))
+            //    {
+            //     File.Create(path + "//bank.db");
+            // }
+            if (!Directory.Exists(basePath + "//Alliances"))
+            {
+                Directory.CreateDirectory(basePath + "//Alliances//");
+            }
+
+
+            if (!File.Exists(path + "//CaptureSites//Example.xml"))
+            {
+                CaptureSite site = new CaptureSite();
+                //  site.HoursToUnlockAfter.Add(5);
+                //site.HoursToUnlockAfter.Add(7);
+                Location loc = new Location();
+                site.locations.Add(loc);
+                LootLocation loot = new LootLocation();
+                RewardItem reward = new RewardItem();
+                reward.CreditReward = 5000000;
+                loc.LinkedLootLocation = 1;
+                loot.loot.Add(reward);
+                reward = new RewardItem();
+                reward.ItemMaxAmount = 5;
+                reward.ItemMinAmount = 1;
+                reward.SubTypeId = "Uranium";
+                reward.TypeId = "Ingot";
+                loot.loot.Add(reward);
+                reward = new RewardItem();
+
+                reward.MetaPoint = 50;
+                loot.loot.Add(reward);
+                site.loot.Add(loot);
+                utils.WriteToXmlFile<CaptureSite>(path + "//CaptureSites//example.xml", site, false);
+                loc.X = 2;
+                loc.Y = 2;
+                loc.LinkedLootLocation = 1;
+                loc.Z = 2;
+                loc.Num = 2;
+                loc.Name = "Example 2";
+                site.locations.Add(loc);
+                utils.WriteToXmlFile<CaptureSite>(path + "//CaptureSites//example2.xml", site, false);
+            }
+            if (!Directory.Exists(path + "//WaystationRepairUpgrades//"))
+            {
+                Directory.CreateDirectory(path + "//WaystationRepairUpgrades//");
+            }
+            if (!File.Exists(path + "//WaystationRepairUpgrades//Base.xml"))
+            {
+                GridRepairUpgrades upgrade = new GridRepairUpgrades();
+
+                ItemRequirement req = new ItemRequirement();
+                upgrade.items.Add(req);
+                GridRepairUpgrades.ComponentCostForRepair cost = new GridRepairUpgrades.ComponentCostForRepair();
+                cost.SubTypeId = "SteelPlate";
+                cost.Cost = 100;
+                upgrade.repairCost.Add(cost);
+                upgrade.BannedComponents.Add("AdminKit");
+                upgrade.BannedComponents.Add("ShitminKit");
+                utils.WriteToXmlFile<GridRepairUpgrades>(path + "//WaystationRepairUpgrades//Base.xml", upgrade);
+
+            }
+            if (!File.Exists(basePath + "//Alliances//KOTH//example.xml"))
+            {
+                utils.WriteToXmlFile<KothConfig>(basePath + "//Alliances//KOTH//example.xml", new KothConfig(), false);
+            }
+            if (!Directory.Exists(path + "//ShipyardUpgrades//"))
+            {
+                Directory.CreateDirectory(path + "//ShipyardUpgrades//");
+            }
+            if (!Directory.Exists(path + "//ShipyardUpgrades//Slot//"))
+            {
+                Directory.CreateDirectory(path + "//ShipyardUpgrades//Slot//");
+            }
+            if (!Directory.Exists(path + "//ShipyardUpgrades//Speed//"))
+            {
+                Directory.CreateDirectory(path + "//ShipyardUpgrades//Speed//");
+            }
+            if (!Directory.Exists(path + "//ShipyardUpgrades//OldFiles//"))
+            {
+                Directory.CreateDirectory(path + "//ShipyardUpgrades//OldFiles//");
+            }
+            if (!Directory.Exists(path + "//RefineryUpgrades//"))
+            {
+                Directory.CreateDirectory(path + "//RefineryUpgrades//");
+            }
+            if (!Directory.Exists(path + "//AssemblerUpgrades//"))
+            {
+                Directory.CreateDirectory(path + "//AssemblerUpgrades//");
+            }
+            if (!File.Exists(path + "//AssemblerUpgrades//Example.xml"))
+            {
+                AssemblerUpgrade upgrade = new AssemblerUpgrade();
+                AssemblerUpgrade.AssemblerBuffList list = new AssemblerUpgrade.AssemblerBuffList();
+                list.buffs.Add(new AssemblerUpgrade.AssemblerBuff());
+                upgrade.buffedRefineries.Add(list);
+                ItemRequirement req = new ItemRequirement();
+                upgrade.items.Add(req);
+                utils.WriteToXmlFile<AssemblerUpgrade>(path + "//AssemblerUpgrades//Example.xml", upgrade);
+                upgrade.UpgradeId = 2;
+                list.buffs.Add(new AssemblerUpgrade.AssemblerBuff());
+                upgrade.buffedRefineries.Add(list);
+                upgrade.items.Add(req);
+                utils.WriteToXmlFile<AssemblerUpgrade>(path + "//AssemblerUpgrades//Example2.xml", upgrade);
+
+            }
+            if (!File.Exists(path + "//RefineryUpgrades//Example.xml"))
+            {
+                RefineryUpgrade upgrade = new RefineryUpgrade();
+                RefineryUpgrade.RefineryBuffList list = new RefineryUpgrade.RefineryBuffList();
+                list.buffs.Add(new RefineryUpgrade.RefineryBuff());
+                upgrade.buffedRefineries.Add(list);
+                ItemRequirement req = new ItemRequirement();
+                upgrade.items.Add(req);
+                utils.WriteToXmlFile<RefineryUpgrade>(path + "//RefineryUpgrades//Example.xml", upgrade);
+                upgrade.UpgradeId = 2;
+                list.buffs.Add(new RefineryUpgrade.RefineryBuff());
+                upgrade.buffedRefineries.Add(list);
+                upgrade.items.Add(req);
+                utils.WriteToXmlFile<RefineryUpgrade>(path + "//RefineryUpgrades//Example2.xml", upgrade);
+
+            }
+            if (!Directory.Exists(path + "//HangarUpgrades//"))
+            {
+                Directory.CreateDirectory(path + "//HangarUpgrades//");
+            }
+            if (!File.Exists(path + "//ItemUpkeep.txt"))
+            {
+
+                StringBuilder output = new StringBuilder();
+                output.AppendLine("TypeId,SubtypeId,Amount");
+                output.AppendLine("MyObjectBuilder_Ingot,Uranium,1");
+                File.WriteAllText(path + "//ItemUpkeep.txt", output.ToString());
+
+            }
+
+            //convert this to new format 
+            if (!File.Exists(path + "//ShipyardUpgrades//Speed//SpeedUpgrade_0.xml"))
+            {
+
+                ShipyardSpeedUpgrade upg = new ShipyardSpeedUpgrade();
+                ItemRequirement req = new ItemRequirement();
+                upg.items.Add(req);
+                utils.WriteToXmlFile<ShipyardSpeedUpgrade>(path + "//ShipyardUpgrades//Speed//SpeedUpgrade_0.xml", upg);
+
+            }
+            if (!File.Exists(path + "//ShipyardUpgrades//Slot//SlotUpgrade_0.xml"))
+            {
+
+                ShipyardSlotUpgrade upg = new ShipyardSlotUpgrade();
+                ItemRequirement req = new ItemRequirement();
+                upg.items.Add(req);
+                utils.WriteToXmlFile<ShipyardSlotUpgrade>(path + "//ShipyardUpgrades//Slot//SlotUpgrade_0.xml", upg);
+
+            }
+
+            if (!File.Exists(path + "//HangarDeniedLocations.txt"))
+            {
+
+                StringBuilder output = new StringBuilder();
+                output.AppendLine("Name,X,Y,Z,Radius");
+                output.AppendLine("Fred,0,0,0,50000");
+                File.WriteAllText(path + "//HangarDeniedLocations.txt", output.ToString());
+
+            }
+            else
+            {
+                String[] line;
+                line = File.ReadAllLines(path + "//HangarDeniedLocations.txt");
+                for (int i = 1; i < line.Length; i++)
                 {
-
-                    HangarUpgrade upg = new HangarUpgrade();
-                    ItemRequirement req = new ItemRequirement();
-                    upg.items.Add(req);
-                    utils.WriteToXmlFile<HangarUpgrade>(path + "//HangarUpgrades//SlotUpgrade_0.xml", upg);
-
+                    DeniedLocation loc = new DeniedLocation();
+                    String[] split = line[i].Split(',');
+                    foreach (String s in split)
+                    {
+                        s.Replace(" ", "");
+                    }
+                    loc.name = split[0];
+                    loc.x = Double.Parse(split[1]);
+                    loc.y = Double.Parse(split[2]);
+                    loc.z = Double.Parse(split[3]);
+                    loc.radius = double.Parse(split[4]);
+                    HangarDeniedLocations.Add(loc);
                 }
+            }
+            if (!File.Exists(path + "//HangarUpgrades//SlotUpgrade_0.xml"))
+            {
+
+                HangarUpgrade upg = new HangarUpgrade();
+                ItemRequirement req = new ItemRequirement();
+                upg.items.Add(req);
+                utils.WriteToXmlFile<HangarUpgrade>(path + "//HangarUpgrades//SlotUpgrade_0.xml", upg);
+
+            }
 
 
-                if (!Directory.Exists(path + "//ShipyardBlocks//"))
+            if (!Directory.Exists(path + "//ShipyardBlocks//"))
+            {
+                Directory.CreateDirectory(path + "//ShipyardBlocks//");
+            }
+
+            if (!File.Exists(path + "//ShipyardBlocks//LargeProjector.xml"))
+            {
+                ShipyardBlockConfig config33 = new ShipyardBlockConfig();
+                config33.SetShipyardBlockConfig("LargeProjector");
+                utils.WriteToXmlFile<ShipyardBlockConfig>(path + "//ShipyardBlocks//LargeProjector.xml", config33, false);
+
+            }
+            if (!File.Exists(path + "//ShipyardBlocks//SmallProjector.xml"))
+            {
+                ShipyardBlockConfig config33 = new ShipyardBlockConfig();
+                config33.SetShipyardBlockConfig("SmallProjector");
+                utils.WriteToXmlFile<ShipyardBlockConfig>(path + "//ShipyardBlocks//SmallProjector.xml", config33, false);
+
+            }
+            if (!File.Exists(path + "//ShipyardConfig.xml"))
+            {
+                utils.WriteToXmlFile<ShipyardConfig>(path + "//ShipyardConfig.xml", new ShipyardConfig(), false);
+
+            }
+
+            ReloadShipyard();
+
+            foreach (String s in Directory.GetFiles(basePath + "//Alliances//KOTH//"))
+            {
+
+
+                KothConfig koth = utils.ReadFromXmlFile<KothConfig>(s);
+
+                KOTHs.Add(koth);
+            }
+            SetupFriendMethod();
+
+            LoadAllAlliances();
+            LoadAllGates();
+            LoadAllRefineryUpgrades();
+
+
+            LoadItemUpkeep();
+
+
+            foreach (Alliance alliance in AllAlliances.Values)
+            {
+                try
                 {
-                    Directory.CreateDirectory(path + "//ShipyardBlocks//");
+                    alliance.ForceFriendlies();
+                    alliance.ForceEnemies();
                 }
-
-                if (!File.Exists(path + "//ShipyardBlocks//LargeProjector.xml"))
+                catch (Exception ex)
                 {
-                    ShipyardBlockConfig config33 = new ShipyardBlockConfig();
-                    config33.SetShipyardBlockConfig("LargeProjector");
-                    utils.WriteToXmlFile<ShipyardBlockConfig>(path + "//ShipyardBlocks//LargeProjector.xml", config33, false);
-
+                    continue;
                 }
-                if (!File.Exists(path + "//ShipyardBlocks//SmallProjector.xml"))
+                if (alliance.DiscordChannelId > 0 && !String.IsNullOrEmpty(alliance.DiscordToken) && TorchState == TorchSessionState.Loaded)
                 {
-                    ShipyardBlockConfig config33 = new ShipyardBlockConfig();
-                    config33.SetShipyardBlockConfig("SmallProjector");
-                    utils.WriteToXmlFile<ShipyardBlockConfig>(path + "//ShipyardBlocks//SmallProjector.xml", config33, false);
+                    //  Log.Info(Encryption.DecryptString(alliance.AllianceId.ToString(), alliance.DiscordToken).Length);
 
-                }
-                if (!File.Exists(path + "//ShipyardConfig.xml"))
-                {
-                    utils.WriteToXmlFile<ShipyardConfig>(path + "//ShipyardConfig.xml", new ShipyardConfig(), false);
-
-                }
-
-                ReloadShipyard();
-
-                foreach (String s in Directory.GetFiles(basePath + "//Alliances//KOTH//"))
-                {
-
-
-                    KothConfig koth = utils.ReadFromXmlFile<KothConfig>(s);
-
-                    KOTHs.Add(koth);
-                }
-                SetupFriendMethod();
-
-                LoadAllAlliances();
-                LoadAllGates();
-                LoadAllRefineryUpgrades();
-
-
-                LoadItemUpkeep();
-
-
-                foreach (Alliance alliance in AllAlliances.Values)
-                {
                     try
                     {
-                        alliance.ForceFriendlies();
-                        alliance.ForceEnemies();
-                    }
-                    catch (Exception ex)
-                    {
-                        continue;
-                    }
-                    if (alliance.DiscordChannelId > 0 && !String.IsNullOrEmpty(alliance.DiscordToken) && TorchState == TorchSessionState.Loaded)
-                    {
-                        //  Log.Info(Encryption.DecryptString(alliance.AllianceId.ToString(), alliance.DiscordToken).Length);
-
-                        try
+                        if (Encryption.DecryptString(alliance.AllianceId.ToString(), alliance.DiscordToken).Length < 59)
                         {
-                            if (Encryption.DecryptString(alliance.AllianceId.ToString(), alliance.DiscordToken).Length < 59)
-                            {
-                                Log.Error("Invalid bot token for " + alliance.AllianceId);
-                                continue;
-                            }
-
-                        }
-                        catch (Exception ex)
-                        {
-                            //  Log.Error(ex);
                             Log.Error("Invalid bot token for " + alliance.AllianceId);
                             continue;
                         }
-                        //    if (!botsTried.Contains(alliance.AllianceId))
-                        //    {
-                        //   botsTried.Add(alliance.AllianceId);
-                        Log.Info("Registering bot for " + alliance.AllianceId);
-                        registerThese.Add(alliance.AllianceId, nextRegister.AddSeconds(15));
-
-
-
-
 
                     }
+                    catch (Exception ex)
+                    {
+                        //  Log.Error(ex);
+                        Log.Error("Invalid bot token for " + alliance.AllianceId);
+                        continue;
+                    }
+                    //    if (!botsTried.Contains(alliance.AllianceId))
+                    //    {
+                    //   botsTried.Add(alliance.AllianceId);
+                    Log.Info("Registering bot for " + alliance.AllianceId);
+                    registerThese.Add(alliance.AllianceId, nextRegister.AddSeconds(15));
+
+
+
+
+
                 }
-                //        DatabaseForBank bank = new DatabaseForBank();
-                //    bank.CreateTable(bank.CreateConnection());
             }
+            //        DatabaseForBank bank = new DatabaseForBank();
+            //    bank.CreateTable(bank.CreateConnection());
         }
         public static void LoadItemUpkeep()
         {
@@ -3982,44 +4011,35 @@ namespace AlliancesPlugin
             }
             if (ticks % 512 == 0)
             {
-                Dictionary<ulong, DateTime> YEET = new Dictionary<ulong, DateTime>();
-                List<ulong> oof = new List<ulong>();
-                List<ulong> OtherYeet = new List<ulong>();
-                foreach (KeyValuePair<ulong, DateTime> pair in UpdateThese)
+                var YEET = new Dictionary<ulong, DateTime>();
+                var oof = new List<ulong>();
+                var OtherYeet = new List<ulong>();
+                foreach (var pair in UpdateThese.Where(pair => DateTime.Now >= pair.Value))
                 {
-                    if (DateTime.Now >= pair.Value)
+                    oof.Add(pair.Key);
+                    if (!YEET.ContainsKey(pair.Key))
                     {
-                        oof.Add(pair.Key);
-                        if (!YEET.ContainsKey(pair.Key))
-                        {
-                            YEET.Add(pair.Key, DateTime.Now.AddMinutes(1));
-
-                        }
-                        if (statusUpdate.TryGetValue(pair.Key, out Boolean status))
-                        {
-                            AlliancePlugin.SendChatMessage("AllianceChatStatus", "true", pair.Key);
-                            statusUpdate.Remove(pair.Key);
-                        }
-                        if (otherAllianceShit.TryGetValue(pair.Key, out Guid allianceId))
-                        {
-                            Alliance alliance = GetAlliance(allianceId);
-                            if (alliance != null)
-                            {
-                                AlliancePlugin.SendChatMessage("AllianceColorConfig", alliance.r + " " + alliance.g + " " + alliance.b, pair.Key);
-                                AlliancePlugin.SendChatMessage("AllianceTitleConfig", alliance.GetTitle(pair.Key) + " ", pair.Key);
-                                otherAllianceShit.Remove(pair.Key);
-                            }
-                        }
-                        if (AllianceChat.PeopleInAllianceChat.ContainsKey(pair.Key))
-                        {
-                            AllianceCommands.SendStatusToClient(true, pair.Key);
-                        }
-                        else
-                        {
-                            AllianceCommands.SendStatusToClient(false, pair.Key);
-                        }
+                        YEET.Add(pair.Key, DateTime.Now.AddMinutes(1));
 
                     }
+                    if (statusUpdate.TryGetValue(pair.Key, out Boolean status))
+                    {
+                        AlliancePlugin.SendChatMessage("AllianceChatStatus", "true", pair.Key);
+                        statusUpdate.Remove(pair.Key);
+                    }
+                    if (otherAllianceShit.TryGetValue(pair.Key, out Guid allianceId))
+                    {
+                        Alliance alliance = GetAlliance(allianceId);
+                        if (alliance != null)
+                        {
+                            AlliancePlugin.SendChatMessage("AllianceColorConfig", alliance.r + " " + alliance.g + " " + alliance.b, pair.Key);
+                            AlliancePlugin.SendChatMessage("AllianceTitleConfig", alliance.GetTitle(pair.Key) + " ", pair.Key);
+                            otherAllianceShit.Remove(pair.Key);
+                        }
+                    }
+
+                    AllianceCommands.SendStatusToClient(AllianceChat.PeopleInAllianceChat.ContainsKey(pair.Key),
+                        pair.Key);
                 }
                 foreach (ulong id in oof)
                 {
@@ -4029,13 +4049,10 @@ namespace AlliancesPlugin
                     }
                 }
                 oof.Clear();
-                foreach (KeyValuePair<ulong, DateTime> pair in YEET)
+                foreach (var pair in YEET.Where(pair => DateTime.Now > pair.Value))
                 {
-                    if (DateTime.Now > pair.Value)
-                    {
-                        OtherYeet.Add(pair.Key);
-                        UpdateThese.Remove(pair.Key);
-                    }
+                    OtherYeet.Add(pair.Key);
+                    UpdateThese.Remove(pair.Key);
                 }
                 foreach (ulong id in OtherYeet)
                 {
@@ -4058,23 +4075,14 @@ namespace AlliancesPlugin
                 if (config.AllowDiscord)
                 {
                     Dictionary<Guid, DateTime> temp = new Dictionary<Guid, DateTime>();
-                    foreach (KeyValuePair<Guid, DateTime> keys in registerThese)
+                    foreach (var alliance in from keys in registerThese where DateTime.Now > keys.Value select GetAlliance(keys.Key) into alliance where alliance != null select alliance)
                     {
-                        if (DateTime.Now > keys.Value)
-                        {
-                            Alliance alliance = GetAlliance(keys.Key);
-                            if (alliance != null)
-                            {
+                        DiscordStuff.RegisterAllianceBot(alliance, alliance.DiscordChannelId);
 
-                                DiscordStuff.RegisterAllianceBot(alliance, alliance.DiscordChannelId);
-
-                                temp.Add(alliance.AllianceId, DateTime.Now.AddMinutes(10));
-                                Log.Info("Connecting bot.");
-                            }
-
-                        }
+                        temp.Add(alliance.AllianceId, DateTime.Now.AddMinutes(10));
+                        Log.Info("Connecting bot.");
                     }
-                    foreach (KeyValuePair<Guid, DateTime> keys in temp)
+                    foreach (var keys in temp)
                     {
                         registerThese[keys.Key] = keys.Value;
                     }

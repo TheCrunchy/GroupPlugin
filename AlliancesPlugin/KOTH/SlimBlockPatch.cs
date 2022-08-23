@@ -64,70 +64,61 @@ throw new Exception("Failed to find patch method");
       long attackerId, long realHitEntityId = 0, bool shouldDetonateAmmo = true)
         {
             //  MySlimBlock block = __instance;
-            if (AlliancePlugin.config != null)
+            if (AlliancePlugin.config == null) return true;
+            if (!AlliancePlugin.config.DisablePvP) return true;
+            var loc = __instance.CubeGrid.PositionComp.GetPosition();
+            if ((from territory in KamikazeTerritories.MessageHandler.Territories let distance = Vector3.Distance(loc, territory.Position) where distance <= territory.Radius select territory).Any())
             {
-                if (AlliancePlugin.config.DisablePvP)
-                {
-                    var loc = __instance.CubeGrid.PositionComp.GetPosition();
-                    foreach (var territory in KamikazeTerritories.MessageHandler.Territories)
-                    {
-                        var distance = Vector3.Distance(loc, territory.Position);
-                        if (distance <= territory.Radius)
-                        {
-                            return true;
-                        }
-                    }
-                    List<String> DamageTypesToIgnore = new List<string>()
-                    {
-                        "Deformation", "Suicide", "Temperature", "Asphyxia"
-                    };
-                    long newattackerId = AlliancePlugin.GetAttacker(attackerId);
-                    if (DamageTypesToIgnore.Contains(damageType.ToString().Trim())){
-                        return true;
-                    }
-                    if (newattackerId == 0L)
-                    {
-                        damage = 0.0f;
-                     //   AlliancePlugin.Log.Info("not 1");
-                       return false;
-                    }
-                    if (FacUtils.GetOwner(__instance.CubeGrid) == 0L)
-                    {
-                        damage = 0.0f;
-                        SendPvEMessage(newattackerId);
-                     //   AlliancePlugin.Log.Info("not 2");
-                        return false;
-                    }
-                    MyFaction attacker = MySession.Static.Factions.GetPlayerFaction(newattackerId) as MyFaction;
-
-                    MyFaction defender = MySession.Static.Factions.GetPlayerFaction(FacUtils.GetOwner(__instance.CubeGrid));
-                    if (defender != null && defender.Tag.Length > 3)
-                    {
-                        return true;
-                    }
-                    if (attacker == null || defender == null)
-                    {
-                      //  AlliancePlugin.Log.Info("not 3");
-                        SendPvEMessage(newattackerId);
-                        damage = 0.0f;
-                        return false;
-                    }
-
-                    if (!MySession.Static.Factions.AreFactionsEnemies(attacker.FactionId, defender.FactionId))
-                    {
-                     //   AlliancePlugin.Log.Info("not 4");
-                        SendPvEMessage(newattackerId);
-                        damage = 0.0f;
-                        return false;
-                    }
-                    else
-                    {
-                      //  AlliancePlugin.Log.Info("is 5");
-                        return true;
-                    }
-                }
+                return true;
             }
-            return true;
+            List<String> DamageTypesToIgnore = new List<string>()
+            {
+                "Deformation", "Suicide", "Temperature", "Asphyxia"
+            };
+            long newattackerId = AlliancePlugin.GetAttacker(attackerId);
+            if (DamageTypesToIgnore.Contains(damageType.ToString().Trim())){
+                return true;
+            }
+            if (newattackerId == 0L)
+            {
+                damage = 0.0f;
+                //   AlliancePlugin.Log.Info("not 1");
+                return false;
+            }
+            if (FacUtils.GetOwner(__instance.CubeGrid) == 0L)
+            {
+                damage = 0.0f;
+                SendPvEMessage(newattackerId);
+                //   AlliancePlugin.Log.Info("not 2");
+                return false;
+            }
+            MyFaction attacker = MySession.Static.Factions.GetPlayerFaction(newattackerId) as MyFaction;
+
+            MyFaction defender = MySession.Static.Factions.GetPlayerFaction(FacUtils.GetOwner(__instance.CubeGrid));
+            if (defender != null && defender.Tag.Length > 3)
+            {
+                return true;
+            }
+            if (attacker == null || defender == null)
+            {
+                //  AlliancePlugin.Log.Info("not 3");
+                SendPvEMessage(newattackerId);
+                damage = 0.0f;
+                return false;
+            }
+
+            if (!MySession.Static.Factions.AreFactionsEnemies(attacker.FactionId, defender.FactionId))
+            {
+                //   AlliancePlugin.Log.Info("not 4");
+                SendPvEMessage(newattackerId);
+                damage = 0.0f;
+                return false;
+            }
+            else
+            {
+                //  AlliancePlugin.Log.Info("is 5");
+                return true;
+            }
         }
 
 

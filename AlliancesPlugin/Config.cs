@@ -38,5 +38,7 @@ namespace AlliancesPlugin
         public Boolean RepairEnabled = false;
         public Boolean DisablePvP = false;
         public Boolean SafeZonesRequireTerritory = false;
+        public Boolean EnableOptionalWar = false;
+        public Boolean ConvertedFromOldWarFile = false;
     }
 }

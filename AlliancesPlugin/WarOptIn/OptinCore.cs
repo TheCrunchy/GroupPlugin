@@ -54,18 +54,10 @@ namespace AlliancesPlugin.WarOptIn
             return participants;
         }
 
-        public String getStatus(long id)
+        public String GetStatus(long id)
         {
-            if (participants.FactionsAtWar.Contains(id))
-            {
-                return "Enabled.";
-            }
-            else
-            {
-                return "Disabled.";
-            }
+            return participants.FactionsAtWar.Contains(id) ? "Enabled." : "Disabled.";
         }
-
         public bool AddToWarParticipants(long id)
         {
             participants = LoadFile();
