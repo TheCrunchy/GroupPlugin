@@ -60,6 +60,8 @@ using AlliancesPlugin.Alliances.NewTerritories;
 using static AlliancesPlugin.Alliances.NewTerritories.City;
 using AlliancesPlugin.WarOptIn;
 using AlliancesPlugin.KamikazeTerritories;
+using Torch.Managers.PatchManager;
+
 namespace AlliancesPlugin
 {
     public class AlliancePlugin : TorchPluginBase
@@ -85,12 +87,16 @@ namespace AlliancesPlugin
         public static FileUtils utils = new FileUtils();
         public static Dictionary<string, DenialPoint> denials = new Dictionary<string, DenialPoint>();
         public static ITorchPlugin GridBackup;
-        public static MethodInfo BackupGrid;
+        public static ITorchPlugin MQ;
+    public static MethodInfo BackupGrid;
 
         public static ITorchBase TorchBase;
         public static bool GridBackupInstalled = false;
         public static Dictionary<MyDefinitionId, int> ItemUpkeep = new Dictionary<MyDefinitionId, int>();
-        public static void InitPluginDependencies(PluginManager Plugins)
+        public static MethodInfo SendMessage;
+    
+        public static bool MQPluginInstalled = false;
+        public static void InitPluginDependencies(PluginManager Plugins, PatchManager Patches)
         {
 
             if (Plugins.Plugins.TryGetValue(Guid.Parse("75e99032-f0eb-4c0d-8710-999808ed970c"), out ITorchPlugin GridBackupPlugin))
@@ -100,7 +106,21 @@ namespace AlliancesPlugin
                 GridBackup = GridBackupPlugin;
                 GridBackupInstalled = true;
             }
+            if (Plugins.Plugins.TryGetValue(Guid.Parse("319afed6-6cf7-4865-81c3-cc207b70811d"), out var MQPlugin))
+            {
+                SendMessage = MQPlugin.GetType().GetMethod("SendMessage", BindingFlags.Public | BindingFlags.Instance, null, new Type[2] { typeof(string), typeof(string) }, null);
+                MQ = MQPlugin;
+                
+                RabbitTest.MQPluginPatch.Patch(Patches.AcquireContext());
+                Patches.Commit();
 
+                MQPluginInstalled = true;
+            }
+        }
+
+        public static void TestMethod(string MessageType, string MessageBody)
+        {
+            Log.Info("It worked?");
         }
 
         public static void BackupGridMethod(List<MyObjectBuilder_CubeGrid> Grids, long User)
@@ -859,7 +879,8 @@ namespace AlliancesPlugin
             MyBankingSystem.Static.OnAccountBalanceChanged += BalanceChangedMethod2;
 
             AllianceChat.ApplyLogging();
-            InitPluginDependencies(Torch.Managers.GetManager<PluginManager>());
+            InitPluginDependencies(Torch.Managers.GetManager<PluginManager>(), Torch.Managers.GetManager<PatchManager>());
+       
             TorchState = TorchSessionState.Loaded;
             _chatmanager = Torch.CurrentSession.Managers.GetManager<ChatManagerServer>();
 
