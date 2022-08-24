@@ -75,7 +75,7 @@ namespace AllianceDiscordController
             }
             catch (Exception e)
             {
-                Console.WriteLine("Could not connect to specified values, if this is first run, a config file should have generated");
+                Console.WriteLine($"Could not connect to specified values, if this is first run, a config file should have generated at {path}");
                 Console.ReadLine();
             }
             //     Handlers.Add("AllianceMessage", YEET);
