@@ -129,17 +129,15 @@ namespace AllianceDiscordController
                 return Task.CompletedTask;
             }
             Console.WriteLine($"{DateTime.Now} Discord Message Recieved {e.Message.Author.Username} {e.Message.Content.Trim()}");
-            if (MappedChannels.TryGetValue(e.Channel.Id, out Guid id))
+            if (!MappedChannels.TryGetValue(e.Channel.Id, out var id)) return Task.CompletedTask;
+            var message = new AllianceChatMessage
             {
-                var message = new AllianceChatMessage
-                {
-                    SenderPrefix = e.Message.Author.Username,
-                    MessageText = e.Message.Content.Trim(),
-                    AllianceId = id,
-                    FromDiscord = true
-                };
-                SendFromDiscord("AllianceMessage", JsonConvert.SerializeObject(message));
-            }
+                SenderPrefix = e.Message.Author.Username,
+                MessageText = e.Message.Content.Trim(),
+                AllianceId = id,
+                FromDiscord = true
+            };
+            SendFromDiscord("AllianceMessage", JsonConvert.SerializeObject(message));
             return Task.CompletedTask;
         }
 
