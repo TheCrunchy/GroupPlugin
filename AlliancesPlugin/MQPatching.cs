@@ -17,7 +17,7 @@ using VRageMath;
 
 namespace AlliancesPlugin
 {
-    public class RabbitTest
+    public class MQPatching
     {
         public static class MQPluginPatch
         {
@@ -25,14 +25,19 @@ namespace AlliancesPlugin
                                                                      throw new Exception("Failed to find patch method");
 
             private static Dictionary<string, Action<string>> Handlers = new Dictionary<string, Action<string>>();
+
+            public static string AllianceMessage = "AllianceMessage";
+            public static string AllianceSendToDiscord = "AllianceSendToDiscord";
+
+
             public static void Patch(PatchContext ctx)
             {
                 var HandleMessageMethod = AlliancePlugin.MQ.GetType().GetMethod("MessageHandler", BindingFlags.Instance | BindingFlags.Public);
                 if (HandleMessageMethod == null) return;
 
                 ctx.GetPattern(HandleMessageMethod).Suffixes.Add(HandleMessagePatch);
-                Handlers.Add("AllianceMessage", HandleAllianceChat);
-                Handlers.Add("AllianceSendToDiscord", SendToIngame);
+                Handlers.Add(AllianceMessage, HandleAllianceChat);
+                Handlers.Add(AllianceSendToDiscord, SendToIngame);
             }
 
             public static void HandleAllianceChat(string MessageBody)

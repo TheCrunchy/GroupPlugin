@@ -71,7 +71,7 @@ namespace AlliancesPlugin.Alliances.NewTerritories
             AlliancePlugin.SendChatMessage("[City Alerts]", $"{city.CityName} Owned by {alliance.name} is now under siege. {city.SiegeProgress}/{city.SiegePointsToDropSafeZone}");
             if (city.DiscordChannelId > 0)
             {
-                DiscordStuff.SendAllianceMessage(alliance, "[City Alerts]", $"{city.CityName} Owned by {alliance.name} is now under siege. {city.SiegeProgress}/{city.SiegePointsToDropSafeZone}");
+                AllianceChat.SendChatMessage(alliance.AllianceId, "[City Alerts]", $"{city.CityName} Owned by {alliance.name} is now under siege. {city.SiegeProgress}/{city.SiegePointsToDropSafeZone}", true, 0l);
             }
         }
         public static City GetNearestCity(Vector3 player, Alliance alliance)
@@ -218,7 +218,7 @@ namespace AlliancesPlugin.Alliances.NewTerritories
             AlliancePlugin.SendChatMessage("[City Alerts]", $"{city.CityName} will be operational in {city.SecondsBeforeCityOperational} seconds. Owned by {alliance.name}");
             if (city.DiscordChannelId > 0)
             {
-                DiscordStuff.SendAllianceMessage(alliance, "[City Alerts]", $"{city.CityName} will be operational in {city.SecondsBeforeCityOperational} seconds. Owned by {alliance.name}");
+                AllianceChat.SendChatMessage(alliance.AllianceId, "[City Alerts]", $"{city.CityName} will be operational in {city.SecondsBeforeCityOperational} seconds. Owned by {alliance.name}", true, 0l);
             }
         }
         public static void SendCityDisabledMessage(City city)
@@ -228,7 +228,8 @@ namespace AlliancesPlugin.Alliances.NewTerritories
             AlliancePlugin.SendChatMessage("[City Alerts]", $"{city.CityName} Owned by {alliance.name} is now disabled");
             if (city.DiscordChannelId > 0)
             {
-                DiscordStuff.SendAllianceMessage(alliance, "[City Alerts]", $"{city.CityName} Owned by {alliance.name} is now disabled");
+                AllianceChat.SendChatMessage(alliance.AllianceId, "[City Alerts]",
+                    $"{city.CityName} Owned by {alliance.name} is now disabled", true, 0L);
             }
         }
 
@@ -239,7 +240,9 @@ namespace AlliancesPlugin.Alliances.NewTerritories
             AlliancePlugin.SendChatMessage("[City Alerts]", $"{city.CityName} now operational. Owned by {alliance.name}");
             if (city.DiscordChannelId > 0)
             {
-                DiscordStuff.SendAllianceMessage(alliance, "[City Alerts]", $"{city.CityName} now operational. Owned by {alliance.name}");
+                AllianceChat.SendChatMessage(alliance.AllianceId, "[City Alerts]",
+                    $"{city.CityName} Owned by {alliance.name} is now disabled", true, 0L);
+            //    DiscordStuff.SendAllianceMessage(alliance, "[City Alerts]", $"{city.CityName} now operational. Owned by {alliance.name}");
             }
         }
 
@@ -250,7 +253,7 @@ namespace AlliancesPlugin.Alliances.NewTerritories
             AlliancePlugin.SendChatMessage("[City Alerts]", $"{city.CityName} {city.SiegeProgress}/{city.SiegePointsToDropSafeZone}");
             if (city.DiscordChannelId > 0)
             {
-                DiscordStuff.SendAllianceMessage(alliance, "[City Alerts]", $"{city.CityName} {city.SiegeProgress}/{city.SiegePointsToDropSafeZone}");
+            //    DiscordStuff.SendAllianceMessage(alliance, "[City Alerts]", $"{city.CityName} {city.SiegeProgress}/{city.SiegePointsToDropSafeZone}");
             }
         }
 
@@ -261,7 +264,7 @@ namespace AlliancesPlugin.Alliances.NewTerritories
             AlliancePlugin.SendChatMessage("[City Alerts]", $"{city.CityName} has fallen! Safezone disabled.");
             if (city.DiscordChannelId > 0)
             {
-                DiscordStuff.SendAllianceMessage(alliance, "[City Alerts]", $"{city.CityName} has fallen! Safezone disabled.");
+            //    DiscordStuff.SendAllianceMessage(alliance, "[City Alerts]", $"{city.CityName} has fallen! Safezone disabled.");
             }
         }
         public static void HandleCitiesSiegeCycle()
@@ -326,7 +329,7 @@ namespace AlliancesPlugin.Alliances.NewTerritories
             AlliancePlugin.SendChatMessage("[City Alerts]", $"{city.CityName} beacon destroyed.");
             if (city.DiscordChannelId > 0)
             {
-                DiscordStuff.SendAllianceMessage(alliance, "[City Alerts]", $"{city.CityName} has fallen! Safezone disabled.");
+              //  DiscordStuff.SendAllianceMessage(alliance, "[City Alerts]", $"{city.CityName} has fallen! Safezone disabled.");
             }
 
         }

@@ -113,7 +113,7 @@ namespace AlliancesPlugin
                 SendMessage = MQPlugin.GetType().GetMethod("SendMessage", BindingFlags.Public | BindingFlags.Instance, null, new Type[2] { typeof(string), typeof(string) }, null);
                 MQ = MQPlugin;
                 
-                RabbitTest.MQPluginPatch.Patch(Patches.AcquireContext());
+                MQPatching.MQPluginPatch.Patch(Patches.AcquireContext());
                 Patches.Commit();
 
                 MQPluginInstalled = true;
@@ -794,25 +794,19 @@ namespace AlliancesPlugin
 
         }
 
-        public static void SendToMQ(string Type, Object SendThis)
+        public static bool SendToMQ(string Type, Object SendThis)
         {
+            if (!MQPluginInstalled)
+            {
+                return false;
+            }
             var input = JsonConvert.SerializeObject(SendThis);
             var methodInput = new object[] { Type, input };
             AlliancePlugin.SendMessage?.Invoke(AlliancePlugin.MQ, methodInput);
+            return true;
         }
 
-        public static void NEWSUIT(MyEntity entity)
-        {
-            if (entity is MySafeZoneBlock block)
-            {
-                //   = AlliancePlugin.Log.Info("ITS A SUIT BITCH!");
-
-
-            }
-        }
         public static OptinCore warcore = new OptinCore();
-
-
 
         public static Random rand = new Random();
         private void SessionChanged(ITorchSession session, TorchSessionState state)
@@ -875,9 +869,17 @@ namespace AlliancesPlugin
 
             MyAPIGateway.Session.DamageSystem.RegisterBeforeDamageHandler(1, new BeforeDamageApplied(DamageHandler));
             //      MyEntities.OnEntityAdd += NEWSUIT;
-            if (config != null && config.AllowDiscord && !DiscordStuff.Ready)
+            if (config != null && config.AllowDiscord)
             {
-             //   DiscordStuff.RegisterDiscord();
+                var SendingMessage = new AllianceChatMessage();
+
+                SendingMessage.SenderPrefix = "Init";
+                SendingMessage.MessageText = "Init Message";
+                SendingMessage.AllianceId = Guid.Empty;
+                SendingMessage.ChannelId = config.DiscordChannelId;
+                SendingMessage.BotToken = config.DiscordBotToken;
+
+                SendToMQ("AllianceMessage", SendingMessage);
             }
             nextRegister = DateTime.Now;
             //    rand.Next(1, 60);
@@ -1468,51 +1470,9 @@ namespace AlliancesPlugin
                 {
                     Log.Error(ex);
                 }
-                //  Log.Info("Registering bots");
-                foreach (Alliance alliance in AllAlliances.Values)
-                {
-                    alliance.ForceFriendlies();
-                    alliance.ForceEnemies();
-                    if (DiscordStuff.allianceBots.TryGetValue(alliance.AllianceId, out DiscordClient bot))
-                    {
-                        //   bot.MessageCreated -= DiscordStuff.Discord_AllianceMessage;
-                        //  bot.MessageCreated += DiscordStuff.Discord_AllianceMessage;
-
-                    }
-                    if (alliance.DiscordChannelId > 0 && !String.IsNullOrEmpty(alliance.DiscordToken) && TorchState == TorchSessionState.Loaded)
-                    {
-                        //  Log.Info(Encryption.DecryptString(alliance.AllianceId.ToString(), alliance.DiscordToken).Length);
-
-                        try
-                        {
-                            if (Encryption.DecryptString(alliance.AllianceId.ToString(), alliance.DiscordToken).Length < 59)
-                            {
-                                Log.Error("Invalid bot token for " + alliance.AllianceId);
-
-                                continue;
-                            }
-
-                        }
-                        catch (Exception ex)
-                        {
-                            //  Log.Error(ex);
-                            Log.Error("Invalid bot token for " + alliance.AllianceId);
-                            continue;
-                        }
-
-                        //    if (!botsTried.Contains(alliance.AllianceId))
-                        //    {
-                        //   botsTried.Add(alliance.AllianceId);
-                        //    DiscordStuff.RegisterAllianceBot(alliance, alliance.DiscordChannelId);
-
-
-
-
-                    }
-                }
-
             }
         }
+
         public static List<IMyIdentity> GetAllIdentitiesByNameOrId(string playerNameOrSteamId)
         {
             List<IMyIdentity> ids = new List<IMyIdentity>();
@@ -2209,10 +2169,24 @@ namespace AlliancesPlugin
                                 //do unlock message
                                 try
                                 {
+
                                     MyGps gps = new MyGps();
                                     gps.Coords = new Vector3D(loc.X, loc.Y, loc.Z);
                                     gps.Name = loc.Name;
-                                    DiscordStuff.SendMessageToDiscord(loc.Name, "Is now unlocked! Ownership reset to nobody. Find it here " + gps.ToString(), config, true);
+                                    var message = new AllianceSendToDiscord
+                                    {
+                                        MessageText = $"Is now unlocked! Ownership reset to nobody. Find it here {gps.ToString()}",
+                                        SenderPrefix = loc.Name,
+                                        SendToIngame = true,
+                                        DoEmbed = true,
+                                        EmbedB = config.FDiscordB,
+                                        EmbedG = config.FDiscordG,
+                                        EmbedR = config.FDiscordR,
+                                        ChannelId = config.AllianceSite ? AlliancePlugin.config.DiscordChannelId : config.FactionDiscordChannelId
+                                    };
+
+                                    SendToMQ(MQPatching.MQPluginPatch.AllianceSendToDiscord, message);
+                             
 
                                 }
                                 catch (Exception e)
@@ -2425,7 +2399,19 @@ namespace AlliancesPlugin
 
                                             try
                                             {
-                                                DiscordStuff.SendMessageToDiscord(loc.Name, "Capture can begin in " + config.MinutesBeforeCaptureStarts + " minutes. By " + GetAllianceNoLoading(CapturingAlliance).name, config, true);
+                                                var message = new AllianceSendToDiscord
+                                                {
+                                                    MessageText = $"Capture can begin in {config.MinutesBeforeCaptureStarts}  minutes. By {GetAllianceNoLoading(CapturingAlliance).name}",
+                                                    SenderPrefix = loc.Name,
+                                                    SendToIngame = true,
+                                                    DoEmbed = true,
+                                                    EmbedB = config.FDiscordB,
+                                                    EmbedG = config.FDiscordG,
+                                                    EmbedR = config.FDiscordR,
+                                                    ChannelId = config.AllianceSite ? AlliancePlugin.config.DiscordChannelId : config.FactionDiscordChannelId
+                                                };
+
+                                                SendToMQ(MQPatching.MQPluginPatch.AllianceSendToDiscord, message);
                                             }
                                             catch (Exception e)
                                             {
@@ -4025,6 +4011,7 @@ namespace AlliancesPlugin
         public static DateTime RegisterMainBot = DateTime.Now;
         public static Dictionary<ulong, Boolean> statusUpdate = new Dictionary<ulong, bool>();
         public static Dictionary<ulong, Guid> otherAllianceShit = new Dictionary<ulong, Guid>();
+        public DateTime InitDiscord = DateTime.Now;
         public async override void Update()
         {
             if (ticks % 64 == 0)
@@ -4101,15 +4088,11 @@ namespace AlliancesPlugin
                 {
                     Log.Error(ex);
                 }
-                if (config.AllowDiscord)
+                if (config.AllowDiscord && DateTime.Now >= InitDiscord)
                 {
-                    List<Guid> Registered = new List<Guid>();
+                    InitDiscord = InitDiscord.AddMinutes(1);
                     foreach (var alliance in from keys in registerThese where DateTime.Now > keys.Value select GetAlliance(keys.Key) into alliance where alliance != null select alliance)
                     {
-                        //DiscordStuff.RegisterAllianceBot(alliance, alliance.DiscordChannelId);
-
-                        //temp.Add(alliance.AllianceId, DateTime.Now.AddMinutes(10));
-                        //Log.Info("Connecting bot.");
                         var SendingMessage = new AllianceChatMessage();
 
                         SendingMessage.SenderPrefix = "Init";
@@ -4118,17 +4101,7 @@ namespace AlliancesPlugin
                         SendingMessage.ChannelId = alliance.DiscordChannelId;
                         SendingMessage.BotToken = alliance.DiscordToken;
 
-
-
-                        var input = JsonConvert.SerializeObject(SendingMessage);
-                        var methodInput = new object[] { "AllianceMessage", input };
-                        AlliancePlugin.SendMessage?.Invoke(AlliancePlugin.MQ, methodInput);
-                        Registered.Add(alliance.AllianceId);
-
-                    }
-                    foreach (var keys in Registered)
-                    {
-                        registerThese.Remove(keys);
+                        SendToMQ("AllianceMessage", SendingMessage);
                     }
                 }
             }

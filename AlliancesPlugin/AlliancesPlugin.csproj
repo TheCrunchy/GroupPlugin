@@ -224,7 +224,7 @@
     <Compile Include="KamikazeTerritories\ClaimBlockSettings.cs" />
     <Compile Include="KamikazeTerritories\KamikazeTerritory.cs" />
     <Compile Include="KamikazeTerritories\MessageHandler.cs" />
-    <Compile Include="RabbitTest.cs" />
+    <Compile Include="MQPatching.cs" />
     <Compile Include="Shipyard\ShipyardSpeedUpgrade.cs" />
     <Compile Include="Shipyard\ShipyardSlotUpgrade.cs" />
     <Compile Include="Alliances\VaultCommands.cs" />

@@ -305,14 +305,6 @@ namespace AlliancesPlugin.Alliances
             {
                 AlliancePlugin.Log.Error("Error with reading vault");
                 AlliancePlugin.Log.Error(ex);
-                if (DiscordStuff.debugMode)
-                {
-                    if (MySession.Static.Players.GetPlayerByName("Crunch") != null)
-                    {
-                        MyPlayer player = MySession.Static.Players.GetPlayerByName("Crunch");
-                        ShipyardCommands.SendMessage("Vault", "" + ex.ToString(), Color.Blue, (long)player.Id.SteamId);
-                    }
-                }
                 return "error getting vault";
             }
             return sb.ToString();

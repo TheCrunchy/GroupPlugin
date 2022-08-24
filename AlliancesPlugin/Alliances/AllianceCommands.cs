@@ -65,9 +65,7 @@ namespace AlliancesPlugin.Alliances
                     string encrypted = Encryption.EncryptString(alliance.AllianceId.ToString(), token);
                     alliance.DiscordToken = encrypted;
                     AlliancePlugin.SaveAllianceData(alliance);
-                    DiscordStuff.allianceBots.Remove(alliance.AllianceId);
-
-                    Context.Respond("Added token! If the channel Id is also set the bot should start working after next server restart.");
+                    Context.Respond("Added token! If the channel Id is also set, send an alliance message to start the bot");
                 }
                 else
                 {
@@ -106,7 +104,6 @@ namespace AlliancesPlugin.Alliances
                     string encrypted = Encryption.EncryptString(alliance.AllianceId.ToString(), token);
                     alliance.DiscordToken = encrypted;
                     AlliancePlugin.SaveAllianceData(alliance);
-                    DiscordStuff.allianceBots.Remove(alliance.AllianceId);
 
                     Context.Respond("Added token! If the channel Id is also set the bot should start working after next server restart.");
       
@@ -1898,38 +1895,6 @@ namespace AlliancesPlugin.Alliances
 
             }
         }
-        [Command("outputlog", "output the log to discord")]
-        [Permission(MyPromoteLevel.None)]
-        public void BankLogOutput(int max = 500)
-        {
-
-            if (Context.Player != null)
-            {
-
-                //Do stuff with taking components from grid storage
-                //GridCosts localGridCosts = GetComponentsAndCost(projectedGrid);
-                //gridCosts.setComponents(localGridCosts.getComponents());
-                IMyFaction faction = FacUtils.GetPlayersFaction(Context.Player.IdentityId);
-                if (faction == null)
-                {
-                    Context.Respond("You must be in a faction to use alliance features.");
-                    return;
-                }
-                Alliance alliance = AlliancePlugin.GetAlliance(faction as MyFaction);
-                if (alliance == null)
-                {
-                    Context.Respond("You are not a member of an alliance with an unlocked shipyard.");
-                    return;
-                }
-                Context.Respond("This may take a while if the log is large.");
-                DiscordStuff.SendAllianceLog(alliance, max);
-                Context.Respond("If discord is linked log was sent to channel.");
-            }
-
-        }
-
-
-
 
         [Command("sellrank", "count the log")]
         [Permission(MyPromoteLevel.None)]
@@ -2580,93 +2545,6 @@ namespace AlliancesPlugin.Alliances
 
         }
         FileUtils utils = new FileUtils();
-        [Command("debug", "crunch command")]
-        [Permission(MyPromoteLevel.None)]
-        public void DoDebug()
-        {
-            if (Context.Player.SteamUserId == 76561198045390854)
-            {
-                DiscordStuff.debugMode = !DiscordStuff.debugMode;
-                Context.Respond("toggled to " + DiscordStuff.debugMode);
-            }
-            else
-            {
-                Context.Respond("You no Crunch, no debug for you");
-            }
-
-        }
-        [Command("errors", "crunch command")]
-        [Permission(MyPromoteLevel.None)]
-        public async void ShowErrors(int num, string ServerNum = "06")
-        {
-            if (Context.Player == null)
-            {
-                Context.Respond("No console!");
-                return;
-            }
-            if (Context.Player.SteamUserId == 76561198045390854 || Context.Player.PromoteLevel == MyPromoteLevel.Admin)
-            {
-                foreach (String s in DiscordStuff.temp)
-                {
-                    Context.Respond(s);
-                }
-                foreach (String s in DiscordStuff.errors)
-                {
-                    Context.Respond(s);
-                }
-                Context.Respond("Ping of main " + DiscordStuff.Discord.Ping.ToString());
-                foreach (DiscordClient client in DiscordStuff.allianceBots.Values)
-                {
-                    Context.Respond("Ping of alliance bot " + DiscordStuff.Discord.Ping.ToString());
-
-                }
-
-
-                //to lazy to make a switch/case
-                if (num == 0)
-                {
-                    MyVisualScriptLogicProvider.SendChatMessageColored("Can anyone see this message in a server that isnt " + MyMultiplayer.Static.HostName, Color.Pink, "TESTING", 0);
-                }
-                if (num == 1)
-                {
-                    DiscordChannel chann = DiscordStuff.Discord.GetChannelAsync(AlliancePlugin.config.DiscordChannelId).Result;
-
-
-
-                    DiscordStuff.Discord.SendMessageAsync(chann, "debug");
-                }
-                if (num == 2)
-                {
-                    DiscordStuff.Discord.DisconnectAsync();
-                }
-                if (num == 3)
-                {
-                    DiscordStuff.Discord.ConnectAsync();
-                }
-                if (num == 4)
-                {
-                    DiscordStuff.Discord.MessageCreated -= DiscordStuff.Discord_MessageCreated;
-                }
-                if (num == 5)
-                {
-                    DiscordStuff.Discord.MessageCreated -= DiscordStuff.Discord_MessageCreated;
-                    DiscordStuff.Discord.MessageCreated += DiscordStuff.Discord_MessageCreated;
-                }
-                if (num == 6)
-                {
-                    DiscordChannel chann = DiscordStuff.Discord.GetChannelAsync(AlliancePlugin.config.DiscordChannelId).Result;
-
-
-
-                    DiscordStuff.Discord.SendMessageAsync(chann, " Checking SENDS" + ServerNum);
-                }
-            }
-            else
-            {
-                Context.Respond("You no Crunch or admin, no errors for you");
-            }
-
-        }
         [Command("chat", "toggle alliance chat")]
         [Permission(MyPromoteLevel.None)]
         public void DoAllianceChat(string message = "")
