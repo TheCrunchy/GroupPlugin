@@ -11,7 +11,9 @@ namespace AllianceDiscordController.Models
         public string Username { get; set; } = "Username";
         public string Password { get; set; } = "Password";
         public string Hostname { get; set; } = "localhost";
-        public int Port { get; set; } = 0;
+        public int Port { get; set; } = 5672;
+        public bool UseSeHostingWatchdog = false;
+        public string PathForWatchdog = "Change this";
 
     }
 }

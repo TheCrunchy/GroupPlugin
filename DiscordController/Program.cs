@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using System.Timers;
 using AllianceDiscordController.Models;
 using AlliancesPlugin;
 using AlliancesPlugin.Alliances;
@@ -26,9 +27,11 @@ namespace AllianceDiscordController
         public static Dictionary<String, DiscordClient> UsedTokens = new Dictionary<String, DiscordClient>();
         public static Dictionary<ulong, Guid> MappedChannels = new Dictionary<ulong, Guid>();
         public static Dictionary<Guid, DiscordChannel> StoredChannels = new Dictionary<Guid, DiscordChannel>();
+        public static Config config;
+
         public static void Main(string[] args)
-        {
-            var config = new Config();
+        { 
+            config = new Config();
             var directory = Directory.GetCurrentDirectory();
             var utils = new FileUtils();
             var path = $"{directory}//config.xml";
@@ -39,6 +42,14 @@ namespace AllianceDiscordController
             else
             {
                 config = utils.ReadFromXmlFile<Config>(path);
+            }
+
+            if (config.UseSeHostingWatchdog)
+            {
+                 var Timer = new Timer();
+                 Timer.Interval = 30000;
+                 Timer.Enabled = true;
+                 Timer.Elapsed += OnTimedEvent;
             }
 
             var factory = new ConnectionFactory();
@@ -81,6 +92,11 @@ namespace AllianceDiscordController
             }
             //     Handlers.Add("AllianceMessage", YEET);
             Console.ReadLine();
+        }
+        private static void OnTimedEvent(Object source, ElapsedEventArgs e)
+        {
+            var now = DateTime.Now.ToString("o");
+            File.WriteAllText($"{config.PathForWatchdog}//ALLIANCEDISCORD", now);
         }
 
         public static void YEET(string message)
