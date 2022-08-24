@@ -193,6 +193,7 @@
     <Compile Include="Alliances\Alliance.cs" />
     <Compile Include="AlliancePlugin.cs" />
     <Compile Include="Alliances\AllianceChat.cs" />
+    <Compile Include="Alliances\AllianceChatMessage.cs" />
     <Compile Include="Alliances\AllianceCommands.cs" />
     <Compile Include="Alliances\NewTerritories\City.cs" />
     <Compile Include="Alliances\NewTerritories\CityHandler.cs" />

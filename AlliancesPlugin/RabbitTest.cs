@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using AlliancesPlugin.Alliances;
 using Newtonsoft.Json;
 using Torch.Commands;
 using Torch.Commands.Permissions;
@@ -26,12 +27,12 @@ namespace AlliancesPlugin
                 if (HandleMessageMethod == null) return;
 
                 ctx.GetPattern(HandleMessageMethod).Suffixes.Add(HandleMessagePatch);
-                Handlers.Add("Alliance Test", HandleExample1);
+                Handlers.Add("AllianceMessage", HandleAllianceChat);
             }
 
-            public static void HandleExample1(string MessageBody)
+            public static void HandleAllianceChat(string MessageBody)
             {
-               AlliancePlugin.Log.Info("FDGDGGHSH");
+               AllianceChat.ReceiveChatMessage(JsonConvert.DeserializeObject<AllianceChatMessage>(MessageBody));
             }
 
             public static void HandleMessage(string MessageType, string MessageBody)

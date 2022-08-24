@@ -60,7 +60,9 @@ using AlliancesPlugin.Alliances.NewTerritories;
 using static AlliancesPlugin.Alliances.NewTerritories.City;
 using AlliancesPlugin.WarOptIn;
 using AlliancesPlugin.KamikazeTerritories;
+using Newtonsoft.Json;
 using Torch.Managers.PatchManager;
+using VRageRender.Messages;
 
 namespace AlliancesPlugin
 {
@@ -869,7 +871,7 @@ namespace AlliancesPlugin
             //      MyEntities.OnEntityAdd += NEWSUIT;
             if (config != null && config.AllowDiscord && !DiscordStuff.Ready)
             {
-                DiscordStuff.RegisterDiscord();
+             //   DiscordStuff.RegisterDiscord();
             }
             nextRegister = DateTime.Now;
             //    rand.Next(1, 60);
@@ -4095,17 +4097,32 @@ namespace AlliancesPlugin
                 }
                 if (config.AllowDiscord)
                 {
-                    Dictionary<Guid, DateTime> temp = new Dictionary<Guid, DateTime>();
+                    List<Guid> Registered = new List<Guid>();
                     foreach (var alliance in from keys in registerThese where DateTime.Now > keys.Value select GetAlliance(keys.Key) into alliance where alliance != null select alliance)
                     {
-                        DiscordStuff.RegisterAllianceBot(alliance, alliance.DiscordChannelId);
+                        //DiscordStuff.RegisterAllianceBot(alliance, alliance.DiscordChannelId);
 
-                        temp.Add(alliance.AllianceId, DateTime.Now.AddMinutes(10));
-                        Log.Info("Connecting bot.");
+                        //temp.Add(alliance.AllianceId, DateTime.Now.AddMinutes(10));
+                        //Log.Info("Connecting bot.");
+                        var SendingMessage = new AllianceChatMessage();
+
+                        SendingMessage.SenderPrefix = "Init";
+                        SendingMessage.MessageText = "Init Message";
+                        SendingMessage.AllianceId = alliance.AllianceId;
+                        SendingMessage.ChannelId = alliance.DiscordChannelId;
+                        SendingMessage.BotToken = alliance.DiscordToken;
+
+
+
+                        var input = JsonConvert.SerializeObject(SendingMessage);
+                        var methodInput = new object[] { "AllianceMessage", input };
+                        AlliancePlugin.SendMessage?.Invoke(AlliancePlugin.MQ, methodInput);
+                        Registered.Add(alliance.AllianceId);
+
                     }
-                    foreach (var keys in temp)
+                    foreach (var keys in Registered)
                     {
-                        registerThese[keys.Key] = keys.Value;
+                        registerThese.Remove(keys);
                     }
                 }
             }

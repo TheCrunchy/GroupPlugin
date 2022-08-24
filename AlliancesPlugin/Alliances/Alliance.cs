@@ -228,26 +228,16 @@ namespace AlliancesPlugin.Alliances
             return (long)upkeep;
         }
 
-        public Boolean HasInheritance(String rank)
-        {
-            if (inheritance.ContainsKey(rank))
-            {
-                return true;
-            }
-            return false;
-        }
 
         public List<AccessLevel> GetInheritedPermissions(String rank)
         {
             List<AccessLevel> levels = new List<AccessLevel>();
 
-            if (inheritance.TryGetValue(rank, out string minion))
+            if (!inheritance.TryGetValue(rank, out string minion)) return levels;
+            levels.AddRange(CustomRankPermissions[rank].permissions);
+            if (inheritance.ContainsKey(minion))
             {
-                levels.AddRange(CustomRankPermissions[rank].permissions);
-                if (inheritance.ContainsKey(minion))
-                {
-                    levels.AddRange(GetInheritedPermissions(minion));
-                }
+                levels.AddRange(GetInheritedPermissions(minion));
             }
 
             return levels;

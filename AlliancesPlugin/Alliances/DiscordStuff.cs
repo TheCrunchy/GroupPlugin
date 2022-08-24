@@ -235,7 +235,6 @@ namespace AlliancesPlugin.Alliances
          
                // AlliancePlugin.Log.Info($"debug {alliance.name} registered");
                 temp.Add("Registered " + alliance.name + " BOT");
-                bot.MessageCreated += Discord_AllianceMessage;
                 allianceBots.Remove(alliance.AllianceId);
                 allianceBots.Add(alliance.AllianceId, bot);
                 BotsStoredByTokens.Remove(t);
@@ -406,18 +405,6 @@ namespace AlliancesPlugin.Alliances
                 }
                 catch (System.Net.Http.HttpRequestException)
                 {
-                    AllianceChat.SendChatMessageFromDiscord(alliance.AllianceId, "Bot", "Failed to send message.", 0);
-                }
-                catch (Exception ex)
-                {
-                    if (debugMode)
-                    {
-                        if (MySession.Static.Players.GetPlayerByName("Crunch") != null)
-                        {
-                            MyPlayer player = MySession.Static.Players.GetPlayerByName("Crunch");
-                            ShipyardCommands.SendMessage("Discord", "" + ex.ToString(), Color.Blue, (long)player.Id.SteamId);
-                        }
-                    }
                 }
             }
             else
@@ -524,191 +511,7 @@ namespace AlliancesPlugin.Alliances
         public static Dictionary<ulong, string> nickNames = new Dictionary<ulong, string>();
         public static Boolean debugMode = false;
         public static Dictionary<Guid, string> LastMessageSent = new Dictionary<Guid, string>();
-        public static Task Discord_AllianceMessage(DiscordClient discord, DSharpPlus.EventArgs.MessageCreateEventArgs e)
-        {
-            if (e.Message == null)
-            {
-                return Task.CompletedTask;
-            }
 
-            if (debugMode)
-            {
-                if (MySession.Static.Players.GetPlayerByName("Crunch") != null)
-                {
-                    MyPlayer player = MySession.Static.Players.GetPlayerByName("Crunch");
-                    ShipyardCommands.SendMessage("Discord", "Got a message " + e.Message.ChannelId + " " + e.Channel.Id, Color.Blue, (long)player.Id.SteamId);
-                }
-            }
-            if (allianceChannels.ContainsKey(e.Message.Channel.Id))
-            {
-                if (debugMode)
-                {
-                    if (MySession.Static.Players.GetPlayerByName("Crunch") != null)
-                    {
-                        MyPlayer player = MySession.Static.Players.GetPlayerByName("Crunch");
-                        ShipyardCommands.SendMessage("Discord 1", "Is an alliance channel " + e.Message.ChannelId + " " + e.Channel.Id, Color.Blue, (long)player.Id.SteamId);
-                    }
-                }
-                if (e.Author.IsBot)
-                {
-                    if (debugMode)
-                    {
-                        if (MySession.Static.Players.GetPlayerByName("Crunch") != null)
-                        {
-                            MyPlayer player = MySession.Static.Players.GetPlayerByName("Crunch");
-                            ShipyardCommands.SendMessage("Discord 2", "Bot message " + e.Message.ChannelId + " " + e.Channel.Id, Color.Blue, (long)player.Id.SteamId);
-                        }
-                    }
-                    //if (LastMessageSent.ContainsKey(allianceChannels[e.Channel.Id]))
-                    //{
-                    //    if (LastMessageSent[allianceChannels[e.Channel.Id]].Equals(e.Message.Content))
-                    //    {
-                    //        return Task.CompletedTask;
-                    //    }
-                    //}
-
-                    String[] split = e.Message.Content.Split(':');
-                    int i = 0;
-                    if (WorldName.Equals("") && MyMultiplayer.Static.HostName != null)
-                    {
-                        if (MyMultiplayer.Static.HostName.Contains("SENDS"))
-                        {
-                            WorldName = MyMultiplayer.Static.HostName.Replace("SENDS", "");
-                        }
-                        else
-                        {
-                            if (MyMultiplayer.Static.HostName.Equals("Sigma Draconis Lobby"))
-                            {
-                                WorldName = "01";
-                            }
-                            else
-                            {
-                                WorldName = MyMultiplayer.Static.HostName;
-                            }
-                        }
-                    }
-
-                    String exclusionBeforeFormat = GetStringBetweenCharacters(split[0], '[', ']');
-                    if (!exclusionBeforeFormat.Contains(WorldName) && !exclusionBeforeFormat.Contains("LOG"))
-                    {
-
-
-                        StringBuilder message = new StringBuilder();
-                        foreach (String s in split)
-                        {
-                            if (i == 0)
-                            {
-                                i++;
-                                continue;
-                            }
-                            message.Append(s);
-                        }
-                        StringBuilder newMessage = new StringBuilder();
-                        string output = e.Message.Content.Substring(e.Message.Content.IndexOf(':') + 1);
-                        AllianceChat.SendChatMessageFromDiscord(allianceChannels[e.Channel.Id], split[0].Replace("**", ""), output.Replace("**", "").Trim(), 0);
-                    }
-                }
-                else
-                {
-                    if (debugMode)
-                    {
-                        if (MySession.Static.Players.GetPlayerByName("Crunch") != null)
-                        {
-                            MyPlayer player = MySession.Static.Players.GetPlayerByName("Crunch");
-                            ShipyardCommands.SendMessage("Discord 3", "Player message " + e.Message.ChannelId + " " + e.Channel.Id, Color.Blue, (long)player.Id.SteamId);
-                        }
-                    }
-                    if (WorldName.Equals("") && MyMultiplayer.Static.HostName != null)
-                    {
-                        if (MyMultiplayer.Static.HostName.Contains("SENDS"))
-                        {
-                            WorldName = MyMultiplayer.Static.HostName.Replace("SENDS", "");
-                        }
-                        else
-                        {
-                            if (MyMultiplayer.Static.HostName.Equals("Sigma Draconis Lobby"))
-                            {
-                                WorldName = "01";
-                            }
-                            else
-                            {
-                                WorldName = MyMultiplayer.Static.HostName;
-                            }
-                        }
-                    }
-                    if (debugMode)
-                    {
-                        if (MySession.Static.Players.GetPlayerByName("Crunch") != null)
-                        {
-                            MyPlayer player = MySession.Static.Players.GetPlayerByName("Crunch");
-                            ShipyardCommands.SendMessage("Discord 4", "Player message 1", Color.Blue, (long)player.Id.SteamId);
-                        }
-                    }
-                    //if (nickNames.ContainsKey(e.Message.Author.Id))
-                    //{
-                    //    if (debugMode)
-                    //    {
-                    //        if (MySession.Static.Players.GetPlayerByName("Crunch") != null)
-                    //        {
-                    //            MyPlayer player = MySession.Static.Players.GetPlayerByName("Crunch");
-                    //            ShipyardCommands.SendMessage("Discord 5", "Player message 2", Color.Blue, (long)player.Id.SteamId);
-                    //        }
-                    //    }
-                    AllianceChat.SendChatMessageFromDiscord(allianceChannels[e.Channel.Id], "[D] " + e.Message.Author.Username, e.Message.Content.Trim(), e.Author.Id);
-                    //}
-                    //else
-                    //{
-                    //    if (debugMode)
-                    //    {
-                    //        if (MySession.Static.Players.GetPlayerByName("Crunch") != null)
-                    //        {
-                    //            MyPlayer player = MySession.Static.Players.GetPlayerByName("Crunch");
-                    //            ShipyardCommands.SendMessage("Discord 6", "Player message 3", Color.Blue, (long)player.Id.SteamId);
-                    //        }
-                    //    }
-                    //    Task.Run(async () =>
-                    //    {
-
-                    //        String nick;
-                    //          DiscordMember mem = await e.Guild.GetMemberAsync(e.Author.Id);
-                    //        nick = mem.Nickname;
-                    //        if (String.IsNullOrEmpty(nick))
-                    //        {
-                    //            nickNames.Add(e.Message.Author.Id, mem.DisplayName);
-                    //        }
-                    //        else
-                    //        {
-                    //            nickNames.Add(e.Message.Author.Id, nick);
-                    //        }
-                    //        AllianceChat.SendChatMessageFromDiscord(allianceChannels[e.Channel.Id], "[D] " + nickNames[e.Message.Author.Id], e.Message.Content.Trim(), e.Author.Id);
-                    //    });
-
-                    //}
-                    //e.Message.Author.
-                    //String nick = e.Guild.GetMemberAsync(e.Author.Id).Result.Nickname;
-                    //if (String.IsNullOrEmpty(nick))
-                    //{
-
-                    //}
-                    //else
-                    //{
-                    //   AllianceChat.SendChatMessageFromDiscord(allianceChannels[e.Channel.Id], "[D] " + nick, e.Message.Content.Trim(), e.Author.Id);
-                    //}
-                }
-            }
-            else
-            {
-                if (debugMode)
-                {
-                    if (MySession.Static.Players.GetPlayerByName("Crunch") != null)
-                    {
-                        MyPlayer player = MySession.Static.Players.GetPlayerByName("Crunch");
-                        ShipyardCommands.SendMessage("Discord 3", "Message channel not alliance channel " + e.Message.ChannelId + " " + e.Channel.Id, Color.Blue, (long)player.Id.SteamId);
-                    }
-                }
-            }
-            return Task.CompletedTask;
-        }
         static bool tried = false;
         public static DateTime nextMention = DateTime.Now;
         public static Task Discord_MessageCreated(DiscordClient discord, DSharpPlus.EventArgs.MessageCreateEventArgs e)

@@ -15,6 +15,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Torch.API;
 using Torch.API.Managers;
 using Torch.Mod;
@@ -102,139 +103,71 @@ namespace AlliancesPlugin.Alliances
         }
 
         public static Dictionary<ulong, Guid> PeopleInAllianceChat = new Dictionary<ulong, Guid>();
+
+        public static void ReceiveChatMessage(AllianceChatMessage message)
+        {
+            Alliance alliance = AlliancePlugin.GetAllianceNoLoading(message.AllianceId);
+            List<ulong> OtherMembers = new List<ulong>();
+            //strip out world names here
+            //if (MyMultiplayer.Static.HostName.Contains("SENDS"))
+            //{
+            //    WorldName = MyMultiplayer.Static.HostName.Replace("SENDS", "");
+            //}
+            foreach (MyPlayer player in MySession.Static.Players.GetOnlinePlayers())
+            {
+                if (player.Identity.IdentityId == message.SenderId)
+                {
+                    NotificationMessage message2 = new NotificationMessage("You are in alliance chat", 5000, "Green");
+                    ModCommunication.SendMessageTo(message2, player.Id.SteamId);
+                    continue;
+                }
+                var fac = MySession.Static.Factions.TryGetPlayerFaction(player.Identity.IdentityId) as MyFaction;
+                if (fac == null) continue;
+                if (alliance.AllianceMembers.Contains(fac.FactionId))
+                {
+                    OtherMembers.Add(player.Id.SteamId);
+                }
+            }
+
+            foreach (var id in OtherMembers)
+            {
+                ShipyardCommands.SendMessage(message.SenderPrefix.Replace("**", ""), message.MessageText, new Color(alliance.r, alliance.g, alliance.b), (long)id);
+                var gpscol = (MyGpsCollection)MyAPIGateway.Session?.GPS;
+
+                if (ScanChat(message.MessageText, null) == null) continue;
+                var gpsRef = ScanChat(message.MessageText, null);
+                gpsRef.GPSColor = Color.Yellow;
+                gpsRef.AlwaysVisible = true;
+                gpsRef.ShowOnHud = true;
+
+                var idenId = MySession.Static.Players.TryGetIdentityId(id);
+                gpscol.SendAddGpsRequest(idenId, ref gpsRef);
+            }
+        }
+
         public static void SendChatMessage(Guid allianceId, string prefix, string message, bool toDiscord, long playerId)
         {
             prefix = prefix.Replace(":", "");
             Alliance alliance = AlliancePlugin.GetAllianceNoLoading(allianceId);
-            List<ulong> OtherMembers = new List<ulong>();
             message = message.Replace("@", "");
 
             log.Info(allianceId.ToString() + " : " + alliance.name + " : " + prefix + " " + message);
-            if (toDiscord && DiscordStuff.AllianceHasBot(allianceId))
+            var SendingMessage = new AllianceChatMessage
             {
-                try
-                {
-                    DiscordStuff.SendAllianceMessage(alliance, prefix, message);
-                }
-                catch (Exception ex)
-                {
-                    AlliancePlugin.Log.Error(ex);
-                    if (DiscordStuff.debugMode)
-                    {
-                        if (MySession.Static.Players.GetPlayerByName("Crunch") != null)
-                        {
-                            MyPlayer player = MySession.Static.Players.GetPlayerByName("Crunch");
-                            ShipyardCommands.SendMessage("Discord", "Bot not connected 1", Color.Blue, (long)player.Id.SteamId);
-                        }
-                    }
-                }
-            }
-            else
-            {
-                if (DiscordStuff.debugMode)
-                {
-                    if (MySession.Static.Players.GetPlayerByName("Crunch") != null)
-                    {
-                        MyPlayer player = MySession.Static.Players.GetPlayerByName("Crunch");
-                        ShipyardCommands.SendMessage("Discord", "Bot not connected 2", Color.Blue, (long)player.Id.SteamId);
-                    }
-                }
-            }
-     
-                foreach (MyPlayer player in MySession.Static.Players.GetOnlinePlayers())
-                {
-                if (player.Identity.IdentityId == playerId)
-                {
-                   // ShipyardCommands.SendMessage("Alliance chat", "You are in alliance chat.", new Color(alliance.r, alliance.g, alliance.b), (long)player.Id.SteamId);
+                SenderPrefix = $"**{prefix}**",
+                MessageText = message,
+                AllianceId = allianceId,
+                ChannelId = alliance.DiscordChannelId,
+                BotToken = alliance.DiscordToken,
+                SenderId = playerId,
+                FromDiscord = false
+            };
 
-                    NotificationMessage message2 = new NotificationMessage("You are in alliance chat", 5000, "Green");
-                    ModCommunication.SendMessageTo(message2, player.Id.SteamId);
- 
-                    continue;
-                }
-                    MyFaction fac = MySession.Static.Factions.TryGetPlayerFaction(player.Identity.IdentityId) as MyFaction;
-                    if (fac != null)
-                    {
-                        if (alliance.AllianceMembers.Contains(fac.FactionId))
-                        {
-                            OtherMembers.Add(player.Id.SteamId);
-                        }
-                    }
-                }
-
-                foreach (ulong id in OtherMembers)
-                {
-
-                    ShipyardCommands.SendMessage(prefix, message, new Color(alliance.r, alliance.g, alliance.b), (long)id);
-                    MyGpsCollection gpscol = (MyGpsCollection)MyAPIGateway.Session?.GPS;
-
-                    if (ScanChat(message, null) != null)
-                    {
-                        MyGps gpsRef = ScanChat(message, null);
-                        gpsRef.GPSColor = Color.Yellow;
-                        gpsRef.AlwaysVisible = true;
-                        gpsRef.ShowOnHud = true;
-
-                        long idenId = MySession.Static.Players.TryGetIdentityId(id);
-                        gpscol.SendAddGpsRequest(idenId, ref gpsRef);
-                    }
-                
-            }
-
-
-       
-       
-
-            
+            var input = JsonConvert.SerializeObject(SendingMessage);
+            var methodInput = new object[] { "AllianceMessage", input };
+            AlliancePlugin.SendMessage?.Invoke(AlliancePlugin.MQ, methodInput);
         }
-        public static void SendChatMessageFromDiscord(Guid allianceId, string prefix, string message, ulong discordId = 0)
-        {
-            log.Info(allianceId.ToString() + " : " + prefix + " " + message);
-            Alliance alliance = AlliancePlugin.GetAllianceNoLoading(allianceId);
-            List<ulong> OtherMembers = new List<ulong>();
 
-            foreach (MyPlayer player in MySession.Static.Players.GetOnlinePlayers())
-            {
-                MyFaction fac = MySession.Static.Factions.TryGetPlayerFaction(player.Identity.IdentityId) as MyFaction;
-                if (fac != null)
-                {
-                    if (alliance.AllianceMembers.Contains(fac.FactionId))
-                    {
-                        OtherMembers.Add(player.Id.SteamId);
-                    }
-                }
-
-            }
-            if (discordId > 0)
-            {
-                log.Info(allianceId.ToString() + " : " + alliance.name + " : " + prefix + " " + message + " discord id " + discordId);
-            }
-            else
-            {
-                log.Info(allianceId.ToString() + " : " + alliance.name + " : " + prefix + " " + message + " the bot");
-            }
-            foreach (ulong id in OtherMembers)
-            {
-                
-                ShipyardCommands.SendMessage(prefix, message, new Color(alliance.r, alliance.g, alliance.b), (long)id);
-                MyGpsCollection gpscol = (MyGpsCollection)MyAPIGateway.Session?.GPS;
-
-                if (ScanChat(message, null) != null)
-                {
-                    MyGps gpsRef = ScanChat(message, null);
-                    gpsRef.GPSColor = Color.Yellow;
-                    gpsRef.AlwaysVisible = true;
-                    gpsRef.ShowOnHud = true;
-
-                    long idenId = MySession.Static.Players.TryGetIdentityId(id);
-                    MyAPIGateway.Utilities.InvokeOnGameThread(() =>
-                    {
-                        gpscol.SendAddGpsRequest(idenId, ref gpsRef);
-                    });
-
-                }
-            }
-        }
         public static Dictionary<ulong, long> IdentityIds = new Dictionary<ulong, long>();
         public static void DoChatMessage(TorchChatMessage msg, ref bool consumed)
         {
