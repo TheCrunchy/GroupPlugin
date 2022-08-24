@@ -794,6 +794,12 @@ namespace AlliancesPlugin
 
         }
 
+        public static void SendToMQ(string Type, Object SendThis)
+        {
+            var input = JsonConvert.SerializeObject(SendThis);
+            var methodInput = new object[] { Type, input };
+            AlliancePlugin.SendMessage?.Invoke(AlliancePlugin.MQ, methodInput);
+        }
 
         public static void NEWSUIT(MyEntity entity)
         {
