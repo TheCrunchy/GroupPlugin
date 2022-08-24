@@ -128,10 +128,9 @@ namespace AllianceDiscordController
             {
                 return Task.CompletedTask;
             }
-            Console.WriteLine($"{DateTime.Now} Discord Message Recieved");
+            Console.WriteLine($"{DateTime.Now} Discord Message Recieved {e.Message.Author.Username} {e.Message.Content.Trim()}");
             if (MappedChannels.TryGetValue(e.Channel.Id, out Guid id))
             {
-                Console.WriteLine($"{DateTime.Now} Discord Message Recieved and channel mapped");
                 var message = new AllianceChatMessage
                 {
                     SenderPrefix = e.Message.Author.Username,
