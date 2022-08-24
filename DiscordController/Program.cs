@@ -23,6 +23,7 @@ namespace AllianceDiscordController
 
         private static Dictionary<string, Action<string>> Handlers = new Dictionary<string, Action<string>>();
         public static Dictionary<Guid, DiscordClient> Bots = new Dictionary<Guid, DiscordClient>();
+        public static Dictionary<String, DiscordClient> UsedTokens = new Dictionary<String, DiscordClient>();
         public static Dictionary<ulong, Guid> MappedChannels = new Dictionary<ulong, Guid>();
         public static Dictionary<Guid, DiscordChannel> StoredChannels = new Dictionary<Guid, DiscordChannel>();
         public static void Main(string[] args)
@@ -109,17 +110,29 @@ namespace AllianceDiscordController
                         Token = token,
                         TokenType = TokenType.Bot,
                     };
+                    if (UsedTokens.TryGetValue(token, out var inUse))
+                    {
+                        Bots.Add(message.AllianceId, inUse);
+                        UsedTokens.Add(token, inUse);
+                        await SendMessage(inUse, message);
+                    }
+                    else
+                    {
+                        bot = new DiscordClient(config);
+                        bot.ConnectAsync();
+                        bot.MessageCreated += Discord_AllianceMessage;
+                        UsedTokens.Add(token, inUse);
+                        await SendMessage(bot, message);
+                    }
 
-                    bot = new DiscordClient(config);
-                    bot.ConnectAsync();
-                    bot.MessageCreated += Discord_AllianceMessage;
-                    Bots.Add(message.AllianceId, bot);
                     if (!MappedChannels.TryGetValue(message.ChannelId, out var ids))
                     {
                         MappedChannels.Add(message.ChannelId, message.AllianceId);
                     }
 
-                    await SendMessage(bot, message);
+              
+                   
+               
                 }
                 catch (Exception e)
                 {
