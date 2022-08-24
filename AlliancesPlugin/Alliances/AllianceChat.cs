@@ -162,10 +162,16 @@ namespace AlliancesPlugin.Alliances
                 SenderId = playerId,
                 FromDiscord = false
             };
-
-            var input = JsonConvert.SerializeObject(SendingMessage);
-            var methodInput = new object[] { "AllianceMessage", input };
-            AlliancePlugin.SendMessage?.Invoke(AlliancePlugin.MQ, methodInput);
+            if (AlliancePlugin.MQPluginInstalled)
+            {
+                var input = JsonConvert.SerializeObject(SendingMessage);
+                var methodInput = new object[] { "AllianceMessage", input };
+                AlliancePlugin.SendMessage?.Invoke(AlliancePlugin.MQ, methodInput);
+            }
+            else
+            {
+                ReceiveChatMessage(SendingMessage);
+            }
         }
 
         public static Dictionary<ulong, long> IdentityIds = new Dictionary<ulong, long>();

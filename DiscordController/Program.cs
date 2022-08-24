@@ -9,6 +9,7 @@ using System.Timers;
 using AllianceDiscordController.Models;
 using AlliancesPlugin;
 using AlliancesPlugin.Alliances;
+using DiscordController.Handlers;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using Newtonsoft.Json;
@@ -26,7 +27,7 @@ namespace AllianceDiscordController
         public static Dictionary<Guid, DiscordClient> Bots = new Dictionary<Guid, DiscordClient>();
         public static Dictionary<String, DiscordClient> UsedTokens = new Dictionary<String, DiscordClient>();
         public static Dictionary<ulong, Guid> MappedChannels = new Dictionary<ulong, Guid>();
-        public static Dictionary<Guid, DiscordChannel> StoredChannels = new Dictionary<Guid, DiscordChannel>();
+        public static Dictionary<ulong, DiscordChannel> StoredChannels = new Dictionary<ulong, DiscordChannel>();
         public static Config config;
 
         public static void Main(string[] args)
@@ -83,113 +84,20 @@ namespace AllianceDiscordController
                 Channel.BasicConsume(queue: queueName,
                     autoAck: true,
                     consumer: consumer);
-                Handlers.Add("AllianceMessage", HandleAllianceMessage);
+                Handlers.Add("AllianceMessage", AllianceChatHandler.HandleAllianceMessage);
+                Handlers.Add("AllianceSendToDiscord", SendOtherToDiscordHandler.SendToDiscord);
             }
             catch (Exception e)
             {
                 Console.WriteLine($"Could not connect to specified values, if this is first run, a config file should have generated at {path}");
                 Console.ReadLine();
             }
-            //     Handlers.Add("AllianceMessage", YEET);
             Console.ReadLine();
         }
         private static void OnTimedEvent(Object source, ElapsedEventArgs e)
         {
             var now = DateTime.Now.ToString("o");
             File.WriteAllText($"{config.PathForWatchdog}//ALLIANCEDISCORD", now);
-        }
-
-        public static void YEET(string message)
-        {
-            Console.WriteLine(message);
-        }
-        public static async void HandleAllianceMessage(string JsonMessage)
-        {
-            var message = JsonConvert.DeserializeObject<AllianceChatMessage>(JsonMessage);
-            if (message.FromDiscord)
-            {
-                return;
-            }
-            Console.WriteLine($"Sending a message to Discord {message.SenderPrefix} : {message.MessageText}");
-            if (Bots.TryGetValue(message.AllianceId, out var discord))
-            {
-                await SendMessage(discord, message);
-            }
-            else
-            {
-                try
-                {
-                    var token = Encryption.DecryptString(message.AllianceId.ToString(), message.BotToken);
-                    DiscordClient bot;
-                    DiscordConfiguration config = new DiscordConfiguration
-                    {
-                        Token = token,
-                        TokenType = TokenType.Bot,
-                    };
-                    if (UsedTokens.TryGetValue(token, out var inUse))
-                    {
-                        Bots.Add(message.AllianceId, inUse);
-                        UsedTokens.Add(token, inUse);
-                        await SendMessage(inUse, message);
-                    }
-                    else
-                    {
-                        bot = new DiscordClient(config);
-                        bot.ConnectAsync();
-                        bot.MessageCreated += Discord_AllianceMessage;
-                        UsedTokens.Add(token, inUse);
-                        await SendMessage(bot, message);
-                    }
-
-                    if (!MappedChannels.TryGetValue(message.ChannelId, out var ids))
-                    {
-                        MappedChannels.Add(message.ChannelId, message.AllianceId);
-                    }
-
-              
-                   
-               
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine($"Error setting up {message.AllianceId} {e}");
-                }
-
-            }
-        }
-
-        public static async Task SendMessage(DiscordClient Discord, AllianceChatMessage Message)
-        {
-            if (StoredChannels.TryGetValue(Message.AllianceId, out var channel))
-            {
-                var bot = Discord.SendMessageAsync(channel, $"{Message.SenderPrefix} {Message.MessageText.Replace("/n", "\n")}").Result.Author.Id;
-            }
-            else
-            {
-                DiscordChannel chann = await Discord.GetChannelAsync(Message.ChannelId);
-                var botId = Discord.SendMessageAsync(chann, $"{Message.SenderPrefix} {Message.MessageText.Replace("/n", "\n")}").Result.Author.Id;
-                StoredChannels.Add(Message.AllianceId, chann);
-            }
-
-        }
-
-        public static Task Discord_AllianceMessage(DiscordClient discord, DSharpPlus.EventArgs.MessageCreateEventArgs e)
-        {
-            if (e.Author.IsBot)
-            {
-                return Task.CompletedTask;
-            }
-            Console.WriteLine($"{DateTime.Now} Discord Message Recieved {e.Message.Author.Username} {e.Message.Content.Trim()}");
-            if (!MappedChannels.TryGetValue(e.Channel.Id, out var id)) return Task.CompletedTask;
-            var message = new AllianceChatMessage
-            {
-                SenderPrefix = e.Message.Author.Username,
-                MessageText = e.Message.Content.Trim(),
-                AllianceId = id,
-                FromDiscord = true
-            };
-            SendFromDiscord("AllianceMessage", JsonConvert.SerializeObject(message));
-            return Task.CompletedTask;
         }
 
         public static void ReceiveMessage(object Model, BasicDeliverEventArgs eventArgs)
@@ -209,23 +117,5 @@ namespace AllianceDiscordController
             {
             }
         }
-
-        public static void SendFromDiscord(string MessageType, string JsonMessage)
-        {
-            var message = new JsonMessage()
-            {
-                MessageType = MessageType,
-                MessageBodyJsonString = JsonMessage
-            };
-
-            var json = JsonConvert.SerializeObject(message);
-
-            var body = Encoding.UTF8.GetBytes(json);
-            Channel.BasicPublish(exchange: ExchangeName,
-                routingKey: "",
-                basicProperties: null,
-                body: body);
-        }
-
     }
 }

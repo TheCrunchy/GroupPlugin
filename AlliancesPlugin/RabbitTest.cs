@@ -5,11 +5,15 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using AlliancesPlugin.Alliances;
+using AlliancesPlugin.Shipyard;
 using Newtonsoft.Json;
+using Sandbox.Game.World;
 using Torch.Commands;
 using Torch.Commands.Permissions;
 using Torch.Managers.PatchManager;
 using VRage.Game.ModAPI;
+using VRage.Library.Net;
+using VRageMath;
 
 namespace AlliancesPlugin
 {
@@ -28,11 +32,20 @@ namespace AlliancesPlugin
 
                 ctx.GetPattern(HandleMessageMethod).Suffixes.Add(HandleMessagePatch);
                 Handlers.Add("AllianceMessage", HandleAllianceChat);
+                Handlers.Add("AllianceSendToDiscord", SendToIngame);
             }
 
             public static void HandleAllianceChat(string MessageBody)
             {
                AllianceChat.ReceiveChatMessage(JsonConvert.DeserializeObject<AllianceChatMessage>(MessageBody));
+            }
+            public static void SendToIngame(string MessageBody)
+            {
+                var message = JsonConvert.DeserializeObject<AllianceSendToDiscord>(MessageBody);
+                if (message.SendToIngame)
+                {
+                    ShipyardCommands.SendMessage(message.SenderPrefix, message.MessageText, new Color(message.EmbedR, message.EmbedG, message.EmbedB), 0L);
+                }
             }
 
             public static void HandleMessage(string MessageType, string MessageBody)
