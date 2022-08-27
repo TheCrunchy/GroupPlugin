@@ -15,11 +15,7 @@ namespace AlliancesPlugin.Integrations
             var alliance = AlliancePlugin.GetAllianceNoLoading(factionTag);
             if (alliance != null) return alliance.AllianceId;
             alliance = AlliancePlugin.GetAlliance(factionTag);
-            if (alliance == null)
-            {
-                return Guid.Empty;
-            }
-            return alliance.AllianceId;
+            return alliance == null ? Guid.Empty : alliance.AllianceId;
         }
 
         public static Alliance GetAllianceObj(string factionTag)
@@ -27,11 +23,7 @@ namespace AlliancesPlugin.Integrations
             var alliance = AlliancePlugin.GetAllianceNoLoading(factionTag);
             if (alliance != null) return alliance;
             alliance = AlliancePlugin.GetAlliance(factionTag);
-            if (alliance == null)
-            {
-                return null;
-            }
-            return alliance;
+            return alliance ?? null;
         }
 
         public static int GetMaximumForShipClassType(string factionTag, string classType)
