@@ -44,7 +44,13 @@ namespace AlliancesPlugin.Alliances
             else
             {
                 double buff = 1;
-                buff = AlliancePlugin.warcore.participants.FactionsAtWar.Contains(faction.FactionId) ? AlliancePlugin.warcore.config.RefineryYieldMultiplierIfEnabled : AlliancePlugin.warcore.config.RefineryYieldMultiplierIfDisabled;
+                if (AlliancePlugin.config.EnableOptionalWar)
+                {
+                    buff = AlliancePlugin.warcore.participants.FactionsAtWar.Contains(faction.FactionId)
+                        ? AlliancePlugin.warcore.config.RefineryYieldMultiplierIfEnabled
+                        : AlliancePlugin.warcore.config.RefineryYieldMultiplierIfDisabled;
+                }
+
                 var alliance = AlliancePlugin.GetAllianceNoLoading(MySession.Static.Factions.TryGetFactionByTag(faction.Tag));
                 if (alliance == null || alliance.AssemblerUpgradeLevel <= 0) return buff;
                 if (!upgrades.TryGetValue(alliance.RefineryUpgradeLevel, out var upgrade)) return buff;
@@ -132,7 +138,12 @@ namespace AlliancesPlugin.Alliances
             }
             else
             {
-                buff = AlliancePlugin.warcore.participants.FactionsAtWar.Contains(faction.FactionId) ? AlliancePlugin.warcore.config.AssemblerSpeedMultiplierIfEnabled : AlliancePlugin.warcore.config.AssemblerSpeedMultiplierIfDisabled;
+                if (AlliancePlugin.config.EnableOptionalWar)
+                {
+                    buff = AlliancePlugin.warcore.participants.FactionsAtWar.Contains(faction.FactionId)
+                        ? AlliancePlugin.warcore.config.AssemblerSpeedMultiplierIfEnabled
+                        : AlliancePlugin.warcore.config.AssemblerSpeedMultiplierIfDisabled;
+                }
 
                 if (Assembler.GetOwnerFactionTag().Length <= 0) return buff;
 
