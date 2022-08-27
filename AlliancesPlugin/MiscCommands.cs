@@ -164,21 +164,6 @@ namespace AlliancesPlugin
             Context.Respond("Might have reset them all? !eco top");
         }
 
-        [Command("crunchrefin", "toggle alliance chat")]
-        [Permission(MyPromoteLevel.Admin)]
-        public void IDGSDG(double buff = 0)
-        {
-            if (buff > 0)
-            {
-              
-                Context.Respond("Buff increased to " + buff);
-                return;
-            }
-            MyProductionPatch.YEET = !MyProductionPatch.YEET;
-
-            Context.Respond("Assembler logic handled by plugin toggled to " + MyProductionPatch.YEET);
-        }
-
         [Command("a", "toggle alliance chat")]
         [Permission(MyPromoteLevel.None)]
         public void DoAllianceChat2(string message = "")
