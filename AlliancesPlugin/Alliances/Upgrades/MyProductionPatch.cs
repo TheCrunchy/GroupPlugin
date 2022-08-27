@@ -44,23 +44,20 @@ namespace AlliancesPlugin.Alliances
             else
             {
                 double buff = 1;
-                if (AlliancePlugin.warcore.participants.FactionsAtWar.Contains(faction.FactionId))
-                {
-                    buff += AlliancePlugin.warcore.config.RefineryYieldMultiplierIfEnabled;
-                }
+                buff = AlliancePlugin.warcore.participants.FactionsAtWar.Contains(faction.FactionId) ? AlliancePlugin.warcore.config.RefineryYieldMultiplierIfEnabled : AlliancePlugin.warcore.config.RefineryYieldMultiplierIfDisabled;
                 var alliance = AlliancePlugin.GetAllianceNoLoading(MySession.Static.Factions.TryGetFactionByTag(faction.Tag));
                 if (alliance == null || alliance.AssemblerUpgradeLevel <= 0) return buff;
                 if (!upgrades.TryGetValue(alliance.RefineryUpgradeLevel, out var upgrade)) return buff;
-                if (TimeChecks.TryGetValue(refin.EntityId, out DateTime time))
+                if (TimeChecks.TryGetValue(refin.EntityId, out var time))
                 {
                     if (DateTime.Now >= time)
                     {
                         TimeChecks[refin.EntityId] = DateTime.Now.AddMinutes(1);
-                        if (InsideHere.TryGetValue(refin.EntityId, out Guid terId))
+                        if (InsideHere.TryGetValue(refin.EntityId, out var terId))
                         {
-                            if (AlliancePlugin.Territories.TryGetValue(terId, out Territory ter))
+                            if (AlliancePlugin.Territories.TryGetValue(terId, out var ter))
                             {
-                                float distance = Vector3.Distance(refin.CubeGrid.PositionComp.GetPosition(),
+                                var distance = Vector3.Distance(refin.CubeGrid.PositionComp.GetPosition(),
                                     new Vector3(ter.x, ter.y, ter.z));
                                 if (distance <= ter.Radius)
                                 {
@@ -98,7 +95,7 @@ namespace AlliancesPlugin.Alliances
                 }
 
                 //      AlliancePlugin.Log.Info(refin.BlockDefinition.Id.SubtypeName);
-                if (IsInsideTerritory.TryGetValue(refin.EntityId, out bool isInside))
+                if (IsInsideTerritory.TryGetValue(refin.EntityId, out var isInside))
                 {
                     if (isInside)
                     {
@@ -120,110 +117,105 @@ namespace AlliancesPlugin.Alliances
                 return buff;
             }
 
-            return 0;
+            return 1;
         }
-        public static float GetAssemblerSpeedMultiplier(long PlayerId, MyAssembler assembler)
+        public static double GetAssemblerSpeedMultiplier(long PlayerId, MyAssembler Assembler)
         {
-
-            return 0;
-        }
-
-        [HarmonyPatch(typeof(MyAssembler))]
-        [HarmonyPatch("CalculateBlueprintProductionTime")]
-        public class AssemblerPatch
-        {
-            static void Postfix(MyBlueprintDefinitionBase currentBlueprint, ref float __result, MyAssembler __instance)
+            var faction = MySession.Static.Factions.GetPlayerFaction(PlayerId);
+            double buff = 1;
+            if (faction == null)
             {
-
-                if (__instance.GetOwnerFactionTag().Length > 0)
+                if (AlliancePlugin.config.EnableOptionalWar)
                 {
-                    Alliance alliance = AlliancePlugin.GetAllianceNoLoading(MySession.Static.Factions.TryGetFactionByTag(__instance.GetOwnerFactionTag()));
-                    if (alliance == null)
-                    {
-                        return;
-                    }
-                    if (alliance.AssemblerUpgradeLevel == 0)
-                    {
-                        //     AlliancePlugin.Log.Info("no refinery upgrade");
-                        return;
-                    }
+                    return AlliancePlugin.warcore.config.AssemblerSpeedMultiplierIfDisabled;
+                }
+            }
+            else
+            {
+                buff = AlliancePlugin.warcore.participants.FactionsAtWar.Contains(faction.FactionId) ? AlliancePlugin.warcore.config.AssemblerSpeedMultiplierIfEnabled : AlliancePlugin.warcore.config.AssemblerSpeedMultiplierIfDisabled;
 
-                    // MyAPIGateway.Multiplayer.RegisterMessageHandler(NET_ID, MessageHandler);
+                if (Assembler.GetOwnerFactionTag().Length <= 0) return buff;
 
-                    float buff = 1f;
-                    //    AlliancePlugin.Log.Info("Buffed by " + buff.ToString());
-                    if (assemblerupgrades.TryGetValue(alliance.AssemblerUpgradeLevel, out AssemblerUpgrade upgrade))
+                var alliance = AlliancePlugin.GetAllianceNoLoading(MySession.Static.Factions.TryGetFactionByTag(Assembler.GetOwnerFactionTag()));
+                if (alliance == null)
+                {
+                    return buff;
+                }
+                if (alliance.AssemblerUpgradeLevel == 0)
+                {
+                    return buff;
+                }
+                if (assemblerupgrades.TryGetValue(alliance.AssemblerUpgradeLevel, out var upgrade))
+                {
+                    if (TimeChecks.TryGetValue(Assembler.EntityId, out var time))
                     {
-                        if (TimeChecks.TryGetValue(__instance.EntityId, out DateTime time))
+                        if (DateTime.Now >= time)
                         {
-                            if (DateTime.Now >= time)
+                            TimeChecks[Assembler.EntityId] = DateTime.Now.AddMinutes(1);
+                            if (InsideHere.TryGetValue(Assembler.EntityId, out var terId))
                             {
-                                TimeChecks[__instance.EntityId] = DateTime.Now.AddMinutes(1);
-                                if (InsideHere.TryGetValue(__instance.EntityId, out Guid terId))
+                                if (AlliancePlugin.Territories.TryGetValue(terId, out var ter))
                                 {
-                                    if (AlliancePlugin.Territories.TryGetValue(terId, out Territory ter))
+                                    var distance = Vector3.Distance(
+                                        Assembler.CubeGrid.PositionComp.GetPosition(),
+                                        new Vector3(ter.x, ter.y, ter.z));
+                                    if (distance <= ter.Radius)
                                     {
-                                        float distance = Vector3.Distance(__instance.CubeGrid.PositionComp.GetPosition(), new Vector3(ter.x, ter.y, ter.z));
-                                        if (distance <= ter.Radius)
-                                        {
-                                            IsInsideTerritory.Remove(__instance.EntityId);
-                                            IsInsideTerritory.Add(__instance.EntityId, true);
-                                        }
-                                        else
-                                        {
-                                            InsideHere.Remove(__instance.EntityId);
-                                            IsInsideTerritory.Remove(__instance.EntityId);
-                                        }
+                                        IsInsideTerritory.Remove(Assembler.EntityId);
+                                        IsInsideTerritory.Add(Assembler.EntityId, true);
+                                    }
+                                    else
+                                    {
+                                        InsideHere.Remove(Assembler.EntityId);
+                                        IsInsideTerritory.Remove(Assembler.EntityId);
                                     }
                                 }
-                                else
-                                {
-                                    foreach (Territory ter in AlliancePlugin.Territories.Values)
-                                    {
-                                        if (ter.Alliance != Guid.Empty && ter.Alliance == alliance.AllianceId)
-                                        {
-                                            float distance = Vector3.Distance(__instance.CubeGrid.PositionComp.GetPosition(), new Vector3(ter.x, ter.y, ter.z));
-                                            if (distance <= ter.Radius)
-                                            {
-                                                IsInsideTerritory.Remove(__instance.EntityId);
-                                                IsInsideTerritory.Add(__instance.EntityId, true);
-                                                InsideHere.Remove(__instance.EntityId);
-
-                                                InsideHere.Add(__instance.EntityId, ter.Id);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            TimeChecks.Add(__instance.EntityId, DateTime.Now.AddMinutes(0.01));
-                        }
-                        //      AlliancePlugin.Log.Info(refin.BlockDefinition.Id.SubtypeName);
-                        if (IsInsideTerritory.TryGetValue(__instance.EntityId, out bool isInside))
-                        {
-                            if (isInside)
-                            {
-
-                                buff -= (float)upgrade.getAssemblerBuffTerritory(__instance.BlockDefinition.Id.SubtypeName);
                             }
                             else
                             {
-                                buff -= (float)upgrade.getAssemblerBuff(__instance.BlockDefinition.Id.SubtypeName);
+                                foreach (var ter in from ter in AlliancePlugin.Territories.Values
+                                         where ter.Alliance != Guid.Empty && ter.Alliance == alliance.AllianceId
+                                         let distance = Vector3.Distance(
+                                             Assembler.CubeGrid.PositionComp.GetPosition(),
+                                             new Vector3(ter.x, ter.y, ter.z))
+                                         where distance <= ter.Radius
+                                         select ter)
+                                {
+                                    IsInsideTerritory.Remove(Assembler.EntityId);
+                                    IsInsideTerritory.Add(Assembler.EntityId, true);
+                                    InsideHere.Remove(Assembler.EntityId);
+
+                                    InsideHere.Add(Assembler.EntityId, ter.Id);
+                                }
                             }
                         }
-                        else
-                        {
-                            buff -= (float)upgrade.getAssemblerBuff(__instance.BlockDefinition.Id.SubtypeName);
-                        }
-                        //      AlliancePlugin.Log.Info(refin.BlockDefinition.Id.SubtypeName);
-
-                        __result *= buff;
+                    }
+                    else
+                    {
+                        TimeChecks.Add(Assembler.EntityId, DateTime.Now.AddMinutes(0.01));
                     }
                 }
-            }
-        }
 
+                //      AlliancePlugin.Log.Info(refin.BlockDefinition.Id.SubtypeName);
+                if (IsInsideTerritory.TryGetValue(Assembler.EntityId, out var isInside))
+                {
+                    if (isInside)
+                    {
+
+                        buff += (float)upgrade.getAssemblerBuffTerritory(Assembler.BlockDefinition.Id.SubtypeName);
+                    }
+                    else
+                    {
+                        buff += (float)upgrade.getAssemblerBuff(Assembler.BlockDefinition.Id.SubtypeName);
+                    }
+                }
+                else
+                {
+                    buff += (float)upgrade.getAssemblerBuff(Assembler.BlockDefinition.Id.SubtypeName);
+                }
+            }
+
+            return buff;
+        }
     }
 }
