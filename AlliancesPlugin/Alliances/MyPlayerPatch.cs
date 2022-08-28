@@ -19,6 +19,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using AlliancesPlugin.KamikazeTerritories;
 using Torch.Managers.PatchManager;
 using Torch.Managers.PatchManager.MSIL;
 using Torch.Mod;
@@ -144,29 +145,5 @@ namespace AlliancesPlugin
                 // make sure you only skip if really necessary
             }
         }
-
-
-        //[HarmonyPatch(typeof(MySpaceRespawnComponent))]
-        //[HarmonyPatch("RespawnRequest_Implementation")]
-        //class RespawnPatchExistingBody
-        //{
-        //    static void Postfix(ulong steamPlayerId, int serialId)
-        //    {
-
-        //            //   AlliancePlugin.Log.Info("DGSDGSDG");
-        //            if (AlliancePlugin.UpdateThese.ContainsKey(steamPlayerId))
-        //            {
-        //                AlliancePlugin.UpdateThese[steamPlayerId] = DateTime.Now.AddSeconds(15);
-        //            }
-        //            else
-        //            {
-        //                AlliancePlugin.UpdateThese.Add(steamPlayerId, DateTime.Now.AddSeconds(15));
-        //            }
-                
-            
-        //            return;
-        //        // make sure you only skip if really necessary
-        //    }
-        //}
     }
 }

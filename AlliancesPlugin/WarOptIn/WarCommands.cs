@@ -14,9 +14,9 @@ namespace AlliancesPlugin.WarOptIn
 
         [Command("addterritory", "add territory at current position to exclude pvp protections")]
         [Permission(MyPromoteLevel.Admin)]
-        public void AddTerritory(int Radius)
+        public void AddTerritory(int RadiusMetres, string Name)
         {
-            KamikazeTerritories.MessageHandler.AddOtherTerritory(Context.Player.GetPosition(), Radius);
+            KamikazeTerritories.MessageHandler.AddOtherTerritory(Context.Player.GetPosition(), RadiusMetres, Name);
             Context.Respond("Done");
         }
 

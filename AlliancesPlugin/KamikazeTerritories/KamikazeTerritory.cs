@@ -12,5 +12,6 @@ namespace AlliancesPlugin.KamikazeTerritories
         public long EntityId { get; set; }
         public Vector3D Position { get; set; }
         public float Radius { get; set; }
+        public string Name { get; set; }
     }
 }

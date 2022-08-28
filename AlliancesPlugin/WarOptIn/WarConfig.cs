@@ -11,9 +11,5 @@ namespace AlliancesPlugin.WarOptIn
         public Boolean EnableOptionalWar = false;
         public long EnableWarCost = 1;
         public long DisableWarCost = 500000000;
-        public float RefineryYieldMultiplierIfEnabled = 0f;
-        public float AssemblerSpeedMultiplierIfEnabled = 0f;
-        public float RefineryYieldMultiplierIfDisabled = 0f;
-        public float AssemblerSpeedMultiplierIfDisabled = 0f;
     }
 }

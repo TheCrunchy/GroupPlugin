@@ -29,7 +29,6 @@ namespace AlliancesPlugin.Hangar
     [Category("ah")]
     public class HangarCommands : CommandModule
     {
-
         public static Boolean IsDeniedLocation(Vector3 Position)
         {
 

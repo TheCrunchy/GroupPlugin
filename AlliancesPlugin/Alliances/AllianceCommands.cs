@@ -20,6 +20,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using AlliancesPlugin.KamikazeTerritories;
 using Torch.Commands;
 using Torch.Commands.Permissions;
 using Torch.Mod;
@@ -2603,7 +2604,13 @@ namespace AlliancesPlugin.Alliances
             if (!MyAPIGateway.Multiplayer.IsServer)
                 return;
 
-            var bytes = MyAPIGateway.Utilities.SerializeToBinary(status);
+            var chatStatus = new ChatStatus()
+            {
+                ChatEnabled = status
+            };
+
+
+            var bytes = MyAPIGateway.Utilities.SerializeToBinary(chatStatus);
 
             MyAPIGateway.Multiplayer.SendMessageTo(8544, bytes, steamId);
        

@@ -27,13 +27,14 @@ namespace AlliancesPlugin.KamikazeTerritories
             }
         }
 
-        public static void AddOtherTerritory(Vector3D Position, int Radius)
+        public static void AddOtherTerritory(Vector3D Position, int Radius, string Name)
         {
             Territories.Add(new KamikazeTerritory()
             {
                 EntityId = 0,
                 Position = Position,
-                Radius = Radius
+                Radius = Radius,
+                Name = Name
             });
             SaveFile();
         }
@@ -49,6 +50,28 @@ namespace AlliancesPlugin.KamikazeTerritories
 
                 //  AlliancePlugin.Log.Info("package isnt null");
                 //  AlliancePlugin.Log.Info(package.Type.ToString());
+                if (package.Type == DataType.InitSiege)
+                {
+                    //   AlliancePlugin.Log.Info("is territory");
+                    var encasedData = MyAPIGateway.Utilities.SerializeFromBinary<ObjectContainer>(package.Data);
+                    if (encasedData == null) return;
+
+                    //  AlliancePlugin.Log.Info("got past data check");
+                    if (!Territories.Any(x => x.EntityId == encasedData.entityId))
+                    {
+                        //  AlliancePlugin.Log.Info("no territory with that entity id");
+                        Territories.Add(new KamikazeTerritory()
+                        {
+                            EntityId = encasedData.entityId,
+                            Radius = encasedData.settings._claimRadius,
+                            Position = encasedData.settings._blockPos,
+                            Name = encasedData.factionTag
+                        });
+                        SaveFile();
+                    }
+                    return;
+                }
+
                 if (package.Type == DataType.AddTerritory)
                 {
                     //   AlliancePlugin.Log.Info("is territory");

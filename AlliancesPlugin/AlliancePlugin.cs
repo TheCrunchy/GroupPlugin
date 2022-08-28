@@ -90,18 +90,20 @@ namespace AlliancesPlugin
         public static Dictionary<string, DenialPoint> denials = new Dictionary<string, DenialPoint>();
         public static ITorchPlugin GridBackup;
         public static ITorchPlugin MQ;
-    public static MethodInfo BackupGrid;
+        public static MethodInfo BackupGrid;
 
         public static ITorchBase TorchBase;
         public static bool GridBackupInstalled = false;
         public static Dictionary<MyDefinitionId, int> ItemUpkeep = new Dictionary<MyDefinitionId, int>();
         public static MethodInfo SendMessage;
-    
+
         public static bool MQPluginInstalled = false;
+
+        public static bool InitPlugins = false;
         public static void InitPluginDependencies(PluginManager Plugins, PatchManager Patches)
         {
 
-            if (Plugins.Plugins.TryGetValue(Guid.Parse("75e99032-f0eb-4c0d-8710-999808ed970c"), out ITorchPlugin GridBackupPlugin))
+            if (Plugins.Plugins.TryGetValue(Guid.Parse("75e99032-f0eb-4c0d-8710-999808ed970c"), out var GridBackupPlugin))
             {
 
                 BackupGrid = GridBackupPlugin.GetType().GetMethod("BackupGridsManuallyWithBuilders", BindingFlags.Public | BindingFlags.Instance, null, new Type[2] { typeof(List<MyObjectBuilder_CubeGrid>), typeof(long) }, null);
@@ -112,7 +114,7 @@ namespace AlliancesPlugin
             {
                 SendMessage = MQPlugin.GetType().GetMethod("SendMessage", BindingFlags.Public | BindingFlags.Instance, null, new Type[2] { typeof(string), typeof(string) }, null);
                 MQ = MQPlugin;
-                
+
                 MQPatching.MQPluginPatch.Patch(Patches.AcquireContext());
                 Patches.Commit();
 
@@ -140,9 +142,9 @@ namespace AlliancesPlugin
 
         public static long AddToTaxes(ulong SteamId, long amount, string type, Vector3D Location)
         {
-            MyIdentity identityId = AlliancePlugin.GetIdentityByNameOrId(SteamId.ToString());
+            var identityId = AlliancePlugin.GetIdentityByNameOrId(SteamId.ToString());
             Alliance alliance = null;
-            IMyFaction fac = FacUtils.GetPlayersFaction(identityId.IdentityId);
+            var fac = FacUtils.GetPlayersFaction(identityId.IdentityId);
             if (fac != null)
             {
                 alliance = GetAllianceNoLoading(fac as MyFaction);
@@ -153,7 +155,7 @@ namespace AlliancesPlugin
                 }
             }
 
-            foreach (Territory ter in AlliancePlugin.Territories.Values)
+            foreach (var ter in AlliancePlugin.Territories.Values)
             {
                 if (alliance != null)
                 {
@@ -164,10 +166,10 @@ namespace AlliancesPlugin
                 }
                 if (ter.TaxesForStationsInTerritory && ter.Alliance != Guid.Empty)
                 {
-                    float distance = Vector3.Distance(new Vector3(ter.x, ter.y, ter.z), Location);
+                    var distance = Vector3.Distance(new Vector3(ter.x, ter.y, ter.z), Location);
                     if (distance <= ter.Radius)
                     {
-                        TaxItem item = new TaxItem();
+                        var item = new TaxItem();
                         item.playerId = identityId.IdentityId;
                         item.price = amount;
                         item.territory = ter.Id;
@@ -226,7 +228,7 @@ namespace AlliancesPlugin
             Directory.CreateDirectory(path + "//ShipMarket//Grids//");
             if (!File.Exists(path + "//Territories//Example.xml"))
             {
-                Territory example = new Territory();
+                var example = new Territory();
                 example.enabled = false;
                 utils.WriteToXmlFile<Territory>(path + "//Territories//Example.xml", example, false);
             }
@@ -235,15 +237,15 @@ namespace AlliancesPlugin
 
             if (!File.Exists(path + "//Territories//CityConfigs//Example.xml"))
             {
-                City template = new City();
-                CraftedItem item = new CraftedItem();
+                var template = new City();
+                var item = new CraftedItem();
                 item.SubtypeId = "Iron";
                 item.TypeId = "Ore";
                 item.AmountPerCraft = 50;
                 item.ChanceToCraft = 1;
                 item.SecondsBetweenCycles = 60;
                 item.SpaceCreditsPerCraft = 0;
-                RecipeItem rec = new RecipeItem();
+                var rec = new RecipeItem();
                 rec.TypeId = "Ingot";
                 rec.SubtypeId = "Iron";
                 rec.Amount = 1;
@@ -275,7 +277,7 @@ namespace AlliancesPlugin
 
         public void SetupConfig()
         {
-            FileUtils utils = new FileUtils();
+            var utils = new FileUtils();
             path = StoragePath;
             if (File.Exists(StoragePath + "\\Alliances.xml"))
             {
@@ -330,15 +332,15 @@ namespace AlliancesPlugin
 
         public static Config LoadConfig()
         {
-            FileUtils utils = new FileUtils();
+            var utils = new FileUtils();
             LoadItemUpkeep();
             config = utils.ReadFromXmlFile<Config>(basePath + "\\Alliances.xml");
             KOTHs.Clear();
-            foreach (String s in Directory.GetFiles(basePath + "//Alliances//KOTH//"))
+            foreach (var s in Directory.GetFiles(basePath + "//Alliances//KOTH//"))
             {
 
 
-                KothConfig koth = utils.ReadFromXmlFile<KothConfig>(s);
+                var koth = utils.ReadFromXmlFile<KothConfig>(s);
                 //  DateTime now = DateTime.Now;
                 //if (now.Minute == 59 || now.Minute == 60)
                 //{
@@ -361,12 +363,12 @@ namespace AlliancesPlugin
         {
             sites.Clear();
 
-            foreach (String s in Directory.GetFiles(path + "//CaptureSites//"))
+            foreach (var s in Directory.GetFiles(path + "//CaptureSites//"))
             {
 
                 try
                 {
-                    CaptureSite koth = utils.ReadFromXmlFile<CaptureSite>(s);
+                    var koth = utils.ReadFromXmlFile<CaptureSite>(s);
                     koth.caplog.LoadSorted();
                     if (!YEETED)
                     {
@@ -397,7 +399,7 @@ namespace AlliancesPlugin
         }
         public static void saveConfig()
         {
-            FileUtils utils = new FileUtils();
+            var utils = new FileUtils();
 
             utils.WriteToXmlFile<Config>(path + "\\Alliances.xml", config);
 
@@ -405,17 +407,17 @@ namespace AlliancesPlugin
         }
         public static void SaveAllianceData(Alliance alliance)
         {
-            FileUtils jsonStuff = new FileUtils();
+            var jsonStuff = new FileUtils();
 
             jsonStuff.WriteToJsonFile<Alliance>(path + "//AllianceData//" + alliance.AllianceId + ".json", alliance);
             AlliancePlugin.AllAlliances[alliance.name] = alliance;
         }
         public static Alliance LoadAllianceData(Guid id)
         {
-            FileUtils jsonStuff = new FileUtils();
+            var jsonStuff = new FileUtils();
             try
             {
-                Alliance alliance2 = jsonStuff.ReadFromJsonFile<Alliance>(path + "//AllianceData//" + id + ".json");
+                var alliance2 = jsonStuff.ReadFromJsonFile<Alliance>(path + "//AllianceData//" + id + ".json");
                 return alliance2;
             }
             catch
@@ -439,7 +441,7 @@ namespace AlliancesPlugin
         public static Alliance GetAllianceNoLoading(string name)
         {
             //fuck it lets just return something that might be null
-            foreach (KeyValuePair<String, Alliance> alliance in AllAlliances)
+            foreach (var alliance in AllAlliances)
             {
                 if (alliance.Value.name.Equals(name))
                 {
@@ -452,7 +454,7 @@ namespace AlliancesPlugin
         public static Alliance GetAlliance(Guid guid)
         {
             //fuck it lets just return something that might be null
-            foreach (KeyValuePair<String, Alliance> alliance in AllAlliances)
+            foreach (var alliance in AllAlliances)
             {
                 if (alliance.Value.AllianceId == guid)
                 {
@@ -465,7 +467,7 @@ namespace AlliancesPlugin
         public static Alliance GetAllianceNoLoading(Guid guid)
         {
             //fuck it lets just return something that might be null
-            foreach (KeyValuePair<String, Alliance> alliance in AllAlliances)
+            foreach (var alliance in AllAlliances)
             {
                 if (alliance.Value.AllianceId == guid)
                 {
@@ -493,7 +495,7 @@ namespace AlliancesPlugin
                 return GetAlliance(FactionsInAlliances[fac.FactionId]);
             }
 
-            foreach (KeyValuePair<String, Alliance> alliance in AllAlliances)
+            foreach (var alliance in AllAlliances)
             {
                 if (alliance.Value.AllianceMembers.Contains(fac.FactionId))
                 {
@@ -505,21 +507,21 @@ namespace AlliancesPlugin
         }
         public void SetupFriendMethod()
         {
-            Type FactionCollection = MySession.Static.Factions.GetType().Assembly.GetType("Sandbox.Game.Multiplayer.MyFactionCollection");
+            var FactionCollection = MySession.Static.Factions.GetType().Assembly.GetType("Sandbox.Game.Multiplayer.MyFactionCollection");
             sendChange = FactionCollection?.GetMethod("SendFactionChange", BindingFlags.NonPublic | BindingFlags.Static);
         }
         private static List<Vector3> StationLocations = new List<Vector3>();
         public static MyGps ScanChat(string input, string desc = null)
         {
 
-            int num = 0;
-            bool flag = true;
-            MatchCollection matchCollection = Regex.Matches(input, "GPS:([^:]{0,32}):([\\d\\.-]*):([\\d\\.-]*):([\\d\\.-]*):");
+            var num = 0;
+            var flag = true;
+            var matchCollection = Regex.Matches(input, "GPS:([^:]{0,32}):([\\d\\.-]*):([\\d\\.-]*):([\\d\\.-]*):");
 
-            Color color = new Color(117, 201, 241);
+            var color = new Color(117, 201, 241);
             foreach (Match match in matchCollection)
             {
-                string str = match.Groups[1].Value;
+                var str = match.Groups[1].Value;
                 double x;
                 double y;
                 double z;
@@ -535,7 +537,7 @@ namespace AlliancesPlugin
                 {
                     continue;
                 }
-                MyGps gps = new MyGps()
+                var gps = new MyGps()
                 {
                     Name = str,
                     Description = desc,
@@ -635,7 +637,7 @@ namespace AlliancesPlugin
 
             if (config.DisablePvP)
             {
-                long attackerId = GetAttacker(info.AttackerId);
+                var attackerId = GetAttacker(info.AttackerId);
 
                 if (target is MySlimBlock block)
                 {
@@ -651,16 +653,12 @@ namespace AlliancesPlugin
                         return;
                     }
                     var loc = block.CubeGrid.PositionComp.GetPosition();
-                    foreach (var territory in KamikazeTerritories.MessageHandler.Territories)
+                    if ((from territory in KamikazeTerritories.MessageHandler.Territories let distance = Vector3.Distance(loc, territory.Position) where distance <= territory.Radius select territory).Any())
                     {
-                        var distance = Vector3.Distance(loc, territory.Position);
-                        if (distance <= territory.Radius)
-                        {
-                            return;
-                        }
+                        return;
                     }
-                    MyFaction attacker = MySession.Static.Factions.GetPlayerFaction(attackerId) as MyFaction;
-                    MyFaction defender = MySession.Static.Factions.GetPlayerFaction(FacUtils.GetOwner(block.CubeGrid));
+                    var attacker = MySession.Static.Factions.GetPlayerFaction(attackerId) as MyFaction;
+                    var defender = MySession.Static.Factions.GetPlayerFaction(FacUtils.GetOwner(block.CubeGrid));
 
 
 
@@ -756,9 +754,9 @@ namespace AlliancesPlugin
 
 
 
-            if (Sync.Players.TryGetPlayerId(newAccountInfo.OwnerIdentifier, out MyPlayer.PlayerId player))
+            if (Sync.Players.TryGetPlayerId(newAccountInfo.OwnerIdentifier, out var player))
             {
-                if (MySession.Static.Players.TryGetPlayerById(player, out MyPlayer pp))
+                if (MySession.Static.Players.TryGetPlayerById(player, out var pp))
                 {
 
                     MySession.Static.Players.TryGetSteamId(newAccountInfo.OwnerIdentifier);
@@ -815,7 +813,7 @@ namespace AlliancesPlugin
             {
 
                 // DiscordStuff.DisconnectDiscord();
-                foreach (Territory ter in AlliancePlugin.Territories.Values)
+                foreach (var ter in AlliancePlugin.Territories.Values)
                 {
                     AlliancePlugin.utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + ter.Name + ".xml", ter);
                 }
@@ -889,8 +887,6 @@ namespace AlliancesPlugin
             MyBankingSystem.Static.OnAccountBalanceChanged += BalanceChangedMethod2;
 
             AllianceChat.ApplyLogging();
-            InitPluginDependencies(Torch.Managers.GetManager<PluginManager>(), Torch.Managers.GetManager<PatchManager>());
-       
             TorchState = TorchSessionState.Loaded;
             _chatmanager = Torch.CurrentSession.Managers.GetManager<ChatManagerServer>();
 
@@ -934,13 +930,13 @@ namespace AlliancesPlugin
 
             if (!File.Exists(path + "//CaptureSites//Example.xml"))
             {
-                CaptureSite site = new CaptureSite();
+                var site = new CaptureSite();
                 //  site.HoursToUnlockAfter.Add(5);
                 //site.HoursToUnlockAfter.Add(7);
-                Location loc = new Location();
+                var loc = new Location();
                 site.locations.Add(loc);
-                LootLocation loot = new LootLocation();
-                RewardItem reward = new RewardItem();
+                var loot = new LootLocation();
+                var reward = new RewardItem();
                 reward.CreditReward = 5000000;
                 loc.LinkedLootLocation = 1;
                 loot.loot.Add(reward);
@@ -971,11 +967,11 @@ namespace AlliancesPlugin
             }
             if (!File.Exists(path + "//WaystationRepairUpgrades//Base.xml"))
             {
-                GridRepairUpgrades upgrade = new GridRepairUpgrades();
+                var upgrade = new GridRepairUpgrades();
 
-                ItemRequirement req = new ItemRequirement();
+                var req = new ItemRequirement();
                 upgrade.items.Add(req);
-                GridRepairUpgrades.ComponentCostForRepair cost = new GridRepairUpgrades.ComponentCostForRepair();
+                var cost = new GridRepairUpgrades.ComponentCostForRepair();
                 cost.SubTypeId = "SteelPlate";
                 cost.Cost = 100;
                 upgrade.repairCost.Add(cost);
@@ -1014,11 +1010,11 @@ namespace AlliancesPlugin
             }
             if (!File.Exists(path + "//AssemblerUpgrades//Example.xml"))
             {
-                AssemblerUpgrade upgrade = new AssemblerUpgrade();
-                AssemblerUpgrade.AssemblerBuffList list = new AssemblerUpgrade.AssemblerBuffList();
+                var upgrade = new AssemblerUpgrade();
+                var list = new AssemblerUpgrade.AssemblerBuffList();
                 list.buffs.Add(new AssemblerUpgrade.AssemblerBuff());
                 upgrade.buffedRefineries.Add(list);
-                ItemRequirement req = new ItemRequirement();
+                var req = new ItemRequirement();
                 upgrade.items.Add(req);
                 utils.WriteToXmlFile<AssemblerUpgrade>(path + "//AssemblerUpgrades//Example.xml", upgrade);
                 upgrade.UpgradeId = 2;
@@ -1030,11 +1026,11 @@ namespace AlliancesPlugin
             }
             if (!File.Exists(path + "//RefineryUpgrades//Example.xml"))
             {
-                RefineryUpgrade upgrade = new RefineryUpgrade();
-                RefineryUpgrade.RefineryBuffList list = new RefineryUpgrade.RefineryBuffList();
+                var upgrade = new RefineryUpgrade();
+                var list = new RefineryUpgrade.RefineryBuffList();
                 list.buffs.Add(new RefineryUpgrade.RefineryBuff());
                 upgrade.buffedRefineries.Add(list);
-                ItemRequirement req = new ItemRequirement();
+                var req = new ItemRequirement();
                 upgrade.items.Add(req);
                 utils.WriteToXmlFile<RefineryUpgrade>(path + "//RefineryUpgrades//Example.xml", upgrade);
                 upgrade.UpgradeId = 2;
@@ -1051,7 +1047,7 @@ namespace AlliancesPlugin
             if (!File.Exists(path + "//ItemUpkeep.txt"))
             {
 
-                StringBuilder output = new StringBuilder();
+                var output = new StringBuilder();
                 output.AppendLine("TypeId,SubtypeId,Amount");
                 output.AppendLine("MyObjectBuilder_Ingot,Uranium,1");
                 File.WriteAllText(path + "//ItemUpkeep.txt", output.ToString());
@@ -1062,8 +1058,8 @@ namespace AlliancesPlugin
             if (!File.Exists(path + "//ShipyardUpgrades//Speed//SpeedUpgrade_0.xml"))
             {
 
-                ShipyardSpeedUpgrade upg = new ShipyardSpeedUpgrade();
-                ItemRequirement req = new ItemRequirement();
+                var upg = new ShipyardSpeedUpgrade();
+                var req = new ItemRequirement();
                 upg.items.Add(req);
                 utils.WriteToXmlFile<ShipyardSpeedUpgrade>(path + "//ShipyardUpgrades//Speed//SpeedUpgrade_0.xml", upg);
 
@@ -1071,8 +1067,8 @@ namespace AlliancesPlugin
             if (!File.Exists(path + "//ShipyardUpgrades//Slot//SlotUpgrade_0.xml"))
             {
 
-                ShipyardSlotUpgrade upg = new ShipyardSlotUpgrade();
-                ItemRequirement req = new ItemRequirement();
+                var upg = new ShipyardSlotUpgrade();
+                var req = new ItemRequirement();
                 upg.items.Add(req);
                 utils.WriteToXmlFile<ShipyardSlotUpgrade>(path + "//ShipyardUpgrades//Slot//SlotUpgrade_0.xml", upg);
 
@@ -1081,7 +1077,7 @@ namespace AlliancesPlugin
             if (!File.Exists(path + "//HangarDeniedLocations.txt"))
             {
 
-                StringBuilder output = new StringBuilder();
+                var output = new StringBuilder();
                 output.AppendLine("Name,X,Y,Z,Radius");
                 output.AppendLine("Fred,0,0,0,50000");
                 File.WriteAllText(path + "//HangarDeniedLocations.txt", output.ToString());
@@ -1091,11 +1087,11 @@ namespace AlliancesPlugin
             {
                 String[] line;
                 line = File.ReadAllLines(path + "//HangarDeniedLocations.txt");
-                for (int i = 1; i < line.Length; i++)
+                for (var i = 1; i < line.Length; i++)
                 {
-                    DeniedLocation loc = new DeniedLocation();
-                    String[] split = line[i].Split(',');
-                    foreach (String s in split)
+                    var loc = new DeniedLocation();
+                    var split = line[i].Split(',');
+                    foreach (var s in split)
                     {
                         s.Replace(" ", "");
                     }
@@ -1110,8 +1106,8 @@ namespace AlliancesPlugin
             if (!File.Exists(path + "//HangarUpgrades//SlotUpgrade_0.xml"))
             {
 
-                HangarUpgrade upg = new HangarUpgrade();
-                ItemRequirement req = new ItemRequirement();
+                var upg = new HangarUpgrade();
+                var req = new ItemRequirement();
                 upg.items.Add(req);
                 utils.WriteToXmlFile<HangarUpgrade>(path + "//HangarUpgrades//SlotUpgrade_0.xml", upg);
 
@@ -1125,14 +1121,14 @@ namespace AlliancesPlugin
 
             if (!File.Exists(path + "//ShipyardBlocks//LargeProjector.xml"))
             {
-                ShipyardBlockConfig config33 = new ShipyardBlockConfig();
+                var config33 = new ShipyardBlockConfig();
                 config33.SetShipyardBlockConfig("LargeProjector");
                 utils.WriteToXmlFile<ShipyardBlockConfig>(path + "//ShipyardBlocks//LargeProjector.xml", config33, false);
 
             }
             if (!File.Exists(path + "//ShipyardBlocks//SmallProjector.xml"))
             {
-                ShipyardBlockConfig config33 = new ShipyardBlockConfig();
+                var config33 = new ShipyardBlockConfig();
                 config33.SetShipyardBlockConfig("SmallProjector");
                 utils.WriteToXmlFile<ShipyardBlockConfig>(path + "//ShipyardBlocks//SmallProjector.xml", config33, false);
 
@@ -1145,11 +1141,11 @@ namespace AlliancesPlugin
 
             ReloadShipyard();
 
-            foreach (String s in Directory.GetFiles(basePath + "//Alliances//KOTH//"))
+            foreach (var s in Directory.GetFiles(basePath + "//Alliances//KOTH//"))
             {
 
 
-                KothConfig koth = utils.ReadFromXmlFile<KothConfig>(s);
+                var koth = utils.ReadFromXmlFile<KothConfig>(s);
 
                 KOTHs.Add(koth);
             }
@@ -1163,7 +1159,7 @@ namespace AlliancesPlugin
             LoadItemUpkeep();
 
 
-            foreach (Alliance alliance in AllAlliances.Values)
+            foreach (var alliance in AllAlliances.Values)
             {
                 try
                 {
@@ -1212,16 +1208,16 @@ namespace AlliancesPlugin
         {
             String[] line;
             line = File.ReadAllLines(path + "//ItemUpkeep.txt");
-            for (int i = 1; i < line.Length; i++)
+            for (var i = 1; i < line.Length; i++)
             {
 
-                String[] split = line[i].Split(',');
-                foreach (String s in split)
+                var split = line[i].Split(',');
+                foreach (var s in split)
                 {
                     s.Replace(" ", "");
                 }
 
-                if (MyDefinitionId.TryParse(split[0], split[1], out MyDefinitionId id))
+                if (MyDefinitionId.TryParse(split[0], split[1], out var id))
                 {
                     if (ItemUpkeep.ContainsKey(id))
                     {
@@ -1250,29 +1246,29 @@ namespace AlliancesPlugin
             ShipyardCommands.speedUpgrades.Clear();
             ShipyardCommands.slotUpgrades.Clear();
             shipyardConfig = utils.ReadFromXmlFile<ShipyardConfig>(path + "//ShipyardConfig.xml");
-            foreach (String s in Directory.GetFiles(path + "//ShipyardBlocks//"))
+            foreach (var s in Directory.GetFiles(path + "//ShipyardBlocks//"))
             {
 
 
-                ShipyardBlockConfig conf = utils.ReadFromXmlFile<ShipyardBlockConfig>(s);
+                var conf = utils.ReadFromXmlFile<ShipyardBlockConfig>(s);
 
                 shipyardConfig.AddToBlockConfig(conf);
             }
-            foreach (String s in Directory.GetFiles(path + "//ShipyardUpgrades//"))
+            foreach (var s in Directory.GetFiles(path + "//ShipyardUpgrades//"))
             {
                 ShipyardCommands.ConvertUpgradeCost(s);
             }
-            foreach (String s in Directory.GetFiles(path + "//ShipyardUpgrades//Slot//"))
+            foreach (var s in Directory.GetFiles(path + "//ShipyardUpgrades//Slot//"))
             {
                 ShipyardCommands.LoadShipyardSlotCost(s);
 
             }
-            foreach (String s in Directory.GetFiles(path + "//ShipyardUpgrades//Speed//"))
+            foreach (var s in Directory.GetFiles(path + "//ShipyardUpgrades//Speed//"))
             {
                 ShipyardCommands.LoadShipyardSpeedCost(s);
 
             }
-            foreach (String s in Directory.GetFiles(path + "//HangarUpgrades//"))
+            foreach (var s in Directory.GetFiles(path + "//HangarUpgrades//"))
             {
                 HangarCommands.LoadHangarUpgrade(s);
             }
@@ -1280,9 +1276,9 @@ namespace AlliancesPlugin
         public void LoadAllRefineryUpgrades()
         {
             GridRepair.upgrades.Clear();
-            foreach (String s in Directory.GetFiles(path + "//WaystationRepairUpgrades//"))
+            foreach (var s in Directory.GetFiles(path + "//WaystationRepairUpgrades//"))
             {
-                GridRepairUpgrades upgrade = utils.ReadFromXmlFile<GridRepairUpgrades>(s);
+                var upgrade = utils.ReadFromXmlFile<GridRepairUpgrades>(s);
                 if (upgrade.Enabled)
                 {
                     upgrade.AddComponentCostToDictionary();
@@ -1297,9 +1293,9 @@ namespace AlliancesPlugin
                 }
             }
             MyProductionPatch.upgrades.Clear();
-            foreach (String s in Directory.GetFiles(path + "//RefineryUpgrades//"))
+            foreach (var s in Directory.GetFiles(path + "//RefineryUpgrades//"))
             {
-                RefineryUpgrade upgrade = utils.ReadFromXmlFile<RefineryUpgrade>(s);
+                var upgrade = utils.ReadFromXmlFile<RefineryUpgrade>(s);
                 if (upgrade.Enabled)
                 {
                     upgrade.PutBuffedInDictionary();
@@ -1314,9 +1310,9 @@ namespace AlliancesPlugin
                 }
             }
             MyProductionPatch.assemblerupgrades.Clear();
-            foreach (String s in Directory.GetFiles(path + "//AssemblerUpgrades//"))
+            foreach (var s in Directory.GetFiles(path + "//AssemblerUpgrades//"))
             {
-                AssemblerUpgrade upgrade = utils.ReadFromXmlFile<AssemblerUpgrade>(s);
+                var upgrade = utils.ReadFromXmlFile<AssemblerUpgrade>(s);
                 if (upgrade.Enabled)
                 {
                     upgrade.PutBuffedInDictionary();
@@ -1338,9 +1334,9 @@ namespace AlliancesPlugin
             {
                 if (identity.DisplayName == playerNameOrSteamId)
                     return identity;
-                if (ulong.TryParse(playerNameOrSteamId, out ulong steamId))
+                if (ulong.TryParse(playerNameOrSteamId, out var steamId))
                 {
-                    ulong id = MySession.Static.Players.TryGetSteamId(identity.IdentityId);
+                    var id = MySession.Static.Players.TryGetSteamId(identity.IdentityId);
                     if (id == steamId)
                         return identity;
                     if (identity.IdentityId == (long)steamId)
@@ -1373,21 +1369,21 @@ namespace AlliancesPlugin
         }
         public static void LoadAllAlliancesForUpkeep()
         {
-            FileUtils jsonStuff = new FileUtils();
+            var jsonStuff = new FileUtils();
             try
             {
                 AllAlliances.Clear();
                 FactionsInAlliances.Clear();
-                foreach (String s in Directory.GetFiles(path + "//AllianceData//"))
+                foreach (var s in Directory.GetFiles(path + "//AllianceData//"))
                 {
 
-                    Alliance alliance = jsonStuff.ReadFromJsonFile<Alliance>(s);
+                    var alliance = jsonStuff.ReadFromJsonFile<Alliance>(s);
                     if (AllAlliances.ContainsKey(alliance.name))
                     {
                         alliance.name += " DUPLICATE";
                         AllAlliances.Add(alliance.name, alliance);
 
-                        foreach (long id in alliance.AllianceMembers)
+                        foreach (var id in alliance.AllianceMembers)
                         {
                             if (!FactionsInAlliances.ContainsKey(id))
                             {
@@ -1399,7 +1395,7 @@ namespace AlliancesPlugin
                     else
                     {
                         AllAlliances.Add(alliance.name, alliance);
-                        foreach (long id in alliance.AllianceMembers)
+                        foreach (var id in alliance.AllianceMembers)
                         {
                             if (!FactionsInAlliances.ContainsKey(id))
                             {
@@ -1428,21 +1424,21 @@ namespace AlliancesPlugin
         {
             if (TorchState == TorchSessionState.Loaded)
             {
-                FileUtils jsonStuff = new FileUtils();
+                var jsonStuff = new FileUtils();
                 try
                 {
                     AllAlliances.Clear();
                     FactionsInAlliances.Clear();
-                    foreach (String s in Directory.GetFiles(path + "//AllianceData//"))
+                    foreach (var s in Directory.GetFiles(path + "//AllianceData//"))
                     {
 
-                        Alliance alliance = jsonStuff.ReadFromJsonFile<Alliance>(s);
+                        var alliance = jsonStuff.ReadFromJsonFile<Alliance>(s);
                         if (AllAlliances.ContainsKey(alliance.name))
                         {
                             alliance.name += " DUPLICATE";
                             AllAlliances.Add(alliance.name, alliance);
 
-                            foreach (long id in alliance.AllianceMembers)
+                            foreach (var id in alliance.AllianceMembers)
                             {
                                 if (!FactionsInAlliances.ContainsKey(id))
                                 {
@@ -1454,7 +1450,7 @@ namespace AlliancesPlugin
                         else
                         {
                             AllAlliances.Add(alliance.name, alliance);
-                            foreach (long id in alliance.AllianceMembers)
+                            foreach (var id in alliance.AllianceMembers)
                             {
                                 if (!FactionsInAlliances.ContainsKey(id))
                                 {
@@ -1475,7 +1471,7 @@ namespace AlliancesPlugin
 
         public static List<IMyIdentity> GetAllIdentitiesByNameOrId(string playerNameOrSteamId)
         {
-            List<IMyIdentity> ids = new List<IMyIdentity>();
+            var ids = new List<IMyIdentity>();
             foreach (var identity in MySession.Static.Players.GetAllIdentities())
             {
                 if (identity.DisplayName == playerNameOrSteamId)
@@ -1485,9 +1481,9 @@ namespace AlliancesPlugin
                         ids.Add(identity);
                     }
                 }
-                if (ulong.TryParse(playerNameOrSteamId, out ulong steamId))
+                if (ulong.TryParse(playerNameOrSteamId, out var steamId))
                 {
-                    ulong id = MySession.Static.Players.TryGetSteamId(identity.IdentityId);
+                    var id = MySession.Static.Players.TryGetSteamId(identity.IdentityId);
                     if (id == steamId)
                     {
                         if (!ids.Contains(identity))
@@ -1513,18 +1509,18 @@ namespace AlliancesPlugin
         public static void LoadAllTerritories()
         {
             Territories.Clear();
-            FileUtils jsonStuff = new FileUtils();
+            var jsonStuff = new FileUtils();
             CityHandler.CityTemplates.Clear();
-            foreach (String s in Directory.GetFiles(path + "//Territories//CityConfigs"))
+            foreach (var s in Directory.GetFiles(path + "//Territories//CityConfigs"))
             {
-                City template = jsonStuff.ReadFromXmlFile<City>(s);
+                var template = jsonStuff.ReadFromXmlFile<City>(s);
                 CityHandler.CityTemplates.Add(template);
             }
-            foreach (String s in Directory.GetFiles(path + "//Territories//"))
+            foreach (var s in Directory.GetFiles(path + "//Territories//"))
             {
                 try
                 {
-                    Territory ter = jsonStuff.ReadFromXmlFile<Territory>(s);
+                    var ter = jsonStuff.ReadFromXmlFile<Territory>(s);
                     if (!ter.enabled)
                     {
                         continue;
@@ -1556,16 +1552,16 @@ namespace AlliancesPlugin
             {
                 return;
             }
-            List<string> FilesToDelete = new List<string>();
+            var FilesToDelete = new List<string>();
             if (WorldName.Equals("") && MyMultiplayer.Static.HostName != null)
             {
                 WorldName = MyMultiplayer.Static.HostName;
             }
-            FileUtils jsonStuff = new FileUtils();
+            var jsonStuff = new FileUtils();
             try
             {
                 AllGates.Clear();
-                foreach (String s in Directory.GetFiles(path + "//JumpGates//"))
+                foreach (var s in Directory.GetFiles(path + "//JumpGates//"))
                 {
                     JumpGate gate;
                     if (s.EndsWith(".json"))
@@ -1596,15 +1592,15 @@ namespace AlliancesPlugin
             {
                 Log.Error(ex.ToString());
             }
-            bool deleted = false;
-            foreach (String s in FilesToDelete)
+            var deleted = false;
+            foreach (var s in FilesToDelete)
             {
                 File.Delete(s);
                 deleted = true;
             }
             if (deleted)
             {
-                foreach (JumpGate gate in AllGates.Values)
+                foreach (var gate in AllGates.Values)
                 {
                     gate.Save();
                 }
@@ -1612,7 +1608,7 @@ namespace AlliancesPlugin
         }
         public static Boolean SendPlayerNotify(MyPlayer player, int milliseconds, string message, string color)
         {
-            NotificationMessage message2 = new NotificationMessage();
+            var message2 = new NotificationMessage();
             if (messageCooldowns.ContainsKey(player.Identity.IdentityId))
             {
                 if (DateTime.Now < messageCooldowns[player.Identity.IdentityId])
@@ -1642,10 +1638,10 @@ namespace AlliancesPlugin
         }
         public static bool ConsumeComponentsGateFee(IEnumerable<VRage.Game.ModAPI.IMyInventory> inventories, IDictionary<MyDefinitionId, int> components, ulong steamid)
         {
-            List<MyTuple<VRage.Game.ModAPI.IMyInventory, VRage.Game.ModAPI.IMyInventoryItem, VRage.MyFixedPoint>> toRemove = new List<MyTuple<VRage.Game.ModAPI.IMyInventory, VRage.Game.ModAPI.IMyInventoryItem, VRage.MyFixedPoint>>();
-            foreach (KeyValuePair<MyDefinitionId, int> c in components)
+            var toRemove = new List<MyTuple<VRage.Game.ModAPI.IMyInventory, VRage.Game.ModAPI.IMyInventoryItem, VRage.MyFixedPoint>>();
+            foreach (var c in components)
             {
-                MyFixedPoint needed = ShipyardCommands.CountComponents(inventories, c.Key, c.Value, toRemove);
+                var needed = ShipyardCommands.CountComponents(inventories, c.Key, c.Value, toRemove);
                 if (needed > 0)
                 {
                     ShipyardCommands.SendMessage("[Gate Fee]", "Missing " + needed + " " + c.Key.SubtypeName + " All components must be inside one grid.", Color.Red, (long)steamid);
@@ -1654,7 +1650,7 @@ namespace AlliancesPlugin
                 }
             }
 
-            foreach (MyTuple<VRage.Game.ModAPI.IMyInventory, VRage.Game.ModAPI.IMyInventoryItem, MyFixedPoint> item in toRemove)
+            foreach (var item in toRemove)
                 MyAPIGateway.Utilities.InvokeOnGameThread(() =>
                 {
                     item.Item1.RemoveItemAmount(item.Item2, item.Item3);
@@ -1665,15 +1661,15 @@ namespace AlliancesPlugin
         {
             if (gate.RequireDrive)
             {
-                List<MyJumpDrive> drives = new List<MyJumpDrive>();
+                var drives = new List<MyJumpDrive>();
                 MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(Controller.CubeGrid).GetBlocksOfType<MyJumpDrive>(drives);
-                bool enabled = false;
+                var enabled = false;
                 if (drives.Count == 0)
                 {
                     enabled = false;
                 }
 
-                foreach (MyJumpDrive drive in drives)
+                foreach (var drive in drives)
                 {
                     if (drive.Enabled && drive.IsFunctional)
                     {
@@ -1692,10 +1688,10 @@ namespace AlliancesPlugin
             if (gate.itemCostsForUse)
             {
                 var items = new Dictionary<MyDefinitionId, int>();
-                foreach (ItemCost item in gate.itemCostsList)
+                foreach (var item in gate.itemCostsList)
                 {
 
-                    if (MyDefinitionId.TryParse("MyObjectBuilder_" + item.TypeId + "/" + item.SubTypeId, out MyDefinitionId id))
+                    if (MyDefinitionId.TryParse("MyObjectBuilder_" + item.TypeId + "/" + item.SubTypeId, out var id))
                     {
                         decimal multiplier = 1;
                         multiplier += Controller.CubeGrid.BlocksCount / item.BlockCountDivision;
@@ -1771,7 +1767,7 @@ namespace AlliancesPlugin
             if (gate.itemCostsForUse)
             {
                 SendPlayerNotify(player, 1000, "You will jump in " + Distance + " meters", "Green");
-                foreach (ItemCost item in gate.itemCostsList)
+                foreach (var item in gate.itemCostsList)
                 {
                     SendPlayerNotify(player, 1000, $"It costs {item.SubTypeId} {item.TypeId} SC to jump.", "Green");
                     return true;
@@ -1795,8 +1791,8 @@ namespace AlliancesPlugin
         public static Dictionary<ulong, DateTime> yeet = new Dictionary<ulong, DateTime>();
         public void DoJumpGateStuff()
         {
-            List<MyPlayer> players = new List<MyPlayer>();
-            foreach (MyPlayer player in MySession.Static.Players.GetOnlinePlayers())
+            var players = new List<MyPlayer>();
+            foreach (var player in MySession.Static.Players.GetOnlinePlayers())
             {
                 //if (yeet.TryGetValue(player.Id.SteamId, out DateTime time))
                 //{
@@ -1854,9 +1850,9 @@ namespace AlliancesPlugin
                 }
             }
 
-            foreach (KeyValuePair<Guid, JumpGate> key in AllGates)
+            foreach (var key in AllGates)
             {
-                JumpGate gate = key.Value;
+                var gate = key.Value;
                 if (!gate.Enabled)
                     continue;
                 if (gate.TargetGateId == gate.GateId)
@@ -1864,7 +1860,7 @@ namespace AlliancesPlugin
                 if (!AllGates.ContainsKey(gate.TargetGateId))
                     continue;
 
-                JumpGate target = AllGates[gate.TargetGateId];
+                var target = AllGates[gate.TargetGateId];
                 if (!target.Enabled)
                     continue;
                 if (target.TargetGateId == target.GateId)
@@ -1874,25 +1870,25 @@ namespace AlliancesPlugin
                     continue;
 
 
-                foreach (MyPlayer player in players)
+                foreach (var player in players)
                 {
                     if (player?.Controller?.ControlledEntity is MyCockpit controller)
                     {
 
-                        float Distance = Vector3.Distance(gate.Position, controller.PositionComp.GetPosition());
+                        var Distance = Vector3.Distance(gate.Position, controller.PositionComp.GetPosition());
                         if (Distance <= gate.RadiusToJump)
                         {
                             if (!DoFeeStuff(player, gate, controller))
                                 continue;
-                            Random rand = new Random();
-                            Vector3 offset = new Vector3(rand.Next(config.JumpGateMinimumOffset, config.JumPGateMaximumOffset), rand.Next(config.JumpGateMinimumOffset, config.JumPGateMaximumOffset), rand.Next(config.JumpGateMinimumOffset, config.JumPGateMaximumOffset));
-                            Vector3D newPos = new Vector3D(target.Position + offset);
-                            Vector3D? newPosition = MyEntities.FindFreePlace(newPos, (float)GridManager.FindBoundingSphere(controller.CubeGrid).Radius);
+                            var rand = new Random();
+                            var offset = new Vector3(rand.Next(config.JumpGateMinimumOffset, config.JumPGateMaximumOffset), rand.Next(config.JumpGateMinimumOffset, config.JumPGateMaximumOffset), rand.Next(config.JumpGateMinimumOffset, config.JumPGateMaximumOffset));
+                            var newPos = new Vector3D(target.Position + offset);
+                            var newPosition = MyEntities.FindFreePlace(newPos, (float)GridManager.FindBoundingSphere(controller.CubeGrid).Radius);
                             if (newPosition.Value == null)
                             {
                                 break;
                             }
-                            MatrixD worldMatrix = MatrixD.CreateWorld(newPosition.Value, controller.CubeGrid.WorldMatrix.Forward, controller.CubeGrid.WorldMatrix.Up);
+                            var worldMatrix = MatrixD.CreateWorld(newPosition.Value, controller.CubeGrid.WorldMatrix.Forward, controller.CubeGrid.WorldMatrix.Up);
                             controller.CubeGrid.Teleport(worldMatrix);
                             AlliancePlugin.Log.Info("Gate travel " + gate.GateName + " for " + player.DisplayName + " in " + controller.CubeGrid.DisplayName);
                         }
@@ -1918,11 +1914,11 @@ namespace AlliancesPlugin
         }
         public void OrganisePlayers()
         {
-            foreach (MyPlayer player in MySession.Static.Players.GetOnlinePlayers())
+            foreach (var player in MySession.Static.Players.GetOnlinePlayers())
             {
                 if (MySession.Static.Factions.GetPlayerFaction(player.Identity.IdentityId) != null)
                 {
-                    Alliance temp = GetAllianceNoLoading(MySession.Static.Factions.GetPlayerFaction(player.Identity.IdentityId));
+                    var temp = GetAllianceNoLoading(MySession.Static.Factions.GetPlayerFaction(player.Identity.IdentityId));
                     if (temp != null)
                     {
                         //if (AllianceChat.PeopleInAllianceChat.ContainsKey(player.Id.SteamId))
@@ -1946,7 +1942,7 @@ namespace AlliancesPlugin
                         }
                         else
                         {
-                            List<ulong> bob = new List<ulong>();
+                            var bob = new List<ulong>();
                             bob.Add(player.Id.SteamId);
                             playersInAlliances.Add(temp.AllianceId, bob);
 
@@ -1963,11 +1959,11 @@ namespace AlliancesPlugin
         public static List<long> OtherTaxingId = new List<long>();
         public void DoTaxStuff()
         {
-            List<long> Processed = new List<long>();
-            Dictionary<Guid, Dictionary<long, float>> Territory = new Dictionary<Guid, Dictionary<long, float>>();
+            var Processed = new List<long>();
+            var Territory = new Dictionary<Guid, Dictionary<long, float>>();
 
 
-            Dictionary<Guid, Dictionary<long, float>> taxes = new Dictionary<Guid, Dictionary<long, float>>();
+            var taxes = new Dictionary<Guid, Dictionary<long, float>>();
 
 
             //this is broken 
@@ -2035,13 +2031,13 @@ namespace AlliancesPlugin
             //DatabaseForBank.TerritoryTaxes(taxes);
 
 
-            foreach (long id in TaxesToBeProcessed.Keys)
+            foreach (var id in TaxesToBeProcessed.Keys)
             {
 
                 if (MySession.Static.Factions.TryGetPlayerFaction(id) != null)
                 {
 
-                    Alliance alliance = GetAllianceNoLoading(MySession.Static.Factions.TryGetPlayerFaction(id) as MyFaction);
+                    var alliance = GetAllianceNoLoading(MySession.Static.Factions.TryGetPlayerFaction(id) as MyFaction);
                     if (alliance != null)
                     {
 
@@ -2050,7 +2046,7 @@ namespace AlliancesPlugin
                         if (alliance.GetTaxRate(MySession.Static.Players.TryGetSteamId(id)) > 0)
                         {
 
-                            float tax = TaxesToBeProcessed[id] * alliance.GetTaxRate(MySession.Static.Players.TryGetSteamId(id));
+                            var tax = TaxesToBeProcessed[id] * alliance.GetTaxRate(MySession.Static.Players.TryGetSteamId(id));
                             //      Log.Info(TaxesToBeProcessed[id] + " " + tax + " " + alliance.GetTaxRate(MySession.Static.Players.TryGetSteamId(id)));
                             if (EconUtils.getBalance(id) >= tax)
                             {
@@ -2061,7 +2057,7 @@ namespace AlliancesPlugin
                                 }
                                 else
                                 {
-                                    Dictionary<long, float> temp = new Dictionary<long, float>();
+                                    var temp = new Dictionary<long, float>();
                                     temp.Add(id, tax);
                                     taxes.Add(alliance.AllianceId, temp);
                                 }
@@ -2074,7 +2070,7 @@ namespace AlliancesPlugin
 
             DatabaseForBank.Taxes(taxes);
             TerritoryTaxes.Clear();
-            foreach (long id in Processed)
+            foreach (var id in Processed)
             {
                 TaxesToBeProcessed.Remove(id);
             }
@@ -2096,12 +2092,12 @@ namespace AlliancesPlugin
             {
                 return;
             }
-            foreach (CaptureSite config in sites)
+            foreach (var config in sites)
             {
 
                 try
                 {
-                    Location loc = config.GetCurrentLocation();
+                    var loc = config.GetCurrentLocation();
                     if (loc == null)
                     {
                         continue;
@@ -2110,7 +2106,7 @@ namespace AlliancesPlugin
                     {
                         continue;
                     }
-                    bool unlocked = false;
+                    var unlocked = false;
                     //if (config.UnlockAtTheseTimes && config.Locked)
                     //{
                     //    if (config.HoursToUnlockAfter.Contains(DateTime.Now.Hour))
@@ -2138,15 +2134,15 @@ namespace AlliancesPlugin
 
                         if (config.CaptureStarted && DateTime.Now < config.nextCaptureAvailable)
                         {
-                            DateTime end = config.nextCaptureAvailable;
+                            var end = config.nextCaptureAvailable;
                             var diff = end.Subtract(DateTime.Now);
-                            string time = String.Format("{0} Hours {1} Minutes {2} Seconds", diff.Hours, diff.Minutes, diff.Seconds);
+                            var time = String.Format("{0} Hours {1} Minutes {2} Seconds", diff.Hours, diff.Minutes, diff.Seconds);
                             SendChatMessage(loc.Name, "Capture can begin in " + time);
                             SaveCaptureConfig(config.Name, config);
                             continue;
                         }
-                        Vector3 position = new Vector3(loc.X, loc.Y, loc.Z);
-                        BoundingSphereD sphere = new BoundingSphereD(position, loc.CaptureRadiusInMetre * 2);
+                        var position = new Vector3(loc.X, loc.Y, loc.Z);
+                        var sphere = new BoundingSphereD(position, loc.CaptureRadiusInMetre * 2);
 
 
                         if (DateTime.Now >= config.nextCaptureAvailable)
@@ -2160,7 +2156,7 @@ namespace AlliancesPlugin
 
 
                                     config.PickNewSiteOnUnlock = false;
-                                    Location newloc = config.GetNewCapSite(loc);
+                                    var newloc = config.GetNewCapSite(loc);
                                     if (newloc == null)
                                     {
                                         Log.Error("Failed to change capture site");
@@ -2170,7 +2166,7 @@ namespace AlliancesPlugin
                                 try
                                 {
 
-                                    MyGps gps = new MyGps();
+                                    var gps = new MyGps();
                                     gps.Coords = new Vector3D(loc.X, loc.Y, loc.Z);
                                     gps.Name = loc.Name;
                                     var message = new AllianceSendToDiscord
@@ -2186,7 +2182,7 @@ namespace AlliancesPlugin
                                     };
 
                                     SendToMQ(MQPatching.MQPluginPatch.AllianceSendToDiscord, message);
-                             
+
 
                                 }
                                 catch (Exception e)
@@ -2196,15 +2192,15 @@ namespace AlliancesPlugin
                                 }
 
 
-                                foreach (MyCubeGrid grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
+                                foreach (var grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
                                 {
 
 
-                                    IMyFaction fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
+                                    var fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
                                     if (fac != null && !fac.Tag.Equals(loc.KothBuildingOwner) && fac.Tag.Length == 3)
                                     {
-                                        Vector3 playerPos = new Vector3();
-                                        Boolean yeet = false;
+                                        var playerPos = new Vector3();
+                                        var yeet = false;
                                         try
                                         {
                                             playerPos = MySession.Static.Players.TryGetPlayerBySteamId(MySession.Static.Players.TryGetSteamId(FacUtils.GetOwner(grid))).GetPosition();
@@ -2232,15 +2228,15 @@ namespace AlliancesPlugin
                                             {
                                                 grid.SwitchPower();
                                             }
-                                            foreach (MyBeacon beacon in grid.GetFatBlocks().OfType<MyBeacon>())
+                                            foreach (var beacon in grid.GetFatBlocks().OfType<MyBeacon>())
                                             {
                                                 beacon.Enabled = false;
                                             }
-                                            foreach (MyTimerBlock beacon in grid.GetFatBlocks().OfType<MyTimerBlock>())
+                                            foreach (var beacon in grid.GetFatBlocks().OfType<MyTimerBlock>())
                                             {
                                                 beacon.Enabled = false;
                                             }
-                                            foreach (MyProgrammableBlock beacon in grid.GetFatBlocks().OfType<MyProgrammableBlock>())
+                                            foreach (var beacon in grid.GetFatBlocks().OfType<MyProgrammableBlock>())
                                             {
                                                 beacon.Enabled = false;
                                             }
@@ -2253,24 +2249,24 @@ namespace AlliancesPlugin
 
 
 
-                            bool contested = false;
-                            Boolean hasActiveCaptureBlock = false;
+                            var contested = false;
+                            var hasActiveCaptureBlock = false;
 
                             //do time check for unlocks first
-                            bool locked = false;
+                            var locked = false;
 
                             //Yeah split the logic, easier to do this than work both into the same method
                             if (config.AllianceSite)
                             {
-                                Guid CapturingAlliance = Guid.Empty;
+                                var CapturingAlliance = Guid.Empty;
                                 if (config.CapturingAlliance != Guid.Empty)
                                 {
                                     CapturingAlliance = config.CapturingAlliance;
                                 }
-                                Boolean CanCapWithSuit = false;
+                                var CanCapWithSuit = false;
                                 if (config.DoSuitCaps)
                                 {
-                                    foreach (MyPlayer Player in MySession.Static.Players.GetOnlinePlayers())
+                                    foreach (var Player in MySession.Static.Players.GetOnlinePlayers())
                                     {
 
                                         if (CanCapWithSuit)
@@ -2280,11 +2276,11 @@ namespace AlliancesPlugin
                                         if (Player == null || Player.Character.MarkedForClose)
                                             continue;
 
-                                        long PlayerID = Player.Identity.IdentityId;
+                                        var PlayerID = Player.Identity.IdentityId;
                                         if (PlayerID == 0L)
                                             continue;
 
-                                        MyFaction PlayersFaction = MySession.Static.Factions.GetPlayerFaction(PlayerID);
+                                        var PlayersFaction = MySession.Static.Factions.GetPlayerFaction(PlayerID);
                                         if (PlayersFaction == null)
                                         {
                                             continue;
@@ -2295,7 +2291,7 @@ namespace AlliancesPlugin
 
                                             if (PlayersFaction != null)
                                             {
-                                                Alliance yeet = AlliancePlugin.GetAllianceNoLoading(PlayersFaction);
+                                                var yeet = AlliancePlugin.GetAllianceNoLoading(PlayersFaction);
                                                 if (yeet != null)
                                                 {
                                                     if (CapturingAlliance != Guid.Empty)
@@ -2325,7 +2321,7 @@ namespace AlliancesPlugin
                                 }
                                 if (!config.DoSuitCaps)
                                 {
-                                    foreach (MyCubeGrid grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
+                                    foreach (var grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
                                     {
                                         if (grid.Projector != null)
                                             continue;
@@ -2336,7 +2332,7 @@ namespace AlliancesPlugin
                                             continue;
                                         }
 
-                                        IMyFaction fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
+                                        var fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
                                         if (fac != null && !fac.Tag.Equals(loc.KothBuildingOwner) && fac.Tag.Length == 3)
                                         {
                                             //do contested checks
@@ -2493,7 +2489,7 @@ namespace AlliancesPlugin
                                                         config.amountCaptured = 0;
                                                         config.CaptureStarted = false;
 
-                                                        Alliance alliance = GetAllianceNoLoading(config.AllianceOwner);
+                                                        var alliance = GetAllianceNoLoading(config.AllianceOwner);
                                                         config.caplog.AddToCap(alliance.name);
 
 
@@ -2501,7 +2497,7 @@ namespace AlliancesPlugin
                                                         config.unlockTime = DateTime.Now.AddHours(config.hoursToLockAfterNormalCap);
                                                         if (config.OnlyDoLootOnceAfterCap)
                                                         {
-                                                            LootLocation l = config.GetLootSite();
+                                                            var l = config.GetLootSite();
                                                             if (l != null)
                                                             {
                                                                 DiscordStuff.SendMessageToDiscord(loc.Name, GetAllianceNoLoading(CapturingAlliance).name + " has captured " + loc.Name + ". It is now locked for " + config.hoursToLockAfterNormalCap + " hours. Loot will spawn in " + config.SecondsForOneLootSpawnAfterCap + " seconds.", config);
@@ -2525,7 +2521,7 @@ namespace AlliancesPlugin
 
 
 
-                                                        foreach (JumpGate gate in AllGates.Values)
+                                                        foreach (var gate in AllGates.Values)
                                                         {
                                                             if (gate.LinkedKoth.Equals(loc.Name))
                                                             {
@@ -2684,10 +2680,10 @@ namespace AlliancesPlugin
                                         CapturingFaction = config.CapturingFaction;
                                         capture = MySession.Static.Factions.TryGetFactionById(config.CapturingFaction) as MyFaction;
                                     }
-                                    Boolean CanCapWithSuit = false;
+                                    var CanCapWithSuit = false;
                                     if (config.DoSuitCaps)
                                     {
-                                        foreach (MyPlayer Player in MySession.Static.Players.GetOnlinePlayers())
+                                        foreach (var Player in MySession.Static.Players.GetOnlinePlayers())
                                         {
 
                                             if (CanCapWithSuit)
@@ -2697,11 +2693,11 @@ namespace AlliancesPlugin
                                             if (Player == null || Player.Character == null || Player.Character.MarkedForClose)
                                                 continue;
 
-                                            long PlayerID = Player.Identity.IdentityId;
+                                            var PlayerID = Player.Identity.IdentityId;
                                             if (PlayerID == 0L)
                                                 continue;
 
-                                            MyFaction PlayersFaction = MySession.Static.Factions.GetPlayerFaction(PlayerID);
+                                            var PlayersFaction = MySession.Static.Factions.GetPlayerFaction(PlayerID);
                                             if (PlayersFaction == null)
                                             {
                                                 continue;
@@ -2749,7 +2745,7 @@ namespace AlliancesPlugin
                                     }
                                     if (!config.DoSuitCaps)
                                     {
-                                        foreach (MyCubeGrid grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
+                                        foreach (var grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
                                         {
                                             if (grid.Projector != null)
                                                 continue;
@@ -2757,7 +2753,7 @@ namespace AlliancesPlugin
 
 
 
-                                            IMyFaction fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
+                                            var fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
                                             if (fac != null && !fac.Tag.Equals(loc.KothBuildingOwner) && fac.Tag.Length == 3)
                                             {
 
@@ -2911,7 +2907,7 @@ namespace AlliancesPlugin
                                                             }
                                                             if (config.OnlyDoLootOnceAfterCap)
                                                             {
-                                                                LootLocation l = config.GetLootSite();
+                                                                var l = config.GetLootSite();
                                                                 if (l != null)
                                                                 {
                                                                     try
@@ -3104,7 +3100,7 @@ namespace AlliancesPlugin
                         // }
 
                     }
-                    LootLocation loot = config.GetLootSite();
+                    var loot = config.GetLootSite();
                     if (loot == null)
                     {
                         continue;
@@ -3112,8 +3108,8 @@ namespace AlliancesPlugin
 
                     if (DateTime.Now >= loot.nextCoreSpawn)
                     {
-                        Vector3 position = new Vector3(loc.X, loc.Y, loc.Z);
-                        BoundingSphereD sphere = new BoundingSphereD(position, loc.CaptureRadiusInMetre * 2);
+                        var position = new Vector3(loc.X, loc.Y, loc.Z);
+                        var sphere = new BoundingSphereD(position, loc.CaptureRadiusInMetre * 2);
                         loot.nextCoreSpawn = DateTime.Now.AddSeconds(loot.SecondsBetweenCoreSpawn);
                         if (config.OnlyDoLootOnceAfterCap)
                         {
@@ -3132,16 +3128,16 @@ namespace AlliancesPlugin
 
                         }
 
-                        Vector3 lootGrid = new Vector3(loot.X, loot.Y, loot.Z);
-                        MyCubeGrid lootgrid = GetLootboxGrid(lootGrid, loot);
+                        var lootGrid = new Vector3(loot.X, loot.Y, loot.Z);
+                        var lootgrid = GetLootboxGrid(lootGrid, loot);
                         //spawn the cores
                         loot.LootboxGridEntityId = lootgrid.EntityId;
                         SaveCaptureConfig(config.Name, config);
-                        Boolean hasCap = false;
-                        Boolean hasCapNotOwner = false;
-                        foreach (MyCubeGrid grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
+                        var hasCap = false;
+                        var hasCapNotOwner = false;
+                        foreach (var grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
                         {
-                            IMyFaction fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
+                            var fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
                             if (fac != null)
                             {
                                 if (fac.Tag == loot.KothBuildingOwner || fac.Tag.Length > 3)
@@ -3176,7 +3172,7 @@ namespace AlliancesPlugin
                         {
                             if (config.AllianceOwner != Guid.Empty)
                             {
-                                Alliance alliance = GetAlliance(config.AllianceOwner);
+                                var alliance = GetAlliance(config.AllianceOwner);
                                 if (loc.RequireCaptureBlockForLootGen)
                                 {
                                     if (!hasCap)
@@ -3323,33 +3319,33 @@ namespace AlliancesPlugin
                 return;
             }
 
-            foreach (KothConfig config in KOTHs)
+            foreach (var config in KOTHs)
             {
                 try
                 {
                     if (!config.enabled)
                         continue;
 
-                    bool contested = false;
-                    Boolean hasActiveCaptureBlock = false;
+                    var contested = false;
+                    var hasActiveCaptureBlock = false;
                     // Log.Info("We capping?");
-                    Vector3 position = new Vector3(config.x, config.y, config.z);
-                    BoundingSphereD sphere = new BoundingSphereD(position, config.CaptureRadiusInMetre * 2);
+                    var position = new Vector3(config.x, config.y, config.z);
+                    var sphere = new BoundingSphereD(position, config.CaptureRadiusInMetre * 2);
                     if (DateTime.Now >= config.unlockTime)
                     {
                         config.unlockTime = DateTime.Now.AddYears(1);
                         config.owner = Guid.Empty;
                         SaveKothConfig(config.KothName, config);
-                        foreach (MyCubeGrid grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
+                        foreach (var grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
                         {
 
                             if (grid.Projector != null)
                                 continue;
 
-                            IMyFaction fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
+                            var fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
                             if (fac != null && !fac.Tag.Equals(config.KothBuildingOwner) && fac.Tag.Length == 3)
                             {
-                                Vector3 playerPos = new Vector3();
+                                var playerPos = new Vector3();
                                 try
                                 {
                                     playerPos = MySession.Static.Players.TryGetPlayerBySteamId(MySession.Static.Players.TryGetSteamId(FacUtils.GetOwner(grid))).GetPosition();
@@ -3359,7 +3355,7 @@ namespace AlliancesPlugin
 
 
                                 }
-                                Boolean yeet = false;
+                                var yeet = false;
                                 if (playerPos != null)
                                 {
                                     if (Vector3.Distance(playerPos, position) > config.CaptureRadiusInMetre * 2)
@@ -3375,16 +3371,16 @@ namespace AlliancesPlugin
                                 {
 
 
-                                    foreach (MyBeacon beacon in grid.GetFatBlocks().OfType<MyBeacon>())
+                                    foreach (var beacon in grid.GetFatBlocks().OfType<MyBeacon>())
                                     {
                                         beacon.Enabled = false;
 
                                     }
-                                    foreach (MyTimerBlock beacon in grid.GetFatBlocks().OfType<MyTimerBlock>())
+                                    foreach (var beacon in grid.GetFatBlocks().OfType<MyTimerBlock>())
                                     {
                                         beacon.Enabled = false;
                                     }
-                                    foreach (MyProgrammableBlock beacon in grid.GetFatBlocks().OfType<MyProgrammableBlock>())
+                                    foreach (var beacon in grid.GetFatBlocks().OfType<MyProgrammableBlock>())
                                     {
                                         beacon.Enabled = false;
                                     }
@@ -3409,24 +3405,24 @@ namespace AlliancesPlugin
                     {
                         config.nextCaptureInterval = DateTime.Now.AddSeconds(config.SecondsBetweenCaptureCheck);
 
-                        Guid capturingNation = Guid.Empty;
+                        var capturingNation = Guid.Empty;
                         if (config.capturingNation != Guid.Empty)
                         {
                             capturingNation = config.capturingNation;
                         }
-                        Boolean locked = false;
+                        var locked = false;
 
                         Log.Info("Yeah we capping");
 
 
-                        int entitiesInCapPoint = 0;
-                        foreach (MyCubeGrid grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
+                        var entitiesInCapPoint = 0;
+                        foreach (var grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
                         {
 
                             if (grid.Projector != null)
                                 continue;
 
-                            IMyFaction fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
+                            var fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
                             if (fac != null && !fac.Tag.Equals(config.KothBuildingOwner) && fac.Tag.Length == 3)
                             {
                                 entitiesInCapPoint++;
@@ -3441,7 +3437,7 @@ namespace AlliancesPlugin
                                 }
                                 else
                                 {
-                                    Alliance alliance = GetNationTag(fac);
+                                    var alliance = GetNationTag(fac);
                                     if (alliance != null)
                                     {
                                         capturingNation = alliance.AllianceId;
@@ -3503,7 +3499,7 @@ namespace AlliancesPlugin
                         {
                             if (entitiesInCapPoint == 0 && config.IsDenialPoint)
                             {
-                                if (denials.TryGetValue(config.DeniedKoth, out DenialPoint den))
+                                if (denials.TryGetValue(config.DeniedKoth, out var den))
                                 {
                                     den.RemoveCap(config.KothName);
                                     SaveKothConfig(config.KothName, config);
@@ -3570,13 +3566,13 @@ namespace AlliancesPlugin
                                                 config.nextCaptureInterval = DateTime.Now.AddSeconds(config.SecondsBetweenCaptureCheck);
                                                 if (config.IsDenialPoint)
                                                 {
-                                                    if (denials.TryGetValue(config.DeniedKoth, out DenialPoint den))
+                                                    if (denials.TryGetValue(config.DeniedKoth, out var den))
                                                     {
                                                         den.AddCap(config.KothName);
                                                     }
                                                     else
                                                     {
-                                                        DenialPoint denial = new DenialPoint();
+                                                        var denial = new DenialPoint();
                                                         denial.AddCap(config.KothName);
                                                         denials.Add(config.DeniedKoth, denial);
                                                     }
@@ -3597,12 +3593,12 @@ namespace AlliancesPlugin
                                                     config.amountCaptured = 0;
                                                     config.CaptureStarted = false;
                                                     config.unlockTime = DateTime.Now.AddHours(config.hoursToLockAfterCap);
-                                                    Alliance alliance = GetAllianceNoLoading(config.owner);
+                                                    var alliance = GetAllianceNoLoading(config.owner);
                                                     if (config.HasTerritory)
                                                     {
                                                         if (File.Exists(AlliancePlugin.path + "//Territories//" + config.LinkedTerritory + ".xml"))
                                                         {
-                                                            Territory ter = utils.ReadFromXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + config.LinkedTerritory + ".xml");
+                                                            var ter = utils.ReadFromXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + config.LinkedTerritory + ".xml");
 
                                                             ter.Alliance = alliance.AllianceId;
                                                             utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + config.LinkedTerritory + ".xml", ter);
@@ -3618,7 +3614,7 @@ namespace AlliancesPlugin
                                                         }
                                                         else
                                                         {
-                                                            Territory ter = new Territory();
+                                                            var ter = new Territory();
                                                             ter.Name = config.LinkedTerritory;
                                                             ter.x = config.x;
                                                             ter.y = config.y;
@@ -3629,7 +3625,7 @@ namespace AlliancesPlugin
                                                             Territories.Add(ter.Id, ter);
                                                         }
                                                     }
-                                                    foreach (JumpGate gate in AllGates.Values)
+                                                    foreach (var gate in AllGates.Values)
                                                     {
                                                         if (gate.LinkedKoth.Equals(config.KothName))
                                                         {
@@ -3753,9 +3749,9 @@ namespace AlliancesPlugin
                         {
                             if (config.CaptureStarted)
                             {
-                                DateTime end = config.nextCaptureAvailable;
+                                var end = config.nextCaptureAvailable;
                                 var diff = end.Subtract(DateTime.Now);
-                                string time = String.Format("{0} Hours {1} Minutes {2} Seconds", diff.Hours, diff.Minutes, diff.Seconds);
+                                var time = String.Format("{0} Hours {1} Minutes {2} Seconds", diff.Hours, diff.Minutes, diff.Seconds);
                                 SendChatMessage(config.KothName, "Capture can begin in " + time);
                             }
                         }
@@ -3773,13 +3769,13 @@ namespace AlliancesPlugin
 
                     if (DateTime.Now > config.nextCoreSpawn && !config.IsDenialPoint && config.HasReward)
                     {
-                        MyCubeGrid lootgrid = GetLootboxGrid(position, config);
+                        var lootgrid = GetLootboxGrid(position, config);
                         //spawn the cores
-                        Boolean hasCap = false;
-                        Boolean hasCapNotOwner = false;
-                        foreach (MyCubeGrid grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
+                        var hasCap = false;
+                        var hasCapNotOwner = false;
+                        foreach (var grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
                         {
-                            IMyFaction fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
+                            var fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
                             if (fac != null)
                             {
                                 if (fac.Tag == config.KothBuildingOwner || fac.Tag.Length > 3)
@@ -3808,7 +3804,7 @@ namespace AlliancesPlugin
 
                         }
 
-                        if (denials.TryGetValue(config.KothName, out DenialPoint den))
+                        if (denials.TryGetValue(config.KothName, out var den))
                         {
                             if (den.IsDenied())
                                 SendChatMessage(config.KothName, "Denied point, no core spawn");
@@ -3828,7 +3824,7 @@ namespace AlliancesPlugin
 
                                             SpawnCores(lootgrid, config);
                                             SendChatMessage(config.KothName, "Spawning loot!");
-                                            Alliance alliance = GetAlliance(config.owner);
+                                            var alliance = GetAlliance(config.owner);
                                             if (alliance != null)
                                             {
                                                 alliance.CurrentMetaPoints += config.MetaPointsPerCapWithBonus;
@@ -3862,7 +3858,7 @@ namespace AlliancesPlugin
 
                                 config.nextCoreSpawn = DateTime.Now.AddSeconds(config.SecondsBetweenCoreSpawn / 2);
                                 SendChatMessage(config.KothName, "Spawning loot!");
-                                Alliance alliance = GetAlliance(config.owner);
+                                var alliance = GetAlliance(config.owner);
                                 if (alliance != null)
                                 {
                                     alliance.CurrentMetaPoints += config.MetaPointsPerCapWithBonus;
@@ -3886,7 +3882,7 @@ namespace AlliancesPlugin
                                 }
                                 SendChatMessage(config.KothName, "Spawning loot!");
                                 config.nextCoreSpawn = DateTime.Now.AddSeconds(config.SecondsBetweenCoreSpawn);
-                                Alliance alliance = GetAlliance(config.owner);
+                                var alliance = GetAlliance(config.owner);
                                 if (alliance != null)
                                 {
                                     alliance.CurrentMetaPoints += config.MetaPointsPerCapWithBonus;
@@ -3930,7 +3926,7 @@ namespace AlliancesPlugin
             alliance = AlliancePlugin.GetAllianceNoLoading(ter.Alliance);
 
 
-            NotificationMessage message2 = new NotificationMessage();
+            var message2 = new NotificationMessage();
 
 
             if (InTerritory.ContainsKey(player.Identity.IdentityId))
@@ -3954,7 +3950,7 @@ namespace AlliancesPlugin
                 InTerritory[player.Identity.IdentityId] = DateTime.Now.AddMinutes(10);
                 if (alliance != null)
                 {
-                    NotificationMessage message3 = new NotificationMessage(ter.ControlledMessage.Replace("{alliance}", alliance.name), 5000, "Red");
+                    var message3 = new NotificationMessage(ter.ControlledMessage.Replace("{alliance}", alliance.name), 5000, "Red");
                     ModCommunication.SendMessageTo(message3, player.Id.SteamId);
 
                 }
@@ -3975,7 +3971,7 @@ namespace AlliancesPlugin
                 }
                 if (alliance != null)
                 {
-                    NotificationMessage message3 = new NotificationMessage(ter.ControlledMessage.Replace("{alliance}", alliance.name), 5000, "Red");
+                    var message3 = new NotificationMessage(ter.ControlledMessage.Replace("{alliance}", alliance.name), 5000, "Red");
                     ModCommunication.SendMessageTo(message3, player.Id.SteamId);
                 }
                 return;
@@ -3984,7 +3980,7 @@ namespace AlliancesPlugin
 
         public static void SendLeaveMessage(MyPlayer player, Territory ter)
         {
-            if (TerritoryInside.TryGetValue(player.Id.SteamId, out Guid ter2))
+            if (TerritoryInside.TryGetValue(player.Id.SteamId, out var ter2))
             {
                 if (!ter.Id.Equals(ter2))
                 {
@@ -3997,7 +3993,7 @@ namespace AlliancesPlugin
                 TerritoryInside.Remove(player.Id.SteamId);
                 return;
             }
-            NotificationMessage message2 = new NotificationMessage(ter.ExitMessage.Replace("{name}", ter.Name), 10000, "White");
+            var message2 = new NotificationMessage(ter.ExitMessage.Replace("{name}", ter.Name), 10000, "White");
 
             ModCommunication.SendMessageTo(message2, player.Id.SteamId);
             InTerritory.Remove(player.Identity.IdentityId);
@@ -4010,12 +4006,78 @@ namespace AlliancesPlugin
         public static Dictionary<ulong, DateTime> UpdateThese = new Dictionary<ulong, DateTime>();
         public static DateTime RegisterMainBot = DateTime.Now;
         public static Dictionary<ulong, Boolean> statusUpdate = new Dictionary<ulong, bool>();
+        public static List<ulong> PlayersNeedPvPAreas = new List<ulong>();
         public static Dictionary<ulong, Guid> otherAllianceShit = new Dictionary<ulong, Guid>();
         public DateTime InitDiscord = DateTime.Now;
-        public async override void Update()
+        public DateTime NextTerritoryUpdate = DateTime.Now;
+
+        public void SendPlayerTerritories(ulong steamPlayerId)
         {
+            var id = AlliancePlugin.GetIdentityByNameOrId(steamPlayerId.ToString());
+            if (id == null)
+            {
+                return;
+            }
+            IMyFaction playerFac = MySession.Static.Factions.GetPlayerFaction(id.IdentityId);
+
+            var message = new PlayerDataPvP
+            {
+                PvPAreas = new List<PvPArea>()
+            };
+
+            message.WarEnabled = playerFac == null ||
+                                 AlliancePlugin.warcore.participants.FactionsAtWar.Contains(playerFac.FactionId);
+
+            foreach (var area in MessageHandler.Territories.Select(Territory => new PvPArea
+                     {
+                         Name = Territory.Name,
+                         Position = Territory.Position,
+                         Distance = Territory.Radius,
+                         AreaForcesPvP = true
+                     }))
+            {
+                message.PvPAreas.Add(area);
+            }
+
+            var binaryData = MyAPIGateway.Utilities.SerializeToBinary(message);
+            MyAPIGateway.Multiplayer.SendMessageTo(8544, binaryData, steamPlayerId);
+        }
+
+        public override void Update()
+        {
+            if (!InitPlugins)
+            {
+                InitPluginDependencies(Torch.Managers.GetManager<PluginManager>(), Torch.Managers.GetManager<PatchManager>());
+                InitPlugins = true;
+            }
             if (ticks % 64 == 0)
             {
+                if (DateTime.Now >= NextTerritoryUpdate)
+                {
+                    NextTerritoryUpdate = DateTime.Now.AddMinutes(10);
+                    foreach (var player in MySession.Static.Players.GetOnlinePlayers())
+                    {
+                        var message = new PlayerDataPvP
+                        {
+                            PvPAreas = new List<PvPArea>()
+                        };
+                        var faction = MySession.Static.Factions.TryGetPlayerFaction(player.Identity.IdentityId);
+                        message.WarEnabled = faction == null || warcore.participants.FactionsAtWar.Contains(faction.FactionId);
+
+                        foreach (var area in MessageHandler.Territories.Select(Territory => new PvPArea
+                        {
+                            Name = Territory.Name,
+                            Position = Territory.Position,
+                            Distance = Territory.Radius,
+                            AreaForcesPvP = true
+                        }))
+                        {
+                            message.PvPAreas.Add(area);
+                        }
+                        var binaryData = MyAPIGateway.Utilities.SerializeToBinary(message);
+                        MyAPIGateway.Multiplayer.SendMessageTo(8544, binaryData, player.Id.SteamId);
+                    }
+                }
                 try
                 {
                     CityHandler.HandleCitiesMain();
@@ -4030,6 +4092,11 @@ namespace AlliancesPlugin
                 var YEET = new Dictionary<ulong, DateTime>();
                 var oof = new List<ulong>();
                 var OtherYeet = new List<ulong>();
+
+                foreach (var steamPlayerId in PlayersNeedPvPAreas)
+                {
+                    SendPlayerTerritories(steamPlayerId);
+                }
                 foreach (var pair in UpdateThese.Where(pair => DateTime.Now >= pair.Value))
                 {
                     oof.Add(pair.Key);
@@ -4038,14 +4105,14 @@ namespace AlliancesPlugin
                         YEET.Add(pair.Key, DateTime.Now.AddMinutes(1));
 
                     }
-                    if (statusUpdate.TryGetValue(pair.Key, out Boolean status))
+                    if (statusUpdate.TryGetValue(pair.Key, out var status))
                     {
                         AlliancePlugin.SendChatMessage("AllianceChatStatus", "true", pair.Key);
                         statusUpdate.Remove(pair.Key);
                     }
-                    if (otherAllianceShit.TryGetValue(pair.Key, out Guid allianceId))
+                    if (otherAllianceShit.TryGetValue(pair.Key, out var allianceId))
                     {
-                        Alliance alliance = GetAlliance(allianceId);
+                        var alliance = GetAlliance(allianceId);
                         if (alliance != null)
                         {
                             AlliancePlugin.SendChatMessage("AllianceColorConfig", alliance.r + " " + alliance.g + " " + alliance.b, pair.Key);
@@ -4057,9 +4124,9 @@ namespace AlliancesPlugin
                     AllianceCommands.SendStatusToClient(AllianceChat.PeopleInAllianceChat.ContainsKey(pair.Key),
                         pair.Key);
                 }
-                foreach (ulong id in oof)
+                foreach (var id in oof)
                 {
-                    if (UpdateThese.TryGetValue(id, out DateTime time))
+                    if (UpdateThese.TryGetValue(id, out var time))
                     {
                         UpdateThese[id] = time.AddSeconds(5);
                     }
@@ -4070,7 +4137,7 @@ namespace AlliancesPlugin
                     OtherYeet.Add(pair.Key);
                     UpdateThese.Remove(pair.Key);
                 }
-                foreach (ulong id in OtherYeet)
+                foreach (var id in OtherYeet)
                 {
                     YEET.Remove(id);
                 }
@@ -4121,7 +4188,7 @@ namespace AlliancesPlugin
             {
                 try
                 {
-                    foreach (ulong id in AllianceChat.PeopleInAllianceChat.Keys)
+                    foreach (var id in AllianceChat.PeopleInAllianceChat.Keys)
                     {
                         ShipyardCommands.SendMessage("Alliance chat", "You are in alliance chat, to leave use !alliance chat", Color.Green, (long)id);
                     }
@@ -4267,7 +4334,7 @@ namespace AlliancesPlugin
 
 
                     //i should really split this into multiple methods so i dont have one huge method for everything
-                    foreach (MyPlayer player in MySession.Static.Players.GetOnlinePlayers())
+                    foreach (var player in MySession.Static.Players.GetOnlinePlayers())
                     {
 
                         if (player.GetPosition() != null)
@@ -4276,35 +4343,35 @@ namespace AlliancesPlugin
                             {
                                 if (config.KothEnabled)
                                 {
-                                    foreach (KothConfig koth in KOTHs)
+                                    foreach (var koth in KOTHs)
                                     {
                                         if (Vector3.Distance(player.GetPosition(), new Vector3(koth.x, koth.y, koth.z)) <= koth.CaptureRadiusInMetre)
                                         {
                                             if (!InCapRadius.ContainsKey(player.Id.SteamId))
                                             {
                                                 InCapRadius.Add(player.Id.SteamId, koth.KothName);
-                                                NotificationMessage message2 = new NotificationMessage("You are inside the capture radius.", 10000, "Green");
+                                                var message2 = new NotificationMessage("You are inside the capture radius.", 10000, "Green");
                                                 //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
                                                 ModCommunication.SendMessageTo(message2, player.Id.SteamId);
                                             }
                                         }
                                         else
                                         {
-                                            if (InCapRadius.TryGetValue(player.Id.SteamId, out string name))
+                                            if (InCapRadius.TryGetValue(player.Id.SteamId, out var name))
                                             {
                                                 if (koth.KothName.Equals(name))
                                                 {
                                                     InCapRadius.Remove(player.Id.SteamId);
-                                                    NotificationMessage message2 = new NotificationMessage("You are outside the capture radius.", 10000, "Red");
+                                                    var message2 = new NotificationMessage("You are outside the capture radius.", 10000, "Red");
                                                     //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
                                                     ModCommunication.SendMessageTo(message2, player.Id.SteamId);
                                                 }
                                             }
                                         }
                                     }
-                                    foreach (CaptureSite site in sites)
+                                    foreach (var site in sites)
                                     {
-                                        Location loc = site.GetCurrentLocation();
+                                        var loc = site.GetCurrentLocation();
                                         if (loc == null || !loc.WorldName.Equals(MyMultiplayer.Static.HostName) || !loc.Enabled)
                                         {
                                             continue;
@@ -4314,19 +4381,19 @@ namespace AlliancesPlugin
                                             if (!InCapRadius.ContainsKey(player.Id.SteamId))
                                             {
                                                 InCapRadius.Add(player.Id.SteamId, loc.Name);
-                                                NotificationMessage message2 = new NotificationMessage("You are inside the capture radius.", 10000, "Green");
+                                                var message2 = new NotificationMessage("You are inside the capture radius.", 10000, "Green");
                                                 //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
                                                 ModCommunication.SendMessageTo(message2, player.Id.SteamId);
                                             }
                                         }
                                         else
                                         {
-                                            if (InCapRadius.TryGetValue(player.Id.SteamId, out string name))
+                                            if (InCapRadius.TryGetValue(player.Id.SteamId, out var name))
                                             {
                                                 if (loc.Name.Equals(name))
                                                 {
                                                     InCapRadius.Remove(player.Id.SteamId);
-                                                    NotificationMessage message2 = new NotificationMessage("You are outside the capture radius.", 10000, "Red");
+                                                    var message2 = new NotificationMessage("You are outside the capture radius.", 10000, "Red");
                                                     //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
                                                     ModCommunication.SendMessageTo(message2, player.Id.SteamId);
                                                 }
@@ -4342,7 +4409,7 @@ namespace AlliancesPlugin
                             }
                             try
                             {
-                                foreach (Territory ter in Territories.Values)
+                                foreach (var ter in Territories.Values)
                                 {
                                     if (ter.enabled)
                                     {
@@ -4386,16 +4453,16 @@ namespace AlliancesPlugin
                     return grid;
             }
 
-            BoundingSphereD sphere = new BoundingSphereD(position, config.RadiusToCheck + 5000);
-            foreach (MyCubeGrid grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
+            var sphere = new BoundingSphereD(position, config.RadiusToCheck + 5000);
+            foreach (var grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
             {
-                IMyFaction fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
+                var fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
                 if (fac != null && fac.Tag.Equals(config.KothBuildingOwner))
                 {
 
-                    Sandbox.ModAPI.IMyGridTerminalSystem gridTerminalSys = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(grid);
+                    var gridTerminalSys = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(grid);
 
-                    Sandbox.ModAPI.IMyTerminalBlock block = gridTerminalSys.GetBlockWithName(config.LootBoxTerminalName);
+                    var block = gridTerminalSys.GetBlockWithName(config.LootBoxTerminalName);
                     if (block != null)
                     {
                         return grid;
@@ -4414,16 +4481,16 @@ namespace AlliancesPlugin
                 if (MyAPIGateway.Entities.GetEntityById(config.LootboxGridEntityId) is MyCubeGrid grid)
                     return grid;
             }
-            BoundingSphereD sphere = new BoundingSphereD(position, config.CaptureRadiusInMetre + 5000);
-            foreach (MyCubeGrid grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
+            var sphere = new BoundingSphereD(position, config.CaptureRadiusInMetre + 5000);
+            foreach (var grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
             {
-                IMyFaction fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
+                var fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
                 if (fac != null && fac.Tag.Equals(config.KothBuildingOwner))
                 {
 
-                    Sandbox.ModAPI.IMyGridTerminalSystem gridTerminalSys = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(grid);
+                    var gridTerminalSys = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(grid);
 
-                    Sandbox.ModAPI.IMyTerminalBlock block = gridTerminalSys.GetBlockWithName(config.LootBoxTerminalName);
+                    var block = gridTerminalSys.GetBlockWithName(config.LootBoxTerminalName);
                     if (block != null)
                     {
                         return grid;
@@ -4438,13 +4505,13 @@ namespace AlliancesPlugin
         {
             if (grid != null)
             {
-                int max = loc.MaxLootAmount;
-                int loot = 0;
-                Sandbox.ModAPI.IMyGridTerminalSystem gridTerminalSys = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(grid);
-                Sandbox.ModAPI.IMyTerminalBlock block = gridTerminalSys.GetBlockWithName(config.LootBoxTerminalName);
-                foreach (RewardItem item in config.loot)
+                var max = loc.MaxLootAmount;
+                var loot = 0;
+                var gridTerminalSys = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(grid);
+                var block = gridTerminalSys.GetBlockWithName(config.LootBoxTerminalName);
+                foreach (var item in config.loot)
                 {
-                    Random random = new Random();
+                    var random = new Random();
                     if (random.NextDouble() <= item.chance)
                     {
                         if (loot >= max)
@@ -4458,14 +4525,14 @@ namespace AlliancesPlugin
                         }
                         if (item.TypeId != null && item.TypeId != string.Empty)
                         {
-                            if (MyDefinitionId.TryParse("MyObjectBuilder_" + item.TypeId + "/" + item.SubTypeId, out MyDefinitionId id))
+                            if (MyDefinitionId.TryParse("MyObjectBuilder_" + item.TypeId + "/" + item.SubTypeId, out var id))
                             {
                                 if (block != null)
                                 {
                                     Log.Info("Should spawn item");
 
-                                    MyItemType itemType = new MyInventoryItemFilter(item.TypeId + "/" + item.SubTypeId).ItemType;
-                                    int amount = random.Next(item.ItemMinAmount, item.ItemMaxAmount);
+                                    var itemType = new MyInventoryItemFilter(item.TypeId + "/" + item.SubTypeId).ItemType;
+                                    var amount = random.Next(item.ItemMinAmount, item.ItemMaxAmount);
                                     block.GetInventory().AddItems((MyFixedPoint)amount, (MyObjectBuilder_PhysicalObject)MyObjectBuilderSerializer.CreateNewObject(id));
                                 }
                             }
@@ -4481,13 +4548,13 @@ namespace AlliancesPlugin
         {
             if (grid != null)
             {
-                int max = loc.MaxLootAmount;
-                int loot = 0;
-                Sandbox.ModAPI.IMyGridTerminalSystem gridTerminalSys = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(grid);
-                Sandbox.ModAPI.IMyTerminalBlock block = gridTerminalSys.GetBlockWithName(config.LootBoxTerminalName);
-                foreach (RewardItem item in config.loot)
+                var max = loc.MaxLootAmount;
+                var loot = 0;
+                var gridTerminalSys = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(grid);
+                var block = gridTerminalSys.GetBlockWithName(config.LootBoxTerminalName);
+                foreach (var item in config.loot)
                 {
-                    Random random = new Random();
+                    var random = new Random();
                     if (random.NextDouble() <= item.chance)
                     {
                         if (loot >= max)
@@ -4510,15 +4577,15 @@ namespace AlliancesPlugin
                         {
 
 
-                            if (MyDefinitionId.TryParse("MyObjectBuilder_" + item.TypeId + "/" + item.SubTypeId, out MyDefinitionId id))
+                            if (MyDefinitionId.TryParse("MyObjectBuilder_" + item.TypeId + "/" + item.SubTypeId, out var id))
                             {
-                                int amount = random.Next(item.ItemMinAmount, item.ItemMaxAmount);
+                                var amount = random.Next(item.ItemMinAmount, item.ItemMaxAmount);
 
                                 if (block != null)
                                 {
                                     //   Log.Info("Should spawn item");
 
-                                    MyItemType itemType = new MyInventoryItemFilter(item.TypeId + "/" + item.SubTypeId).ItemType;
+                                    var itemType = new MyInventoryItemFilter(item.TypeId + "/" + item.SubTypeId).ItemType;
 
                                     block.GetInventory().CanItemsBeAdded((MyFixedPoint)amount, itemType);
                                     block.GetInventory().AddItems((MyFixedPoint)amount, (MyObjectBuilder_PhysicalObject)MyObjectBuilderSerializer.CreateNewObject(id));
@@ -4538,14 +4605,14 @@ namespace AlliancesPlugin
         {
             if (grid != null)
             {
-                Sandbox.ModAPI.IMyGridTerminalSystem gridTerminalSys = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(grid);
-                MyDefinitionId rewardItem = getRewardItem(config);
-                Sandbox.ModAPI.IMyTerminalBlock block = gridTerminalSys.GetBlockWithName(config.LootBoxTerminalName);
+                var gridTerminalSys = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(grid);
+                var rewardItem = getRewardItem(config);
+                var block = gridTerminalSys.GetBlockWithName(config.LootBoxTerminalName);
                 if (block != null && rewardItem != null)
                 {
                     //   Log.Info("Should spawn item");
 
-                    MyItemType itemType = new MyInventoryItemFilter(rewardItem.TypeId + "/" + rewardItem.SubtypeName).ItemType;
+                    var itemType = new MyInventoryItemFilter(rewardItem.TypeId + "/" + rewardItem.SubtypeName).ItemType;
                     block.GetInventory().CanItemsBeAdded((MyFixedPoint)config.RewardAmount, itemType);
                     block.GetInventory().AddItems((MyFixedPoint)config.RewardAmount, (MyObjectBuilder_PhysicalObject)MyObjectBuilderSerializer.CreateNewObject(rewardItem));
                 }
@@ -4558,7 +4625,7 @@ namespace AlliancesPlugin
         }
         public static Boolean DoesGridHaveCaptureBlock(MyCubeGrid grid, Location loc)
         {
-            foreach (MyCubeBlock block in grid.GetFatBlocks())
+            foreach (var block in grid.GetFatBlocks())
             {
 
                 if (block.OwnerId > 0 && block.BlockDefinition.Id.TypeId.ToString().Replace("MyObjectBuilder_", "").Equals(loc.captureBlockType) && block.BlockDefinition.Id.SubtypeName.Equals(loc.captureBlockSubtype))
@@ -4617,7 +4684,7 @@ namespace AlliancesPlugin
 
         public static Boolean DoesGridHaveCaptureBlock(MyCubeGrid grid, KothConfig koth, Boolean ignoreOwner = false)
         {
-            foreach (MyCubeBlock block in grid.GetFatBlocks())
+            foreach (var block in grid.GetFatBlocks())
             {
 
                 if (block.OwnerId > 0 && block.BlockDefinition.Id.TypeId.ToString().Replace("MyObjectBuilder_", "").Equals(koth.captureBlockType) && block.BlockDefinition.Id.SubtypeName.Equals(koth.captureBlockSubtype))
@@ -4634,14 +4701,14 @@ namespace AlliancesPlugin
 
         public static KothConfig SaveKothConfig(String name, KothConfig config)
         {
-            FileUtils utils = new FileUtils();
+            var utils = new FileUtils();
             utils.WriteToXmlFile<KothConfig>(basePath + "//Alliances//KOTH//" + name + ".xml", config);
 
             return config;
         }
         public static CaptureSite SaveCaptureConfig(String name, CaptureSite config)
         {
-            FileUtils utils = new FileUtils();
+            var utils = new FileUtils();
             config.caplog.SaveSorted();
             utils.WriteToXmlFile<CaptureSite>(path + "//CaptureSites//" + name + ".xml", config);
 
@@ -4668,7 +4735,7 @@ namespace AlliancesPlugin
         }
         public static MyDefinitionId getRewardItem(KothConfig config)
         {
-            MyDefinitionId.TryParse("MyObjectBuilder_" + config.RewardTypeId, config.RewardSubTypeId, out MyDefinitionId id);
+            MyDefinitionId.TryParse("MyObjectBuilder_" + config.RewardTypeId, config.RewardSubTypeId, out var id);
             return id;
         }
         public static Alliance GetNationTag(IMyFaction fac)
@@ -4681,19 +4748,19 @@ namespace AlliancesPlugin
         }
         public static void SendChatMessage(String prefix, String message, ulong steamID = 0)
         {
-            Logger _chatLog = LogManager.GetLogger("Chat");
-            ScriptedChatMsg scriptedChatMsg1 = new ScriptedChatMsg();
+            var _chatLog = LogManager.GetLogger("Chat");
+            var scriptedChatMsg1 = new ScriptedChatMsg();
             scriptedChatMsg1.Author = prefix;
             scriptedChatMsg1.Text = message;
             scriptedChatMsg1.Font = "White";
             scriptedChatMsg1.Color = Color.OrangeRed;
             scriptedChatMsg1.Target = Sync.Players.TryGetIdentityId(steamID);
-            ScriptedChatMsg scriptedChatMsg2 = scriptedChatMsg1;
+            var scriptedChatMsg2 = scriptedChatMsg1;
             MyMultiplayerBase.SendScriptedChatMessage(ref scriptedChatMsg2);
         }
         public static string GetPlayerName(ulong steamId)
         {
-            MyIdentity id = GetIdentityByNameOrId(steamId.ToString());
+            var id = GetIdentityByNameOrId(steamId.ToString());
             if (id != null && id.DisplayName != null)
             {
                 return id.DisplayName;
@@ -4709,9 +4776,9 @@ namespace AlliancesPlugin
             {
                 if (identity.DisplayName == playerNameOrSteamId)
                     return identity;
-                if (ulong.TryParse(playerNameOrSteamId, out ulong steamId))
+                if (ulong.TryParse(playerNameOrSteamId, out var steamId))
                 {
-                    ulong id = MySession.Static.Players.TryGetSteamId(identity.IdentityId);
+                    var id = MySession.Static.Players.TryGetSteamId(identity.IdentityId);
                     if (id == steamId)
                         return identity;
                     if (identity.IdentityId == (long)steamId)

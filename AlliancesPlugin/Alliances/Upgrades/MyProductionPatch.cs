@@ -38,7 +38,7 @@ namespace AlliancesPlugin.Alliances
             {
                 if (AlliancePlugin.config.EnableOptionalWar)
                 {
-                    return AlliancePlugin.warcore.config.RefineryYieldMultiplierIfDisabled;
+                    return AlliancePlugin.config.RefineryYieldMultiplierIfDisabled;
                 }
             }
             else
@@ -48,8 +48,8 @@ namespace AlliancesPlugin.Alliances
                 if (AlliancePlugin.config.EnableOptionalWar)
                 {
                     EndMultiplier = AlliancePlugin.warcore.participants.FactionsAtWar.Contains(faction.FactionId)
-                        ? AlliancePlugin.warcore.config.RefineryYieldMultiplierIfEnabled
-                        : AlliancePlugin.warcore.config.RefineryYieldMultiplierIfDisabled;
+                        ? AlliancePlugin.config.RefineryYieldMultiplierIfEnabled
+                        : AlliancePlugin.config.RefineryYieldMultiplierIfDisabled;
                 }
 
                 var alliance = AlliancePlugin.GetAllianceNoLoading(MySession.Static.Factions.TryGetFactionByTag(faction.Tag));
@@ -135,7 +135,7 @@ namespace AlliancesPlugin.Alliances
             {
                 if (AlliancePlugin.config.EnableOptionalWar)
                 {
-                    return AlliancePlugin.warcore.config.AssemblerSpeedMultiplierIfDisabled;
+                    return AlliancePlugin.config.AssemblerSpeedMultiplierIfDisabled;
                 }
             }
             else
@@ -143,8 +143,8 @@ namespace AlliancesPlugin.Alliances
                 if (AlliancePlugin.config.EnableOptionalWar)
                 {
                     endMultiplier = AlliancePlugin.warcore.participants.FactionsAtWar.Contains(faction.FactionId)
-                        ? AlliancePlugin.warcore.config.AssemblerSpeedMultiplierIfEnabled
-                        : AlliancePlugin.warcore.config.AssemblerSpeedMultiplierIfDisabled;
+                        ? AlliancePlugin.config.AssemblerSpeedMultiplierIfEnabled
+                        : AlliancePlugin.config.AssemblerSpeedMultiplierIfDisabled;
                 }
 
                 if (Assembler.GetOwnerFactionTag().Length <= 0) return buff * endMultiplier;

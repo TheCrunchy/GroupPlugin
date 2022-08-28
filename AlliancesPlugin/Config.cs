@@ -40,5 +40,9 @@ namespace AlliancesPlugin
         public Boolean SafeZonesRequireTerritory = false;
         public Boolean EnableOptionalWar = false;
         public Boolean ConvertedFromOldWarFile = false;
+        public float RefineryYieldMultiplierIfEnabled = 0f;
+        public float AssemblerSpeedMultiplierIfEnabled = 0f;
+        public float RefineryYieldMultiplierIfDisabled = 0f;
+        public float AssemblerSpeedMultiplierIfDisabled = 0f;
     }
 }

@@ -199,6 +199,9 @@
     <Compile Include="Alliances\NewTerritories\City.cs" />
     <Compile Include="Alliances\NewTerritories\CityHandler.cs" />
     <Compile Include="Alliances\NewTerritories\SafezoneBlockPatch.cs" />
+    <Compile Include="Alliances\Radar\RadarConfig.cs" />
+    <Compile Include="Alliances\Radar\RadarLogic.cs" />
+    <Compile Include="Alliances\Radar\RadarModel.cs" />
     <Compile Include="Alliances\Upgrades\GridRepairCommands.cs" />
     <Compile Include="Alliances\Upgrades\AssemblerCommands.cs" />
     <Compile Include="Alliances\Upgrades\AssemblerUpgrade.cs" />
@@ -221,9 +224,12 @@
     <Compile Include="Alliances\RefineryCommands.cs" />
     <Compile Include="Alliances\Upgrades\RefineryUpgrade.cs" />
     <Compile Include="Integrations\AllianceIntegrationCore.cs" />
+    <Compile Include="KamikazeTerritories\ChatStatus.cs" />
     <Compile Include="KamikazeTerritories\ClaimBlockSettings.cs" />
     <Compile Include="KamikazeTerritories\KamikazeTerritory.cs" />
     <Compile Include="KamikazeTerritories\MessageHandler.cs" />
+    <Compile Include="KamikazeTerritories\PlayerDataPvP.cs" />
+    <Compile Include="KamikazeTerritories\PvPArea.cs" />
     <Compile Include="MQPatching.cs" />
     <Compile Include="Shipyard\ShipyardSpeedUpgrade.cs" />
     <Compile Include="Shipyard\ShipyardSlotUpgrade.cs" />

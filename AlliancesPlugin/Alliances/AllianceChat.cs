@@ -14,7 +14,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
+using AlliancesPlugin.KamikazeTerritories;
 using Newtonsoft.Json;
 using Torch.API;
 using Torch.API.Managers;
@@ -174,196 +176,190 @@ namespace AlliancesPlugin.Alliances
                 ReceiveChatMessage(SendingMessage);
             }
         }
-    
 
-    public static Dictionary<ulong, long> IdentityIds = new Dictionary<ulong, long>();
-    public static void DoChatMessage(TorchChatMessage msg, ref bool consumed)
-    {
 
-        if (msg.AuthorSteamId == null)
-        {
-            return;
-        }
-        if (msg.Channel == Sandbox.Game.Gui.ChatChannel.Private || msg.Channel == Sandbox.Game.Gui.ChatChannel.Faction)
-        {
-            return;
-        }
-        if (msg.Message.StartsWith("!"))
-        {
-            return;
-        }
-
-        if (PeopleInAllianceChat.ContainsKey((ulong)msg.AuthorSteamId))
+        public static Dictionary<ulong, long> IdentityIds = new Dictionary<ulong, long>();
+        public static void DoChatMessage(TorchChatMessage msg, ref bool consumed)
         {
 
-            MyIdentity identity;
-            if (IdentityIds.ContainsKey((ulong)msg.AuthorSteamId))
-            {
-                identity = MySession.Static.Players.TryGetIdentity(IdentityIds[(ulong)msg.AuthorSteamId]);
-            }
-            else
-            {
-                identity = AlliancePlugin.GetIdentityByNameOrId(msg.AuthorSteamId.ToString());
-            }
-
-            if (identity == null)
+            if (msg.AuthorSteamId == null)
             {
                 return;
             }
-            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(identity.IdentityId);
-            if (fac == null)
+            if (msg.Channel == Sandbox.Game.Gui.ChatChannel.Private || msg.Channel == Sandbox.Game.Gui.ChatChannel.Faction)
             {
-                bool noFac = true;
-                if (AlliancePlugin.GetIdentityByNameOrId(msg.Author) != null)
+                return;
+            }
+            if (msg.Message.StartsWith("!"))
+            {
+                return;
+            }
+
+            if (PeopleInAllianceChat.ContainsKey((ulong)msg.AuthorSteamId))
+            {
+
+                MyIdentity identity;
+                if (IdentityIds.ContainsKey((ulong)msg.AuthorSteamId))
                 {
-                    if (MySession.Static.Factions.GetPlayerFaction(AlliancePlugin.GetIdentityByNameOrId(msg.Author).IdentityId) != null)
-                    {
-                        noFac = false;
-                        fac = MySession.Static.Factions.GetPlayerFaction(AlliancePlugin.GetIdentityByNameOrId(msg.Author).IdentityId);
-                    }
+                    identity = MySession.Static.Players.TryGetIdentity(IdentityIds[(ulong)msg.AuthorSteamId]);
+                }
+                else
+                {
+                    identity = AlliancePlugin.GetIdentityByNameOrId(msg.AuthorSteamId.ToString());
                 }
 
-                if (noFac)
+                if (identity == null)
+                {
+                    return;
+                }
+                MyFaction fac = MySession.Static.Factions.GetPlayerFaction(identity.IdentityId);
+                if (fac == null)
+                {
+                    bool noFac = true;
+                    if (AlliancePlugin.GetIdentityByNameOrId(msg.Author) != null)
+                    {
+                        if (MySession.Static.Factions.GetPlayerFaction(AlliancePlugin.GetIdentityByNameOrId(msg.Author).IdentityId) != null)
+                        {
+                            noFac = false;
+                            fac = MySession.Static.Factions.GetPlayerFaction(AlliancePlugin.GetIdentityByNameOrId(msg.Author).IdentityId);
+                        }
+                    }
+
+                    if (noFac)
+                    {
+                        PeopleInAllianceChat.Remove((ulong)msg.AuthorSteamId);
+                        AllianceCommands.SendStatusToClient(false, (ulong)msg.AuthorSteamId);
+                        AlliancePlugin.SendChatMessage("Failsafe", "Faction null");
+                    }
+                    return;
+                }
+                if (AlliancePlugin.GetAllianceNoLoading(fac) == null)
                 {
                     PeopleInAllianceChat.Remove((ulong)msg.AuthorSteamId);
                     AllianceCommands.SendStatusToClient(false, (ulong)msg.AuthorSteamId);
-                    AlliancePlugin.SendChatMessage("Failsafe", "Faction null");
+                    AlliancePlugin.SendChatMessage("Failsafe", "Alliance null");
+                    return;
                 }
-                return;
-            }
-            if (AlliancePlugin.GetAllianceNoLoading(fac) == null)
-            {
-                PeopleInAllianceChat.Remove((ulong)msg.AuthorSteamId);
-                AllianceCommands.SendStatusToClient(false, (ulong)msg.AuthorSteamId);
-                AlliancePlugin.SendChatMessage("Failsafe", "Alliance null");
-                return;
-            }
-            consumed = true;
-            Guid allianceId = PeopleInAllianceChat[(ulong)msg.AuthorSteamId];
-            List<ulong> OtherMembers = new List<ulong>();
+                consumed = true;
+                Guid allianceId = PeopleInAllianceChat[(ulong)msg.AuthorSteamId];
+                List<ulong> OtherMembers = new List<ulong>();
 
-            Alliance alliance = AlliancePlugin.GetAllianceNoLoading(allianceId);
-            // ShipyardCommands.SendMessage(msg.Author, "You are in alliance chat", Color.BlueViolet, (long)msg.AuthorSteamId);
-            if (alliance.GetTitle((ulong)msg.AuthorSteamId).Equals(""))
-            {
-                SendChatMessage(allianceId, msg.Author, msg.Message, true, identity.IdentityId);
+                Alliance alliance = AlliancePlugin.GetAllianceNoLoading(allianceId);
+                // ShipyardCommands.SendMessage(msg.Author, "You are in alliance chat", Color.BlueViolet, (long)msg.AuthorSteamId);
+                if (alliance.GetTitle((ulong)msg.AuthorSteamId).Equals(""))
+                {
+                    SendChatMessage(allianceId, msg.Author, msg.Message, true, identity.IdentityId);
+
+                }
+                else
+                {
+                    SendChatMessage(allianceId, alliance.GetTitle((ulong)msg.AuthorSteamId) + " | " + msg.Author, msg.Message, true, identity.IdentityId);
+                }
 
             }
             else
             {
-                SendChatMessage(allianceId, alliance.GetTitle((ulong)msg.AuthorSteamId) + " | " + msg.Author, msg.Message, true, identity.IdentityId);
+                //  PeopleInAllianceChat.Remove((ulong)msg.AuthorSteamId);
             }
 
-        }
-        else
-        {
-            //  PeopleInAllianceChat.Remove((ulong)msg.AuthorSteamId);
-        }
 
-
-    }
-    public static FileUtils utils = new FileUtils();
-    public static void Login(IPlayer p)
-    {
-        if (p == null)
-        {
-            return;
         }
-
-        MyIdentity id = AlliancePlugin.GetIdentityByNameOrId(p.SteamId.ToString());
-        if (id == null)
+        public static FileUtils utils = new FileUtils();
+        public static void Login(IPlayer p)
         {
-            return;
-        }
-        IMyFaction playerFac = MySession.Static.Factions.GetPlayerFaction(id.IdentityId);
-        MyFaction arrr = MySession.Static.Factions.TryGetFactionByTag("arrr");
-        if (arrr != null)
-        {
-            if (playerFac != null && !MySession.Static.Factions.AreFactionsEnemies(arrr.FactionId, FacUtils.GetPlayersFaction(id.IdentityId).FactionId))
+            if (p == null)
             {
-                Sandbox.Game.Multiplayer.MyFactionCollection.DeclareWar(playerFac.FactionId, arrr.FactionId);
+                return;
             }
-        }
 
-        MyFaction ACME = MySession.Static.Factions.TryGetFactionByTag("ACME");
-
-        if (ACME != null)
-        {
-            MySession.Static.Factions.SetReputationBetweenPlayerAndFaction(id.IdentityId, ACME.FactionId, 0);
-            MySession.Static.Factions.AddFactionPlayerReputation(id.IdentityId, ACME.FactionId, 0);
-        }
-        MyFaction GAIA = MySession.Static.Factions.TryGetFactionByTag("GAIA");
-
-        if (GAIA != null)
-        {
-            MySession.Static.Factions.SetReputationBetweenPlayerAndFaction(id.IdentityId, GAIA.FactionId, 0);
-            MySession.Static.Factions.AddFactionPlayerReputation(id.IdentityId, GAIA.FactionId, 0);
-        }
-        MyFaction wolf = MySession.Static.Factions.TryGetFactionByTag("WOLF");
-        if (wolf != null)
-        {
-            if (playerFac != null && !MySession.Static.Factions.AreFactionsEnemies(wolf.FactionId, FacUtils.GetPlayersFaction(id.IdentityId).FactionId))
+            MyIdentity id = AlliancePlugin.GetIdentityByNameOrId(p.SteamId.ToString());
+            if (id == null)
             {
-                Sandbox.Game.Multiplayer.MyFactionCollection.DeclareWar(playerFac.FactionId, wolf.FactionId);
+                return;
             }
-        }
+            AlliancePlugin.PlayersNeedPvPAreas.Add(p.SteamId);
+            IMyFaction playerFac = MySession.Static.Factions.GetPlayerFaction(id.IdentityId);
+
+            MyFaction arrr = MySession.Static.Factions.TryGetFactionByTag("arrr");
+            if (arrr != null)
+            {
+                if (playerFac != null && !MySession.Static.Factions.AreFactionsEnemies(arrr.FactionId, FacUtils.GetPlayersFaction(id.IdentityId).FactionId))
+                {
+                    Sandbox.Game.Multiplayer.MyFactionCollection.DeclareWar(playerFac.FactionId, arrr.FactionId);
+                }
+            }
+
+            MyFaction ACME = MySession.Static.Factions.TryGetFactionByTag("ACME");
+
+            if (ACME != null)
+            {
+                MySession.Static.Factions.SetReputationBetweenPlayerAndFaction(id.IdentityId, ACME.FactionId, 0);
+                MySession.Static.Factions.AddFactionPlayerReputation(id.IdentityId, ACME.FactionId, 0);
+            }
+            MyFaction GAIA = MySession.Static.Factions.TryGetFactionByTag("GAIA");
+
+            if (GAIA != null)
+            {
+                MySession.Static.Factions.SetReputationBetweenPlayerAndFaction(id.IdentityId, GAIA.FactionId, 0);
+                MySession.Static.Factions.AddFactionPlayerReputation(id.IdentityId, GAIA.FactionId, 0);
+            }
+            MyFaction wolf = MySession.Static.Factions.TryGetFactionByTag("WOLF");
+            if (wolf != null)
+            {
+                if (playerFac != null && !MySession.Static.Factions.AreFactionsEnemies(wolf.FactionId, FacUtils.GetPlayersFaction(id.IdentityId).FactionId))
+                {
+                    Sandbox.Game.Multiplayer.MyFactionCollection.DeclareWar(playerFac.FactionId, wolf.FactionId);
+                }
+            }
 
 
-        if (File.Exists(AlliancePlugin.path + "//PlayerData//" + p.SteamId + ".xml") && playerFac != null)
-        {
+            if (!File.Exists(AlliancePlugin.path + "//PlayerData//" + p.SteamId + ".xml") || playerFac == null) return;
             AlliancePlugin.UpdateThese[p.SteamId] = DateTime.Now.AddSeconds(60);
 
-            PlayerData data = utils.ReadFromXmlFile<PlayerData>(AlliancePlugin.path + "//PlayerData//" + p.SteamId + ".xml");
+            var data = utils.ReadFromXmlFile<PlayerData>(AlliancePlugin.path + "//PlayerData//" + p.SteamId + ".xml");
             if (data.InAllianceChat)
             {
-                if (AlliancePlugin.GetAllianceNoLoading(playerFac as MyFaction) != null)
-                {
-                    AlliancePlugin.statusUpdate.Remove(p.SteamId);
-                    AlliancePlugin.statusUpdate.Add(p.SteamId, true);
+                if (AlliancePlugin.GetAllianceNoLoading(playerFac as MyFaction) == null) return;
+                AlliancePlugin.statusUpdate.Remove(p.SteamId);
+                AlliancePlugin.statusUpdate.Add(p.SteamId, true);
 
-                    PeopleInAllianceChat.Remove(p.SteamId);
-                    PeopleInAllianceChat.Add(p.SteamId, AlliancePlugin.GetAllianceNoLoading(playerFac as MyFaction).AllianceId);
-                    AlliancePlugin.otherAllianceShit.Remove(p.SteamId);
-                    AlliancePlugin.otherAllianceShit.Add(p.SteamId, AlliancePlugin.GetAllianceNoLoading(playerFac as MyFaction).AllianceId);
-
-                }
+                PeopleInAllianceChat.Remove(p.SteamId);
+                PeopleInAllianceChat.Add(p.SteamId, AlliancePlugin.GetAllianceNoLoading(playerFac as MyFaction).AllianceId);
+                AlliancePlugin.otherAllianceShit.Remove(p.SteamId);
+                AlliancePlugin.otherAllianceShit.Add(p.SteamId, AlliancePlugin.GetAllianceNoLoading(playerFac as MyFaction).AllianceId);
             }
             else
             {
-                if (AlliancePlugin.GetAllianceNoLoading(playerFac as MyFaction) != null)
-                {
-                    AlliancePlugin.otherAllianceShit.Remove(p.SteamId);
-                    AlliancePlugin.otherAllianceShit.Add(p.SteamId, AlliancePlugin.GetAllianceNoLoading(playerFac as MyFaction).AllianceId);
-                }
+                if (AlliancePlugin.GetAllianceNoLoading(playerFac as MyFaction) == null) return;
+                AlliancePlugin.otherAllianceShit.Remove(p.SteamId);
+                AlliancePlugin.otherAllianceShit.Add(p.SteamId, AlliancePlugin.GetAllianceNoLoading(playerFac as MyFaction).AllianceId);
             }
+        }
+
+        public static void Logout(IPlayer p)
+        {
+            //if (p == null)
+            //{
+            //    return;
+            //}
+
+            //MyIdentity id = AlliancePlugin.GetIdentityByNameOrId(p.SteamId.ToString());
+            //if (id == null)
+            //{
+            //    return;
+            //}
+            //if (MySession.Static.Factions.TryGetFactionById(id.IdentityId) != null && AlliancePlugin.FactionsInAlliances.ContainsKey(MySession.Static.Factions.TryGetFactionById(id.IdentityId).FactionId))
+            //{
+            //    Alliance alliance = AlliancePlugin.GetAllianceNoLoading(MySession.Static.Factions.GetPlayerFaction(id.IdentityId) as MyFaction);
+            //    if (AlliancePlugin.playersInAlliances.ContainsKey(alliance.AllianceId))
+            //    {
+            //        if (AlliancePlugin.playersInAlliances[alliance.AllianceId].Contains(p.SteamId))
+            //        {
+            //            AlliancePlugin.playersInAlliances[alliance.AllianceId].Remove(p.SteamId);
+            //        }
+            //    }
+            //}
 
         }
     }
-
-    public static void Logout(IPlayer p)
-    {
-        //if (p == null)
-        //{
-        //    return;
-        //}
-
-        //MyIdentity id = AlliancePlugin.GetIdentityByNameOrId(p.SteamId.ToString());
-        //if (id == null)
-        //{
-        //    return;
-        //}
-        //if (MySession.Static.Factions.TryGetFactionById(id.IdentityId) != null && AlliancePlugin.FactionsInAlliances.ContainsKey(MySession.Static.Factions.TryGetFactionById(id.IdentityId).FactionId))
-        //{
-        //    Alliance alliance = AlliancePlugin.GetAllianceNoLoading(MySession.Static.Factions.GetPlayerFaction(id.IdentityId) as MyFaction);
-        //    if (AlliancePlugin.playersInAlliances.ContainsKey(alliance.AllianceId))
-        //    {
-        //        if (AlliancePlugin.playersInAlliances[alliance.AllianceId].Contains(p.SteamId))
-        //        {
-        //            AlliancePlugin.playersInAlliances[alliance.AllianceId].Remove(p.SteamId);
-        //        }
-        //    }
-        //}
-
-    }
-}
 }
