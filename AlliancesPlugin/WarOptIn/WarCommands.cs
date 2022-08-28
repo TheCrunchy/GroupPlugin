@@ -11,6 +11,15 @@ namespace AlliancesPlugin.WarOptIn
     [Category("war")]
     public class WarCommands : CommandModule
     {
+
+        [Command("addterritory", "add territory at current position to exclude pvp protections")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void AddTerritory(int Radius)
+        {
+            KamikazeTerritories.MessageHandler.AddOtherTerritory(Context.Player.GetPosition(), Radius);
+            Context.Respond("Done");
+        }
+
         [Command("enable", "Enable war.")]
         [Permission(MyPromoteLevel.None)]
         public void EnableWar()

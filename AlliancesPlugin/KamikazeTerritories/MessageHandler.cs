@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VRageMath;
 
 namespace AlliancesPlugin.KamikazeTerritories
 {
@@ -24,6 +25,17 @@ namespace AlliancesPlugin.KamikazeTerritories
             {
                 Territories = AlliancePlugin.utils.ReadFromJsonFile<List<KamikazeTerritory>>($"{AlliancePlugin.path}\\Kamikaze.json");
             }
+        }
+
+        public static void AddOtherTerritory(Vector3D Position, int Radius)
+        {
+            Territories.Add(new KamikazeTerritory()
+            {
+                EntityId = 0,
+                Position = Position,
+                Radius = Radius
+            });
+            SaveFile();
         }
 
         public static void ReceiveTerritory(byte[] data)
@@ -57,14 +69,15 @@ namespace AlliancesPlugin.KamikazeTerritories
                     }
                     return;
                 }
-                if (package.Type == DataType.ResetTerritory)
+
+                if (package.Type != DataType.ResetTerritory) return;
                 {
                     //   AlliancePlugin.Log.Info("is territory");
                     var encasedData = MyAPIGateway.Utilities.SerializeFromBinary<ObjectContainer>(package.Data);
                     if (encasedData == null) return;
 
                     //  AlliancePlugin.Log.Info("got past data check");
-                    if (Territories.Any(x => x.EntityId == encasedData.entityId))
+                    if (Territories.All(x => x.EntityId != encasedData.entityId)) return;
                     {
                         //  AlliancePlugin.Log.Info("no territory with that entity id");
                         var index = Territories.FindIndex(x => x.EntityId == encasedData.entityId);
