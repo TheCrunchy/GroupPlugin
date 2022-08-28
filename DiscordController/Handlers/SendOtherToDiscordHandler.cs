@@ -32,7 +32,7 @@ namespace DiscordController.Handlers
                 bot = new DiscordClient(config);
                 await bot.ConnectAsync();
                 bot.MessageCreated += AllianceChatHandler.Discord_AllianceMessage;
-                Program.UsedTokens.Add(message.BotToken, inUse);
+                Program.UsedTokens.Add(message.BotToken, bot);
                 await SendMessageToDiscord(message, bot);
             }
         }
@@ -57,8 +57,6 @@ namespace DiscordController.Handlers
                     Title = Message.SenderPrefix,
                     Description = Message.MessageText,
                     Color = new DiscordColor(Message.EmbedR, Message.EmbedG, Message.EmbedB)
-
-
                 };
                 Channel.SendMessageAsync(embed);
             }

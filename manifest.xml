@@ -2,7 +2,7 @@
 <PluginManifest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <Name>AlliancesPlugin</Name>
   <Guid>74796707-646f-4ebd-8700-d077a5f47af3</Guid>
-  <Version>v8.76</Version>
+  <Version>v8.77</Version>
     <Dependencies>
     <PluginDependency>
       <Plugin>319afed6-6cf7-4865-81c3-cc207b70811d</Plugin>

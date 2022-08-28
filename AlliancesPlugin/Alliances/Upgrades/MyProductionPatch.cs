@@ -44,16 +44,17 @@ namespace AlliancesPlugin.Alliances
             else
             {
                 double buff = 1;
+                double EndMultiplier = 1;
                 if (AlliancePlugin.config.EnableOptionalWar)
                 {
-                    buff = AlliancePlugin.warcore.participants.FactionsAtWar.Contains(faction.FactionId)
+                    EndMultiplier = AlliancePlugin.warcore.participants.FactionsAtWar.Contains(faction.FactionId)
                         ? AlliancePlugin.warcore.config.RefineryYieldMultiplierIfEnabled
                         : AlliancePlugin.warcore.config.RefineryYieldMultiplierIfDisabled;
                 }
 
                 var alliance = AlliancePlugin.GetAllianceNoLoading(MySession.Static.Factions.TryGetFactionByTag(faction.Tag));
-                if (alliance == null || alliance.AssemblerUpgradeLevel <= 0) return buff;
-                if (!upgrades.TryGetValue(alliance.RefineryUpgradeLevel, out var upgrade)) return buff;
+                if (alliance == null || alliance.AssemblerUpgradeLevel <= 0) return buff * EndMultiplier;
+                if (!upgrades.TryGetValue(alliance.RefineryUpgradeLevel, out var upgrade)) return buff * EndMultiplier;
                 if (TimeChecks.TryGetValue(refin.EntityId, out var time))
                 {
                     if (DateTime.Now >= time)
@@ -120,7 +121,7 @@ namespace AlliancesPlugin.Alliances
                     buff += upgrade.getRefineryBuff(refin.BlockDefinition.Id.SubtypeName);
                 }
 
-                return buff;
+                return buff * EndMultiplier;
             }
 
             return 1;
@@ -129,6 +130,7 @@ namespace AlliancesPlugin.Alliances
         {
             var faction = MySession.Static.Factions.GetPlayerFaction(PlayerId);
             double buff = 1;
+            double endMultiplier = 1;
             if (faction == null)
             {
                 if (AlliancePlugin.config.EnableOptionalWar)
@@ -140,21 +142,21 @@ namespace AlliancesPlugin.Alliances
             {
                 if (AlliancePlugin.config.EnableOptionalWar)
                 {
-                    buff = AlliancePlugin.warcore.participants.FactionsAtWar.Contains(faction.FactionId)
+                    endMultiplier = AlliancePlugin.warcore.participants.FactionsAtWar.Contains(faction.FactionId)
                         ? AlliancePlugin.warcore.config.AssemblerSpeedMultiplierIfEnabled
                         : AlliancePlugin.warcore.config.AssemblerSpeedMultiplierIfDisabled;
                 }
 
-                if (Assembler.GetOwnerFactionTag().Length <= 0) return buff;
+                if (Assembler.GetOwnerFactionTag().Length <= 0) return buff * endMultiplier;
 
                 var alliance = AlliancePlugin.GetAllianceNoLoading(MySession.Static.Factions.TryGetFactionByTag(Assembler.GetOwnerFactionTag()));
                 if (alliance == null)
                 {
-                    return buff;
+                    return buff * endMultiplier;
                 }
                 if (alliance.AssemblerUpgradeLevel == 0)
                 {
-                    return buff;
+                    return buff * endMultiplier;
                 }
                 if (assemblerupgrades.TryGetValue(alliance.AssemblerUpgradeLevel, out var upgrade))
                 {
@@ -226,7 +228,7 @@ namespace AlliancesPlugin.Alliances
                 }
             }
 
-            return buff;
+            return buff * endMultiplier;
         }
     }
 }

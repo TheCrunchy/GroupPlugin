@@ -106,6 +106,10 @@ namespace AlliancesPlugin.Alliances
 
         public static void ReceiveChatMessage(AllianceChatMessage message)
         {
+            if (message.MessageText is "Init Message")
+            {
+                return;
+            }
             Alliance alliance = AlliancePlugin.GetAllianceNoLoading(message.AllianceId);
             List<ulong> OtherMembers = new List<ulong>();
             //strip out world names here

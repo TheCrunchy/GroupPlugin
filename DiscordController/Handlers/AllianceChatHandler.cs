@@ -22,7 +22,7 @@ namespace DiscordController.Handlers
             {
                 return;
             }
-            Console.WriteLine($"{DateTime.Now} Sending a message to Discord {message.SenderPrefix} : {message.MessageText}");
+            Console.WriteLine($"{DateTime.Now} Sending a message to Discord {message.AllianceId} {message.SenderPrefix} : {message.MessageText}");
             if (Program.Bots.TryGetValue(message.AllianceId, out var discord))
             {
                 await SendMessage(discord, message);
@@ -41,15 +41,14 @@ namespace DiscordController.Handlers
                     if (Program.UsedTokens.TryGetValue(token, out var inUse))
                     {
                         Program.Bots.Add(message.AllianceId, inUse);
-                        Program.UsedTokens.Add(token, inUse);
                         await SendMessage(inUse, message);
                     }
                     else
                     {
                         bot = new DiscordClient(config);
-                        bot.ConnectAsync();
+                        await bot.ConnectAsync();
                         bot.MessageCreated += Discord_AllianceMessage;
-                        Program.UsedTokens.Add(token, inUse);
+                        Program.UsedTokens.Add(token, bot);
                         await SendMessage(bot, message);
                     }
 
@@ -57,10 +56,6 @@ namespace DiscordController.Handlers
                     {
                         Program.MappedChannels.Add(message.ChannelId, message.AllianceId);
                     }
-
-
-
-
                 }
                 catch (Exception e)
                 {
