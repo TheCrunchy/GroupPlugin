@@ -134,6 +134,7 @@ namespace AlliancesPlugin.WarOptIn
                     if (AlliancePlugin.warcore.RemoveFromWarParticipants(fac.FactionId))
                     {
                         EconUtils.takeMoney(Context.Player.IdentityId, AlliancePlugin.warcore.config.DisableWarCost);
+                        AlliancePlugin.warcore.ProcessNewFaction(fac.FactionId);
                         Context.Respond("War is now disabled.");
                     }
                     else

@@ -71,12 +71,22 @@ throw new Exception("Failed to find patch method");
             {
                 return true;
             }
+
+            if (damageType.ToString().Trim() == "Environment")
+            {
+                if (DateTime.Now < new DateTime(2022, 09, 1))
+                {
+                    damage = 0.0f;
+                    return false;
+                }
+            }
             List<String> DamageTypesToIgnore = new List<string>()
             {
-                "Deformation", "Suicide", "Temperature", "Asphyxia"
+                "Deformation", "Suicide", "Temperature", "Asphyxia", "Environment"
             };
             long newattackerId = AlliancePlugin.GetAttacker(attackerId);
-            if (DamageTypesToIgnore.Contains(damageType.ToString().Trim())){
+            if (DamageTypesToIgnore.Contains(damageType.ToString().Trim()))
+            {
                 return true;
             }
             if (newattackerId == 0L)
@@ -85,7 +95,13 @@ throw new Exception("Failed to find patch method");
                 //   AlliancePlugin.Log.Info("not 1");
                 return false;
             }
-            if (FacUtils.GetOwner(__instance.CubeGrid) == 0L)
+
+            var owner = FacUtils.GetOwner(__instance.CubeGrid);
+            if (newattackerId == owner)
+            {
+                return true;
+            }
+            if (owner == 0L)
             {
                 damage = 0.0f;
                 SendPvEMessage(newattackerId);
@@ -95,6 +111,8 @@ throw new Exception("Failed to find patch method");
             MyFaction attacker = MySession.Static.Factions.GetPlayerFaction(newattackerId) as MyFaction;
 
             MyFaction defender = MySession.Static.Factions.GetPlayerFaction(FacUtils.GetOwner(__instance.CubeGrid));
+        
+
             if (defender != null && defender.Tag.Length > 3)
             {
                 return true;

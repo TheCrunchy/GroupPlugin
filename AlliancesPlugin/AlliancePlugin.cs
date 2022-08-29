@@ -660,8 +660,6 @@ namespace AlliancesPlugin
                     var attacker = MySession.Static.Factions.GetPlayerFaction(attackerId) as MyFaction;
                     var defender = MySession.Static.Factions.GetPlayerFaction(FacUtils.GetOwner(block.CubeGrid));
 
-
-
                     // Log.Info(info.Type.ToString().Trim());
                     if (info.Type.ToString().Trim().Equals("Grind") || info.Type.ToString().Trim().Equals("Explosion"))
                     {

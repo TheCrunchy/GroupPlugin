@@ -13,5 +13,8 @@ namespace AlliancesPlugin.KamikazeTerritories
         public Vector3D Position { get; set; }
         public float Radius { get; set; }
         public string Name { get; set; }
+        public ClaimBlockSettings settings { get; set; }
+
+
     }
 }

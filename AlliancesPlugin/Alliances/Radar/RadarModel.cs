@@ -12,5 +12,6 @@ namespace AlliancesPlugin.Alliances.Radar
         public string BeaconBlockPairName = "AllianceRadar";
         public float AdditionalDetectionChance = 0;
         public bool OnlyInTerritories = true;
+        public int MinutesBetweenRadarSweeps = 5;
     }
 }
