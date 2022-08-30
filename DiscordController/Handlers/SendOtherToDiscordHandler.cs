@@ -30,9 +30,10 @@ namespace DiscordController.Handlers
                     TokenType = TokenType.Bot,
                 };
                 bot = new DiscordClient(config);
+                Program.UsedTokens.Add(message.BotToken, bot);
                 await bot.ConnectAsync();
                 bot.MessageCreated += AllianceChatHandler.Discord_AllianceMessage;
-                Program.UsedTokens.Add(message.BotToken, bot);
+            
                 await SendMessageToDiscord(message, bot);
             }
         }

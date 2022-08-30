@@ -22,7 +22,11 @@ namespace DiscordController.Handlers
             {
                 return;
             }
-            Console.WriteLine($"{DateTime.Now} Sending a message to Discord {message.AllianceId} {message.SenderPrefix} : {message.MessageText}");
+
+            if (message.SenderPrefix is not "Init")
+            {
+                Console.WriteLine($"{DateTime.Now} Sending a message to Discord {message.AllianceId} {message.SenderPrefix} : {message.MessageText}");
+            }
             if (Program.Bots.TryGetValue(message.AllianceId, out var discord))
             {
                 await SendMessage(discord, message);
@@ -46,9 +50,9 @@ namespace DiscordController.Handlers
                     else
                     {
                         bot = new DiscordClient(config);
+                        Program.UsedTokens.Add(token, bot);
                         await bot.ConnectAsync();
                         bot.MessageCreated += Discord_AllianceMessage;
-                        Program.UsedTokens.Add(token, bot);
                         await SendMessage(bot, message);
                     }
 
@@ -67,7 +71,7 @@ namespace DiscordController.Handlers
 
         public static async Task SendMessage(DiscordClient Discord, AllianceChatMessage Message)
         {
-            if (Message.SenderPrefix is "Init")
+            if (Message.SenderPrefix is  "Init")
             {
                 return;
             }
@@ -90,15 +94,17 @@ namespace DiscordController.Handlers
             {
                 return Task.CompletedTask;
             }
-            Console.WriteLine($"{DateTime.Now} Discord Message {e.Message.Author.Username} {e.Message.Content.Trim()}");
+  
             if (!Program.MappedChannels.TryGetValue(e.Channel.Id, out var id)) return Task.CompletedTask;
             var message = new AllianceChatMessage
             {
+
                 SenderPrefix = e.Message.Author.Username,
                 MessageText = e.Message.Content.Trim(),
                 AllianceId = id,
                 FromDiscord = true
             };
+            Console.WriteLine($"{DateTime.Now} Discord Message {e.Message.Author.Username} {e.Message.Content.Trim()}");
             SendFromDiscord("AllianceMessage", JsonConvert.SerializeObject(message));
             return Task.CompletedTask;
         }

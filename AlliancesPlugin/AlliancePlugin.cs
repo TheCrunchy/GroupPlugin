@@ -835,33 +835,6 @@ namespace AlliancesPlugin
                 AlliancePlugin.config.ConvertedFromOldWarFile = true;
                 AlliancePlugin.saveConfig();
             }
-            if (AlliancePlugin.config.EnableOptionalWar)
-            {
-                MySession.Static.Factions.FactionStateChanged += warcore.StateChange;
-                MySession.Static.Factions.FactionCreated += warcore.ProcessNewFaction;
-                warcore.config.EnableOptionalWar = true;
-                foreach (var fac in MySession.Static.Factions.GetAllFactions())
-                {
-                    if (fac.Tag.Length > 3)
-                        continue;
-                    foreach (var fac2 in MySession.Static.Factions.GetAllFactions())
-                    {
-                        if (fac2.Tag.Length > 3)
-                            continue;
-
-                        if (fac == fac2) continue;
-
-                        if (warcore.GetStatus(fac.FactionId) is "Disabled." || warcore.GetStatus(fac2.FactionId) is "Disabled.")
-                        {
-                            AlliancePlugin.warcore.DoNeutralUpdate(fac.FactionId, fac2.FactionId);
-                        }
-                    }
-                }
-            }
-            else
-            {
-                warcore.config.EnableOptionalWar = false;
-            }
 
             MyAPIGateway.Session.DamageSystem.RegisterBeforeDamageHandler(1, new BeforeDamageApplied(DamageHandler));
             //      MyEntities.OnEntityAdd += NEWSUIT;
@@ -4047,6 +4020,39 @@ namespace AlliancesPlugin
             {
                 InitPluginDependencies(Torch.Managers.GetManager<PluginManager>(), Torch.Managers.GetManager<PatchManager>());
                 InitPlugins = true;
+
+                if (AlliancePlugin.config.EnableOptionalWar)
+                {
+                    MySession.Static.Factions.FactionStateChanged += warcore.StateChange;
+                    MySession.Static.Factions.FactionCreated += warcore.ProcessNewFaction;
+                    warcore.config.EnableOptionalWar = true;
+                    foreach (var fac in MySession.Static.Factions.GetAllFactions())
+                    {
+                        if (fac.Tag.Length > 3)
+                            continue;
+
+                        var alliance = AlliancePlugin.GetAlliance(fac);
+                        foreach (var fac2 in MySession.Static.Factions.GetAllFactions())
+                        {
+                            if (fac2.Tag.Length > 3)
+                                continue;
+                            if (alliance.AllianceMembers.Contains(fac2.FactionId))
+                            {
+                                continue;
+                            }
+                            if (fac == fac2) continue;
+
+                            if (warcore.GetStatus(fac.FactionId) is "Disabled." || warcore.GetStatus(fac2.FactionId) is "Disabled.")
+                            {
+                                AlliancePlugin.warcore.DoNeutralUpdate(fac.FactionId, fac2.FactionId);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    warcore.config.EnableOptionalWar = false;
+                }
             }
             if (ticks % 64 == 0)
             {
