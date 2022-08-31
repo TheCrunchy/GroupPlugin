@@ -821,6 +821,7 @@ namespace AlliancesPlugin
             if (state != TorchSessionState.Loaded) return;
 
             MyAPIGateway.Multiplayer.RegisterMessageHandler(4910, MessageHandler.ReceiveTerritory);
+            MyAPIGateway.Multiplayer.RegisterMessageHandler(8544, Integrations.AllianceIntegrationCore.ReceiveModMessage);
             KamikazeTerritories.MessageHandler.LoadFile();
             Directory.CreateDirectory(AlliancePlugin.path + "//OptionalWar//");
             if (!File.Exists(AlliancePlugin.path + "//OptionalWar//WarConfig.json"))

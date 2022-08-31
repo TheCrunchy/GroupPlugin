@@ -2595,6 +2595,10 @@ namespace AlliancesPlugin.Alliances
             else
             {
                 Context.Respond("You must be in an alliance to use alliance chat.");
+                AllianceChat.PeopleInAllianceChat.Remove(Context.Player.SteamUserId);
+                data.InAllianceChat = false;
+                utils.WriteToXmlFile<PlayerData>(AlliancePlugin.path + "//PlayerData//" + Context.Player.SteamUserId + ".xml", data);
+                SendStatusToClient(false, Context.Player.SteamUserId);
             }
         }
 
@@ -2613,7 +2617,6 @@ namespace AlliancesPlugin.Alliances
             var bytes = MyAPIGateway.Utilities.SerializeToBinary(chatStatus);
 
             MyAPIGateway.Multiplayer.SendMessageTo(8544, bytes, steamId);
-       
 
         }
 

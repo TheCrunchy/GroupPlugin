@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Sandbox.Game.Entities.Cube;
+using Sandbox.ModAPI;
 
 namespace AlliancesPlugin.Integrations
 {
@@ -24,6 +25,13 @@ namespace AlliancesPlugin.Integrations
             if (alliance != null) return alliance;
             alliance = AlliancePlugin.GetAlliance(factionTag);
             return alliance ?? null;
+        }
+        public static List<long> GetAllianceMembers(string factionTag)
+        {
+            var alliance = AlliancePlugin.GetAllianceNoLoading(factionTag);
+            if (alliance != null) return new List<long>();
+            alliance = AlliancePlugin.GetAlliance(factionTag);
+            return alliance.AllianceMembers;
         }
 
         public static int GetMaximumForShipClassType(string factionTag, string classType)
@@ -46,5 +54,15 @@ namespace AlliancesPlugin.Integrations
         {
             return MyProductionPatch.GetAssemblerSpeedMultiplier(PlayerId, Assembler);
         }
+
+        public static void ReceiveModMessage(byte[] data)
+        {
+          //  AlliancePlugin.Log.Info("Received message");
+           // var encasedData = MyAPIGateway.Utilities.SerializeFromBinary<String>(data);
+
+           // AlliancePlugin.Log.Info(encasedData);
+
+        }
+
     }
 }

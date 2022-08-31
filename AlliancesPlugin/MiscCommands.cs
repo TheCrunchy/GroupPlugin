@@ -71,66 +71,6 @@ namespace AlliancesPlugin
         //        }
         //    }
         //}
-       
-        public static Dictionary<long, DateTime> distressCooldowns = new Dictionary<long, DateTime>();
-        public static int distressCount = 0;
-        [Command("distress", "distress signals")]
-        [Permission(MyPromoteLevel.None)]
-        public void distress(string reason = "")
-        {
-
-
-            if (Context.Player == null)
-            {
-                Context.Respond("no no console no distress");
-                return;
-            }
-
-
-            IMyFaction playerFac = FacUtils.GetPlayersFaction(Context.Player.Identity.IdentityId);
-            if (playerFac == null)
-            {
-                Context.Respond("You dont have a faction.");
-                return;
-            }
-            if (reason != "")
-            {
-                reason = Context.RawArgs;
-            }
-            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
-            if (fac == null)
-            {
-                Context.Respond("A faction is required to use alliance features.");
-                return;
-
-            }
-
-            if (distressCooldowns.TryGetValue(Context.Player.IdentityId, out DateTime time))
-            {
-                if (DateTime.Now < time)
-                {
-                    Context.Respond(AllianceCommands.GetCooldownMessage(time));
-                    return;
-                }
-                else
-                {
-                    distressCooldowns[Context.Player.IdentityId] = DateTime.Now.AddSeconds(30);
-                }
-            }
-            else
-            {
-                distressCooldowns.Add(Context.Player.IdentityId, DateTime.Now.AddSeconds(30));
-
-            }
-            Alliance alliance = AlliancePlugin.GetAllianceNoLoading(fac);
-            if (alliance != null)
-            {
-                distressCount++;
-                AllianceChat.SendChatMessage(alliance.AllianceId, Context.Player.DisplayName + " Distress Signal", CreateGps(Context.Player.Character.GetPosition(), Color.Yellow, 600, distressCount.ToString(), reason).ToString(), true, 0);
-
-
-            }
-        }
         FileUtils utils = new FileUtils();
 
         [Command("yeeteconomy", "moneys")]
@@ -218,6 +158,10 @@ namespace AlliancesPlugin
             else
             {
                 Context.Respond("You must be in an alliance to use alliance chat.");
+                AllianceChat.PeopleInAllianceChat.Remove(Context.Player.SteamUserId);
+                data.InAllianceChat = false;
+                utils.WriteToXmlFile<PlayerData>(AlliancePlugin.path + "//PlayerData//" + Context.Player.SteamUserId + ".xml", data);
+                AllianceCommands.SendStatusToClient(false, Context.Player.SteamUserId);
             }
         }
         [Command("tags", "output tags")]

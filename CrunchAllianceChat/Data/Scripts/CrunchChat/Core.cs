@@ -23,7 +23,7 @@ namespace Crunch
         private bool _isInitialized; // Is this instance is initialized
         public bool _isClientRegistered;
         public bool _isServerRegistered;
-        public ulong TickCounter { get; private set; } // Big enough for years
+        public ulong TickCounter { get; private set; } 
 
         public bool IsClientRegistered // Is this instance a client
         {
@@ -60,17 +60,19 @@ namespace Crunch
 			 if (MyAPIGateway.Utilities == null) { MyAPIGateway.Utilities = MyAPIUtilities.Static; }
         }
 
-        /*
-         * BeforeStart
-         * 
-         * Init networking
-         */
         public override void BeforeStart()
         {
             base.BeforeStart();
             HudModule.Init();
             // Register network handling
 		   MyAPIGateway.Multiplayer.RegisterMessageHandler(8544, ReceivedPacket);
+		//   var bytes = MyAPIGateway.Utilities.SerializeToBinary("Testing Message");
+		//   MyAPIGateway.Multiplayer.SendMessageToServer(8544, bytes);
+		}      
+		public override void AfterStart()
+        {
+		   var bytes = MyAPIGateway.Utilities.SerializeToBinary("Testing Message");
+		   MyAPIGateway.Multiplayer.SendMessageToServer(8544, bytes);
 		}
 		
         private void ReceivedPacket(byte[] rawData) // executed when a packet is received on this machine

@@ -240,11 +240,17 @@ namespace AlliancesPlugin.Alliances
                     AlliancePlugin.SendChatMessage("Failsafe", "Alliance null");
                     return;
                 }
-                consumed = true;
+               
                 Guid allianceId = PeopleInAllianceChat[(ulong)msg.AuthorSteamId];
                 List<ulong> OtherMembers = new List<ulong>();
 
                 Alliance alliance = AlliancePlugin.GetAllianceNoLoading(allianceId);
+                if (alliance == null)
+                {
+                    PeopleInAllianceChat.Remove((ulong)msg.AuthorSteamId);
+                    return;
+                }
+                consumed = true;
                 // ShipyardCommands.SendMessage(msg.Author, "You are in alliance chat", Color.BlueViolet, (long)msg.AuthorSteamId);
                 if (alliance.GetTitle((ulong)msg.AuthorSteamId).Equals(""))
                 {
