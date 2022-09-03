@@ -6,16 +6,27 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using VRage.Game;
+using VRageMath;
 
 namespace AlliancesPlugin.Alliances.NewTerritories
 {
     public class Territory
     {
+        public void StartSiege()
+        {
+            this.SiegeEndTime = DateTime.Now.AddHours(HoursSiegeLasts);
+        }
         public Guid Id = System.Guid.NewGuid();
         public string Name = "Unnamed";
         public int Radius = 50000;
-        public bool enabled = true;
+        public bool Enabled = true;
         public Guid Alliance = Guid.Empty;
+        public bool IsUnderSiege = false;
+        public DateTime NextSiegeCheck;
+        public DateTime SiegeEndTime;
+        public int HoursSiegeLasts = 72;
+
+        public Dictionary<Guid, int> AlliancePoints = new Dictionary<Guid, int>();
 
         public string EntryMessage = "You are in {name} Territory";
         public string ControlledMessage = "Controlled by {alliance}";
@@ -24,10 +35,11 @@ namespace AlliancesPlugin.Alliances.NewTerritories
         public double x;
         public double y;
         public double z;
+        public Vector3D Position => new Vector3(x, y, z);
 
-        public float AssemblerSpeedBuff { get; set; } = 0.5f;
-        public float RefinerySpeedBuff { get; set; } = 0.5f;
-        public float RefineryYieldBuff { get; set; } = 0.5f;
+        public float AssemblerSpeedBuff { get; set; } = 1.5f;
+        public float RefinerySpeedBuff { get; set; } = 1.5f;
+        public float RefineryYieldBuff { get; set; } = 1.5f;
 
         public bool DoOreTax = true;
         public float TaxPercent = 0.2f;

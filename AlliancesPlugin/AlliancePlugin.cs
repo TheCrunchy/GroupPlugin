@@ -4014,7 +4014,7 @@ namespace AlliancesPlugin
             var statusM = MyAPIGateway.Utilities.SerializeToBinary(message);
             var modmessage = new ModMessage()
             {
-                Type = "Chat",
+                Type = "PVPAreas",
                 Member = statusM
             };
 
