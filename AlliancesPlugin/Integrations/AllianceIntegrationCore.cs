@@ -68,7 +68,7 @@ namespace AlliancesPlugin.Integrations
             return alliance.GetShipClassLimit(classType);
         }
 
-        public static bool DoesPlayHavePermission(long PlayerIdentityId, string Permission)
+        public static bool DoesPlayerHavePermission(long PlayerIdentityId, string Permission)
         {
             
             var fac = MySession.Static.Factions.GetPlayerFaction(PlayerIdentityId);
