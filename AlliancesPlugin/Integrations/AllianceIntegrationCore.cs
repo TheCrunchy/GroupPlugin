@@ -76,23 +76,16 @@ namespace AlliancesPlugin.Integrations
             {
                 return false;
             }
-            else
-            {
-                var alliance = AlliancePlugin.GetAllianceNoLoading(fac);
-                if (alliance == null)
-                {
-                    return false;
-                }
-                else
-                {
-                    if (!Enum.TryParse(Permission, out AccessLevel level)) return false;
-                    var steamid = MySession.Static.Players.TryGetSteamId(PlayerIdentityId);
-                    return alliance.HasAccess(steamid, level);
 
-                }
+            var alliance = AlliancePlugin.GetAllianceNoLoading(fac);
+            if (alliance == null)
+            {
+                return false;
             }
 
-            return false;
+            if (!Enum.TryParse(Permission, out AccessLevel level)) return false;
+            var steamid = MySession.Static.Players.TryGetSteamId(PlayerIdentityId);
+            return alliance.HasAccess(steamid, level);
         }
 
         public static double GetRefineryYieldMultiplier(long PlayerId, MyRefinery Refin)
