@@ -53,7 +53,13 @@ namespace AlliancesPlugin.Integrations
 
         public static int GetMaximumForShipClassType(string factionTag, string classType)
         {
-            var alliance = GetAllianceObj(factionTag);
+            var faction = MySession.Static.Factions.TryGetFactionByTag(factionTag);
+            if (faction == null)
+            {
+                return 0;
+            }
+
+            var alliance = AlliancePlugin.GetAllianceNoLoading(faction);
             if (alliance == null)
             {
                 return 0;
@@ -61,6 +67,7 @@ namespace AlliancesPlugin.Integrations
             alliance.LoadShipClassLimits();
             return alliance.GetShipClassLimit(classType);
         }
+
         public static bool DoesPlayHavePermission(long PlayerIdentityId, string Permission)
         {
             
