@@ -2612,9 +2612,14 @@ namespace AlliancesPlugin.Alliances
             {
                 ChatEnabled = status
             };
+            var statusM = MyAPIGateway.Utilities.SerializeToBinary(chatStatus);
+            var message = new ModMessage()
+            {
+                Type = "Chat",
+                Member = statusM
+            };
 
-
-            var bytes = MyAPIGateway.Utilities.SerializeToBinary(chatStatus);
+            var bytes = MyAPIGateway.Utilities.SerializeToBinary(message);
 
             MyAPIGateway.Multiplayer.SendMessageTo(8544, bytes, steamId);
 

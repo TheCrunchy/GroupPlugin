@@ -228,6 +228,7 @@
     <Compile Include="KamikazeTerritories\ClaimBlockSettings.cs" />
     <Compile Include="KamikazeTerritories\KamikazeTerritory.cs" />
     <Compile Include="KamikazeTerritories\MessageHandler.cs" />
+    <Compile Include="KamikazeTerritories\ModMessage.cs" />
     <Compile Include="KamikazeTerritories\PlayerDataPvP.cs" />
     <Compile Include="KamikazeTerritories\PvPArea.cs" />
     <Compile Include="MQPatching.cs" />

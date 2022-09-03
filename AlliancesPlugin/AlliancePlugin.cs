@@ -4011,7 +4011,16 @@ namespace AlliancesPlugin
                 message.PvPAreas.Add(area);
             }
 
-            var binaryData = MyAPIGateway.Utilities.SerializeToBinary(message);
+            var statusM = MyAPIGateway.Utilities.SerializeToBinary(message);
+            var modmessage = new ModMessage()
+            {
+                Type = "Chat",
+                Member = statusM
+            };
+
+            var bytes = MyAPIGateway.Utilities.SerializeToBinary(modmessage);
+
+            var binaryData = MyAPIGateway.Utilities.SerializeToBinary(modmessage);
             MyAPIGateway.Multiplayer.SendMessageTo(8544, binaryData, steamPlayerId);
         }
 
@@ -4632,56 +4641,37 @@ namespace AlliancesPlugin
         {
             foreach (var block in grid.GetFatBlocks())
             {
+                if (block.OwnerId <= 0 ||
+                    !block.BlockDefinition.Id.TypeId.ToString().Replace("MyObjectBuilder_", "")
+                        .Equals(loc.captureBlockType) ||
+                    !block.BlockDefinition.Id.SubtypeName.Equals(loc.captureBlockSubtype)) continue;
 
-                if (block.OwnerId > 0 && block.BlockDefinition.Id.TypeId.ToString().Replace("MyObjectBuilder_", "").Equals(loc.captureBlockType) && block.BlockDefinition.Id.SubtypeName.Equals(loc.captureBlockSubtype))
+                switch (block)
                 {
+                    // Log.Info(beacon.Radius);
+                    case Sandbox.ModAPI.IMyBeacon beacon when beacon.IsFunctional && beacon.IsWorking:
+                    {
+                        if (beacon.Radius >= loc.CaptureBlockRange - 1000)
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
                     //  MyRadioAntenna antenna;
+                    case Sandbox.ModAPI.IMyBeacon beacon:
+                    // Log.Info(beacon.Radius);
+                    case MyRadioAntenna antenna when !antenna.IsFunctional || !antenna.IsWorking:
+                        return false;
+                    case MyRadioAntenna antenna:
+                        return antenna.GetRadius() >= loc.CaptureBlockRange - 1000;
+                }
 
-                    if (block is Sandbox.ModAPI.IMyBeacon beacon)
-                    {
-                        // Log.Info(beacon.Radius);
-
-                        if (beacon.IsFunctional && beacon.IsWorking)
-                        {
-                            if (beacon.Radius >= loc.CaptureBlockRange - 1000)
-                            {
-                                return true;
-                            }
-                            else
-                            {
-                                return false;
-                            }
-                        }
-                        else
-                        {
-                            return false;
-                        }
-                    }
-                    if (block is MyRadioAntenna antenna)
-                    {
-                        // Log.Info(beacon.Radius);
-
-                        if (antenna.IsFunctional && antenna.IsWorking)
-                        {
-                            if (antenna.GetRadius() >= loc.CaptureBlockRange - 1000)
-                            {
-                                return true;
-                            }
-                            else
-                            {
-                                return false;
-                            }
-                        }
-                        else
-                        {
-                            return false;
-                        }
-                    }
-
-                    if (block.IsFunctional && block.IsWorking)
-                    {
-                        return true;
-                    }
+                if (block.IsFunctional && block.IsWorking)
+                {
+                    return true;
                 }
             }
             return false;
