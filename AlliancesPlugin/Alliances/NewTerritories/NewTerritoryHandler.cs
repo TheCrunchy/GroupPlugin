@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Sandbox.Game.Entities;
 using Sandbox.Game.World;
+using Torch.Collections;
 using VRageMath;
 
 namespace AlliancesPlugin.Alliances.NewTerritories
@@ -11,14 +13,49 @@ namespace AlliancesPlugin.Alliances.NewTerritories
     public static class NewTerritoryHandler
     {
         public static List<Territory> Territories = new List<Territory>();
+        public static Dictionary<long, BlockDamageLog> BlockDamages = new Dictionary<long, BlockDamageLog>();
+
+        public class BlockDamageLog
+        {
+            public long LastAttackerIdentityId;
+            public DateTime ExpireAt = DateTime.Now;
+        }
+
+        public static void AddToBlockLog(MyCubeBlock block, long attackerIdentityId)
+        {
+            if (BlockDamages.TryGetValue(block.EntityId, out var log))
+            {
+                log.LastAttackerIdentityId = attackerIdentityId;
+                log.ExpireAt = DateTime.Now.AddMinutes(10);
+                return;
+            }
+
+            BlockDamages.Add(block.EntityId ,new BlockDamageLog()
+            {
+                ExpireAt = DateTime.Now.AddMinutes(10),
+                LastAttackerIdentityId = attackerIdentityId
+            });
+
+        }
+
         public static void HandleTerritoryStuff()
         {
+            var expiredBlocks = (from keyset in BlockDamages where DateTime.Now >= keyset.Value.ExpireAt select keyset.Key).ToList();
 
+            foreach (var id in expiredBlocks)
+            {
+                BlockDamages.Remove(id);
+            }
         }
 
         public static bool IsPositionInTerritory(Vector3D PlayerPos, Territory territory)
         {
             var distance = Vector3.Distance(PlayerPos, territory.Position);
+            return !(distance > territory.Radius);
+        }
+        public static bool IsPositionInTerritoryCap(Vector3D PlayerPos, Territory territory)
+        {
+            var distance = Vector3.Distance(PlayerPos, territory.CapPosition);
             return !(distance > territory.Radius);
         }
 
@@ -31,6 +68,11 @@ namespace AlliancesPlugin.Alliances.NewTerritories
                 territory.Alliance = alliance.AllianceId;
 
             }
+        }
+
+        public static void HandleBlockDeath(MyCubeBlock block)
+        {
+
         }
 
         public static void CheckForPeopleInSiegedTerritories()
@@ -60,7 +102,7 @@ namespace AlliancesPlugin.Alliances.NewTerritories
                          x.Enabled && x.IsUnderSiege && DateTime.Now >= x.NextSiegeCheck))
             {
                 territory.NextSiegeCheck = DateTime.Now.AddMinutes(1);
-                foreach (var player in PlayerPositions.Where(player => IsPositionInTerritory(player.Value, territory)))
+                foreach (var player in PlayerPositions.Where(player => IsPositionInTerritoryCap(player.Value, territory)))
                 {
 
                 }

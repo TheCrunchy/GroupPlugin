@@ -16,6 +16,8 @@ namespace AlliancesPlugin.Alliances.NewTerritories
         {
             this.SiegeEndTime = DateTime.Now.AddHours(HoursSiegeLasts);
         }
+
+        public string WorldName = "default";
         public Guid Id = System.Guid.NewGuid();
         public string Name = "Unnamed";
         public int Radius = 50000;
@@ -25,6 +27,8 @@ namespace AlliancesPlugin.Alliances.NewTerritories
         public DateTime NextSiegeCheck;
         public DateTime SiegeEndTime;
         public int HoursSiegeLasts = 72;
+
+        public bool ForcesPvP = true;
 
         public Dictionary<Guid, int> AlliancePoints = new Dictionary<Guid, int>();
 
@@ -36,7 +40,10 @@ namespace AlliancesPlugin.Alliances.NewTerritories
         public double y;
         public double z;
         public Vector3D Position => new Vector3(x, y, z);
-
+        public double CapX;
+        public double CapY;
+        public double CapZ;
+        public Vector3D CapPosition => new Vector3(CapX, CapY, CapZ);
         public float AssemblerSpeedBuff { get; set; } = 1.5f;
         public float RefinerySpeedBuff { get; set; } = 1.5f;
         public float RefineryYieldBuff { get; set; } = 1.5f;

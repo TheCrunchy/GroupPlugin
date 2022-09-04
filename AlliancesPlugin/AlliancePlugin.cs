@@ -164,20 +164,6 @@ namespace AlliancesPlugin
                         continue;
                     }
                 }
-                if (ter.TaxesForStationsInTerritory && ter.Alliance != Guid.Empty)
-                {
-                    var distance = Vector3.Distance(new Vector3(ter.x, ter.y, ter.z), Location);
-                    if (distance <= ter.Radius)
-                    {
-                        var item = new TaxItem();
-                        item.playerId = identityId.IdentityId;
-                        item.price = amount;
-                        item.territory = ter.Id;
-
-                        AlliancePlugin.TerritoryTaxes.Add(item);
-                        return amount;
-                    }
-                }
             }
 
             if (AlliancePlugin.TaxesToBeProcessed.ContainsKey(identityId.IdentityId))
@@ -229,7 +215,7 @@ namespace AlliancesPlugin
             if (!File.Exists(path + "//Territories//Example.xml"))
             {
                 var example = new Territory();
-                example.enabled = false;
+                example.Enabled = false;
                 utils.WriteToXmlFile<Territory>(path + "//Territories//Example.xml", example, false);
             }
 
@@ -634,114 +620,110 @@ namespace AlliancesPlugin
             {
                 return;
             }
+            var attackerId = GetAttacker(info.AttackerId);
 
-            if (config.DisablePvP)
+            if (target is MyCubeBlock cube)
             {
-                var attackerId = GetAttacker(info.AttackerId);
+                NewTerritoryHandler.AddToBlockLog(cube, attackerId);
+            }
 
-                if (target is MySlimBlock block)
+            if (!config.DisablePvP) return;
+            if (!(target is MySlimBlock block)) return;
+            //  Log.Info("is an entity");
+               
+
+            if (FacUtils.GetOwner(block.CubeGrid) == 0L)
+            {
+                //    Log.Info("no owner");
+                return;
+            }
+            if (block.OwnerId == attackerId)
+            {
+                //    Log.Info("owner is attacker");
+                return;
+            }
+            var loc = block.CubeGrid.PositionComp.GetPosition();
+            if ((from territory in KamikazeTerritories.MessageHandler.Territories let distance = Vector3.Distance(loc, territory.Position) where distance <= territory.Radius select territory).Any())
+            {
+                return;
+            }
+            var attacker = MySession.Static.Factions.GetPlayerFaction(attackerId) as MyFaction;
+            var defender = MySession.Static.Factions.GetPlayerFaction(FacUtils.GetOwner(block.CubeGrid));
+
+            // Log.Info(info.Type.ToString().Trim());
+            if (!info.Type.ToString().Trim().Equals("Grind") &&
+                !info.Type.ToString().Trim().Equals("Explosion")) return;
+            //   Log.Info("Grind damage");
+            if (attacker != null)
+            {
+                if (Debug)
                 {
-                    //  Log.Info("is an entity");
-                    if (FacUtils.GetOwner(block.CubeGrid) == 0L)
+                    AlliancePlugin.Log.Info("attacker has faction");
+                }
+                if (attacker.Tag.Length > 3)
+                {
+                    if (Debug)
                     {
-                        //    Log.Info("no owner");
-                        return;
+                        AlliancePlugin.Log.Info("NPC fac, allowing");
                     }
-                    if (block.OwnerId == attackerId)
+                    return;
+                }
+                if (defender != null)
+                {
+                    if (Debug)
                     {
-                        //    Log.Info("owner is attacker");
-                        return;
+                        AlliancePlugin.Log.Info("defender isnt null");
                     }
-                    var loc = block.CubeGrid.PositionComp.GetPosition();
-                    if ((from territory in KamikazeTerritories.MessageHandler.Territories let distance = Vector3.Distance(loc, territory.Position) where distance <= territory.Radius select territory).Any())
+                    if (defender.Tag.Length > 3)
                     {
-                        return;
-                    }
-                    var attacker = MySession.Static.Factions.GetPlayerFaction(attackerId) as MyFaction;
-                    var defender = MySession.Static.Factions.GetPlayerFaction(FacUtils.GetOwner(block.CubeGrid));
-
-                    // Log.Info(info.Type.ToString().Trim());
-                    if (info.Type.ToString().Trim().Equals("Grind") || info.Type.ToString().Trim().Equals("Explosion"))
-                    {
-                        //   Log.Info("Grind damage");
-                        if (attacker != null)
+                        if (Debug)
                         {
-                            if (Debug)
-                            {
-                                AlliancePlugin.Log.Info("attacker has faction");
-                            }
-                            if (attacker.Tag.Length > 3)
-                            {
-                                if (Debug)
-                                {
-                                    AlliancePlugin.Log.Info("NPC fac, allowing");
-                                }
-                                return;
-                            }
-                            if (defender != null)
-                            {
-                                if (Debug)
-                                {
-                                    AlliancePlugin.Log.Info("defender isnt null");
-                                }
-                                if (defender.Tag.Length > 3)
-                                {
-                                    if (Debug)
-                                    {
-                                        AlliancePlugin.Log.Info("defender is NPC");
-                                    }
-                                    return;
-                                }
-                                if (attacker.FactionId == defender.FactionId)
-                                {
-                                    if (Debug)
-                                    {
-                                        AlliancePlugin.Log.Info("attacker is defender");
-                                    }
-                                    return;
-                                }
-                            }
-                            if (defender == null)
-                            {
-                                info.Amount = 0.0f;
-                                return;
-                            }
-                            if (!MySession.Static.Factions.AreFactionsEnemies(attacker.FactionId, defender.FactionId))
-                            {
-                                //  AlliancePlugin.Log.Info("not 4");
-                                SlimBlockPatch.SendPvEMessage(attackerId);
-                                info.Amount = 0.0f;
-                                return;
-                            }
-
+                            AlliancePlugin.Log.Info("defender is NPC");
                         }
-                        else
+                        return;
+                    }
+                    if (attacker.FactionId == defender.FactionId)
+                    {
+                        if (Debug)
                         {
-                            if (Debug)
-                            {
-                                AlliancePlugin.Log.Info("attacker has no faction");
-                            }
-                            if (defender != null)
-                            {
-                                if (defender.Tag.Length > 3)
-                                {
-                                    if (Debug)
-                                    {
-                                        AlliancePlugin.Log.Info("defender is npc");
-                                    }
-                                    return;
-                                }
-                            }
-
-                            SlimBlockPatch.SendPvEMessage(attackerId);
-                            info.Amount = 0.0f;
-                            return;
-
+                            AlliancePlugin.Log.Info("attacker is defender");
                         }
-
+                        return;
                     }
                 }
+                if (defender == null)
+                {
+                    info.Amount = 0.0f;
+                    return;
+                }
+
+                if (MySession.Static.Factions.AreFactionsEnemies(attacker.FactionId, defender.FactionId)) return;
+                //  AlliancePlugin.Log.Info("not 4");
+                SlimBlockPatch.SendPvEMessage(attackerId);
+                info.Amount = 0.0f;
+                return;
+
             }
+
+            if (Debug)
+            {
+                AlliancePlugin.Log.Info("attacker has no faction");
+            }
+            if (defender != null)
+            {
+                if (defender.Tag.Length > 3)
+                {
+                    if (Debug)
+                    {
+                        AlliancePlugin.Log.Info("defender is npc");
+                    }
+                    return;
+                }
+            }
+
+            SlimBlockPatch.SendPvEMessage(attackerId);
+            info.Amount = 0.0f;
+            return;
 
         }
 
@@ -1493,16 +1475,16 @@ namespace AlliancesPlugin
                 try
                 {
                     var ter = jsonStuff.ReadFromXmlFile<Territory>(s);
-                    if (!ter.enabled)
+                    if (!ter.Enabled)
                     {
                         continue;
                     }
 
                     Territories.Add(ter.Id, ter);
-                    foreach (var city in ter.ActiveCities.Where(x => !CityHandler.ActiveCities.Any(z => z.CityId == x.CityId)))
-                    {
-                        CityHandler.ActiveCities.Add(city);
-                    }
+                    //foreach (var city in ter.ActiveCities.Where(x => !CityHandler.ActiveCities.Any(z => z.CityId == x.CityId)))
+                    //{
+                    //    CityHandler.ActiveCities.Add(city);
+                    //}
 
                 }
                 catch (Exception ex)
@@ -4014,7 +3996,7 @@ namespace AlliancesPlugin
             var statusM = MyAPIGateway.Utilities.SerializeToBinary(message);
             var modmessage = new ModMessage()
             {
-                Type = "PVPAreas",
+                Type = "Chat",
                 Member = statusM
             };
 
@@ -4425,7 +4407,7 @@ namespace AlliancesPlugin
                             {
                                 foreach (var ter in Territories.Values)
                                 {
-                                    if (ter.enabled)
+                                    if (ter.Enabled)
                                     {
                                         if (Vector3.Distance(player.GetPosition(), new Vector3(ter.x, ter.y, ter.z)) <= ter.Radius)
                                         {
