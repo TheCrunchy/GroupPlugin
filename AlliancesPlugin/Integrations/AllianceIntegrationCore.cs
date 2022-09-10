@@ -122,6 +122,7 @@ namespace AlliancesPlugin.Integrations
                         case "WarStatus":
                             AlliancePlugin.Log.Info($"Sending war status to {request.SteamId}");
                             SendPlayerWarStatus(request.SteamId);
+                            AllianceCommands.SendStatusToClient(request.SteamId);
                             break;
                     }
                     break;
@@ -186,7 +187,16 @@ namespace AlliancesPlugin.Integrations
                 message.PvPAreas.Add(area);
             }
 
-
+                     foreach (var territory in AlliancePlugin.Territories)
+                     {
+                         message.PvPAreas.Add(new PvPArea()
+                         {
+                             AreaForcesPvP = territory.Value.ForcesPvP,
+                             Name = territory.Value.Name,
+                             Position = territory.Value.Position,
+                             Distance = territory.Value.Radius
+                         });
+                     }
 
             var statusM = MyAPIGateway.Utilities.SerializeToBinary(message);
             var modmessage = new ModMessage()

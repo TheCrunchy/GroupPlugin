@@ -196,77 +196,130 @@ namespace Crunch
         public override void UpdateAfterSimulation()
         {
             TickCounter += 1;
+		   // MyLog.Default.WriteLineAndConsole($"1");
+		
             if (TickCounter < 10 && !FirstRun)
             {
                 return;
             }
-			if (!_isInitialized){
-				return;
-			}
+			 //   MyLog.Default.WriteLineAndConsole($"2");
+		
 			if (HudModule == null)
             {
                 return;
             }
-			if (MyAPIGateway == null){
-			return;
+			//    MyLog.Default.WriteLineAndConsole($"3");
+			
+		    if (MyAPIGateway.Session == null)
+			{
+				return;
 			}
-		    if (MyAPIGateway.Session == null){
-			return;
-			}
-			if (MyAPIGateway.Session.LocalHumanPlayer == null){
+			 //   MyLog.Default.WriteLineAndConsole($"4");
+		
+			if (MyAPIGateway.Session.LocalHumanPlayer == null)
+			{
 				return;
 	     	}
-			
+			//    MyLog.Default.WriteLineAndConsole($"5");
+		
+			if (MyAPIGateway.Multiplayer == null){
+				return;
+			}
+			 //   MyLog.Default.WriteLineAndConsole($"6");
+		
             if (DateTime.Now >= NextUpdate || !FirstRun)
             {
+			//	MyLog.Default.WriteLineAndConsole($"7");
+	
                 var player = MyAPIGateway.Session.LocalHumanPlayer.SteamUserId;
+			//	    MyLog.Default.WriteLineAndConsole($"8");
+
 				if (player == null){
 					return;
 				}
-				 FirstRun = true;
+			//	    MyLog.Default.WriteLineAndConsole($"9");
+	
+				FirstRun = true;
                 var territoryRequest = new DataRequest()
                 {
                     SteamId = player,
                     DataType = "Territory"
                 };
+		//		    MyLog.Default.WriteLineAndConsole($"10");
+	
                 var request1 = MyAPIGateway.Utilities.SerializeToBinary(territoryRequest);
-
+  //  MyLog.Default.WriteLineAndConsole($"11");
+	
                 var warStatusRequest = new DataRequest()
                 {
                     SteamId = player,
                     DataType = "WarStatus"
                 };
+		//		    MyLog.Default.WriteLineAndConsole($"12");
+		
                 var request2 = MyAPIGateway.Utilities.SerializeToBinary(warStatusRequest);
-
+  //  MyLog.Default.WriteLineAndConsole($"13");
+	
                 var modmessage1 = new ModMessage()
                 {
                     Type = "DataRequest",
                     Member = request1
                 };
+				//    MyLog.Default.WriteLineAndConsole($"14");
+		
                 var modmessage2 = new ModMessage()
                 {
                     Type = "DataRequest",
                     Member = request2
                 };
+			//	    MyLog.Default.WriteLineAndConsole($"15");
+			
                 var bytes1 = MyAPIGateway.Utilities.SerializeToBinary(modmessage1);
+			//	    MyLog.Default.WriteLineAndConsole($"16");
+			
                 var bytes2 = MyAPIGateway.Utilities.SerializeToBinary(modmessage2);
-
+  //  MyLog.Default.WriteLineAndConsole($"17");
+		
                 MyAPIGateway.Multiplayer.SendMessageToServer(8544, bytes1);
+				//    MyLog.Default.WriteLineAndConsole($"18");
+			
                 MyAPIGateway.Multiplayer.SendMessageToServer(8544, bytes2);
+				//    MyLog.Default.WriteLineAndConsole($"19");
+		
                 NextUpdate = DateTime.Now.AddMinutes(1);
+				//    MyLog.Default.WriteLineAndConsole($"20");
+		
             }
 
             if (TickCounter % 64 == 0) // Check if player is in an area every 10 seconds
             {
-                HudModule.SetAreaName("Not in Area");
-                HudModule.SetAreaPvPEnabled(false);
-                if (PlayerData != null)
+				 //   MyLog.Default.WriteLineAndConsole($"21");
+		
+          
+				//    MyLog.Default.WriteLineAndConsole($"22");
+		
+				//    MyLog.Default.WriteLineAndConsole($"23");
+			
+                if (PlayerData != null && PlayerData.PvPAreas != null)
                 {
+					      HudModule.SetAreaName("Not in Area");
+						      //     HudModule.SetAreaPvPEnabled(false);
                     var player = MyAPIGateway.Session.LocalHumanPlayer;
+								//    MyLog.Default.WriteLineAndConsole($"24");
+					if (player.Character == null){
+						return;
+					}
                     var position = player.Character.GetPosition();
+								//    MyLog.Default.WriteLineAndConsole($"25");
+					if (position == null){
+						return;
+					}
                     foreach (var area in PlayerData.PvPAreas)
                     {
+									 //   MyLog.Default.WriteLineAndConsole($"26");
+				
                         var distance = Vector3.Distance(position, area.Position);
+						//  MyLog.Default.WriteLineAndConsole($"27");
                         if (distance <= area.Distance)
                         {
                             if (area.Name != null)
@@ -280,14 +333,12 @@ namespace Crunch
                         }
                     }
                 }
-
+				
                 if (WarStatus)
                 {
                     HudModule.SetAreaPvPEnabled(true);
                 }
             }
-
-
         }
 
         protected override void UnloadData()

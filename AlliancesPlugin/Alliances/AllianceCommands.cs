@@ -2624,7 +2624,28 @@ namespace AlliancesPlugin.Alliances
             MyAPIGateway.Multiplayer.SendMessageTo(8544, bytes, steamId);
 
         }
+        public static void SendStatusToClient(ulong steamId)
+        {
 
+            if (!MyAPIGateway.Multiplayer.IsServer)
+                return;
+            var status = false || AllianceChat.PeopleInAllianceChat.ContainsKey(steamId);
+            var chatStatus = new BoolStatus()
+            {
+                Enabled = status
+            };
+            var statusM = MyAPIGateway.Utilities.SerializeToBinary(chatStatus);
+            var message = new ModMessage()
+            {
+                Type = "Chat",
+                Member = statusM
+            };
+
+            var bytes = MyAPIGateway.Utilities.SerializeToBinary(message);
+
+            MyAPIGateway.Multiplayer.SendMessageTo(8544, bytes, steamId);
+
+        }
         [Command("grant title", "change a title")]
         [Permission(MyPromoteLevel.None)]
         public void GiveTitleName(string playerName, string Title)
