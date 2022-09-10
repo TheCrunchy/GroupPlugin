@@ -143,7 +143,7 @@ namespace AlliancesPlugin.Integrations
                           AlliancePlugin.warcore.participants.FactionsAtWar.Contains(playerFac.FactionId)
             };
 
-            if (!AlliancePlugin.config.DisablePvP)
+            if (!AlliancePlugin.config.DisablePvP || !AlliancePlugin.config.EnableOptionalWar)
             {
                 message.Enabled = true;
             }
@@ -154,10 +154,6 @@ namespace AlliancesPlugin.Integrations
                 Type = "WarStatus",
                 Member = statusM
             };
-
-
-
-      
 
             var bytes = MyAPIGateway.Utilities.SerializeToBinary(modmessage);
 
