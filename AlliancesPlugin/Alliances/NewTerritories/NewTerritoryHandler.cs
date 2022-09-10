@@ -61,13 +61,13 @@ namespace AlliancesPlugin.Alliances.NewTerritories
 
         public static void TransferOwnership()
         {
-            foreach (var territory in Territories.Where(x => x.IsUnderSiege && DateTime.Now >= x.SiegeEndTime))
-            {
-                var newOwner = territory.AlliancePoints.MaxBy(x => x.Value);
-                var alliance = AlliancePlugin.GetAlliance(newOwner.Key);
-                territory.Alliance = alliance.AllianceId;
+            //foreach (var territory in Territories.Where(x => x.IsUnderSiege && DateTime.Now >= x.SiegeEndTime))
+            //{
+            //    var newOwner = territory.AlliancePoints.MaxBy(x => x.Value);
+            //    var alliance = AlliancePlugin.GetAlliance(newOwner.Key);
+            //    territory.Alliance = alliance.AllianceId;
 
-            }
+            //}
         }
 
         public static void HandleBlockDeath(MyCubeBlock block)

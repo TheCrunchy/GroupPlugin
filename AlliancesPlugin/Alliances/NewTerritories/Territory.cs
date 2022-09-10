@@ -30,7 +30,7 @@ namespace AlliancesPlugin.Alliances.NewTerritories
 
         public bool ForcesPvP = true;
 
-        public Dictionary<Guid, int> AlliancePoints = new Dictionary<Guid, int>();
+        private Dictionary<Guid, int> AlliancePoints = new Dictionary<Guid, int>();
 
         public string EntryMessage = "You are in {name} Territory";
         public string ControlledMessage = "Controlled by {alliance}";
@@ -44,9 +44,9 @@ namespace AlliancesPlugin.Alliances.NewTerritories
         public double CapY;
         public double CapZ;
         public Vector3D CapPosition => new Vector3(CapX, CapY, CapZ);
-        public float AssemblerSpeedBuff { get; set; } = 1.5f;
-        public float RefinerySpeedBuff { get; set; } = 1.5f;
-        public float RefineryYieldBuff { get; set; } = 1.5f;
+        //public float AssemblerSpeedBuff { get; set; } = 1.5f;
+        //public float RefinerySpeedBuff { get; set; } = 1.5f;
+        //public float RefineryYieldBuff { get; set; } = 1.5f;
 
         public bool DoOreTax = true;
         public float TaxPercent = 0.2f;

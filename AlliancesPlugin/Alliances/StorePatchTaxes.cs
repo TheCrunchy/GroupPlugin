@@ -64,20 +64,6 @@ namespace AlliancesPlugin.Alliances
       long sourceEntityId,
       long lastEconomyTick)
         {
-            foreach (Territory ter in AlliancePlugin.Territories.Values)
-            {
-                if (ter.TaxesForStationsInTerritory && ter.Alliance != Guid.Empty)
-                {
-                    float distance = Vector3.Distance(new Vector3(ter.x, ter.y, ter.z), player.GetPosition());
-                    if (distance <= ter.Radius)
-                    {
-                        if (!territorytax.ContainsKey(player.Identity.IdentityId))
-                        {
-                            territorytax.Add(player.Identity.IdentityId, ter.Id);
-                        }
-                    }
-                }
-            }
             if (!Ids.ContainsKey(id))
             {
                 Ids.Add(id, player.Identity.IdentityId);
@@ -87,20 +73,6 @@ namespace AlliancesPlugin.Alliances
         }
         public static void StorePatchMethod3(long id, int amount, long sourceEntityId, MyPlayer player)
         {
-            foreach (Territory ter in AlliancePlugin.Territories.Values)
-            {
-                if (ter.TaxesForStationsInTerritory && ter.Alliance != Guid.Empty)
-                {
-                    float distance = Vector3.Distance(new Vector3(ter.x, ter.y, ter.z), player.GetPosition());
-                    if (distance <= ter.Radius)
-                    {
-                        if (!territorytax.ContainsKey(player.Identity.IdentityId))
-                        {
-                            territorytax.Add(player.Identity.IdentityId, ter.Id);
-                        }
-                    }
-                }
-            }
             if (!Ids.ContainsKey(id))
             {
                 Ids.Add(id, player.Identity.IdentityId);
@@ -109,8 +81,6 @@ namespace AlliancesPlugin.Alliances
             return;
         }
 
-
-     
 
         public static void StorePatchMethod(long id, string name, long price, int amount, MyStoreSellItemResults result)
         {

@@ -1462,6 +1462,7 @@ namespace AlliancesPlugin
 
         public static void LoadAllTerritories()
         {
+            KamikazeTerritories.MessageHandler.LoadFile();
             Territories.Clear();
             var jsonStuff = new FileUtils();
             CityHandler.CityTemplates.Clear();
@@ -1470,6 +1471,7 @@ namespace AlliancesPlugin
                 var template = jsonStuff.ReadFromXmlFile<City>(s);
                 CityHandler.CityTemplates.Add(template);
             }
+
             foreach (var s in Directory.GetFiles(path + "//Territories//"))
             {
                 try
@@ -1480,6 +1482,11 @@ namespace AlliancesPlugin
                         continue;
                     }
 
+                    if (Territories.ContainsKey(ter.Id))
+                    {
+                        Log.Info($"Duplicate territory ID at {s}");
+                        continue;
+                    }
                     Territories.Add(ter.Id, ter);
                     //foreach (var city in ter.ActiveCities.Where(x => !CityHandler.ActiveCities.Any(z => z.CityId == x.CityId)))
                     //{
@@ -3965,46 +3972,7 @@ namespace AlliancesPlugin
         public DateTime InitDiscord = DateTime.Now;
         public DateTime NextTerritoryUpdate = DateTime.Now;
 
-        public void SendPlayerTerritories(ulong steamPlayerId)
-        {
-            var id = AlliancePlugin.GetIdentityByNameOrId(steamPlayerId.ToString());
-            if (id == null)
-            {
-                return;
-            }
-            IMyFaction playerFac = MySession.Static.Factions.GetPlayerFaction(id.IdentityId);
-
-            var message = new PlayerDataPvP
-            {
-                PvPAreas = new List<PvPArea>()
-            };
-
-            message.WarEnabled = playerFac == null ||
-                                 AlliancePlugin.warcore.participants.FactionsAtWar.Contains(playerFac.FactionId);
-
-            foreach (var area in MessageHandler.Territories.Select(Territory => new PvPArea
-                     {
-                         Name = Territory.Name,
-                         Position = Territory.Position,
-                         Distance = Territory.Radius,
-                         AreaForcesPvP = true
-                     }))
-            {
-                message.PvPAreas.Add(area);
-            }
-
-            var statusM = MyAPIGateway.Utilities.SerializeToBinary(message);
-            var modmessage = new ModMessage()
-            {
-                Type = "Chat",
-                Member = statusM
-            };
-
-            var bytes = MyAPIGateway.Utilities.SerializeToBinary(modmessage);
-
-            var binaryData = MyAPIGateway.Utilities.SerializeToBinary(modmessage);
-            MyAPIGateway.Multiplayer.SendMessageTo(8544, binaryData, steamPlayerId);
-        }
+    
 
         public override void Update()
         {
@@ -4048,32 +4016,6 @@ namespace AlliancesPlugin
             }
             if (ticks % 64 == 0)
             {
-                if (DateTime.Now >= NextTerritoryUpdate)
-                {
-                    NextTerritoryUpdate = DateTime.Now.AddMinutes(10);
-                    foreach (var player in MySession.Static.Players.GetOnlinePlayers())
-                    {
-                        var message = new PlayerDataPvP
-                        {
-                            PvPAreas = new List<PvPArea>()
-                        };
-                        var faction = MySession.Static.Factions.TryGetPlayerFaction(player.Identity.IdentityId);
-                        message.WarEnabled = faction == null || warcore.participants.FactionsAtWar.Contains(faction.FactionId);
-
-                        foreach (var area in MessageHandler.Territories.Select(Territory => new PvPArea
-                        {
-                            Name = Territory.Name,
-                            Position = Territory.Position,
-                            Distance = Territory.Radius,
-                            AreaForcesPvP = true
-                        }))
-                        {
-                            message.PvPAreas.Add(area);
-                        }
-                        var binaryData = MyAPIGateway.Utilities.SerializeToBinary(message);
-                        MyAPIGateway.Multiplayer.SendMessageTo(8544, binaryData, player.Id.SteamId);
-                    }
-                }
                 try
                 {
                     CityHandler.HandleCitiesMain();
@@ -4089,10 +4031,6 @@ namespace AlliancesPlugin
                 var oof = new List<ulong>();
                 var OtherYeet = new List<ulong>();
 
-                foreach (var steamPlayerId in PlayersNeedPvPAreas)
-                {
-                    SendPlayerTerritories(steamPlayerId);
-                }
                 foreach (var pair in UpdateThese.Where(pair => DateTime.Now >= pair.Value))
                 {
                     oof.Add(pair.Key);

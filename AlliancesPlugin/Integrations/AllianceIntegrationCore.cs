@@ -4,9 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AlliancesPlugin.KamikazeTerritories;
 using Sandbox.Game.Entities.Cube;
 using Sandbox.Game.World;
 using Sandbox.ModAPI;
+using VRage.Game.ModAPI;
 using VRageMath;
 
 namespace AlliancesPlugin.Integrations
@@ -102,14 +104,105 @@ namespace AlliancesPlugin.Integrations
             return MyProductionPatch.GetAssemblerSpeedMultiplier(PlayerId, Assembler);
         }
 
+        
         public static void ReceiveModMessage(byte[] data)
         {
-          //  AlliancePlugin.Log.Info("Received message");
-           // var encasedData = MyAPIGateway.Utilities.SerializeFromBinary<String>(data);
-
-           // AlliancePlugin.Log.Info(encasedData);
-
+             var Data = MyAPIGateway.Utilities.SerializeFromBinary<ModMessage>(data);
+           
+             switch (Data.Type)
+            {
+                case "DataRequest":
+                    var request = MyAPIGateway.Utilities.SerializeFromBinary<DataRequest>(Data.Member);
+                    switch (request.DataType)
+                    {
+                        case "Territory":
+                            SendPlayerTerritories(request.SteamId);
+                            AlliancePlugin.Log.Info($"Sending territories to {request.SteamId}");
+                            break;
+                        case "WarStatus":
+                            AlliancePlugin.Log.Info($"Sending war status to {request.SteamId}");
+                            SendPlayerWarStatus(request.SteamId);
+                            break;
+                    }
+                    break;
+            }
         }
 
+        public static void SendPlayerWarStatus(ulong steamPlayerId)
+        {
+            var id = AlliancePlugin.GetIdentityByNameOrId(steamPlayerId.ToString());
+            if (id == null)
+            {
+                return;
+            }
+            IMyFaction playerFac = MySession.Static.Factions.GetPlayerFaction(id.IdentityId);
+
+            var message = new BoolStatus
+            {
+                Enabled = playerFac == null ||
+                          AlliancePlugin.warcore.participants.FactionsAtWar.Contains(playerFac.FactionId)
+            };
+
+            if (!AlliancePlugin.config.DisablePvP)
+            {
+                message.Enabled = true;
+            }
+
+            var statusM = MyAPIGateway.Utilities.SerializeToBinary(message);
+            var modmessage = new ModMessage()
+            {
+                Type = "WarStatus",
+                Member = statusM
+            };
+
+
+
+      
+
+            var bytes = MyAPIGateway.Utilities.SerializeToBinary(modmessage);
+
+            var binaryData = MyAPIGateway.Utilities.SerializeToBinary(modmessage);
+            MyAPIGateway.Multiplayer.SendMessageTo(8544, binaryData, steamPlayerId);
+        }
+        public static void SendPlayerTerritories(ulong steamPlayerId)
+        {
+            var id = AlliancePlugin.GetIdentityByNameOrId(steamPlayerId.ToString());
+            if (id == null)
+            {
+                return;
+            }
+            IMyFaction playerFac = MySession.Static.Factions.GetPlayerFaction(id.IdentityId);
+
+            var message = new PlayerDataPvP
+            {
+                PvPAreas = new List<PvPArea>()
+            };
+
+
+                     foreach (var area in MessageHandler.Territories.Select(Territory => new PvPArea
+                              {
+                                  Name = Territory.Name ?? "PvP Area",
+                                  Position = Territory.Position,
+                                  Distance = Territory.Radius,
+                                  AreaForcesPvP = true
+                              }))
+            {
+                message.PvPAreas.Add(area);
+            }
+
+
+
+            var statusM = MyAPIGateway.Utilities.SerializeToBinary(message);
+            var modmessage = new ModMessage()
+            {
+                Type = "PvPAreas",
+                Member = statusM
+            };
+
+            var bytes = MyAPIGateway.Utilities.SerializeToBinary(modmessage);
+
+            var binaryData = MyAPIGateway.Utilities.SerializeToBinary(modmessage);
+            MyAPIGateway.Multiplayer.SendMessageTo(8544, binaryData, steamPlayerId);
+        }
     }
 }

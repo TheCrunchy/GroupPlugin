@@ -8,9 +8,9 @@ using ProtoBuf;
 namespace AlliancesPlugin.KamikazeTerritories
 {
     [ProtoContract]
-    public class ChatStatus
+    public class BoolStatus
     {
         [ProtoMember(1)]
-        public bool ChatEnabled;
+        public bool Enabled;
     }
 }

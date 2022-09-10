@@ -118,10 +118,6 @@ namespace AlliancesPlugin.NewTerritories
         public static bool GenerateCity(MySafeZoneBlock SZBlock, Territory territory, Alliance alliance)
         {
             var template = CityHandler.CityTemplates.FirstOrDefault(x => x.SafeZoneSubTypeId == SZBlock.BlockDefinition.Id.SubtypeName);
-            if (territory.ActiveCities.Any(x => x.SafeZoneBlockId == SZBlock.EntityId))
-            {
-                return false;
-            }
             if (template == null)
             {
                 //   AlliancePlugin.Log.Info("Null template");
@@ -152,7 +148,7 @@ namespace AlliancesPlugin.NewTerritories
                 city.CityId = Guid.NewGuid();
                 city.OwningTerritory = territory.Id;
                 city.CityName = SZBlock.DisplayNameText;
-                territory.ActiveCities.Add(city);
+            
                 CityHandler.ActiveCities.Add(city);
                 CityHandler.SendCityWillBeOperationalMessage(city);
                // AlliancePlugin.Log.Info("this shit should work");
@@ -187,11 +183,6 @@ namespace AlliancesPlugin.NewTerritories
                 float distance = Vector3.Distance(__instance.Entity.PositionComp.GetPosition(), new Vector3(ter.x, ter.y, ter.z));
                 if (distance <= ter.Radius)
                 {
-                    if (ter.ActiveCities.Count > 4)
-                    {
-                        SendErrorMessageMaximumCities();
-                        return false;
-                    }
                     ////lets save a new city
                     if (GenerateCity(SZBlock, ter, alliance))
                     {

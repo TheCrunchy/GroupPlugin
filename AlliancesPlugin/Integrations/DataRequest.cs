@@ -5,15 +5,15 @@ using System.Text;
 using System.Threading.Tasks;
 using ProtoBuf;
 
-namespace AlliancesPlugin.KamikazeTerritories
+namespace AlliancesPlugin.Integrations
 {
     [ProtoContract]
-    public class PlayerDataPvP
+    public class DataRequest
     {
         [ProtoMember(1)]
-        public bool WarEnabled;
+        public ulong SteamId;
 
         [ProtoMember(2)] 
-        public List<PvPArea> PvPAreas;
+        public string DataType;
     }
 }

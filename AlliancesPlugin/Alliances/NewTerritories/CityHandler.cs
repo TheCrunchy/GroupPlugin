@@ -147,7 +147,6 @@ namespace AlliancesPlugin.Alliances.NewTerritories
                 if (ter != null)
                 {
                     SendCityDisabledMessage(city);
-                    ter.ActiveCities.Remove(city);
                     AlliancePlugin.utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + ter.Name + ".xml", ter);
                 }
 

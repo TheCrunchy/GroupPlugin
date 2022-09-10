@@ -2608,9 +2608,9 @@ namespace AlliancesPlugin.Alliances
             if (!MyAPIGateway.Multiplayer.IsServer)
                 return;
 
-            var chatStatus = new ChatStatus()
+            var chatStatus = new BoolStatus()
             {
-                ChatEnabled = status
+                Enabled = status
             };
             var statusM = MyAPIGateway.Utilities.SerializeToBinary(chatStatus);
             var message = new ModMessage()
