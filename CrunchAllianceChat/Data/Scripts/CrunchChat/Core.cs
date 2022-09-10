@@ -200,17 +200,30 @@ namespace Crunch
             {
                 return;
             }
-			
+			if (!_isInitialized){
+				return;
+			}
 			if (HudModule == null)
             {
                 return;
             }
-
-
+			if (MyAPIGateway == null){
+			return;
+			}
+		    if (MyAPIGateway.Session == null){
+			return;
+			}
+			if (MyAPIGateway.Session.LocalHumanPlayer == null){
+				return;
+	     	}
+			
             if (DateTime.Now >= NextUpdate || !FirstRun)
             {
-                FirstRun = true;
                 var player = MyAPIGateway.Session.LocalHumanPlayer.SteamUserId;
+				if (player == null){
+					return;
+				}
+				 FirstRun = true;
                 var territoryRequest = new DataRequest()
                 {
                     SteamId = player,
