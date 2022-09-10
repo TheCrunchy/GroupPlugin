@@ -303,7 +303,7 @@ namespace Crunch
                 if (PlayerData != null && PlayerData.PvPAreas != null)
                 {
 					      HudModule.SetAreaName("Not in Area");
-						      //     HudModule.SetAreaPvPEnabled(false);
+						   HudModule.SetAreaPvPEnabled(false);
                     var player = MyAPIGateway.Session.LocalHumanPlayer;
 								//    MyLog.Default.WriteLineAndConsole($"24");
 					if (player.Character == null){
