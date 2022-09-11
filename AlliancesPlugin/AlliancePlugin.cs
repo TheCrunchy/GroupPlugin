@@ -185,7 +185,7 @@ namespace AlliancesPlugin
             base.Init(torch);
             sessionManager = Torch.Managers.GetManager<TorchSessionManager>();
             sessionManager.AddOverrideMod(758597413L);
-            sessionManager.AddOverrideMod(2612907530L);
+            sessionManager.AddOverrideMod(2861556200L);
             if (sessionManager != null)
             {
                 sessionManager.SessionStateChanged += SessionChanged;

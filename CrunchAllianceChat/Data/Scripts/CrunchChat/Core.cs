@@ -86,7 +86,6 @@ namespace Crunch
 
                     case "Chat":
                         var status = MyAPIGateway.Utilities.SerializeFromBinary<BoolStatus>(data.Member);
-
                         if (status.Enabled)
                         {
                             HudModule.SetChatStatus(true);
@@ -103,28 +102,10 @@ namespace Crunch
                         WarStatus = warstatus.Enabled;
                         break;
                     case "PvPAreas":
-                        {
                             var playerData = MyAPIGateway.Utilities.SerializeFromBinary<PlayerDataPvP>(data.Member);
                             PlayerData = playerData;
                             break;
-                        }
                     case "SinglePVPArea":
-                        {
-                            var areaData = MyAPIGateway.Utilities.SerializeFromBinary<PvPArea>(data.Member);
-                            if (PlayerData != null)
-                            {
-                                var tempData = PlayerData;
-                                foreach (var area in PlayerData.PvPAreas.Where(area => area.Name.Equals(areaData.Name)))
-                                {
-                                    tempData.PvPAreas.Remove(area);
-                                    tempData.PvPAreas.Add(areaData);
-                                }
-
-                                PlayerData = tempData;
-                            }
-
-                            break;
-                        }
                     default:
                         break;
                 }
@@ -132,11 +113,6 @@ namespace Crunch
             catch (Exception e)
             {
                 MyLog.Default.WriteLineAndConsole($"{e.Message} \n{e.StackTrace}");
-
-                if (MyAPIGateway.Session?.Player != null)
-                    MyAPIGateway.Utilities.ShowNotification(
-                        $"[ Alliance Error: | Send SpaceEngineers.Log to mod author ]", 10000,
-                        MyFontEnum.Red);
             }
         }
         /*

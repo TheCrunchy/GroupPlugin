@@ -117,10 +117,10 @@ namespace AlliancesPlugin.Integrations
                     {
                         case "Territory":
                             SendPlayerTerritories(request.SteamId);
-                            AlliancePlugin.Log.Info($"Sending territories to {request.SteamId}");
+                          //  AlliancePlugin.Log.Info($"Sending territories to {request.SteamId}");
                             break;
                         case "WarStatus":
-                            AlliancePlugin.Log.Info($"Sending war status to {request.SteamId}");
+                        //    AlliancePlugin.Log.Info($"Sending war status to {request.SteamId}");
                             SendPlayerWarStatus(request.SteamId);
                             AllianceCommands.SendStatusToClient(request.SteamId);
                             break;

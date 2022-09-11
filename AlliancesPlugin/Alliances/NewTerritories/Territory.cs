@@ -19,9 +19,9 @@ namespace AlliancesPlugin.Alliances.NewTerritories
 
         public string WorldName = "default";
         public Guid Id = System.Guid.NewGuid();
-        public string Name = "Unnamed";
+        public string Name = "Example";
         public int Radius = 50000;
-        public bool Enabled = true;
+        public bool Enabled = false;
         public Guid Alliance = Guid.Empty;
         public bool IsUnderSiege = false;
         public DateTime NextSiegeCheck;
