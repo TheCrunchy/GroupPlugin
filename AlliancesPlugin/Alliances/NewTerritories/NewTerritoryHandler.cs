@@ -46,6 +46,8 @@ namespace AlliancesPlugin.Alliances.NewTerritories
             {
                 BlockDamages.Remove(id);
             }
+            TransferOwnership();
+            CheckForPeopleInSiegedTerritories();
         }
 
         public static bool IsPositionInTerritory(Vector3D PlayerPos, Territory territory)

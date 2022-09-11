@@ -1462,6 +1462,10 @@ namespace AlliancesPlugin
 
         public static void LoadAllTerritories()
         {
+            foreach (var ter in AlliancePlugin.Territories.Values)
+            {
+                AlliancePlugin.utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + ter.Name + ".xml", ter);
+            }
             KamikazeTerritories.MessageHandler.LoadFile();
             Territories.Clear();
             var jsonStuff = new FileUtils();

@@ -200,6 +200,7 @@
     <Compile Include="Alliances\NewTerritories\CityHandler.cs" />
     <Compile Include="Alliances\NewTerritories\NewTerritoryHandler.cs" />
     <Compile Include="Alliances\NewTerritories\SafezoneBlockPatch.cs" />
+    <Compile Include="Alliances\NewTerritories\TerritoryCommands.cs" />
     <Compile Include="Alliances\Radar\RadarConfig.cs" />
     <Compile Include="Alliances\Radar\RadarLogic.cs" />
     <Compile Include="Alliances\Radar\RadarModel.cs" />
