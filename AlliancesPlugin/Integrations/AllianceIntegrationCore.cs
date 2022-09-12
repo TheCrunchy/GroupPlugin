@@ -122,13 +122,38 @@ namespace AlliancesPlugin.Integrations
                         case "WarStatus":
                         //    AlliancePlugin.Log.Info($"Sending war status to {request.SteamId}");
                             SendPlayerWarStatus(request.SteamId);
+                            SendPlayerHudStatus(request.SteamId);
                             AllianceCommands.SendStatusToClient(request.SteamId);
+                            break;
+                        case "Hud":
+                            //    AlliancePlugin.Log.Info($"Sending war status to {request.SteamId}");
+                            SendPlayerHudStatus(request.SteamId);
                             break;
                     }
                     break;
             }
         }
+        public static void SendPlayerHudStatus(ulong steamPlayerId)
+        {
 
+            var message = new BoolStatus
+            {
+                Enabled = AlliancePlugin.config.EnablePvPAreaHud
+            };
+
+
+            var statusM = MyAPIGateway.Utilities.SerializeToBinary(message);
+            var modmessage = new ModMessage()
+            {
+                Type = "HudStatus",
+                Member = statusM
+            };
+
+            var bytes = MyAPIGateway.Utilities.SerializeToBinary(modmessage);
+
+            var binaryData = MyAPIGateway.Utilities.SerializeToBinary(modmessage);
+            MyAPIGateway.Multiplayer.SendMessageTo(8544, binaryData, steamPlayerId);
+        }
         public static void SendPlayerWarStatus(ulong steamPlayerId)
         {
             var id = AlliancePlugin.GetIdentityByNameOrId(steamPlayerId.ToString());

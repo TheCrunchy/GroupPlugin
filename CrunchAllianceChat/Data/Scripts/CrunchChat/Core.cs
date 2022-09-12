@@ -101,6 +101,16 @@ namespace Crunch
                         var warstatus = MyAPIGateway.Utilities.SerializeFromBinary<BoolStatus>(data.Member);
                         WarStatus = warstatus.Enabled;
                         break;
+					case "HudStatus":
+                        var temp = MyAPIGateway.Utilities.SerializeFromBinary<BoolStatus>(data.Member);
+                        HudEnabled = temp.Enabled;
+						if (HudEnabled){
+							HudModule.SetAreaVisible();
+						}
+						else {
+							HudModule.SetAreaNotVisible();
+						}
+                        break;
                     case "PvPAreas":
                             var playerData = MyAPIGateway.Utilities.SerializeFromBinary<PlayerDataPvP>(data.Member);
                             PlayerData = playerData;
@@ -161,7 +171,7 @@ namespace Crunch
                 // ignored
             }
         }
-
+		public bool HudEnabled = true;
         public DateTime NextUpdate = DateTime.Now.AddMinutes(1);
         public bool FirstRun = false;
         /*
@@ -173,7 +183,7 @@ namespace Crunch
         {
             TickCounter += 1;
 		   // MyLog.Default.WriteLineAndConsole($"1");
-		
+
             if (TickCounter < 10 && !FirstRun)
             {
                 return;
@@ -234,7 +244,6 @@ namespace Crunch
 		//		    MyLog.Default.WriteLineAndConsole($"12");
 		
                 var request2 = MyAPIGateway.Utilities.SerializeToBinary(warStatusRequest);
-  //  MyLog.Default.WriteLineAndConsole($"13");
 	
                 var modmessage1 = new ModMessage()
                 {
@@ -248,12 +257,21 @@ namespace Crunch
                     Type = "DataRequest",
                     Member = request2
                 };
+				
+				
+                var modmessage3 = new ModMessage()
+                {
+                    Type = "DataRequest",
+                    Member = request2
+                };
 			//	    MyLog.Default.WriteLineAndConsole($"15");
 			
                 var bytes1 = MyAPIGateway.Utilities.SerializeToBinary(modmessage1);
 			//	    MyLog.Default.WriteLineAndConsole($"16");
 			
                 var bytes2 = MyAPIGateway.Utilities.SerializeToBinary(modmessage2);
+				
+				         var bytes3 = MyAPIGateway.Utilities.SerializeToBinary(modmessage3);
   //  MyLog.Default.WriteLineAndConsole($"17");
 		
                 MyAPIGateway.Multiplayer.SendMessageToServer(8544, bytes1);
@@ -262,11 +280,13 @@ namespace Crunch
                 MyAPIGateway.Multiplayer.SendMessageToServer(8544, bytes2);
 				//    MyLog.Default.WriteLineAndConsole($"19");
 		
-                NextUpdate = DateTime.Now.AddMinutes(1);
+                NextUpdate = DateTime.Now.AddMinutes(3);
 				//    MyLog.Default.WriteLineAndConsole($"20");
 		
             }
-
+			if (!HudEnabled){
+				return;
+			}
             if (TickCounter % 64 == 0) // Check if player is in an area every 10 seconds
             {
 				 //   MyLog.Default.WriteLineAndConsole($"21");

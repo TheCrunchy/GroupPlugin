@@ -64,6 +64,7 @@ namespace Crunch
         {
             HUD_Base = new HudAPIv2(HUD_Init_Complete);
         }
+		
 		public void SetAreaNotVisible(){
 			
             HUD_AreaHeader.Visible = false;
