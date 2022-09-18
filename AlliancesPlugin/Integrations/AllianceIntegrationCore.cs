@@ -72,7 +72,7 @@ namespace AlliancesPlugin.Integrations
 
         public static bool DoesPlayerHavePermission(long PlayerIdentityId, string Permission)
         {
-            
+
             var fac = MySession.Static.Factions.GetPlayerFaction(PlayerIdentityId);
             if (fac == null)
             {
@@ -104,12 +104,12 @@ namespace AlliancesPlugin.Integrations
             return MyProductionPatch.GetAssemblerSpeedMultiplier(PlayerId, Assembler);
         }
 
-        
+
         public static void ReceiveModMessage(byte[] data)
         {
-             var Data = MyAPIGateway.Utilities.SerializeFromBinary<ModMessage>(data);
-           
-             switch (Data.Type)
+            var Data = MyAPIGateway.Utilities.SerializeFromBinary<ModMessage>(data);
+
+            switch (Data.Type)
             {
                 case "DataRequest":
                     var request = MyAPIGateway.Utilities.SerializeFromBinary<DataRequest>(Data.Member);
@@ -117,10 +117,10 @@ namespace AlliancesPlugin.Integrations
                     {
                         case "Territory":
                             SendPlayerTerritories(request.SteamId);
-                          //  AlliancePlugin.Log.Info($"Sending territories to {request.SteamId}");
+                            //  AlliancePlugin.Log.Info($"Sending territories to {request.SteamId}");
                             break;
                         case "WarStatus":
-                        //    AlliancePlugin.Log.Info($"Sending war status to {request.SteamId}");
+                            //    AlliancePlugin.Log.Info($"Sending war status to {request.SteamId}");
                             SendPlayerWarStatus(request.SteamId);
                             SendPlayerHudStatus(request.SteamId);
                             AllianceCommands.SendStatusToClient(request.SteamId);
@@ -136,13 +136,14 @@ namespace AlliancesPlugin.Integrations
 
         public static void SendAllAllianceMemberDataToMods()
         {
+            if (AlliancePlugin.AllAlliances == null) return;
             var data = new List<AllianceData>();
             foreach (var sending in AlliancePlugin.AllAlliances.Select(alliance => new AllianceData()
-                     {
-                         AllianceName = alliance.Value.name,
-                         AllianceId = alliance.Value.AllianceId,
-                         FactionIds = alliance.Value.AllianceMembers
-                     }))
+            {
+                AllianceName = alliance.Value.name,
+                AllianceId = alliance.Value.AllianceId,
+                FactionIds = alliance.Value.AllianceMembers
+            }))
             {
                 data.Add(sending);
             }
@@ -225,27 +226,27 @@ namespace AlliancesPlugin.Integrations
             };
 
 
-                     foreach (var area in MessageHandler.Territories.Select(Territory => new PvPArea
-                              {
-                                  Name = Territory.Name ?? "PvP Area",
-                                  Position = Territory.Position,
-                                  Distance = Territory.Radius,
-                                  AreaForcesPvP = true
-                              }))
+            foreach (var area in MessageHandler.Territories.Select(Territory => new PvPArea
+            {
+                Name = Territory.Name ?? "PvP Area",
+                Position = Territory.Position,
+                Distance = Territory.Radius,
+                AreaForcesPvP = true
+            }))
             {
                 message.PvPAreas.Add(area);
             }
 
-                     foreach (var territory in AlliancePlugin.Territories)
-                     {
-                         message.PvPAreas.Add(new PvPArea()
-                         {
-                             AreaForcesPvP = territory.Value.ForcesPvP,
-                             Name = territory.Value.Name,
-                             Position = territory.Value.Position,
-                             Distance = territory.Value.Radius
-                         });
-                     }
+            foreach (var territory in AlliancePlugin.Territories)
+            {
+                message.PvPAreas.Add(new PvPArea()
+                {
+                    AreaForcesPvP = territory.Value.ForcesPvP,
+                    Name = territory.Value.Name,
+                    Position = territory.Value.Position,
+                    Distance = territory.Value.Radius
+                });
+            }
 
             var statusM = MyAPIGateway.Utilities.SerializeToBinary(message);
             var modmessage = new ModMessage()

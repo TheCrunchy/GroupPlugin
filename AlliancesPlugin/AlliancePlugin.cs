@@ -1378,7 +1378,7 @@ namespace AlliancesPlugin
         private DateTime NextSendToClient = DateTime.Now;
         public void LoadAllAlliances()
         {
-            if (DateTime.Now >= NextSendToClient)
+            if (DateTime.Now >= NextSendToClient && TorchState == TorchSessionState.Loaded)
             {
                 AllianceIntegrationCore.SendAllAllianceMemberDataToMods();
                 NextSendToClient = DateTime.Now.AddMinutes(5);
