@@ -133,6 +133,30 @@ namespace AlliancesPlugin.Integrations
                     break;
             }
         }
+
+        public static void SendAllAllianceMemberDataToMods()
+        {
+            var data = new List<AllianceData>();
+            foreach (var sending in AlliancePlugin.AllAlliances.Select(alliance => new AllianceData()
+                     {
+                         AllianceName = alliance.Value.name,
+                         AllianceId = alliance.Value.AllianceId,
+                         FactionIds = alliance.Value.AllianceMembers
+                     }))
+            {
+                data.Add(sending);
+            }
+
+            var modmessage = new ModMessage()
+            {
+                Type = "AllianceLists",
+                Member = MyAPIGateway.Utilities.SerializeToBinary(data)
+            };
+
+            var binaryData = MyAPIGateway.Utilities.SerializeToBinary(modmessage);
+            MyAPIGateway.Multiplayer.SendMessageToOthers(8544, binaryData);
+        }
+
         public static void SendPlayerHudStatus(ulong steamPlayerId)
         {
 

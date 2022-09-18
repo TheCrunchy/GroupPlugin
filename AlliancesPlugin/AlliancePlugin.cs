@@ -57,6 +57,7 @@ using static AlliancesPlugin.Alliances.StorePatchTaxes;
 using System.Threading.Tasks;
 using static AlliancesPlugin.JumpGates.JumpGate;
 using AlliancesPlugin.Alliances.NewTerritories;
+using AlliancesPlugin.Integrations;
 using static AlliancesPlugin.Alliances.NewTerritories.City;
 using AlliancesPlugin.WarOptIn;
 using AlliancesPlugin.KamikazeTerritories;
@@ -387,7 +388,7 @@ namespace AlliancesPlugin
         {
             var utils = new FileUtils();
 
-            utils.WriteToXmlFile<Config>(path + "\\Alliances.xml", config);
+            utils.WriteToXmlFile<Config>(basePath + "\\Alliances.xml", config);
 
             return;
         }
@@ -1374,8 +1375,14 @@ namespace AlliancesPlugin
             return false;
         }
 
+        private DateTime NextSendToClient = DateTime.Now;
         public void LoadAllAlliances()
         {
+            if (DateTime.Now >= NextSendToClient)
+            {
+                AllianceIntegrationCore.SendAllAllianceMemberDataToMods();
+                NextSendToClient = DateTime.Now.AddMinutes(5);
+            }
             if (TorchState == TorchSessionState.Loaded)
             {
                 var jsonStuff = new FileUtils();

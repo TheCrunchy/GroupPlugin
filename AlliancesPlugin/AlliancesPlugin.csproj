@@ -225,6 +225,7 @@
     <Compile Include="Alliances\PlayerData.cs" />
     <Compile Include="Alliances\RefineryCommands.cs" />
     <Compile Include="Alliances\Upgrades\RefineryUpgrade.cs" />
+    <Compile Include="Integrations\AllianceData.cs" />
     <Compile Include="Integrations\AllianceIntegrationCore.cs" />
     <Compile Include="Integrations\BoolStatus.cs" />
     <Compile Include="Integrations\DataRequest.cs" />
