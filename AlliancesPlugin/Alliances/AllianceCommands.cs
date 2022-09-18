@@ -1786,7 +1786,6 @@ namespace AlliancesPlugin.Alliances
         [Permission(MyPromoteLevel.None)]
         public void SetAllianceName(string name)
         {
-            name = Context.RawArgs;
             MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
             if (fac == null)
             {
