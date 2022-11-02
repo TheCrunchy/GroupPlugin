@@ -500,7 +500,7 @@ namespace AlliancesPlugin
         private static List<Vector3> StationLocations = new List<Vector3>();
         public static MyGps ScanChat(string input, string desc = null)
         {
-
+            
             var num = 0;
             var flag = true;
             var matchCollection = Regex.Matches(input, "GPS:([^:]{0,32}):([\\d\\.-]*):([\\d\\.-]*):([\\d\\.-]*):");
@@ -644,7 +644,7 @@ namespace AlliancesPlugin
                 return;
             }
             var loc = block.CubeGrid.PositionComp.GetPosition();
-            if ((from territory in KamikazeTerritories.MessageHandler.Territories let distance = Vector3.Distance(loc, territory.Position) where distance <= territory.Radius select territory).Any())
+            if ((from territory in KamikazeTerritories.MessageHandler.Territories.Where(x => x.ForcesPvP) let distance = Vector3.Distance(loc, territory.Position) where distance <= territory.Radius select territory).Any())
             {
                 return;
             }
@@ -697,7 +697,12 @@ namespace AlliancesPlugin
                     info.Amount = 0.0f;
                     return;
                 }
-
+                if (!AlliancePlugin.config.EnableOptionalWar)
+                {
+                    SlimBlockPatch.SendPvEMessage(attackerId);
+                    info.Amount = 0.0f;
+                    return;
+                }
                 if (MySession.Static.Factions.AreFactionsEnemies(attacker.FactionId, defender.FactionId)) return;
                 //  AlliancePlugin.Log.Info("not 4");
                 SlimBlockPatch.SendPvEMessage(attackerId);

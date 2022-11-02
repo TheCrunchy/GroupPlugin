@@ -8,6 +8,7 @@ using AlliancesPlugin.KamikazeTerritories;
 using Sandbox.Game.Entities.Cube;
 using Sandbox.Game.World;
 using Sandbox.ModAPI;
+using VRage.Game;
 using VRage.Game.ModAPI;
 using VRageMath;
 
@@ -231,7 +232,7 @@ namespace AlliancesPlugin.Integrations
                 Name = Territory.Name ?? "PvP Area",
                 Position = Territory.Position,
                 Distance = Territory.Radius,
-                AreaForcesPvP = true
+                AreaForcesPvP = Territory.ForcesPvP
             }))
             {
                 message.PvPAreas.Add(area);

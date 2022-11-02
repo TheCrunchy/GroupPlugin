@@ -1,4 +1,5 @@
-﻿using Sandbox.Game.World;
+﻿using System.Linq;
+using Sandbox.Game.World;
 using System.Text;
 using AlliancesPlugin.Integrations;
 using Torch.Commands;
@@ -6,6 +7,7 @@ using Torch.Commands.Permissions;
 using Torch.Mod;
 using Torch.Mod.Messages;
 using VRage.Game.ModAPI;
+using VRageMath;
 
 namespace AlliancesPlugin.WarOptIn
 {
@@ -20,7 +22,25 @@ namespace AlliancesPlugin.WarOptIn
             KamikazeTerritories.MessageHandler.AddOtherTerritory(Context.Player.GetPosition(), RadiusMetres, Name);
             Context.Respond("Done");
         }
+        [Command("togglepvp", "set pvp flag for target area")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void TogglePvPInArea()
+        {
+            var position = Context.Player.Character.PositionComp.GetPosition();
 
+            var territory =
+                KamikazeTerritories.MessageHandler.Territories.FirstOrDefault(x =>
+                    Vector3.Distance(position, x.Position) <= x.Radius);
+            if (territory == null)
+            {
+                Context.Respond("Not inside a territory");
+                return;
+            }
+
+            territory.ForcesPvP = !territory.ForcesPvP;
+            KamikazeTerritories.MessageHandler.SaveFile();
+            Context.Respond("Done");
+        }
         [Command("enable", "Enable war.")]
         [Permission(MyPromoteLevel.None)]
         public void EnableWar()

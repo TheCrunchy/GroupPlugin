@@ -68,7 +68,7 @@ namespace AlliancesPlugin.KamikazeTerritories
                         if (encasedData == null) return;
 
                         //  AlliancePlugin.Log.Info("got past data check");
-                        if (Territories.Any(x => x.Position == encasedData.location)) return;
+                        if (Territories.Any(x => x.Position.Equals(encasedData.location))) return;
                         //  AlliancePlugin.Log.Info("no territory with that entity id");
                         Territories.Add(new KamikazeTerritory()
                         {
@@ -88,7 +88,7 @@ namespace AlliancesPlugin.KamikazeTerritories
                         if (encasedData == null) return;
 
                         //  AlliancePlugin.Log.Info("got past data check");
-                        if (Territories.All(x => x.Position != encasedData.location))
+                        if (Territories.All(x => !x.Position.Equals(encasedData.location)))
                         {
                             //  AlliancePlugin.Log.Info("no territory with that entity id");
                             Territories.Add(new KamikazeTerritory()
@@ -101,7 +101,7 @@ namespace AlliancesPlugin.KamikazeTerritories
                         }
                         else
                         {
-                            Territories.RemoveAt(Territories.FindIndex(x => x.Position == encasedData.location));
+                            Territories.RemoveAt(Territories.FindIndex(x => x.Position.Equals(encasedData.location)));
                             Territories.Add(new KamikazeTerritory()
                             {
                                 EntityId = encasedData.claimBlockId,
@@ -122,7 +122,7 @@ namespace AlliancesPlugin.KamikazeTerritories
                     if (encasedData == null) return;
 
                     //  AlliancePlugin.Log.Info("got past data check");
-                    if (Territories.All(x => x.Position != encasedData.location)) return;
+                    if (Territories.All(x => !x.Position.Equals(encasedData.location))) return;
                     {
                         //  AlliancePlugin.Log.Info("no territory with that entity id");
                         var index = Territories.FindIndex(x => x.Position == encasedData.location);

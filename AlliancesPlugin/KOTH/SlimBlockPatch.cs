@@ -67,7 +67,7 @@ throw new Exception("Failed to find patch method");
             if (AlliancePlugin.config == null) return true;
             if (!AlliancePlugin.config.DisablePvP) return true;
             var loc = __instance.CubeGrid.PositionComp.GetPosition();
-            if ((from territory in KamikazeTerritories.MessageHandler.Territories let distance = Vector3.Distance(loc, territory.Position) where distance <= territory.Radius select territory).Any())
+            if ((from territory in KamikazeTerritories.MessageHandler.Territories.Where(x => x.ForcesPvP) let distance = Vector3.Distance(loc, territory.Position) where distance <= territory.Radius select territory).Any())
             {
                 return true;
             }
@@ -125,6 +125,12 @@ throw new Exception("Failed to find patch method");
                 return false;
             }
 
+            if (!AlliancePlugin.config.EnableOptionalWar)
+            {
+                SendPvEMessage(newattackerId);
+                damage = 0.0f;
+                return false;
+            }
             if (!MySession.Static.Factions.AreFactionsEnemies(attacker.FactionId, defender.FactionId))
             {
                 //   AlliancePlugin.Log.Info("not 4");

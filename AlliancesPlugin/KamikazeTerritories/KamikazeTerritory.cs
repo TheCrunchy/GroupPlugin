@@ -15,6 +15,6 @@ namespace AlliancesPlugin.KamikazeTerritories
         public string Name { get; set; }
         public ClaimBlockSettings settings { get; set; }
 
-
+        public bool ForcesPvP = true;
     }
 }

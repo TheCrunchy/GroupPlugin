@@ -1820,8 +1820,8 @@ namespace AlliancesPlugin.Alliances
                 Context.Respond("Name updated");
                 return;
             }
-
         }
+
         [Command("withdraw", "withdraw from the bank")]
         [Permission(MyPromoteLevel.None)]
         public void BankWithdraw(string inputAmount)
