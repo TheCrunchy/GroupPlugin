@@ -29,20 +29,48 @@ namespace AlliancesPlugin
             public static string AllianceMessage = "AllianceMessage";
             public static string AllianceSendToDiscord = "AllianceSendToDiscord";
 
-
+            internal static readonly MethodInfo getPCUPatch =
+                typeof(MQPluginPatch).GetMethod(nameof(ReturnPCU), BindingFlags.Static | BindingFlags.Public) ??
+                throw new Exception("Failed to find patch method");
             public static void Patch(PatchContext ctx)
             {
                 var HandleMessageMethod = AlliancePlugin.MQ.GetType().GetMethod("MessageHandler", BindingFlags.Instance | BindingFlags.Public);
                 if (HandleMessageMethod == null) return;
-
+                AlliancePlugin.Log.Info("1");
+                if (AlliancePlugin.SKO == null)
+                {
+                    AlliancePlugin.Log.Info("SKO IS NULL");
+                }
+                var getPcuMethod = AlliancePlugin.SKO.GetType().Assembly.GetType("SKO.GridPCULimiter.GridPCULimiterConfig").GetProperty("MaxGridPCU", BindingFlags.Instance | BindingFlags.Public);
+                if (getPcuMethod != null)
+                {
+                    AlliancePlugin.Log.Info("2");
+                    if (getPcuMethod.GetAccessors()[0] != null)
+                    {
+                        ctx.GetPattern(getPcuMethod.GetAccessors()[0]).Suffixes.Add(getPCUPatch);
+                    }
+                    AlliancePlugin.Log.Info(getPcuMethod);
+                }
+                else
+                {
+                    throw new NullReferenceException();
+                }
+                AlliancePlugin.Log.Info("3");
                 ctx.GetPattern(HandleMessageMethod).Suffixes.Add(HandleMessagePatch);
+
                 Handlers.Add(AllianceMessage, HandleAllianceChat);
                 Handlers.Add(AllianceSendToDiscord, SendToIngame);
+
+            }
+            public static void ReturnPCU(ref int __result)
+            {
+                //AlliancePlugin.Log.Info("Getting PCU");
+               // __result = 5;
             }
 
             public static void HandleAllianceChat(string MessageBody)
             {
-               AllianceChat.ReceiveChatMessage(JsonConvert.DeserializeObject<AllianceChatMessage>(MessageBody));
+                AllianceChat.ReceiveChatMessage(JsonConvert.DeserializeObject<AllianceChatMessage>(MessageBody));
             }
             public static void SendToIngame(string MessageBody)
             {

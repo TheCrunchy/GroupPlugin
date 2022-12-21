@@ -78,6 +78,29 @@ namespace AlliancesPlugin.Alliances
                 Context.Respond("You dont have an alliance.");
             }
         }
+
+        [Command("who", "see if a faction is in an alliance")]
+        [Permission(MyPromoteLevel.None)]
+        public void FindFactionAlliance(string factionTag)
+        {
+            var faction = MySession.Static.Factions.TryGetFactionByTag(factionTag);
+            if (faction == null)
+            {
+                Context.Respond("Could not find a faction with that tag");
+                return;
+            }
+
+            var alliance = AlliancePlugin.GetAlliance(faction);
+            if (alliance == null)
+            {
+                Context.Respond("Faction is not a member of an alliance");
+                return;
+            }
+
+            Context.Respond($"Faction is a member of {alliance.name}");
+        }
+
+
         [Command("ter", "output loaded territories")]
         [Permission(MyPromoteLevel.Admin)]
         public void outputTerritories()

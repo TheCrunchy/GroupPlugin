@@ -29,6 +29,7 @@ namespace AlliancesPlugin.Alliances.NewTerritories
         public int HoursSiegeLasts = 72;
 
         public bool ForcesPvP = true;
+        public bool DisablesPvP = false;
 
         private Dictionary<Guid, int> AlliancePoints = new Dictionary<Guid, int>();
 
