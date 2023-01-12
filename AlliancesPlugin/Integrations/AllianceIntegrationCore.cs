@@ -48,9 +48,10 @@ namespace AlliancesPlugin.Integrations
             {
                 return new List<long>();
             }
-            var alliance = AlliancePlugin.GetAllianceNoLoading(faction);
-            if (alliance != null) return new List<long>();
-            alliance = AlliancePlugin.GetAlliance(faction);
+          
+            var alliance = AlliancePlugin.GetAlliance(faction);
+            if (alliance == null) return new List<long>();
+
             return alliance.AllianceMembers;
         }
 

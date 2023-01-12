@@ -91,7 +91,6 @@ namespace AlliancesPlugin
         public static Dictionary<string, DenialPoint> denials = new Dictionary<string, DenialPoint>();
         public static ITorchPlugin GridBackup;
         public static ITorchPlugin MQ;
-        public static ITorchPlugin SKO;
         public static MethodInfo BackupGrid;
 
         public static ITorchBase TorchBase;
@@ -105,11 +104,6 @@ namespace AlliancesPlugin
         public static void InitPluginDependencies(PluginManager Plugins, PatchManager Patches)
         {
             InitPlugins = true;
-            if (Plugins.Plugins.TryGetValue(Guid.Parse("589f0698-d9c2-4d7c-b4fb-64df67657fcd"), out var SKOPlugin))
-            {
-               SKO = SKOPlugin;
-            }
-
             if (Plugins.Plugins.TryGetValue(Guid.Parse("75e99032-f0eb-4c0d-8710-999808ed970c"), out var GridBackupPlugin))
             {
                 BackupGrid = GridBackupPlugin.GetType().GetMethod("BackupGridsManuallyWithBuilders", BindingFlags.Public | BindingFlags.Instance, null, new Type[2] { typeof(List<MyObjectBuilder_CubeGrid>), typeof(long) }, null);
