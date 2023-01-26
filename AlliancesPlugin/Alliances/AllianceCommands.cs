@@ -307,9 +307,19 @@ namespace AlliancesPlugin.Alliances
                 sb.AppendLine(name);
             }
 
-            DialogMessage m = new DialogMessage("Alliance List", "", sb.ToString());
-            ModCommunication.SendMessageTo(m, Context.Player.SteamUserId);
+            if (Context.Player != null)
+            {
+                DialogMessage m = new DialogMessage("Alliance List", "", sb.ToString());
+                ModCommunication.SendMessageTo(m, Context.Player.SteamUserId);
+
+            }
+            else
+            {
+                Context.Respond(sb.ToString());
+            }
+          
         }
+
         [Command("join", "join an alliance")]
         [Permission(MyPromoteLevel.None)]
         public void AllianceJoin(string name)
@@ -2320,6 +2330,57 @@ namespace AlliancesPlugin.Alliances
                 DialogMessage m = new DialogMessage("Alliance Bank Records", alliance.name, sb.ToString());
                 ModCommunication.SendMessageTo(m, Context.Player.SteamUserId);
             }
+
+        }
+
+        [Command("adminlog", "View the bank log")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void BankLog(string allianceName, string timeformat = "MM-dd-yyyy")
+        {
+
+                //Do stuff with taking components from grid storage
+                //GridCosts localGridCosts = GetComponentsAndCost(projectedGrid);
+                //gridCosts.setComponents(localGridCosts.getComponents());
+                Alliance alliance = AlliancePlugin.GetAlliance(allianceName);
+                if (alliance == null)
+                {
+                    Context.Respond("Alliance not found");
+                    return;
+                }
+
+                BankLog log = alliance.GetLog();
+                StringBuilder sb = new StringBuilder();
+                log.log.Reverse();
+                int i = 0;
+                foreach (BankLogItem item in log.log)
+                {
+                    i++;
+                    if (item.FactionPaid > 0)
+                    {
+                        IMyFaction fac = MySession.Static.Factions.TryGetFactionById(item.FactionPaid);
+                        if (fac != null)
+                        {
+                            sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + AlliancePlugin.GetPlayerName(item.SteamId) + " " + item.Action + " " + fac.Tag + " " + String.Format("{0:n0}", item.Amount) + " : new balance " + String.Format("{0:n0}", item.BankAmount));
+                        }
+                        else
+                        {
+                            sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + AlliancePlugin.GetPlayerName(item.SteamId) + " " + item.Action + " a now dead faction " + String.Format("{0:n0}", item.Amount) + " : new balance  " + String.Format("{0:n0}", item.BankAmount));
+                        }
+                        continue;
+                    }
+                    if (item.PlayerPaid > 0)
+                    {
+                        sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + AlliancePlugin.GetPlayerName(item.SteamId) + " " + item.Action + " " + AlliancePlugin.GetPlayerName(item.PlayerPaid) + " " + String.Format("{0:n0}", item.Amount) + " : new balance  " + String.Format("{0:n0}", item.BankAmount));
+                    }
+                    else
+                    {
+
+                        sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + AlliancePlugin.GetPlayerName(item.SteamId) + " " + item.Action + " " + String.Format("{0:n0}", item.Amount) + " : new balance  " + String.Format("{0:n0}", item.BankAmount));
+                    }
+                }
+                File.WriteAllText($"{AlliancePlugin.path}/{allianceName}-{DateTime.Today.ToString(timeformat)}.txt", sb.ToString());
+            
+                Context.Respond("Done");
 
         }
 
