@@ -115,7 +115,7 @@ namespace AlliancesPlugin.Alliances
         [Permission(MyPromoteLevel.Admin)]
         public void AllianceTokenAdmin(string allianceName, string token)
         {
- 
+
             if (token.Length < 59)
             {
                 Context.Respond("Token not a valid length!");
@@ -124,13 +124,13 @@ namespace AlliancesPlugin.Alliances
             Alliance alliance = AlliancePlugin.GetAlliance(allianceName);
             if (alliance != null)
             {
-              
-                    string encrypted = Encryption.EncryptString(alliance.AllianceId.ToString(), token);
-                    alliance.DiscordToken = encrypted;
-                    AlliancePlugin.SaveAllianceData(alliance);
 
-                    Context.Respond("Added token! If the channel Id is also set the bot should start working after next server restart.");
-      
+                string encrypted = Encryption.EncryptString(alliance.AllianceId.ToString(), token);
+                alliance.DiscordToken = encrypted;
+                AlliancePlugin.SaveAllianceData(alliance);
+
+                Context.Respond("Added token! If the channel Id is also set the bot should start working after next server restart.");
+
             }
             else
             {
@@ -173,27 +173,27 @@ namespace AlliancesPlugin.Alliances
         [Permission(MyPromoteLevel.Admin)]
         public void AllianceChannelId(string allianceName, string channel)
         {
-     
+
 
             Alliance alliance = AlliancePlugin.GetAlliance(allianceName);
             if (alliance != null)
             {
-            
 
-                    try
-                    {
-                        alliance.DiscordChannelId = ulong.Parse(channel);
-                    }
-                    catch (Exception)
-                    {
-                        Context.Respond("Cannot parse that number.");
-                        Context.Respond("Example usage - !alliance channel 785562535494549505");
-                        return;
-                    }
-                    AlliancePlugin.SaveAllianceData(alliance);
-                    Context.Respond("Added Channel Id! If the token is also set the bot should start working after next server restart.");
-                
-           
+
+                try
+                {
+                    alliance.DiscordChannelId = ulong.Parse(channel);
+                }
+                catch (Exception)
+                {
+                    Context.Respond("Cannot parse that number.");
+                    Context.Respond("Example usage - !alliance channel 785562535494549505");
+                    return;
+                }
+                AlliancePlugin.SaveAllianceData(alliance);
+                Context.Respond("Added Channel Id! If the token is also set the bot should start working after next server restart.");
+
+
             }
             else
             {
@@ -317,7 +317,7 @@ namespace AlliancesPlugin.Alliances
             {
                 Context.Respond(sb.ToString());
             }
-          
+
         }
 
         [Command("join", "join an alliance")]
@@ -625,7 +625,7 @@ namespace AlliancesPlugin.Alliances
                 {
                     foreach (AccessLevel level in alliance.CustomRankPermissions[key].permissions)
                     {
-                       
+
                         perms.Append(level.ToString() + ", ");
                     }
                     sb.AppendLine(key + " Permissions : " + perms.ToString());
@@ -1595,7 +1595,7 @@ namespace AlliancesPlugin.Alliances
                         alliance.LeaderTitle = newName;
                         AlliancePlugin.SaveAllianceData(alliance);
                         AlliancePlugin.SendChatMessage("AllianceTitleConfig", "[A] " + newName + " ", Context.Player.SteamUserId);
-                      //  Context.Respond("Updated");
+                        //  Context.Respond("Updated");
                         return;
                     }
                     else
@@ -2072,14 +2072,14 @@ namespace AlliancesPlugin.Alliances
 
                                     if (thisGuy.permissionLevel > newTitle.permissionLevel)
                                     {
-                                       //this is weird code
+                                        //this is weird code
                                     }
                                     else
                                     {
                                         sb.AppendLine("Eligible " + AlliancePlugin.GetPlayerName(pair.Key) + " to " + rankname + " " + String.Format("{0:n0}", pair.Value));
                                     }
                                 }
-                               
+
                             }
 
                         }
@@ -2338,49 +2338,49 @@ namespace AlliancesPlugin.Alliances
         public void BankLog(string allianceName, string timeformat = "MM-dd-yyyy")
         {
 
-                //Do stuff with taking components from grid storage
-                //GridCosts localGridCosts = GetComponentsAndCost(projectedGrid);
-                //gridCosts.setComponents(localGridCosts.getComponents());
-                Alliance alliance = AlliancePlugin.GetAlliance(allianceName);
-                if (alliance == null)
-                {
-                    Context.Respond("Alliance not found");
-                    return;
-                }
+            //Do stuff with taking components from grid storage
+            //GridCosts localGridCosts = GetComponentsAndCost(projectedGrid);
+            //gridCosts.setComponents(localGridCosts.getComponents());
+            Alliance alliance = AlliancePlugin.GetAlliance(allianceName);
+            if (alliance == null)
+            {
+                Context.Respond("Alliance not found");
+                return;
+            }
 
-                BankLog log = alliance.GetLog();
-                StringBuilder sb = new StringBuilder();
-                log.log.Reverse();
-                int i = 0;
-                foreach (BankLogItem item in log.log)
+            BankLog log = alliance.GetLog();
+            StringBuilder sb = new StringBuilder();
+            log.log.Reverse();
+            int i = 0;
+            foreach (BankLogItem item in log.log)
+            {
+                i++;
+                if (item.FactionPaid > 0)
                 {
-                    i++;
-                    if (item.FactionPaid > 0)
+                    IMyFaction fac = MySession.Static.Factions.TryGetFactionById(item.FactionPaid);
+                    if (fac != null)
                     {
-                        IMyFaction fac = MySession.Static.Factions.TryGetFactionById(item.FactionPaid);
-                        if (fac != null)
-                        {
-                            sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + AlliancePlugin.GetPlayerName(item.SteamId) + " " + item.Action + " " + fac.Tag + " " + String.Format("{0:n0}", item.Amount) + " : new balance " + String.Format("{0:n0}", item.BankAmount));
-                        }
-                        else
-                        {
-                            sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + AlliancePlugin.GetPlayerName(item.SteamId) + " " + item.Action + " a now dead faction " + String.Format("{0:n0}", item.Amount) + " : new balance  " + String.Format("{0:n0}", item.BankAmount));
-                        }
-                        continue;
-                    }
-                    if (item.PlayerPaid > 0)
-                    {
-                        sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + AlliancePlugin.GetPlayerName(item.SteamId) + " " + item.Action + " " + AlliancePlugin.GetPlayerName(item.PlayerPaid) + " " + String.Format("{0:n0}", item.Amount) + " : new balance  " + String.Format("{0:n0}", item.BankAmount));
+                        sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + AlliancePlugin.GetPlayerName(item.SteamId) + " " + item.Action + " " + fac.Tag + " " + String.Format("{0:n0}", item.Amount) + " : new balance " + String.Format("{0:n0}", item.BankAmount));
                     }
                     else
                     {
-
-                        sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + AlliancePlugin.GetPlayerName(item.SteamId) + " " + item.Action + " " + String.Format("{0:n0}", item.Amount) + " : new balance  " + String.Format("{0:n0}", item.BankAmount));
+                        sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + AlliancePlugin.GetPlayerName(item.SteamId) + " " + item.Action + " a now dead faction " + String.Format("{0:n0}", item.Amount) + " : new balance  " + String.Format("{0:n0}", item.BankAmount));
                     }
+                    continue;
                 }
-                File.WriteAllText($"{AlliancePlugin.path}/{allianceName}-{DateTime.Today.ToString(timeformat)}.txt", sb.ToString());
-            
-                Context.Respond("Done");
+                if (item.PlayerPaid > 0)
+                {
+                    sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + AlliancePlugin.GetPlayerName(item.SteamId) + " " + item.Action + " " + AlliancePlugin.GetPlayerName(item.PlayerPaid) + " " + String.Format("{0:n0}", item.Amount) + " : new balance  " + String.Format("{0:n0}", item.BankAmount));
+                }
+                else
+                {
+
+                    sb.AppendLine(item.TimeClaimed.ToString(timeformat) + " : " + AlliancePlugin.GetPlayerName(item.SteamId) + " " + item.Action + " " + String.Format("{0:n0}", item.Amount) + " : new balance  " + String.Format("{0:n0}", item.BankAmount));
+                }
+            }
+            File.WriteAllText($"{AlliancePlugin.path}/{allianceName}-{DateTime.Today.ToString(timeformat)}.txt", sb.ToString());
+
+            Context.Respond("Done");
 
         }
 
@@ -2518,7 +2518,7 @@ namespace AlliancesPlugin.Alliances
 
         }
 
-        public void DoAlliancePay(string type, string nameortag, Int64 amount, Alliance alliance, ulong steamid)
+        public bool DoAlliancePay(string type, string nameortag, Int64 amount, Alliance alliance, ulong steamid)
         {
             if (type.ToLower().Equals("player"))
             {
@@ -2526,11 +2526,15 @@ namespace AlliancesPlugin.Alliances
                 if (id == null)
                 {
                     Context.Respond("Could not find that player");
-                    return;
+                    return false;
                 }
-                EconUtils.addMoney(id.IdentityId, amount);
-                alliance.PayPlayer(amount, steamid, MySession.Static.Players.TryGetSteamId(id.IdentityId));
 
+                if (DatabaseForBank.RemoveFromBalance(alliance, amount))
+                {
+                    EconUtils.addMoney(id.IdentityId, amount);
+                    alliance.PayPlayer(amount, steamid, MySession.Static.Players.TryGetSteamId(id.IdentityId));
+                    return true;
+                }
             }
             else
             {
@@ -2539,12 +2543,18 @@ namespace AlliancesPlugin.Alliances
                 if (playerFac == null)
                 {
                     Context.Respond("That target player has no faction.");
-                    return;
+                    return false;
                 }
-                EconUtils.addMoney(playerFac.FactionId, amount);
-                alliance.PayFaction(amount, steamid, playerFac.FactionId);
 
+                if (DatabaseForBank.RemoveFromBalance(alliance, amount))
+                {
+                    EconUtils.addMoney(playerFac.FactionId, amount);
+                    alliance.PayFaction(amount, steamid, playerFac.FactionId);
+                    return true;
+                }
             }
+
+            return false;
         }
 
         [Command("pay", "pay a player from the bank")]
@@ -2592,15 +2602,16 @@ namespace AlliancesPlugin.Alliances
                 alliance.bankBalance = DatabaseForBank.GetBalance(alliance.AllianceId);
                 if (alliance.bankBalance >= amount)
                 {
-                    if (DatabaseForBank.RemoveFromBalance(alliance, amount))
+                    var result = DoAlliancePay(type, nameortag, amount, alliance, Context.Player.SteamUserId);
+                    if (result)
                     {
-                        DoAlliancePay(type, nameortag, amount, alliance, Context.Player.SteamUserId);
                         AlliancePlugin.SaveAllianceData(alliance);
                     }
                     else
                     {
-                        Context.Respond("Error on removing balance, is the database connected?");
+                        Context.Respond("Payment failed");
                     }
+
                 }
                 else
                 {
@@ -3005,7 +3016,8 @@ namespace AlliancesPlugin.Alliances
                 long RefundAmount = 0;
                 if (queue != null)
                 {
-                    for (int i = 1; i < queue.SlotsUpgrade; i++) {
+                    for (int i = 1; i < queue.SlotsUpgrade; i++)
+                    {
                         if (ShipyardCommands.slotUpgrades.ContainsKey(i))
                         {
                             RefundAmount += ShipyardCommands.slotUpgrades[i].MoneyRequired;
@@ -3046,7 +3058,7 @@ namespace AlliancesPlugin.Alliances
                     }
                 }
                 refunds.Add(alliance.AllianceId, RefundAmount);
-               
+
                 if (Reset)
                 {
                     queue.SlotsUpgrade = 0;
@@ -3055,13 +3067,13 @@ namespace AlliancesPlugin.Alliances
                     Context.Respond("Reset complete. To refund money use !alliance addmoney " + alliance.name + " " + String.Format("{0:n0}", RefundAmount));
                     alliance.SavePrintQueue(queue);
                     hangar.SaveHangar(alliance);
-                    
+
                 }
                 else
                 {
                     Context.Respond("With current settings refund will be " + alliance.name + " " + String.Format("{0:n0}", RefundAmount) + " SC. for " + alliance.name);
                 }
-                
+
             }
 
 
