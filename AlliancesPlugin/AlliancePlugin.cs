@@ -500,7 +500,7 @@ namespace AlliancesPlugin
         private static List<Vector3> StationLocations = new List<Vector3>();
         public static MyGps ScanChat(string input, string desc = null)
         {
-            
+
             var num = 0;
             var flag = true;
             var matchCollection = Regex.Matches(input, "GPS:([^:]{0,32}):([\\d\\.-]*):([\\d\\.-]*):([\\d\\.-]*):");
@@ -631,7 +631,7 @@ namespace AlliancesPlugin
             if (!config.DisablePvP) return;
             if (!(target is MySlimBlock block)) return;
             //  Log.Info("is an entity");
-               
+
 
             if (FacUtils.GetOwner(block.CubeGrid) == 0L)
             {
@@ -2009,33 +2009,41 @@ namespace AlliancesPlugin
 
                 if (MySession.Static.Factions.TryGetPlayerFaction(id) != null)
                 {
-
-                    var alliance = GetAllianceNoLoading(MySession.Static.Factions.TryGetPlayerFaction(id) as MyFaction);
-                    if (alliance != null)
+                    bool Paid = false;
+                    if (AlliancePlugin.config.TerritoryTaxes)
                     {
 
-                        alliance = GetAlliance(alliance.name);
+                    }
 
-                        if (alliance.GetTaxRate(MySession.Static.Players.TryGetSteamId(id)) > 0)
+                    if (!Paid)
+                    {
+                        var alliance = GetAllianceNoLoading(MySession.Static.Factions.TryGetPlayerFaction(id) as MyFaction);
+                        if (alliance != null)
                         {
 
-                            var tax = TaxesToBeProcessed[id] * alliance.GetTaxRate(MySession.Static.Players.TryGetSteamId(id));
-                            //      Log.Info(TaxesToBeProcessed[id] + " " + tax + " " + alliance.GetTaxRate(MySession.Static.Players.TryGetSteamId(id)));
-                            if (EconUtils.getBalance(id) >= tax)
+                            alliance = GetAlliance(alliance.name);
+
+                            if (alliance.GetTaxRate(MySession.Static.Players.TryGetSteamId(id)) > 0)
                             {
-                                if (taxes.ContainsKey(alliance.AllianceId))
+
+                                var tax = TaxesToBeProcessed[id] * alliance.GetTaxRate(MySession.Static.Players.TryGetSteamId(id));
+                                //      Log.Info(TaxesToBeProcessed[id] + " " + tax + " " + alliance.GetTaxRate(MySession.Static.Players.TryGetSteamId(id)));
+                                if (EconUtils.getBalance(id) >= tax)
                                 {
-                                    taxes[alliance.AllianceId].Remove(id);
-                                    taxes[alliance.AllianceId].Add(id, tax);
+                                    if (taxes.ContainsKey(alliance.AllianceId))
+                                    {
+                                        taxes[alliance.AllianceId].Remove(id);
+                                        taxes[alliance.AllianceId].Add(id, tax);
+                                    }
+                                    else
+                                    {
+                                        var temp = new Dictionary<long, float>();
+                                        temp.Add(id, tax);
+                                        taxes.Add(alliance.AllianceId, temp);
+                                    }
                                 }
-                                else
-                                {
-                                    var temp = new Dictionary<long, float>();
-                                    temp.Add(id, tax);
-                                    taxes.Add(alliance.AllianceId, temp);
-                                }
+                                Processed.Add(id);
                             }
-                            Processed.Add(id);
                         }
                     }
                 }
@@ -3984,7 +3992,7 @@ namespace AlliancesPlugin
         public DateTime InitDiscord = DateTime.Now;
         public DateTime NextTerritoryUpdate = DateTime.Now;
 
-    
+
 
         public override void Update()
         {
@@ -4582,16 +4590,16 @@ namespace AlliancesPlugin
                 {
                     // Log.Info(beacon.Radius);
                     case Sandbox.ModAPI.IMyBeacon beacon when beacon.IsFunctional && beacon.IsWorking:
-                    {
-                        if (beacon.Radius >= loc.CaptureBlockRange - 1000)
                         {
-                            return true;
+                            if (beacon.Radius >= loc.CaptureBlockRange - 1000)
+                            {
+                                return true;
+                            }
+                            else
+                            {
+                                return false;
+                            }
                         }
-                        else
-                        {
-                            return false;
-                        }
-                    }
                     //  MyRadioAntenna antenna;
                     case Sandbox.ModAPI.IMyBeacon beacon:
                     // Log.Info(beacon.Radius);

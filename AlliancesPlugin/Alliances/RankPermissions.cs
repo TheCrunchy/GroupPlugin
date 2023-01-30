@@ -8,8 +8,10 @@ namespace AlliancesPlugin.Alliances
 {
     public class RankPermissions
     {
-        public List<AccessLevel> permissions = new List<AccessLevel>();
-        public int permissionLevel = 100;
-        public float taxRate = 0f;
+        public List<AccessLevel> permissions { get; set; } = new List<AccessLevel>();
+        public int permissionLevel { get; set; } = 100;
+        public float taxRate { get; set; } = 0f;
+        public string RankName { get; set; }
+        public string Key { get; set; }
     }
 }

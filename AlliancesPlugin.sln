@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.32630.194
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AlliancesPlugin", "AlliancesPlugin\AlliancesPlugin.csproj", "{649BB72A-A9F7-4342-B951-36CCC509D141}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordController", "DiscordController\DiscordController.csproj", "{4FE4CB5F-CEB7-4939-9506-5657214D4BD9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiscordController", "DiscordController\DiscordController.csproj", "{4FE4CB5F-CEB7-4939-9506-5657214D4BD9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

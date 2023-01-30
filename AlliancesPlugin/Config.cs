@@ -45,5 +45,6 @@ namespace AlliancesPlugin
         public float RefineryYieldMultiplierIfDisabled = 0f;
         public float AssemblerSpeedMultiplierIfDisabled = 0f;
         public bool EnablePvPAreaHud = true;
+        public bool TerritoryTaxes = true;
     }
 }
