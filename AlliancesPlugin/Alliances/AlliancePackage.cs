@@ -11,7 +11,8 @@ namespace AlliancesPlugin.Alliances
         public Dictionary<long, string> SteamIdsAndNames = new Dictionary<long, string>();
         public Dictionary<Guid, string> OtherAlliances = new Dictionary<Guid, string>();
         public Alliance AllianceData;
-        public string EditId;
+        public Guid EditId;
 
+      
     }
 }

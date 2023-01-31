@@ -17,6 +17,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -43,6 +44,52 @@ namespace AlliancesPlugin.Alliances
             string output = String.Format("{0} Seconds", diff.Seconds) + " until command can be used.";
             return output;
         }
+
+        static HttpClient client = new HttpClient();
+
+
+
+        [Command("testrequest", "open the editor")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void AllianceOpenEditor()
+        {
+            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
+            if (fac == null)
+            {
+                Context.Respond("Only factions can be in alliances.");
+                return;
+            }
+            Alliance alliance = AlliancePlugin.GetAlliance(fac);
+           Task.Run(async () => {
+                AlliancePlugin.Log.Info("1");
+                AlliancePackage alliancePackage = new AlliancePackage { AllianceData = alliance, EditId = Guid.NewGuid() };
+                AlliancePlugin.Log.Info("2");
+                string allianceJson = JsonConvert.SerializeObject(alliancePackage);
+                AlliancePlugin.Log.Info("3");
+                AlliancePlugin.Log.Info(allianceJson);
+                 await PostAlliance(allianceJson);
+   
+                AlliancePlugin.Log.Info("5");
+            //    Sandbox.ModAPI.MyAPIGateway.Utilities.InvokeOnGameThread(() =>
+           //     {
+                    MyVisualScriptLogicProvider.OpenSteamOverlay(
+                        "https://steamcommunity.com/linkfilter/?url=https://localhost:7007/alliances/edit/" + alliancePackage.EditId.ToString(),
+                        Context.Player.Identity.IdentityId);
+         //       });
+                AlliancePlugin.Log.Info("6");
+                AlliancePlugin.Log.Info(alliancePackage.EditId);
+                
+            });
+      
+        }
+
+        static async Task<HttpResponseMessage> PostAlliance(string allianceJson)
+        {
+            var result = await client.GetAsync($"https://localhost:7007/api/alliance/PostAlliance?allianceJson=" + allianceJson);
+            return result;
+        }
+
+
         [Command("token", "set a discord token")]
         [Permission(MyPromoteLevel.None)]
         public void AllianceToken(string token)
