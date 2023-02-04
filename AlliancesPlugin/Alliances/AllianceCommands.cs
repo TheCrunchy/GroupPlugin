@@ -83,6 +83,15 @@ namespace AlliancesPlugin.Alliances
                                 var temp = JsonConvert.DeserializeObject<string>(allianceResponse.Content);
                                 var newAlliance = JsonConvert.DeserializeObject<Alliance>(temp);
                                 var tempToken = alliance.DiscordToken;
+                                if (AlliancePlugin.AllAlliances.ContainsKey(newAlliance.name))
+                                {
+                                    var check = AlliancePlugin.GetAllianceNoLoading(newAlliance.name);
+                                    if (check.AllianceId != newAlliance.AllianceId)
+                                    {
+                                        Context.Respond("Alliance name is in use, no changes have been saved.");
+                                        return;
+                                    }
+                                }
                                 alliance = newAlliance;
                                 alliance.DiscordToken = tempToken;
                                 AlliancePlugin.SaveAllianceData(alliance);
