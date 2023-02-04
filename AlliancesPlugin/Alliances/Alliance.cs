@@ -624,6 +624,30 @@ namespace AlliancesPlugin.Alliances
             }
             return utils.ReadFromJsonFile<BankLog>(AlliancePlugin.path + "//AllianceBankLogs//" + AllianceId + "//log.json");
         }
+
+        public Dictionary<ulong, string> GetPlayerSteamIds()
+        {
+            var returning = new Dictionary<ulong, string>();
+
+            foreach (long id in AllianceMembers)
+            {
+                IMyFaction fac = MySession.Static.Factions.TryGetFactionById(id);
+                if (fac != null)
+                {
+                    foreach (KeyValuePair<long, MyFactionMember> member in fac.Members)
+                    {
+                        var steamId = MySession.Static.Players.TryGetSteamId(member.Value.PlayerId);
+                        if (!returning.ContainsKey(steamId))
+                        {
+                            returning.Add(steamId, AlliancePlugin.GetPlayerName(steamId));
+                        }
+                    }
+                }
+            }
+
+            return returning;
+        }
+
         public string OutputAlliance()
         {
             StringBuilder sb = new StringBuilder();

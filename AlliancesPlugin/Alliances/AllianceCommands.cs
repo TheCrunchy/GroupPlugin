@@ -17,9 +17,11 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using AlliancesPlugin.KamikazeTerritories;
 using Torch.Commands;
@@ -30,6 +32,7 @@ using VRage.Game;
 using VRage.Game.ModAPI;
 using VRage.Groups;
 using VRageMath;
+using RestSharp;
 
 namespace AlliancesPlugin.Alliances
 {
@@ -47,9 +50,70 @@ namespace AlliancesPlugin.Alliances
 
         static HttpClient client = new HttpClient();
 
+        [Command("accept", "accept changes")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void AllianceAcceptChanges()
+        {
+            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
+            if (fac == null)
+            {
+                Context.Respond("Only factions can be in alliances.");
+                return;
+            }
+
+                Alliance alliance = AlliancePlugin.GetAlliance(fac);
+                if (alliance == null)
+                {
+                    Context.Respond("You are not a member of an alliance, or the id wasnt valid");
+                }
+                if (alliance.SupremeLeader == Context.Player.SteamUserId ||
+                    Context.Player.PromoteLevel == MyPromoteLevel.Admin)
+                {
+
+                    Task.Run(async () =>
+                    {
+                        var client = new RestClient("https://localhost:7007/api/alliance/GetAlliance");
+                        var request = new RestRequest();
+                        request.AddParameter("id", Context.Player.SteamUserId);
+                        try
+                        {
+                            var allianceResponse = await client.GetAsync(request);
+                            if (allianceResponse.IsSuccessful && allianceResponse.StatusCode != HttpStatusCode.NotFound)
+                            {
+                                var temp = JsonConvert.DeserializeObject<string>(allianceResponse.Content);
+                                var newAlliance = JsonConvert.DeserializeObject<Alliance>(temp);
+                                var tempToken = alliance.DiscordToken;
+                                alliance = newAlliance;
+                                alliance.DiscordToken = tempToken;
+                                AlliancePlugin.SaveAllianceData(alliance);
+                                Context.Respond("Changes saved!");
+                            }
+                            else
+                            {
+                                Context.Respond("Request was not successful, open a new editor and try again.");
+                                return;
+                            }
+                        }
+                        catch (Exception exception)
+                        {
+                            AlliancePlugin.Log.Info(exception);
+                            Context.Respond("Request timed out or could not connect");
+                            return;
+                        }
+
+                        Context.Respond("Request maybe worked");
+                    });
+
+                }
+                else
+                {
+                    Context.Respond("You are not the leader or an admin! you cannot use this.");
+                }
+        }
 
 
-        [Command("testrequest", "open the editor")]
+
+        [Command("editor", "open the editor")]
         [Permission(MyPromoteLevel.Admin)]
         public void AllianceOpenEditor()
         {
@@ -60,27 +124,42 @@ namespace AlliancesPlugin.Alliances
                 return;
             }
             Alliance alliance = AlliancePlugin.GetAlliance(fac);
-           Task.Run(async () => {
-                AlliancePlugin.Log.Info("1");
-                AlliancePackage alliancePackage = new AlliancePackage { AllianceData = alliance, EditId = Guid.NewGuid() };
-                AlliancePlugin.Log.Info("2");
+            Task.Run(async () =>
+            {
+                alliance.DiscordToken = "Yeah im not sending this lmao";
+                AlliancePackage alliancePackage = new AlliancePackage { AllianceData = alliance, EditId = Guid.NewGuid(), SteamId = Context.Player.SteamUserId };
+                alliancePackage.ExpiresAt = DateTime.Now.AddHours(2);
+                alliancePackage.SteamIdsAndNames = alliance.GetPlayerSteamIds();
                 string allianceJson = JsonConvert.SerializeObject(alliancePackage);
-                AlliancePlugin.Log.Info("3");
-                AlliancePlugin.Log.Info(allianceJson);
-                 await PostAlliance(allianceJson);
-   
-                AlliancePlugin.Log.Info("5");
-            //    Sandbox.ModAPI.MyAPIGateway.Utilities.InvokeOnGameThread(() =>
-           //     {
-                    MyVisualScriptLogicProvider.OpenSteamOverlay(
-                        "https://steamcommunity.com/linkfilter/?url=https://localhost:7007/alliances/edit/" + alliancePackage.EditId.ToString(),
-                        Context.Player.Identity.IdentityId);
-         //       });
-                AlliancePlugin.Log.Info("6");
-                AlliancePlugin.Log.Info(alliancePackage.EditId);
+                AlliancePlugin.Log.Info(alliance.GetPlayerSteamIds());
+                var client = new RestClient("https://localhost:7007/api/alliance/PostAlliance");
                 
+                var request = new RestRequest();
+                request.AddStringBody(allianceJson, DataFormat.Json);
+                //   var parameter = new BodyParameter("allianceJson", allianceJson, "application/json", DataFormat.Json);
+             //   request.Parameters.AddParameter(parameter);
+             
+              
+                var result = await client.PostAsync(request);
+               if (result.IsSuccessful)
+               {
+                   MyVisualScriptLogicProvider.OpenSteamOverlay(
+                      "https://steamcommunity.com/linkfilter/?url=https://localhost:7007/alliances/edit/" + alliancePackage.EditId.ToString(),
+                      Context.Player.Identity.IdentityId);
+               }
+               else
+               {
+                   Context.Respond("Could not connect to server. try again later.");
+               }
+
             });
-      
+
+        }
+
+        public class RequestBody
+        {
+            public string Name;
+            public AlliancePackage Value;
         }
 
         static async Task<HttpResponseMessage> PostAlliance(string allianceJson)
@@ -88,7 +167,13 @@ namespace AlliancesPlugin.Alliances
             var result = await client.GetAsync($"https://localhost:7007/api/alliance/PostAlliance?allianceJson=" + allianceJson);
             return result;
         }
-
+        static async Task<HttpResponseMessage> GetAllianceResponse(string id)
+        {
+            CancellationTokenSource source = new CancellationTokenSource();
+            source.CancelAfter(TimeSpan.FromSeconds(5));
+            var result = await client.GetAsync($"https://localhost:7007/api/alliance/GetAlliance?id={id}", source.Token);
+            return result;
+        }
 
         [Command("token", "set a discord token")]
         [Permission(MyPromoteLevel.None)]
@@ -757,7 +842,7 @@ namespace AlliancesPlugin.Alliances
 
         [Command("make rank", "make a rank")]
         [Permission(MyPromoteLevel.None)]
-        public void AllianceMakeNewRank(string rankName, int permissionLevel)
+        public void AllianceMakeNewRank(string rankName, int permissionLevel = 100)
         {
             MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
             if (fac == null)
@@ -783,6 +868,7 @@ namespace AlliancesPlugin.Alliances
                     {
                         RankPermissions bob = new RankPermissions();
                         bob.permissionLevel = permissionLevel;
+                        bob.taxRate = 0f;
                         alliance.CustomRankPermissions.Add(rankName, bob);
                         Context.Respond("Rank created!");
                         AlliancePlugin.SaveAllianceData(alliance);
