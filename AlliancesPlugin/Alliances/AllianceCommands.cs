@@ -140,7 +140,6 @@ namespace AlliancesPlugin.Alliances
                 alliancePackage.ExpiresAt = DateTime.Now.AddHours(2);
                 alliancePackage.SteamIdsAndNames = alliance.GetPlayerSteamIds();
                 string allianceJson = JsonConvert.SerializeObject(alliancePackage);
-                AlliancePlugin.Log.Info(alliance.GetPlayerSteamIds());
                 var client = new RestClient("https://localhost:7007/api/alliance/PostAlliance");
                 
                 var request = new RestRequest();
