@@ -4235,7 +4235,7 @@ namespace AlliancesPlugin
 
                     try
                     {
-                        Log.Info("Loading territories");
+                        Log.Debug("Loading territories");
                         LoadAllTerritories();
                     }
                     catch (Exception ex)
