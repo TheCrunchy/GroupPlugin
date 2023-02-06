@@ -46,5 +46,6 @@ namespace AlliancesPlugin
         public float AssemblerSpeedMultiplierIfDisabled = 0f;
         public bool EnablePvPAreaHud = true;
         public bool TerritoryTaxes = true;
+        public string EditorUrl = "https://crunchplugins.co.uk";
     }
 }

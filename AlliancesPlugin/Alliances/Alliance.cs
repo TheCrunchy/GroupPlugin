@@ -34,6 +34,8 @@ namespace AlliancesPlugin.Alliances
         public string DiscordToken = string.Empty;
         public ulong DiscordChannelId = 0;
         public List<String> enemies = new List<String>();
+        public List<string> EditorKicks = new List<string>();
+        public List<string> EditorInvites = new List<string>();
         public List<long> EnemyFactions = new List<long>();
         public List<String> friendlies = new List<String>();
         public List<long> FriendlyFactions = new List<long>();

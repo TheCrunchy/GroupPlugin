@@ -72,7 +72,7 @@ namespace AlliancesPlugin.Alliances
 
                     Task.Run(async () =>
                     {
-                        var client = new RestClient("https://localhost:7007/api/alliance/GetAlliance");
+                        var client = new RestClient($"{AlliancePlugin.config.EditorUrl}/api/alliance/GetAlliance");
                         var request = new RestRequest();
                         request.AddParameter("id", Context.Player.SteamUserId);
                         try
@@ -124,7 +124,7 @@ namespace AlliancesPlugin.Alliances
 
         [Command("editor", "open the editor")]
         [Permission(MyPromoteLevel.Admin)]
-        public void AllianceOpenEditor()
+        public async Task AllianceOpenEditor()
         {
             MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
             if (fac == null)
@@ -133,34 +133,43 @@ namespace AlliancesPlugin.Alliances
                 return;
             }
             Alliance alliance = AlliancePlugin.GetAlliance(fac);
-            Task.Run(async () =>
-            {
+         //   Task.Run(async () =>
+            //{
                 alliance.DiscordToken = "Yeah im not sending this lmao";
                 AlliancePackage alliancePackage = new AlliancePackage { AllianceData = alliance, EditId = Guid.NewGuid(), SteamId = Context.Player.SteamUserId };
                 alliancePackage.ExpiresAt = DateTime.Now.AddHours(2);
                 alliancePackage.SteamIdsAndNames = alliance.GetPlayerSteamIds();
                 string allianceJson = JsonConvert.SerializeObject(alliancePackage);
-                var client = new RestClient("https://localhost:7007/api/alliance/PostAlliance");
+                var client = new RestClient($"{AlliancePlugin.config.EditorUrl}/api/alliance/PostAlliance");
                 
                 var request = new RestRequest();
                 request.AddStringBody(allianceJson, DataFormat.Json);
-                //   var parameter = new BodyParameter("allianceJson", allianceJson, "application/json", DataFormat.Json);
-             //   request.Parameters.AddParameter(parameter);
-             
-              
-                var result = await client.PostAsync(request);
-               if (result.IsSuccessful)
-               {
-                   MyVisualScriptLogicProvider.OpenSteamOverlay(
-                      "https://steamcommunity.com/linkfilter/?url=https://localhost:7007/alliances/edit/" + alliancePackage.EditId.ToString(),
-                      Context.Player.Identity.IdentityId);
-               }
-               else
-               {
-                   Context.Respond("Could not connect to server. try again later.");
-               }
+            //   var parameter = new BodyParameter("allianceJson", allianceJson, "application/json", DataFormat.Json);
+            //   request.Parameters.AddParameter(parameter);
 
-            });
+            try
+            {
+
+                var result = await client.PostAsync(request);
+                if (result.IsSuccessful)
+                {
+                    MyVisualScriptLogicProvider.OpenSteamOverlay(
+                       $"https://steamcommunity.com/linkfilter/?url={AlliancePlugin.config.EditorUrl}/alliances/edit/" + alliancePackage.EditId.ToString(),
+                       Context.Player.Identity.IdentityId);
+                     Context.Respond("Opening?");
+                }
+                else
+                {
+                    Context.Respond("Could not connect to server. try again later.");
+                }
+
+            }
+            catch (Exception e)
+            {
+
+                throw;
+            }
+          //  });
 
         }
 
