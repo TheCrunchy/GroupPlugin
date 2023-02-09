@@ -4029,40 +4029,50 @@ namespace AlliancesPlugin
                 var s = LoadThisShit.FirstOrDefault();
                 if (s != null)
                 {
-                    var alliance = jsonStuff.ReadFromJsonFile<Alliance>(s);
-                    if (alliance == null)
+                    try
                     {
-
-                    }
-
-                    if (AllAlliances.ContainsKey(alliance.name))
-                    {
-                        alliance.name += " DUPLICATE";
-                        AllAlliances.Add(alliance.name, alliance);
-
-                        foreach (var id in alliance.AllianceMembers)
+                        var alliance = jsonStuff.ReadFromJsonFile<Alliance>(s);
+                        if (alliance != null)
                         {
-                            if (!FactionsInAlliances.ContainsKey(id))
+                            if (AllAlliances.ContainsKey(alliance.name))
                             {
-                                FactionsInAlliances.Add(id, alliance.name);
+                                alliance.name += " DUPLICATE";
+                                AllAlliances.Add(alliance.name, alliance);
+
+                                foreach (var id in alliance.AllianceMembers)
+                                {
+                                    if (!FactionsInAlliances.ContainsKey(id))
+                                    {
+                                        FactionsInAlliances.Add(id, alliance.name);
+                                    }
+                                }
+
+                                SaveAllianceData(alliance);
+                            }
+                            else
+                            {
+                                AllAlliances.Add(alliance.name, alliance);
+                                foreach (var id in alliance.AllianceMembers)
+                                {
+                                    if (!FactionsInAlliances.ContainsKey(id))
+                                    {
+                                        FactionsInAlliances.Add(id, alliance.name);
+                                    }
+                                }
                             }
                         }
 
-                        SaveAllianceData(alliance);
-                    }
-                    else
-                    {
-                        AllAlliances.Add(alliance.name, alliance);
-                        foreach (var id in alliance.AllianceMembers)
-                        {
-                            if (!FactionsInAlliances.ContainsKey(id))
-                            {
-                                FactionsInAlliances.Add(id, alliance.name);
-                            }
-                        }
-                    }
+                        LoadThisShit.Remove(s);
 
-                    LoadThisShit.Remove(s);
+                    }
+                    catch (FileNotFoundException e)
+                    {
+                        LoadThisShit.Remove(s);
+                    }
+                    catch (Exception e)
+                    {
+                        AlliancePlugin.Log.Error(e);
+                    }
                 }
             }
             if (ticks % 64 == 0)
