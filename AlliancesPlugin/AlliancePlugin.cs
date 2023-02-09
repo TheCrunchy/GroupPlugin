@@ -314,9 +314,15 @@ namespace AlliancesPlugin
             }
 
             Directory.CreateDirectory(folder);
+            watcher = new FileSystemWatcher($"{folder}//AllianceData");
+            watcher.Created += OnCreated;
             return folder;
         }
-
+        private static void OnCreated(object sender, FileSystemEventArgs e)
+        {
+            KnownPaths.Add(e.FullPath);
+        }
+        public static FileSystemWatcher watcher;
         public static Config LoadConfig()
         {
             var utils = new FileUtils();
@@ -1385,35 +1391,44 @@ namespace AlliancesPlugin
         }
 
         public static List<string> LoadThisShit = new List<string>();
+        public static List<string> KnownPaths = new List<string>();
 
         private DateTime NextSendToClient = DateTime.Now;
         public static void LoadAllAlliances()
         {
 
             if (TorchState == TorchSessionState.Loaded)
+            {
+                var jsonStuff = new FileUtils();
+                try
                 {
-                    var jsonStuff = new FileUtils();
-                    try
+                    if (Loading)
                     {
-                        Loading = true;
                         AllAlliances.Clear();
                         FactionsInAlliances.Clear();
+                        Parallel.Invoke();
                         Task.Run(async () =>
                         {
                             foreach (var s in Directory.EnumerateFiles(path + "//AllianceData//"))
                             {
-                                LoadThisShit.Add(s);
+                                KnownPaths.Add(s);
                             }
 
                             Loading = false;
                         });
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        Log.Error(ex);
+                        LoadThisShit = KnownPaths.ToList();
                     }
+
                 }
-            
+                catch (Exception ex)
+                {
+                    Log.Error(ex);
+                }
+            }
+
         }
 
         public static List<IMyIdentity> GetAllIdentitiesByNameOrId(string playerNameOrSteamId)
@@ -3367,7 +3382,7 @@ namespace AlliancesPlugin
                         }
                         var locked = false;
 
-                      //  Log.Info("Yeah we capping");
+                        //  Log.Info("Yeah we capping");
 
 
                         var entitiesInCapPoint = 0;
@@ -4009,42 +4024,46 @@ namespace AlliancesPlugin
                 }
             }
 
-            if (ticks % 16 == 0 && LoadThisShit.Any() && !Loading)
+            if (ticks % 32 == 0 && LoadThisShit.Any() && !Loading)
             {
                 var s = LoadThisShit.FirstOrDefault();
-                if (s == null)
+                if (s != null)
                 {
-                    return;
-                }
-                var alliance = jsonStuff.ReadFromJsonFile<Alliance>(s);
-                if (AllAlliances.ContainsKey(alliance.name))
-                {
-                    alliance.name += " DUPLICATE";
-                    AllAlliances.Add(alliance.name, alliance);
-
-                    foreach (var id in alliance.AllianceMembers)
+                    var alliance = jsonStuff.ReadFromJsonFile<Alliance>(s);
+                    if (alliance == null)
                     {
-                        if (!FactionsInAlliances.ContainsKey(id))
+
+                    }
+
+                    if (AllAlliances.ContainsKey(alliance.name))
+                    {
+                        alliance.name += " DUPLICATE";
+                        AllAlliances.Add(alliance.name, alliance);
+
+                        foreach (var id in alliance.AllianceMembers)
                         {
-                            FactionsInAlliances.Add(id, alliance.name);
+                            if (!FactionsInAlliances.ContainsKey(id))
+                            {
+                                FactionsInAlliances.Add(id, alliance.name);
+                            }
+                        }
+
+                        SaveAllianceData(alliance);
+                    }
+                    else
+                    {
+                        AllAlliances.Add(alliance.name, alliance);
+                        foreach (var id in alliance.AllianceMembers)
+                        {
+                            if (!FactionsInAlliances.ContainsKey(id))
+                            {
+                                FactionsInAlliances.Add(id, alliance.name);
+                            }
                         }
                     }
 
-                    SaveAllianceData(alliance);
+                    LoadThisShit.Remove(s);
                 }
-                else
-                {
-                    AllAlliances.Add(alliance.name, alliance);
-                    foreach (var id in alliance.AllianceMembers)
-                    {
-                        if (!FactionsInAlliances.ContainsKey(id))
-                        {
-                            FactionsInAlliances.Add(id, alliance.name);
-                        }
-                    }
-                }
-
-                LoadThisShit.Remove(s);
             }
             if (ticks % 64 == 0)
             {
@@ -4059,6 +4078,12 @@ namespace AlliancesPlugin
             }
             if (ticks % 512 == 0)
             {
+                if (DateTime.Now >= NextSendToClient && TorchState == TorchSessionState.Loaded)
+                {
+                    AllianceIntegrationCore.SendAllAllianceMemberDataToMods();
+                    NextSendToClient = DateTime.Now.AddMinutes(5);
+                }
+
                 var YEET = new Dictionary<ulong, DateTime>();
                 var oof = new List<ulong>();
                 var OtherYeet = new List<ulong>();
@@ -4177,7 +4202,7 @@ namespace AlliancesPlugin
 
                 if (DateTime.Now > NextUpdate)
                 {
-                    NextUpdate = DateTime.Now.AddMinutes(10);
+                    NextUpdate = DateTime.Now.AddMinutes(8);
 
                     //try
                     //{
@@ -4210,19 +4235,15 @@ namespace AlliancesPlugin
 
                     //dont write code at 4am, this stuff was broken for like 3 months
 
-                    try
-                    {
-                        LoadAllAlliances();
-                        if (DateTime.Now >= NextSendToClient && TorchState == TorchSessionState.Loaded)
-                        {
-                            AllianceIntegrationCore.SendAllAllianceMemberDataToMods();
-                            NextSendToClient = DateTime.Now.AddMinutes(5);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error(ex);
-                    }
+                    //try
+                    //{
+                    //    LoadAllAlliances();
+
+                    //}
+                    //catch (Exception ex)
+                    //{
+                    //    Log.Error(ex);
+                    //}
 
                     //try
                     //{
