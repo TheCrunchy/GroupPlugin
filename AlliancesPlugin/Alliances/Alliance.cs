@@ -78,6 +78,22 @@ namespace AlliancesPlugin.Alliances
         
         }
 
+        public Dictionary<long, string> GetMemberFactions()
+        {
+            var returning = new Dictionary<long, string>();
+
+            foreach (var member in AllianceMembers)
+            {
+                var faction = MySession.Static.Factions.TryGetFactionById(member);
+                if (faction != null)
+                {
+                    returning.Add(member, faction.Tag);
+                }
+            }
+
+            return returning;
+        }
+
         public int GetShipClassLimit(string className)
         {
             return _classLimits.GetLimitForClass(className);

@@ -866,14 +866,13 @@ namespace AlliancesPlugin
 
             // MySession.Static.Config.
             // MyMultiplayer.Static.SyncDistance
-            if (!Directory.Exists(path + "//JumpZones//"))
-            {
-                Directory.CreateDirectory(path + "//JumpZones//");
-            }
-            if (!Directory.Exists(path + "//UpkeepBackups//"))
-            {
-                Directory.CreateDirectory(path + "//UpkeepBackups//");
-            }
+
+            Directory.CreateDirectory(path + "//JumpZones//");
+
+            Directory.CreateDirectory(path + "//EditorBackups//");
+
+            Directory.CreateDirectory(path + "//UpkeepBackups//");
+
             if (!File.Exists(path + "//JumpZones//example.xml"))
             {
                 utils.WriteToXmlFile<JumpZone>(path + "//JumpZones//example.xml", new JumpZone(), false);
@@ -1380,59 +1379,41 @@ namespace AlliancesPlugin
             return false;
         }
 
-        private DateTime NextSendToClient = DateTime.Now;
-        public void LoadAllAlliances()
+        public static void TriggerModUpdate()
         {
-            if (DateTime.Now >= NextSendToClient && TorchState == TorchSessionState.Loaded)
-            {
-                AllianceIntegrationCore.SendAllAllianceMemberDataToMods();
-                NextSendToClient = DateTime.Now.AddMinutes(5);
-            }
+            AllianceIntegrationCore.SendAllAllianceMemberDataToMods();
+        }
+
+        public static List<string> LoadThisShit = new List<string>();
+
+        private DateTime NextSendToClient = DateTime.Now;
+        public static void LoadAllAlliances()
+        {
+
             if (TorchState == TorchSessionState.Loaded)
-            {
-                var jsonStuff = new FileUtils();
-                try
                 {
-                    AllAlliances.Clear();
-                    FactionsInAlliances.Clear();
-                    foreach (var s in Directory.GetFiles(path + "//AllianceData//"))
+                    var jsonStuff = new FileUtils();
+                    try
                     {
-
-                        var alliance = jsonStuff.ReadFromJsonFile<Alliance>(s);
-                        if (AllAlliances.ContainsKey(alliance.name))
+                        Loading = true;
+                        AllAlliances.Clear();
+                        FactionsInAlliances.Clear();
+                        Task.Run(async () =>
                         {
-                            alliance.name += " DUPLICATE";
-                            AllAlliances.Add(alliance.name, alliance);
-
-                            foreach (var id in alliance.AllianceMembers)
+                            foreach (var s in Directory.EnumerateFiles(path + "//AllianceData//"))
                             {
-                                if (!FactionsInAlliances.ContainsKey(id))
-                                {
-                                    FactionsInAlliances.Add(id, alliance.name);
-                                }
+                                LoadThisShit.Add(s);
                             }
-                            SaveAllianceData(alliance);
-                        }
-                        else
-                        {
-                            AllAlliances.Add(alliance.name, alliance);
-                            foreach (var id in alliance.AllianceMembers)
-                            {
-                                if (!FactionsInAlliances.ContainsKey(id))
-                                {
-                                    FactionsInAlliances.Add(id, alliance.name);
-                                }
-                            }
-                        }
-                        alliance.LoadShipClassLimits();
 
+                            Loading = false;
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex);
                     }
                 }
-                catch (Exception ex)
-                {
-                    Log.Error(ex);
-                }
-            }
+            
         }
 
         public static List<IMyIdentity> GetAllIdentitiesByNameOrId(string playerNameOrSteamId)
@@ -1887,46 +1868,39 @@ namespace AlliancesPlugin
         }
         public void OrganisePlayers()
         {
-            foreach (var player in MySession.Static.Players.GetOnlinePlayers())
+            Task.Run(async () =>
             {
-                if (MySession.Static.Factions.GetPlayerFaction(player.Identity.IdentityId) != null)
+                foreach (var player in MySession.Static.Players.GetOnlinePlayers())
                 {
-                    var temp = GetAllianceNoLoading(MySession.Static.Factions.GetPlayerFaction(player.Identity.IdentityId));
-                    if (temp != null)
+                    var fac = MySession.Static.Factions.GetPlayerFaction(player.Identity.IdentityId);
+                    if (fac == null) continue;
+                    var temp = GetAllianceNoLoading(fac);
+                    if (temp == null) continue;
+                    if (playersInAlliances.ContainsKey(temp.AllianceId))
                     {
-                        //if (AllianceChat.PeopleInAllianceChat.ContainsKey(player.Id.SteamId))
-                        //{
-                        //    AllianceCommands.SendStatusToClient(true, player.Id.SteamId);
-                        //}
-                        //else
-                        //{
-                        //    AllianceCommands.SendStatusToClient(false, player.Id.SteamId);
-                        //}
-                        if (playersInAlliances.ContainsKey(temp.AllianceId))
+                        if (!playersInAlliances[temp.AllianceId].Contains(player.Id.SteamId))
                         {
-                            if (!playersInAlliances[temp.AllianceId].Contains(player.Id.SteamId))
-                            {
-                                playersInAlliances[temp.AllianceId].Add(player.Id.SteamId);
-                            }
-                            if (!playersAllianceId.ContainsKey(player.Id.SteamId))
-                            {
-                                playersAllianceId.Add(player.Id.SteamId, temp.AllianceId);
-                            }
+                            playersInAlliances[temp.AllianceId].Add(player.Id.SteamId);
                         }
-                        else
-                        {
-                            var bob = new List<ulong>();
-                            bob.Add(player.Id.SteamId);
-                            playersInAlliances.Add(temp.AllianceId, bob);
 
-                            if (!playersAllianceId.ContainsKey(player.Id.SteamId))
-                            {
-                                playersAllianceId.Add(player.Id.SteamId, temp.AllianceId);
-                            }
+                        if (!playersAllianceId.ContainsKey(player.Id.SteamId))
+                        {
+                            playersAllianceId.Add(player.Id.SteamId, temp.AllianceId);
+                        }
+                    }
+                    else
+                    {
+                        var bob = new List<ulong>();
+                        bob.Add(player.Id.SteamId);
+                        playersInAlliances.Add(temp.AllianceId, bob);
+
+                        if (!playersAllianceId.ContainsKey(player.Id.SteamId))
+                        {
+                            playersAllianceId.Add(player.Id.SteamId, temp.AllianceId);
                         }
                     }
                 }
-            }
+            });
         }
         public static List<long> TaxingId = new List<long>();
         public static List<long> OtherTaxingId = new List<long>();
@@ -3393,7 +3367,7 @@ namespace AlliancesPlugin
                         }
                         var locked = false;
 
-                        Log.Info("Yeah we capping");
+                      //  Log.Info("Yeah we capping");
 
 
                         var entitiesInCapPoint = 0;
@@ -3992,8 +3966,8 @@ namespace AlliancesPlugin
         public DateTime InitDiscord = DateTime.Now;
         public DateTime NextTerritoryUpdate = DateTime.Now;
 
-
-
+        public static bool Loading = false;
+        private FileUtils jsonStuff = new FileUtils();
         public override void Update()
         {
             if (!InitPlugins)
@@ -4033,6 +4007,44 @@ namespace AlliancesPlugin
                 {
                     warcore.config.EnableOptionalWar = false;
                 }
+            }
+
+            if (ticks % 16 == 0 && LoadThisShit.Any() && !Loading)
+            {
+                var s = LoadThisShit.FirstOrDefault();
+                if (s == null)
+                {
+                    return;
+                }
+                var alliance = jsonStuff.ReadFromJsonFile<Alliance>(s);
+                if (AllAlliances.ContainsKey(alliance.name))
+                {
+                    alliance.name += " DUPLICATE";
+                    AllAlliances.Add(alliance.name, alliance);
+
+                    foreach (var id in alliance.AllianceMembers)
+                    {
+                        if (!FactionsInAlliances.ContainsKey(id))
+                        {
+                            FactionsInAlliances.Add(id, alliance.name);
+                        }
+                    }
+
+                    SaveAllianceData(alliance);
+                }
+                else
+                {
+                    AllAlliances.Add(alliance.name, alliance);
+                    foreach (var id in alliance.AllianceMembers)
+                    {
+                        if (!FactionsInAlliances.ContainsKey(id))
+                        {
+                            FactionsInAlliances.Add(id, alliance.name);
+                        }
+                    }
+                }
+
+                LoadThisShit.Remove(s);
             }
             if (ticks % 64 == 0)
             {
@@ -4165,17 +4177,17 @@ namespace AlliancesPlugin
 
                 if (DateTime.Now > NextUpdate)
                 {
-                    NextUpdate = DateTime.Now.AddSeconds(60);
+                    NextUpdate = DateTime.Now.AddMinutes(10);
 
-                    try
-                    {
-                        warcore.LoadFile();
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error(ex);
+                    //try
+                    //{
+                    //    warcore.LoadFile();
+                    //}
+                    //catch (Exception ex)
+                    //{
+                    //    Log.Error(ex);
 
-                    }
+                    //}
                     try
                     {
                         OrganisePlayers();
@@ -4185,14 +4197,14 @@ namespace AlliancesPlugin
                         Log.Error(ex);
 
                     }
-                    try
-                    {
-                        LoadAllCaptureSites();
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error(ex);
-                    }
+                    //try
+                    //{
+                    //    LoadAllCaptureSites();
+                    //}
+                    //catch (Exception ex)
+                    //{
+                    //    Log.Error(ex);
+                    //}
 
 
 
@@ -4201,59 +4213,38 @@ namespace AlliancesPlugin
                     try
                     {
                         LoadAllAlliances();
+                        if (DateTime.Now >= NextSendToClient && TorchState == TorchSessionState.Loaded)
+                        {
+                            AllianceIntegrationCore.SendAllAllianceMemberDataToMods();
+                            NextSendToClient = DateTime.Now.AddMinutes(5);
+                        }
                     }
                     catch (Exception ex)
                     {
                         Log.Error(ex);
                     }
 
+                    //try
+                    //{
+                    //    LoadAllGates();
 
-                    try
-                    {
+                    //}
+                    //catch (Exception ex)
+                    //{
 
-                        LoadAllRefineryUpgrades();
-                    }
-                    catch (Exception ex)
-                    {
-
-                        Log.Error(ex);
-                    }
-
+                    //    Log.Error(ex);
+                    //}
 
 
-                    try
-                    {
-                        LoadAllGates();
+                    //try
+                    //{
+                    //    LoadAllJumpZones();
 
-                    }
-                    catch (Exception ex)
-                    {
-
-                        Log.Error(ex);
-                    }
-
-
-                    try
-                    {
-                        Log.Info("Loading territories");
-                        LoadAllTerritories();
-                    }
-                    catch (Exception ex)
-                    {
-
-                        Log.Error(ex);
-                    }
-
-
-                    try
-                    {
-                        LoadAllJumpZones();
-
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error(ex);
-                    }
+                    //}
+                    //catch (Exception ex)
+                    //{
+                    //    Log.Error(ex);
+                    //}
 
                 }
             }
