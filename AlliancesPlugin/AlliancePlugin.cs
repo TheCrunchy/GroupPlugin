@@ -316,6 +316,7 @@ namespace AlliancesPlugin
             Directory.CreateDirectory(folder);
             watcher = new FileSystemWatcher($"{folder}//AllianceData");
             watcher.Created += OnCreated;
+            watcher.EnableRaisingEvents = true;
             return folder;
         }
         private static void OnCreated(object sender, FileSystemEventArgs e)
@@ -1414,12 +1415,87 @@ namespace AlliancesPlugin
                                 KnownPaths.Add(s);
                             }
 
-                            Loading = true;
+                            foreach (var s in KnownPaths)
+                            {
+                                try
+                                {
+                                    var alliance = jsonStuff.ReadFromJsonFile<Alliance>(s);
+                                    if (alliance != null)
+                                    {
+                                        if (AllAlliances.ContainsKey(alliance.name))
+                                        {
+                                            AllAlliances[alliance.name] = alliance;
+
+                                            foreach (var id in alliance.AllianceMembers)
+                                            {
+                                                if (!FactionsInAlliances.ContainsKey(id))
+                                                {
+                                                    FactionsInAlliances.Add(id, alliance.name);
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            AllAlliances.Add(alliance.name, alliance);
+                                            foreach (var id in alliance.AllianceMembers)
+                                            {
+                                                if (!FactionsInAlliances.ContainsKey(id))
+                                                {
+                                                    FactionsInAlliances.Add(id, alliance.name);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                catch (Exception e)
+                                {
+                                    AlliancePlugin.Log.Error(e);
+                                }
+                            }
                         });
                     }
                     else
                     {
-                        LoadThisShit = KnownPaths.ToList();
+                        foreach (var s in KnownPaths)
+                        {
+                            try
+                            {
+                                var alliance = jsonStuff.ReadFromJsonFile<Alliance>(s);
+                                if (alliance != null)
+                                {
+                                    if (AllAlliances.ContainsKey(alliance.name))
+                                    {
+                                        AllAlliances[alliance.name] = alliance;
+
+                                        foreach (var id in alliance.AllianceMembers)
+                                        {
+                                            if (!FactionsInAlliances.ContainsKey(id))
+                                            {
+                                                FactionsInAlliances.Add(id, alliance.name);
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        AllAlliances.Add(alliance.name, alliance);
+                                        foreach (var id in alliance.AllianceMembers)
+                                        {
+                                            if (!FactionsInAlliances.ContainsKey(id))
+                                            {
+                                                FactionsInAlliances.Add(id, alliance.name);
+                                            }
+                                        }
+                                    }
+                                }
+
+                                LoadThisShit.Remove(s);
+
+                            }
+                            catch (Exception e)
+                            {
+                                AlliancePlugin.Log.Error(e);
+                            }
+                        }
                     }
 
                 }
@@ -4024,56 +4100,6 @@ namespace AlliancesPlugin
                 }
             }
 
-            if (ticks % 32 == 0 && LoadThisShit.Any() && !Loading)
-            {
-                var s = LoadThisShit.FirstOrDefault();
-                if (s != null)
-                {
-                    try
-                    {
-                        var alliance = jsonStuff.ReadFromJsonFile<Alliance>(s);
-                        if (alliance != null)
-                        {
-                            if (AllAlliances.ContainsKey(alliance.name))
-                            {
-                                AllAlliances[alliance.name] = alliance;
-
-                                foreach (var id in alliance.AllianceMembers)
-                                {
-                                    if (!FactionsInAlliances.ContainsKey(id))
-                                    {
-                                        FactionsInAlliances.Add(id, alliance.name);
-                                    }
-                                }
-
-                                SaveAllianceData(alliance);
-                            }
-                            else
-                            {
-                                AllAlliances.Add(alliance.name, alliance);
-                                foreach (var id in alliance.AllianceMembers)
-                                {
-                                    if (!FactionsInAlliances.ContainsKey(id))
-                                    {
-                                        FactionsInAlliances.Add(id, alliance.name);
-                                    }
-                                }
-                            }
-                        }
-
-                        LoadThisShit.Remove(s);
-
-                    }
-                    catch (FileNotFoundException e)
-                    {
-                        LoadThisShit.Remove(s);
-                    }
-                    catch (Exception e)
-                    {
-                        AlliancePlugin.Log.Error(e);
-                    }
-                }
-            }
             if (ticks % 64 == 0)
             {
                 try
