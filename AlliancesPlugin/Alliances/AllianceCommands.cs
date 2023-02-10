@@ -187,6 +187,7 @@ namespace AlliancesPlugin.Alliances
         public void manualLoadAll()
 
         {
+            Context.Respond(AlliancePlugin.KnownPaths.Count().ToString());
             AlliancePlugin.LoadAllAlliances();
         }
 

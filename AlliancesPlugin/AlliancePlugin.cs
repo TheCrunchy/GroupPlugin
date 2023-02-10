@@ -1402,7 +1402,7 @@ namespace AlliancesPlugin
                 var jsonStuff = new FileUtils();
                 try
                 {
-                    if (Loading)
+                    if (!Loading)
                     {
                         AllAlliances.Clear();
                         FactionsInAlliances.Clear();
@@ -1414,7 +1414,7 @@ namespace AlliancesPlugin
                                 KnownPaths.Add(s);
                             }
 
-                            Loading = false;
+                            Loading = true;
                         });
                     }
                     else
@@ -4036,8 +4036,7 @@ namespace AlliancesPlugin
                         {
                             if (AllAlliances.ContainsKey(alliance.name))
                             {
-                                alliance.name += " DUPLICATE";
-                                AllAlliances.Add(alliance.name, alliance);
+                                AllAlliances[alliance.name] = alliance;
 
                                 foreach (var id in alliance.AllianceMembers)
                                 {
@@ -4245,15 +4244,15 @@ namespace AlliancesPlugin
 
                     //dont write code at 4am, this stuff was broken for like 3 months
 
-                    //try
-                    //{
-                    //    LoadAllAlliances();
+                    try
+                    {
+                        LoadAllAlliances();
 
-                    //}
-                    //catch (Exception ex)
-                    //{
-                    //    Log.Error(ex);
-                    //}
+                    }
+                    catch (Exception ex)
+                    {  
+                        Log.Error(ex);
+                    }
 
                     //try
                     //{
