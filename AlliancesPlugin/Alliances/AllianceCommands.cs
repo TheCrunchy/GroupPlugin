@@ -52,134 +52,112 @@ namespace AlliancesPlugin.Alliances
         [Permission(MyPromoteLevel.Admin)]
         public void AllianceAcceptChangesAdmin()
         {
-            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
-            if (fac == null)
-            {
-                Context.Respond("Only factions can be in alliances.");
-                return;
-            }
 
-            Alliance alliance = AlliancePlugin.GetAlliance(fac);
-            if (alliance == null)
-            {
-                Context.Respond("You are not a member of an alliance, or the id wasnt valid");
-            }
 
-            if (alliance.SupremeLeader == Context.Player.SteamUserId ||
-                Context.Player.PromoteLevel == MyPromoteLevel.Admin)
+            Task.Run(async () =>
             {
-
-                Task.Run(async () =>
+                var client = new RestClient($"{AlliancePlugin.config.EditorUrl}/api/alliance/GetAlliance");
+                var request = new RestRequest();
+                request.AddParameter("id", Context.Player.SteamUserId);
+                try
                 {
-                    utils.WriteToJsonFile(
-                        $"{AlliancePlugin.path}//EditorBackups//{alliance.AllianceId}{DateTime.Now:yyyy-MM-dd-hh-mm-ss}.json",
-                        alliance);
-                    var client = new RestClient($"{AlliancePlugin.config.EditorUrl}/api/alliance/GetAlliance");
-                    var request = new RestRequest();
-                    request.AddParameter("id", Context.Player.SteamUserId);
-                    try
+                    var allianceResponse = await client.GetAsync(request);
+                    if (allianceResponse.IsSuccessful && allianceResponse.StatusCode != HttpStatusCode.NotFound)
                     {
-                        var allianceResponse = await client.GetAsync(request);
-                        if (allianceResponse.IsSuccessful && allianceResponse.StatusCode != HttpStatusCode.NotFound)
+
+                        var temp = JsonConvert.DeserializeObject<string>(allianceResponse.Content);
+                        var newAlliance = JsonConvert.DeserializeObject<Alliance>(temp);
+                        var alliance = AlliancePlugin.GetAllianceNoLoading(newAlliance.AllianceId);
+                        var tempToken = alliance.DiscordToken;
+                        if (AlliancePlugin.AllAlliances.ContainsKey(newAlliance.name))
                         {
-                            var temp = JsonConvert.DeserializeObject<string>(allianceResponse.Content);
-                            var newAlliance = JsonConvert.DeserializeObject<Alliance>(temp);
-                            var tempToken = alliance.DiscordToken;
-                            if (AlliancePlugin.AllAlliances.ContainsKey(newAlliance.name))
+                            var check = AlliancePlugin.GetAllianceNoLoading(newAlliance.name);
+                            if (check.AllianceId != newAlliance.AllianceId)
                             {
-                                var check = AlliancePlugin.GetAllianceNoLoading(newAlliance.name);
-                                if (check.AllianceId != newAlliance.AllianceId)
-                                {
-                                    Context.Respond("Alliance name is in use, no changes have been saved.");
-                                    return;
-                                }
+                                Context.Respond("Alliance name is in use, no changes have been saved.");
+                                return;
                             }
+                        }
 
-                            alliance = newAlliance;
+                        alliance = newAlliance;
 
-                            foreach (var faction in alliance.EditorKicks
-                                         .Select(facid => MySession.Static.Factions.TryGetFactionByTag(facid))
-                                         .Where(faction => faction != null))
+                        foreach (var faction in alliance.EditorKicks
+                                     .Select(facid => MySession.Static.Factions.TryGetFactionByTag(facid))
+                                     .Where(faction => faction != null))
+                        {
+                            AllianceChat.SendChatMessage(alliance.AllianceId, "Alliance",
+                                faction.Tag + " was kicked from the alliance!", true, 0);
+                            foreach (long id in alliance.AllianceMembers)
                             {
-                                AllianceChat.SendChatMessage(alliance.AllianceId, "Alliance",
-                                    faction.Tag + " was kicked from the alliance!", true, 0);
-                                foreach (long id in alliance.AllianceMembers)
+
+                                IMyFaction member = MySession.Static.Factions.TryGetFactionById(id);
+                                if (member != null)
                                 {
+                                    MyFactionCollection.DeclareWar(member.FactionId, faction.FactionId);
+                                    MySession.Static.Factions.SetReputationBetweenFactions(id,
+                                        faction.FactionId, -1500);
 
-                                    IMyFaction member = MySession.Static.Factions.TryGetFactionById(id);
-                                    if (member != null)
+                                    foreach (MyFactionMember m in member.Members.Values)
                                     {
-                                        MyFactionCollection.DeclareWar(member.FactionId, faction.FactionId);
-                                        MySession.Static.Factions.SetReputationBetweenFactions(id,
-                                            faction.FactionId, -1500);
-
-                                        foreach (MyFactionMember m in member.Members.Values)
-                                        {
-                                            AllianceChat.PeopleInAllianceChat.Remove(
-                                                MySession.Static.Players.TryGetSteamId(m.PlayerId));
-                                        }
+                                        AllianceChat.PeopleInAllianceChat.Remove(
+                                            MySession.Static.Players.TryGetSteamId(m.PlayerId));
                                     }
                                 }
                             }
+                        }
 
-                            foreach (var facid in alliance.Invites)
+                        foreach (var facid in alliance.Invites)
+                        {
+                            var faction = MySession.Static.Factions.TryGetFactionById(facid);
+                            if (faction != null)
                             {
-                                var faction = MySession.Static.Factions.TryGetFactionById(facid);
-                                if (faction != null)
+                                var tempAlliance = AlliancePlugin.GetAllianceNoLoading(faction as MyFaction);
+                                if (tempAlliance != null)
                                 {
-                                    var tempAlliance = AlliancePlugin.GetAllianceNoLoading(faction as MyFaction);
-                                    if (tempAlliance != null)
+                                    AllianceChat.SendChatMessage(tempAlliance.AllianceId, "Alliance",
+                                        faction.Tag + " was kicked from the alliance!", true, 0);
+                                    foreach (long id in tempAlliance.AllianceMembers)
                                     {
-                                        AllianceChat.SendChatMessage(tempAlliance.AllianceId, "Alliance",
-                                            faction.Tag + " was kicked from the alliance!", true, 0);
-                                        foreach (long id in tempAlliance.AllianceMembers)
+
+                                        IMyFaction member = MySession.Static.Factions.TryGetFactionById(id);
+                                        if (member != null)
                                         {
+                                            MyFactionCollection.DeclareWar(member.FactionId, faction.FactionId);
+                                            MySession.Static.Factions.SetReputationBetweenFactions(id,
+                                                faction.FactionId, -1500);
 
-                                            IMyFaction member = MySession.Static.Factions.TryGetFactionById(id);
-                                            if (member != null)
+                                            foreach (MyFactionMember m in member.Members.Values)
                                             {
-                                                MyFactionCollection.DeclareWar(member.FactionId, faction.FactionId);
-                                                MySession.Static.Factions.SetReputationBetweenFactions(id,
-                                                    faction.FactionId, -1500);
-
-                                                foreach (MyFactionMember m in member.Members.Values)
-                                                {
-                                                    AllianceChat.PeopleInAllianceChat.Remove(
-                                                        MySession.Static.Players.TryGetSteamId(m.PlayerId));
-                                                }
+                                                AllianceChat.PeopleInAllianceChat.Remove(
+                                                    MySession.Static.Players.TryGetSteamId(m.PlayerId));
                                             }
                                         }
                                     }
                                 }
-
-                                alliance.ForceAddMember(facid);
                             }
 
-                            alliance.DiscordToken = tempToken;
-                            AlliancePlugin.SaveAllianceData(alliance);
-                            Context.Respond("Changes saved!");
+                            alliance.ForceAddMember(facid);
                         }
-                        else
-                        {
-                            Context.Respond("Request was not successful, open a new editor and try again.");
-                            return;
-                        }
+
+                        alliance.DiscordToken = tempToken;
+                        AlliancePlugin.SaveAllianceData(alliance);
+                        Context.Respond("Changes saved!");
                     }
-                    catch (Exception exception)
+                    else
                     {
-                        AlliancePlugin.Log.Info(exception);
-                        Context.Respond("Request timed out or could not connect");
+                        Context.Respond("Request was not successful, open a new editor and try again.");
                         return;
                     }
+                }
+                catch (Exception exception)
+                {
+                    AlliancePlugin.Log.Info(exception);
+                    Context.Respond("Request timed out or could not connect");
+                    return;
+                }
 
-                    Context.Respond("Request maybe worked");
-                });
-
-            }
-            else
-            {
-                Context.Respond("You are not the leader or an admin! you cannot use this.");
-            }
+                Context.Respond("Request maybe worked");
+            });
         }
 
         [Command("loadall", "admin command for debug")]
@@ -214,6 +192,7 @@ namespace AlliancesPlugin.Alliances
             if (alliance == null)
             {
                 Context.Respond("You are not a member of an alliance, or the id wasnt valid");
+                return;
             }
             if (alliance.SupremeLeader == Context.Player.SteamUserId ||
                 Context.Player.PromoteLevel == MyPromoteLevel.Admin)
@@ -307,6 +286,7 @@ namespace AlliancesPlugin.Alliances
             if (alliance == null)
             {
                 Context.Respond("You are not a member of an alliance, or the id wasnt valid");
+                return;
             }
             Task.Run(async () =>
 
@@ -314,6 +294,7 @@ namespace AlliancesPlugin.Alliances
              alliance.DiscordToken = "Yeah im not sending this lmao";
              AlliancePackage alliancePackage = new AlliancePackage { AllianceData = alliance, EditId = Guid.NewGuid(), SteamId = Context.Player.SteamUserId };
              alliancePackage.ExpiresAt = DateTime.Now.AddHours(2);
+             utils.WriteToJsonFile($"{AlliancePlugin.path}//EditorBackups//{alliance.AllianceId}{DateTime.Now:yyyy-MM-dd-hh-mm-ss}.json", alliance);
              alliancePackage.FactionNames = alliance.GetMemberFactions();
              alliancePackage.SteamIdsAndNames = alliance.GetPlayerSteamIds();
              string allianceJson = JsonConvert.SerializeObject(alliancePackage);
@@ -321,10 +302,10 @@ namespace AlliancesPlugin.Alliances
 
              var request = new RestRequest();
              request.AddStringBody(allianceJson, DataFormat.Json);
-                //   var parameter = new BodyParameter("allianceJson", allianceJson, "application/json", DataFormat.Json);
-                //   request.Parameters.AddParameter(parameter);
+             //   var parameter = new BodyParameter("allianceJson", allianceJson, "application/json", DataFormat.Json);
+             //   request.Parameters.AddParameter(parameter);
 
-                try
+             try
              {
 
                  var result = await client.PostAsync(request);
@@ -364,6 +345,7 @@ namespace AlliancesPlugin.Alliances
             if (alliance == null)
             {
                 Context.Respond("You are not a member of an alliance, or the id wasnt valid");
+                return;
             }
             Task.Run(async () =>
          {
