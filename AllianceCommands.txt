@@ -2,6 +2,13 @@ Admin commands
 !alliance adminchannel alliancename channelid
 !alliance admintoken alliancename bottoken
 
+Editor commands
+!alliance editor
+!alliance accept
+
+Admin commands (need to be ingame)
+!alliance admineditor allianceName 
+!alliance adminaccept
 
 Creation and invites/joining
 !alliance create <name> - create an alliance

@@ -52,17 +52,16 @@ namespace AlliancesPlugin.Alliances
         [Permission(MyPromoteLevel.Admin)]
         public void AllianceAcceptChangesAdmin()
         {
-
-
+            var client = new RestClient($"{AlliancePlugin.config.EditorUrl}/api/alliance/GetAlliance");
+            var request = new RestRequest();
+            request.AddParameter("id", Context.Player.SteamUserId);
             Task.Run(async () =>
             {
-                var client = new RestClient($"{AlliancePlugin.config.EditorUrl}/api/alliance/GetAlliance");
-                var request = new RestRequest();
-                request.AddParameter("id", Context.Player.SteamUserId);
                 try
                 {
                     var allianceResponse = await client.GetAsync(request);
-                    if (allianceResponse.IsSuccessful && allianceResponse.StatusCode != HttpStatusCode.NotFound)
+                    if (allianceResponse.IsSuccessful &&
+                        allianceResponse.StatusCode != HttpStatusCode.NotFound)
                     {
 
                         var temp = JsonConvert.DeserializeObject<string>(allianceResponse.Content);
@@ -81,15 +80,19 @@ namespace AlliancesPlugin.Alliances
 
                         alliance = newAlliance;
 
-                        foreach (var faction in alliance.EditorKicks
-                                     .Select(facid => MySession.Static.Factions.TryGetFactionByTag(facid))
-                                     .Where(faction => faction != null))
+                        foreach (var tag in alliance.EditorKicks.Where(x => !string.IsNullOrWhiteSpace(x)))
                         {
+                            var faction = MySession.Static.Factions.TryGetFactionByTag(tag.Trim());
+                            if (faction == null)
+                            {
+                                continue;
+                            }
+
                             AllianceChat.SendChatMessage(alliance.AllianceId, "Alliance",
                                 faction.Tag + " was kicked from the alliance!", true, 0);
+                            alliance.AllianceMembers.Remove(faction.FactionId);
                             foreach (long id in alliance.AllianceMembers)
                             {
-
                                 IMyFaction member = MySession.Static.Factions.TryGetFactionById(id);
                                 if (member != null)
                                 {
@@ -106,9 +109,10 @@ namespace AlliancesPlugin.Alliances
                             }
                         }
 
-                        foreach (var facid in alliance.Invites)
+                        foreach (var facid in alliance.EditorInvites.Where(x => !string.IsNullOrWhiteSpace(x)))
                         {
-                            var faction = MySession.Static.Factions.TryGetFactionById(facid);
+                            AlliancePlugin.Log.Info(facid);
+                            var faction = MySession.Static.Factions.TryGetFactionByTag(facid.Trim());
                             if (faction != null)
                             {
                                 var tempAlliance = AlliancePlugin.GetAllianceNoLoading(faction as MyFaction);
@@ -116,6 +120,7 @@ namespace AlliancesPlugin.Alliances
                                 {
                                     AllianceChat.SendChatMessage(tempAlliance.AllianceId, "Alliance",
                                         faction.Tag + " was kicked from the alliance!", true, 0);
+                                    tempAlliance.AllianceMembers.Remove(faction.FactionId);
                                     foreach (long id in tempAlliance.AllianceMembers)
                                     {
 
@@ -134,11 +139,14 @@ namespace AlliancesPlugin.Alliances
                                         }
                                     }
                                 }
+                                alliance.ForceAddMember(faction.FactionId);
                             }
 
-                            alliance.ForceAddMember(facid);
+                        
                         }
 
+                        alliance.EditorInvites = new List<string>();
+                        alliance.EditorKicks = new List<string>();
                         alliance.DiscordToken = tempToken;
                         AlliancePlugin.SaveAllianceData(alliance);
                         Context.Respond("Changes saved!");
@@ -156,8 +164,8 @@ namespace AlliancesPlugin.Alliances
                     return;
                 }
 
-                Context.Respond("Request maybe worked");
             });
+            Context.Respond("Request maybe worked");
         }
 
         [Command("loadall", "admin command for debug")]
@@ -214,7 +222,7 @@ namespace AlliancesPlugin.Alliances
                             var tempToken = alliance.DiscordToken;
                             var hasUnlockedShipyard = alliance.hasUnlockedShipyard;
                             var hasUnlockedHangar = alliance.hasUnlockedHangar;
-                            
+
                             if (AlliancePlugin.AllAlliances.ContainsKey(newAlliance.name))
                             {
                                 var check = AlliancePlugin.GetAllianceNoLoading(newAlliance.name);
@@ -227,10 +235,16 @@ namespace AlliancesPlugin.Alliances
                             alliance = newAlliance;
                             alliance.hasUnlockedHangar = hasUnlockedHangar;
                             alliance.hasUnlockedShipyard = hasUnlockedShipyard;
-                            foreach (var faction in alliance.EditorKicks.Select(facid => MySession.Static.Factions.TryGetFactionByTag(facid)).Where(faction => faction != null))
+                            foreach (var tag in alliance.EditorKicks.Where(x => !string.IsNullOrWhiteSpace(x)))
                             {
+                                var faction = MySession.Static.Factions.TryGetFactionByTag(tag.Trim());
+                                if (faction == null)
+                                {
+                                    continue;
+                                }
                                 AllianceChat.SendChatMessage(alliance.AllianceId, "Alliance",
                                     faction.Tag + " was kicked from the alliance!", true, 0);
+                                alliance.AllianceMembers.Remove(faction.FactionId);
                                 foreach (long id in alliance.AllianceMembers)
                                 {
 
@@ -249,11 +263,18 @@ namespace AlliancesPlugin.Alliances
                                     }
                                 }
                             }
-                            foreach (var faction in alliance.EditorInvites.Select(facid => MySession.Static.Factions.TryGetFactionByTag(facid)).Where(faction => faction != null))
+                            foreach (var tag in alliance.EditorInvites.Where(x => !string.IsNullOrWhiteSpace(x)))
                             {
+                                var faction = MySession.Static.Factions.TryGetFactionByTag(tag.Trim());
+                                if (faction == null)
+                                {
+                                    continue;
+                                }
                                 alliance.SendInvite(faction.FactionId);
                             }
                             alliance.DiscordToken = tempToken;
+                            alliance.EditorInvites = new List<string>();
+                            alliance.EditorKicks = new List<string>();
                             AlliancePlugin.SaveAllianceData(alliance);
                             Context.Respond("Changes saved!");
                         }
