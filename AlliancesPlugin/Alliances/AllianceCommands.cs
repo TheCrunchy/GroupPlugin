@@ -212,6 +212,9 @@ namespace AlliancesPlugin.Alliances
                             var temp = JsonConvert.DeserializeObject<string>(allianceResponse.Content);
                             var newAlliance = JsonConvert.DeserializeObject<Alliance>(temp);
                             var tempToken = alliance.DiscordToken;
+                            var hasUnlockedShipyard = alliance.hasUnlockedShipyard;
+                            var hasUnlockedHangar = alliance.hasUnlockedHangar;
+                            
                             if (AlliancePlugin.AllAlliances.ContainsKey(newAlliance.name))
                             {
                                 var check = AlliancePlugin.GetAllianceNoLoading(newAlliance.name);
@@ -222,6 +225,8 @@ namespace AlliancesPlugin.Alliances
                                 }
                             }
                             alliance = newAlliance;
+                            alliance.hasUnlockedHangar = hasUnlockedHangar;
+                            alliance.hasUnlockedShipyard = hasUnlockedShipyard;
                             foreach (var faction in alliance.EditorKicks.Select(facid => MySession.Static.Factions.TryGetFactionByTag(facid)).Where(faction => faction != null))
                             {
                                 AllianceChat.SendChatMessage(alliance.AllianceId, "Alliance",
@@ -243,6 +248,10 @@ namespace AlliancesPlugin.Alliances
                                         }
                                     }
                                 }
+                            }
+                            foreach (var faction in alliance.EditorInvites.Select(facid => MySession.Static.Factions.TryGetFactionByTag(facid)).Where(faction => faction != null))
+                            {
+                                alliance.SendInvite(faction.FactionId);
                             }
                             alliance.DiscordToken = tempToken;
                             AlliancePlugin.SaveAllianceData(alliance);
