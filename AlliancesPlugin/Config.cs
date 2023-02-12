@@ -47,5 +47,6 @@ namespace AlliancesPlugin
         public bool EnablePvPAreaHud = true;
         public bool TerritoryTaxes = true;
         public string EditorUrl = "https://crunchplugins.co.uk";
+        public bool UsingNexusChat = true;
     }
 }

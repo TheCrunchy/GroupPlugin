@@ -111,7 +111,6 @@ namespace AlliancesPlugin.Alliances
 
                         foreach (var facid in alliance.EditorInvites.Where(x => !string.IsNullOrWhiteSpace(x)))
                         {
-                            AlliancePlugin.Log.Info(facid);
                             var faction = MySession.Static.Factions.TryGetFactionByTag(facid.Trim());
                             if (faction != null)
                             {

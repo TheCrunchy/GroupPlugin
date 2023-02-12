@@ -61,6 +61,7 @@ using AlliancesPlugin.Integrations;
 using static AlliancesPlugin.Alliances.NewTerritories.City;
 using AlliancesPlugin.WarOptIn;
 using AlliancesPlugin.KamikazeTerritories;
+using AlliancesPlugin.NexusStuff;
 using Newtonsoft.Json;
 using Torch.Managers.PatchManager;
 using VRageRender.Messages;
@@ -101,6 +102,12 @@ namespace AlliancesPlugin
         public static bool MQPluginInstalled = false;
 
         public static bool InitPlugins = false;
+        public static NexusAPI API { get; private set; }
+        public static int ThisServerID { get; private set; } = -1;
+        public static bool NexusInstalled { get; private set; } = false;
+
+        private static readonly Guid NexusGUID = new Guid("28a12184-0422-43ba-a6e6-2e228611cca5");
+
         public static void InitPluginDependencies(PluginManager Plugins, PatchManager Patches)
         {
             InitPlugins = true;
@@ -121,6 +128,29 @@ namespace AlliancesPlugin
 
                 MQPluginInstalled = true;
             }
+
+            if (Plugins.Plugins.TryGetValue(NexusGUID, out ITorchPlugin torchPlugin))
+            {
+                Type type = torchPlugin.GetType();
+                Type type2 = ((type != null) ? type.Assembly.GetType("Nexus.API.PluginAPISync") : null);
+                if (type2 != null)
+                {
+                    type2.GetMethod("ApplyPatching", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, new object[]
+                    {
+                        typeof(NexusAPI),
+                        "Alliances"
+                    });
+                    API = new NexusAPI(4398);
+                    MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(4398, new Action<ushort, byte[], ulong, bool>(HandleNexusMessage));
+                    NexusInstalled = true;
+                }
+            }
+        }
+
+        private static void HandleNexusMessage(ushort handlerId, byte[] data, ulong steamID, bool fromServer)
+        {
+            var message = MyAPIGateway.Utilities.SerializeFromBinary<AllianceChatMessage>(data);
+            AllianceChat.ReceiveChatMessage(message);
         }
 
         public static void TestMethod(string MessageType, string MessageBody)
@@ -787,6 +817,13 @@ namespace AlliancesPlugin
 
         public static bool SendToMQ(string Type, Object SendThis)
         {
+            if (NexusInstalled && AlliancePlugin.config.UsingNexusChat && SendThis is AllianceChatMessage chatMessage)
+            {
+                var message = MyAPIGateway.Utilities.SerializeToBinary<AllianceChatMessage>(chatMessage);
+                API.SendMessageToAllServers(message);
+                AllianceChat.ReceiveChatMessage(chatMessage);
+                return true;
+            }
             if (!MQPluginInstalled)
             {
                 return false;

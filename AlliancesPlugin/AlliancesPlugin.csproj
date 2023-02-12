@@ -255,6 +255,7 @@
     <Compile Include="Integrations\PlayerDataPvP.cs" />
     <Compile Include="Integrations\PvPArea.cs" />
     <Compile Include="MQPatching.cs" />
+    <Compile Include="NexusStuff\NexusAPI.cs" />
     <Compile Include="Shipyard\ShipyardSpeedUpgrade.cs" />
     <Compile Include="Shipyard\ShipyardSlotUpgrade.cs" />
     <Compile Include="Alliances\VaultCommands.cs" />
