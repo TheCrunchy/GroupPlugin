@@ -1958,7 +1958,6 @@ namespace AlliancesPlugin.Alliances
                 Context.Respond("Only factions can be in alliances.");
                 return;
             }
-            Regex regex = new Regex("^[0-9a-zA-Z ]{3,25}$");
             Match match = Regex.Match(newName, "^[0-9a-zA-Z ]{3,25}$", RegexOptions.IgnoreCase);
             if (!match.Success || string.IsNullOrEmpty(newName))
             {
@@ -2206,8 +2205,8 @@ namespace AlliancesPlugin.Alliances
                 Context.Respond("Only factions can be in alliances.");
                 return;
             }
-            Regex regex = new Regex("^[0-9a-zA-Z ]{3,25}$");
-            Match match = Regex.Match(name, "^[0-9a-zA-Z ]{3,25}$", RegexOptions.IgnoreCase);
+            Regex regex = new Regex("^[0-9a-zA-Z ]{1,50}$");
+            Match match = Regex.Match(name, "^[0-9a-zA-Z ]{1,50}$", RegexOptions.IgnoreCase);
             if (!match.Success || string.IsNullOrEmpty(name))
             {
                 Context.Respond("New Name does not validate, try again.");
@@ -3466,8 +3465,8 @@ namespace AlliancesPlugin.Alliances
         {
             IMyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
             name = Context.RawArgs;
-            Regex regex = new Regex("^[0-9a-zA-Z ]{3,25}$");
-            Match match = Regex.Match(name, "^[0-9a-zA-Z ]{3,25}$", RegexOptions.IgnoreCase);
+            Regex regex = new Regex("^[0-9a-zA-Z ]{1,50}$");
+            Match match = Regex.Match(name, "^[0-9a-zA-Z ]{1,50}$", RegexOptions.IgnoreCase);
             if (!match.Success || string.IsNullOrEmpty(name))
             {
                 Context.Respond("Name does not validate, try again.");

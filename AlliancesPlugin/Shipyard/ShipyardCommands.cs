@@ -41,6 +41,7 @@ using Torch.Mod;
 using AlliancesPlugin.Alliances;
 using SpaceEngineers.Game.Entities.Blocks.SafeZone;
 using AlliancesPlugin.Alliances.NewTerritories;
+using Sandbox.Game.Entities.Cube;
 
 namespace AlliancesPlugin.Shipyard
 {
@@ -1107,6 +1108,7 @@ namespace AlliancesPlugin.Shipyard
 
         }
 
+   
 
         public static List<VRage.Game.ModAPI.IMyInventory> GetInventories(MyCubeGrid grid)
         {
