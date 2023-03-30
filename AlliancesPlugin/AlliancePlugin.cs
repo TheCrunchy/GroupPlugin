@@ -1936,7 +1936,11 @@ namespace AlliancesPlugin
                 var gate = key.Value;
                 if (!gate.Enabled)
                     continue;
-                if (gate.TargetGateId == gate.GateId)
+
+                if (!gate.CanJumpFrom)
+                    continue;
+
+                    if (gate.TargetGateId == gate.GateId)
                     continue;
                 if (!AllGates.ContainsKey(gate.TargetGateId))
                     continue;
@@ -4169,19 +4173,19 @@ namespace AlliancesPlugin
                     }
                     if (statusUpdate.TryGetValue(pair.Key, out var status))
                     {
-                        AlliancePlugin.SendChatMessage("AllianceChatStatus", "true", pair.Key);
+                   //     AlliancePlugin.SendChatMessage("AllianceChatStatus", "true", pair.Key);
                         statusUpdate.Remove(pair.Key);
                     }
-                    if (otherAllianceShit.TryGetValue(pair.Key, out var allianceId))
-                    {
-                        var alliance = GetAlliance(allianceId);
-                        if (alliance != null)
-                        {
-                            AlliancePlugin.SendChatMessage("AllianceColorConfig", alliance.r + " " + alliance.g + " " + alliance.b, pair.Key);
-                            AlliancePlugin.SendChatMessage("AllianceTitleConfig", alliance.GetTitle(pair.Key) + " ", pair.Key);
-                            otherAllianceShit.Remove(pair.Key);
-                        }
-                    }
+                 //   if (otherAllianceShit.TryGetValue(pair.Key, out var allianceId))
+                 //   {
+                      //  var alliance = GetAlliance(allianceId);
+                      //  if (alliance != null)
+                       // {
+                         //   AlliancePlugin.SendChatMessage("AllianceColorConfig", alliance.r + " " + alliance.g + " " + alliance.b, pair.Key);
+                        //    AlliancePlugin.SendChatMessage("AllianceTitleConfig", alliance.GetTitle(pair.Key) + " ", pair.Key);
+                     //       otherAllianceShit.Remove(pair.Key);
+                     //  }
+                 //   }
 
                     AllianceCommands.SendStatusToClient(AllianceChat.PeopleInAllianceChat.ContainsKey(pair.Key),
                         pair.Key);

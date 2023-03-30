@@ -11,6 +11,7 @@ namespace AlliancesPlugin.JumpGates
     public class JumpGate
     {
         public Guid GateId = System.Guid.NewGuid();
+        public bool CanJumpFrom = true;
         public string WorldName = "";
         public Boolean RequireDrive = true;
         public Boolean UseSafeZones = true;

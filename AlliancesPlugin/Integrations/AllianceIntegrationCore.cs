@@ -131,8 +131,13 @@ namespace AlliancesPlugin.Integrations
                             //    AlliancePlugin.Log.Info($"Sending war status to {request.SteamId}");
                             SendPlayerHudStatus(request.SteamId);
                             break;
+                        case "Chat":
+                            //    AlliancePlugin.Log.Info($"Sending war status to {request.SteamId}");
+                          //  AllianceChat.AddOrRemoveToChat(request.SteamId);
+                            break;
                     }
                     break;
+
             }
         }
 

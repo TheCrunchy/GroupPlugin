@@ -177,6 +177,65 @@ namespace AlliancesPlugin.Alliances
             }
         }
 
+        public static void AddOrRemoveToChat(ulong steamid)
+        {
+
+            var identity = AlliancePlugin.GetIdentityByNameOrId(steamid.ToString());
+            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(identity.IdentityId);
+            if (fac == null)
+            {
+                ShipyardCommands.SendMessage("Alliances", "Only factions can be in alliances.", Color.Red, (long)steamid);
+
+                return;
+            }
+            PlayerData data;
+            if (File.Exists(AlliancePlugin.path + "//PlayerData//" + steamid + ".xml"))
+            {
+
+                data = utils.ReadFromXmlFile<PlayerData>(AlliancePlugin.path + "//PlayerData//" + steamid + ".xml");
+            }
+            else
+            {
+                data = new PlayerData();
+            }
+            Alliance alliance = AlliancePlugin.GetAlliance(fac);
+            if (AllianceChat.PeopleInAllianceChat.ContainsKey(steamid))
+            {
+                data.InAllianceChat = false;
+                AllianceChat.IdentityIds.Remove(steamid);
+                AllianceChat.PeopleInAllianceChat.Remove(steamid);
+                ShipyardCommands.SendMessage("Alliances", "Leaving alliance chat.", Color.Red, (long)steamid);
+
+                utils.WriteToXmlFile<PlayerData>(AlliancePlugin.path + "//PlayerData//" + steamid + ".xml", data);
+                AllianceCommands.SendStatusToClient(false, steamid);
+                //leaving
+                //    AlliancePlugin.SendChatMessage("AllianceChatStatus", "false", steamid);
+                return;
+            }
+            if (alliance != null)
+            {
+                {
+                    AllianceChat.IdentityIds.Remove(steamid);
+                    AllianceChat.IdentityIds.Add(steamid, identity.IdentityId);
+                    data.InAllianceChat = true;
+                    AllianceChat.PeopleInAllianceChat.Add(steamid, alliance.AllianceId);
+                    ShipyardCommands.SendMessage("Alliances", "Entering alliance chat.", Color.Green, (long)steamid);
+                    utils.WriteToXmlFile<PlayerData>(AlliancePlugin.path + "//PlayerData//" + steamid + ".xml", data);
+                    AllianceCommands.SendStatusToClient(true, steamid);
+                    // AlliancePlugin.SendChatMessage("AllianceChatStatus", "true", steamid);
+                }
+            }
+            else
+            {
+                ShipyardCommands.SendMessage("Alliances", "You must be in an alliance to use alliance chat.", Color.Red, (long)steamid);
+
+                AllianceChat.PeopleInAllianceChat.Remove(steamid);
+                data.InAllianceChat = false;
+                utils.WriteToXmlFile<PlayerData>(AlliancePlugin.path + "//PlayerData//" + steamid + ".xml", data);
+                AllianceCommands.SendStatusToClient(false, steamid);
+            }
+        }
+
 
         public static Dictionary<ulong, long> IdentityIds = new Dictionary<ulong, long>();
         public static void DoChatMessage(TorchChatMessage msg, ref bool consumed)
@@ -195,6 +254,13 @@ namespace AlliancesPlugin.Alliances
                 return;
             }
 
+            if (msg.Message.ToLower().StartsWith("/a") || msg.Message.ToLower().StartsWith("/alliance"))
+            {
+          //      AlliancePlugin.Log.Info("MESSAGE");
+                AddOrRemoveToChat((ulong)msg.AuthorSteamId);
+                consumed = true;
+                return;
+            }
             if (PeopleInAllianceChat.ContainsKey((ulong)msg.AuthorSteamId))
             {
 
@@ -240,7 +306,7 @@ namespace AlliancesPlugin.Alliances
                     AlliancePlugin.SendChatMessage("Failsafe", "Alliance null");
                     return;
                 }
-               
+
                 Guid allianceId = PeopleInAllianceChat[(ulong)msg.AuthorSteamId];
                 List<ulong> OtherMembers = new List<ulong>();
 

@@ -108,62 +108,15 @@ namespace AlliancesPlugin
         [Permission(MyPromoteLevel.None)]
         public void DoAllianceChat2(string message = "")
         {
-            DoAllianceChat(message);
+            AllianceChat.AddOrRemoveToChat(Context.Player.SteamUserId);
         }
         [Command("al chat", "toggle alliance chat")]
         [Permission(MyPromoteLevel.None)]
         public void DoAllianceChat(string message = "")
         {
-            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
-            if (fac == null)
-            {
-                Context.Respond("Only factions can be in alliances.");
-                return;
-            }
-            PlayerData data;
-            if (File.Exists(AlliancePlugin.path + "//PlayerData//" + Context.Player.SteamUserId + ".xml"))
-            {
-
-                data = utils.ReadFromXmlFile<PlayerData>(AlliancePlugin.path + "//PlayerData//" + Context.Player.SteamUserId + ".xml");
-            }
-            else
-            {
-                data = new PlayerData();
-            }
-            Alliance alliance = AlliancePlugin.GetAlliance(fac);
-            if (AllianceChat.PeopleInAllianceChat.ContainsKey(Context.Player.SteamUserId))
-            {
-                data.InAllianceChat = false;
-                AllianceChat.IdentityIds.Remove(Context.Player.SteamUserId);
-                AllianceChat.PeopleInAllianceChat.Remove(Context.Player.SteamUserId);
-                Context.Respond("Leaving alliance chat.", Color.Red);
-                utils.WriteToXmlFile<PlayerData>(AlliancePlugin.path + "//PlayerData//" + Context.Player.SteamUserId + ".xml", data);
-                AllianceCommands.SendStatusToClient(false, Context.Player.SteamUserId);
-                AlliancePlugin.SendChatMessage("AllianceChatStatus", "false", Context.Player.SteamUserId);
-                return;
-            }
-            if (alliance != null)
-            {
-                {
-                    AllianceChat.IdentityIds.Remove(Context.Player.SteamUserId);
-                    AllianceChat.IdentityIds.Add(Context.Player.SteamUserId, Context.Player.Identity.IdentityId);
-                    data.InAllianceChat = true;
-                    AllianceChat.PeopleInAllianceChat.Add(Context.Player.SteamUserId, alliance.AllianceId);
-                    Context.Respond("Entering alliance chat.", Color.Cyan);
-                    utils.WriteToXmlFile<PlayerData>(AlliancePlugin.path + "//PlayerData//" + Context.Player.SteamUserId + ".xml", data);
-                           AllianceCommands.SendStatusToClient(true, Context.Player.SteamUserId);
-                    AlliancePlugin.SendChatMessage("AllianceChatStatus", "true", Context.Player.SteamUserId);
-                }
-            }
-            else
-            {
-                Context.Respond("You must be in an alliance to use alliance chat.");
-                AllianceChat.PeopleInAllianceChat.Remove(Context.Player.SteamUserId);
-                data.InAllianceChat = false;
-                utils.WriteToXmlFile<PlayerData>(AlliancePlugin.path + "//PlayerData//" + Context.Player.SteamUserId + ".xml", data);
-                AllianceCommands.SendStatusToClient(false, Context.Player.SteamUserId);
-            }
+            AllianceChat.AddOrRemoveToChat(Context.Player.SteamUserId);
         }
+
         [Command("tags", "output tags")]
         [Permission(MyPromoteLevel.None)]
         public void DoTags()

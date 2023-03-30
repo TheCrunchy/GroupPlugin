@@ -42,6 +42,8 @@ using AlliancesPlugin.Alliances;
 using SpaceEngineers.Game.Entities.Blocks.SafeZone;
 using AlliancesPlugin.Alliances.NewTerritories;
 using Sandbox.Game.Entities.Cube;
+using IMyCubeGrid = VRage.Game.ModAPI.IMyCubeGrid;
+using IMySlimBlock = VRage.Game.ModAPI.IMySlimBlock;
 
 namespace AlliancesPlugin.Shipyard
 {
@@ -1207,6 +1209,46 @@ namespace AlliancesPlugin.Shipyard
             return comps;
         }
 
+        [Command("dither")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void DitherTest(float dither)
+        {
+
+            var gridWithSubGrids = GridFinder.FindLookAtGridGroup(Context.Player.Character);
+
+            foreach (var item in gridWithSubGrids)
+            {
+                foreach (MyGroups<MyCubeGrid, MyGridPhysicalGroupData>.Node groupNodes in item.Nodes)
+                {
+                    MyCubeGrid grid = groupNodes.NodeData;
+                    foreach (MyProjectorBase proj in grid.GetFatBlocks().OfType<MyProjectorBase>())
+                    {
+
+                        if (proj != null && proj is Sandbox.ModAPI.IMyProjector projector)
+                        {
+
+                            if (AlliancePlugin.shipyardConfig.GetPrinterConfig(projector.BlockDefinition.SubtypeId) !=
+                                null)
+                            {
+                                if (!projector.Enabled)
+                                    continue;
+
+                                VRage.Game.ModAPI.IMyCubeGrid projectedGrid = projector.ProjectedGrid;
+                                if (projectedGrid == null || !projector.IsProjecting)
+                                {
+                                    continue;
+                                }
+                                
+                                foreach (var block in grid.GetBlocks())
+                                {
+                                    proj.ShowCube(block, true);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         private static Dictionary<long, long> confirmations = new Dictionary<long, long>();
         [Command("start", "start to print a projection")]
