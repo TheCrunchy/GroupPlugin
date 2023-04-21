@@ -55,6 +55,7 @@ using Sandbox.Game.Weapons;
 using Sandbox.Game;
 using static AlliancesPlugin.Alliances.StorePatchTaxes;
 using System.Threading.Tasks;
+using AlliancesPlugin.Alliances.Gates;
 using static AlliancesPlugin.JumpGates.JumpGate;
 using AlliancesPlugin.Alliances.NewTerritories;
 using AlliancesPlugin.Integrations;
@@ -1738,12 +1739,12 @@ namespace AlliancesPlugin
                 });
             return true;
         }
-        public static Boolean DoFeeStuff(MyPlayer player, JumpGate gate, MyCockpit Controller)
+        public static Boolean DoFeeStuff(MyPlayer player, JumpGate gate, MyCubeGrid Controller)
         {
-            if (gate.RequireDrive)
+            if (gate.RequireDrive && Controller != null)
             {
                 var drives = new List<MyJumpDrive>();
-                MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(Controller.CubeGrid).GetBlocksOfType<MyJumpDrive>(drives);
+                MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(Controller).GetBlocksOfType<MyJumpDrive>(drives);
                 var enabled = false;
                 if (drives.Count == 0)
                 {
@@ -1766,7 +1767,7 @@ namespace AlliancesPlugin
             }
 
 
-            if (gate.itemCostsForUse)
+            if (gate.itemCostsForUse && Controller != null)
             {
                 var items = new Dictionary<MyDefinitionId, int>();
                 foreach (var item in gate.itemCostsList)
@@ -1775,12 +1776,12 @@ namespace AlliancesPlugin
                     if (MyDefinitionId.TryParse("MyObjectBuilder_" + item.TypeId + "/" + item.SubTypeId, out var id))
                     {
                         decimal multiplier = 1;
-                        multiplier += Controller.CubeGrid.BlocksCount / item.BlockCountDivision;
+                        multiplier += Controller.BlocksCount / item.BlockCountDivision;
                         var amount = item.BaseItemAmount * multiplier;
                         items.Add(id, (int)amount);
                     }
                 }
-                if (ConsumeComponentsGateFee(ShipyardCommands.GetInventories(Controller.CubeGrid), items, player.Client.SteamUserId))
+                if (ConsumeComponentsGateFee(ShipyardCommands.GetInventories(Controller), items, player.Client.SteamUserId))
                 {
 
                     SendPlayerNotify(player, 1000, $"Item cost taken from cargo.", "Green");
@@ -1870,132 +1871,12 @@ namespace AlliancesPlugin
         public static Dictionary<long, DateTime> messageCooldowns = new Dictionary<long, DateTime>();
         public static List<TaxItem> TerritoryTaxes = new List<TaxItem>();
         public static Dictionary<ulong, DateTime> yeet = new Dictionary<ulong, DateTime>();
+
+
+
         public void DoJumpGateStuff()
         {
-            var players = new List<MyPlayer>();
-            foreach (var player in MySession.Static.Players.GetOnlinePlayers())
-            {
-                //if (yeet.TryGetValue(player.Id.SteamId, out DateTime time))
-                //{
-                //    if (DateTime.Now >= time)
-                //    {
-                //        yeet[player.Id.SteamId] = DateTime.Now.AddSeconds(20);
-                //        if (MySession.Static.Factions.GetPlayerFaction(player.Identity.IdentityId) != null)
-                //        {
-                //            Alliance temp = GetAllianceNoLoading(MySession.Static.Factions.GetPlayerFaction(player.Identity.IdentityId));
-                //            if (temp != null)
-                //            {
-                //                if (AllianceChat.PeopleInAllianceChat.ContainsKey(player.Id.SteamId))
-                //                {
-                //                    AllianceCommands.SendStatusToClient(true, player.Id.SteamId);
-                //                }
-                //                else
-                //                {
-                //                    AllianceCommands.SendStatusToClient(false, player.Id.SteamId);
-                //                }
-                //            }
-                //        }
-                //    }
-                //}
-                //else
-                //{
-                //    yeet.Add(player.Id.SteamId, DateTime.Now.AddSeconds(20));
-                //    if (MySession.Static.Factions.GetPlayerFaction(player.Identity.IdentityId) != null)
-                //    {
-                //        Alliance temp = GetAllianceNoLoading(MySession.Static.Factions.GetPlayerFaction(player.Identity.IdentityId));
-                //        if (temp != null)
-                //        {
-                //            if (AllianceChat.PeopleInAllianceChat.ContainsKey(player.Id.SteamId))
-                //            {
-                //                AllianceCommands.SendStatusToClient(true, player.Id.SteamId);
-                //            }
-                //            else
-                //            {
-                //                AllianceCommands.SendStatusToClient(false, player.Id.SteamId);
-                //            }
-                //        }
-                //    }
-                //}
-
-                if (player?.Controller?.ControlledEntity is MyCockpit controller)
-                {
-                    if (controller.CubeGrid.IsStatic)
-                        continue;
-
-                    if (!controller.CubeGrid.Editable)
-                        continue;
-
-                    if (!controller.CubeGrid.DestructibleBlocks)
-                        continue;
-                    players.Add(player);
-                }
-            }
-
-            foreach (var key in AllGates)
-            {
-                var gate = key.Value;
-                if (!gate.Enabled)
-                    continue;
-
-                if (!gate.CanJumpFrom)
-                    continue;
-
-                    if (gate.TargetGateId == gate.GateId)
-                    continue;
-                if (!AllGates.ContainsKey(gate.TargetGateId))
-                    continue;
-
-                var target = AllGates[gate.TargetGateId];
-                if (!target.Enabled)
-                    continue;
-                if (target.TargetGateId == target.GateId)
-                    continue;
-
-                if (!gate.WorldName.Equals(MyMultiplayer.Static.HostName))
-                    continue;
-
-
-                foreach (var player in players)
-                {
-                    if (player?.Controller?.ControlledEntity is MyCockpit controller)
-                    {
-
-                        var Distance = Vector3.Distance(gate.Position, controller.PositionComp.GetPosition());
-                        if (Distance <= gate.RadiusToJump)
-                        {
-                            if (!DoFeeStuff(player, gate, controller))
-                                continue;
-                            var rand = new Random();
-                            var offset = new Vector3(rand.Next(config.JumpGateMinimumOffset, config.JumPGateMaximumOffset), rand.Next(config.JumpGateMinimumOffset, config.JumPGateMaximumOffset), rand.Next(config.JumpGateMinimumOffset, config.JumPGateMaximumOffset));
-                            var newPos = new Vector3D(target.Position + offset);
-                            var newPosition = MyEntities.FindFreePlace(newPos, (float)GridManager.FindBoundingSphere(controller.CubeGrid).Radius);
-                            if (newPosition.Value == null)
-                            {
-                                break;
-                            }
-                            var worldMatrix = MatrixD.CreateWorld(newPosition.Value, controller.CubeGrid.WorldMatrix.Forward, controller.CubeGrid.WorldMatrix.Up);
-                            controller.CubeGrid.Teleport(worldMatrix);
-                            AlliancePlugin.Log.Info("Gate travel " + gate.GateName + " for " + player.DisplayName + " in " + controller.CubeGrid.DisplayName);
-                        }
-                        else
-                        {
-                            if (gate.fee > 0 && Distance <= 500)
-                            {
-                                DoFeeMessage(player, gate, Distance);
-                            }
-                            else
-                            {
-
-
-                                if (Distance <= 500)
-                                {
-                                    SendPlayerNotify(player, 1000, "You will jump in " + Distance + " meters", "Green");
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            NewGateLogic.DoGateLogic();
         }
         public void OrganisePlayers()
         {
