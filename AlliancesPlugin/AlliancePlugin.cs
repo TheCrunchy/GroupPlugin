@@ -64,6 +64,8 @@ using AlliancesPlugin.WarOptIn;
 using AlliancesPlugin.KamikazeTerritories;
 using AlliancesPlugin.NexusStuff;
 using Newtonsoft.Json;
+using Sandbox.Definitions;
+using SpaceEngineers.Game.EntityComponents.Blocks;
 using Torch.Managers.PatchManager;
 using VRageRender.Messages;
 
@@ -108,6 +110,14 @@ namespace AlliancesPlugin
         public static bool NexusInstalled { get; private set; } = false;
 
         private static readonly Guid NexusGUID = new Guid("28a12184-0422-43ba-a6e6-2e228611cca5");
+        public class GridPrintTemp
+        {
+            public List<MyCubeGrid> gridsToSave = new List<MyCubeGrid>();
+            public Guid AllianceId;
+            public GridCosts gridCosts;
+        }
+
+        public static Stack<GridPrintTemp> GridPrintQueue = new Stack<GridPrintTemp>();
 
         public static void InitPluginDependencies(PluginManager Plugins, PatchManager Patches)
         {
@@ -840,6 +850,8 @@ namespace AlliancesPlugin
         public static Random rand = new Random();
         private void SessionChanged(ITorchSession session, TorchSessionState state)
         {
+
+
             if (state == TorchSessionState.Unloading)
             {
 
@@ -848,10 +860,34 @@ namespace AlliancesPlugin
                 {
                     AlliancePlugin.utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + ter.Name + ".xml", ter);
                 }
+
+                foreach (var item in GridPrintQueue)
+                {
+                    try
+                    {
+                        Task.Run(async () =>
+                                {
+                                    GridManager.SaveGrid(System.IO.Path.Combine(AlliancePlugin.path + "\\ShipyardData\\" + item.AllianceId + "\\") + item.gridCosts.getGridName() + ".xml", item.gridCosts.getGridName(), false, true, item.gridsToSave);
+                                });
+                    }
+                    catch (Exception e)
+                    {
+                        AlliancePlugin.Log.Error("shipyard error " + e);
+                    }
+                }
+
                 TorchState = TorchSessionState.Unloading;
             }
 
             if (state != TorchSessionState.Loaded) return;
+            foreach (MyDefinitionBase def in MyDefinitionManager.Static.GetAllDefinitions())
+            {
+                if (def is MySearchEnemyComponentDefinition search)
+                {
+                    search.SearchRadius = 5000;
+                    Log.Info("Changing Range");
+                }
+            }
 
             MyAPIGateway.Multiplayer.RegisterMessageHandler(8544, Integrations.AllianceIntegrationCore.ReceiveModMessage);
             KamikazeTerritories.MessageHandler.LoadFile();
@@ -3980,390 +4016,407 @@ namespace AlliancesPlugin
 
         public static bool Loading = false;
         private FileUtils jsonStuff = new FileUtils();
-        public override void Update()
+        public override async void Update()
         {
-            if (!InitPlugins)
-            {
-                InitPluginDependencies(Torch.Managers.GetManager<PluginManager>(), Torch.Managers.GetManager<PatchManager>());
-                InitPlugins = true;
-
-                if (AlliancePlugin.config.EnableOptionalWar)
-                {
-                    MySession.Static.Factions.FactionStateChanged += warcore.StateChange;
-                    MySession.Static.Factions.FactionCreated += warcore.ProcessNewFaction;
-                    warcore.config.EnableOptionalWar = true;
-                    foreach (var fac in MySession.Static.Factions.GetAllFactions())
-                    {
-                        if (fac.Tag.Length > 3)
-                            continue;
-
-                        var alliance = AlliancePlugin.GetAlliance(fac);
-                        foreach (var fac2 in MySession.Static.Factions.GetAllFactions())
-                        {
-                            if (fac2.Tag.Length > 3)
-                                continue;
-                            if (alliance.AllianceMembers.Contains(fac2.FactionId))
-                            {
-                                continue;
-                            }
-                            if (fac == fac2) continue;
-
-                            if (warcore.GetStatus(fac.FactionId) is "Disabled." || warcore.GetStatus(fac2.FactionId) is "Disabled.")
-                            {
-                                AlliancePlugin.warcore.DoNeutralUpdate(fac.FactionId, fac2.FactionId);
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    warcore.config.EnableOptionalWar = false;
-                }
-            }
-
-            if (ticks % 64 == 0)
-            {
-                try
-                {
-                    CityHandler.HandleCitiesMain();
-                }
-                catch (Exception e)
-                {
-                    AlliancePlugin.Log.Error("City error " + e);
-                }
-            }
-            if (ticks % 512 == 0)
-            {
-                if (DateTime.Now >= NextSendToClient && TorchState == TorchSessionState.Loaded)
-                {
-                    AllianceIntegrationCore.SendAllAllianceMemberDataToMods();
-                    NextSendToClient = DateTime.Now.AddMinutes(5);
-                }
-
-                var YEET = new Dictionary<ulong, DateTime>();
-                var oof = new List<ulong>();
-                var OtherYeet = new List<ulong>();
-
-                foreach (var pair in UpdateThese.Where(pair => DateTime.Now >= pair.Value))
-                {
-                    oof.Add(pair.Key);
-                    if (!YEET.ContainsKey(pair.Key))
-                    {
-                        YEET.Add(pair.Key, DateTime.Now.AddMinutes(1));
-
-                    }
-                    if (statusUpdate.TryGetValue(pair.Key, out var status))
-                    {
-                   //     AlliancePlugin.SendChatMessage("AllianceChatStatus", "true", pair.Key);
-                        statusUpdate.Remove(pair.Key);
-                    }
-                 //   if (otherAllianceShit.TryGetValue(pair.Key, out var allianceId))
-                 //   {
-                      //  var alliance = GetAlliance(allianceId);
-                      //  if (alliance != null)
-                       // {
-                         //   AlliancePlugin.SendChatMessage("AllianceColorConfig", alliance.r + " " + alliance.g + " " + alliance.b, pair.Key);
-                        //    AlliancePlugin.SendChatMessage("AllianceTitleConfig", alliance.GetTitle(pair.Key) + " ", pair.Key);
-                     //       otherAllianceShit.Remove(pair.Key);
-                     //  }
-                 //   }
-
-                    AllianceCommands.SendStatusToClient(AllianceChat.PeopleInAllianceChat.ContainsKey(pair.Key),
-                        pair.Key);
-                }
-                foreach (var id in oof)
-                {
-                    if (UpdateThese.TryGetValue(id, out var time))
-                    {
-                        UpdateThese[id] = time.AddSeconds(5);
-                    }
-                }
-                oof.Clear();
-                foreach (var pair in YEET.Where(pair => DateTime.Now > pair.Value))
-                {
-                    OtherYeet.Add(pair.Key);
-                    UpdateThese.Remove(pair.Key);
-                }
-                foreach (var id in OtherYeet)
-                {
-                    YEET.Remove(id);
-                }
-                OtherYeet.Clear();
-            }
-            ticks++;
-
-            if (ticks % 512 == 0)
-            {
-                try
-                {
-                    DoTaxStuff();
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex);
-                }
-                if (config.AllowDiscord && DateTime.Now >= InitDiscord)
-                {
-                    InitDiscord = InitDiscord.AddMinutes(1);
-                    foreach (var alliance in from keys in registerThese where DateTime.Now > keys.Value select GetAlliance(keys.Key) into alliance where alliance != null select alliance)
-                    {
-                        var SendingMessage = new AllianceChatMessage();
-
-                        SendingMessage.SenderPrefix = "Init";
-                        SendingMessage.MessageText = "Init Message";
-                        SendingMessage.AllianceId = alliance.AllianceId;
-                        SendingMessage.ChannelId = alliance.DiscordChannelId;
-                        SendingMessage.BotToken = alliance.DiscordToken;
-
-                        SendToMQ("AllianceMessage", SendingMessage);
-                    }
-                }
-            }
             try
             {
-                if (config.KothEnabled)
+                if (!InitPlugins)
                 {
-                    DoCaptureSiteStuff();
-                    DoKothStuff();
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex);
-            }
-            if (DateTime.Now > chat)
-            {
-                try
-                {
-                    foreach (var id in AllianceChat.PeopleInAllianceChat.Keys)
+                    InitPluginDependencies(Torch.Managers.GetManager<PluginManager>(), Torch.Managers.GetManager<PatchManager>());
+                    InitPlugins = true;
+
+                    if (AlliancePlugin.config.EnableOptionalWar)
                     {
-                        ShipyardCommands.SendMessage("Alliance chat", "You are in alliance chat, to leave use !alliance chat", Color.Green, (long)id);
+                        MySession.Static.Factions.FactionStateChanged += warcore.StateChange;
+                        MySession.Static.Factions.FactionCreated += warcore.ProcessNewFaction;
+                        warcore.config.EnableOptionalWar = true;
+                        foreach (var fac in MySession.Static.Factions.GetAllFactions())
+                        {
+                            if (fac.Tag.Length > 3)
+                                continue;
+
+                            var alliance = AlliancePlugin.GetAlliance(fac);
+                            foreach (var fac2 in MySession.Static.Factions.GetAllFactions())
+                            {
+                                if (fac2.Tag.Length > 3)
+                                    continue;
+                                if (alliance.AllianceMembers.Contains(fac2.FactionId))
+                                {
+                                    continue;
+                                }
+                                if (fac == fac2) continue;
+
+                                if (warcore.GetStatus(fac.FactionId) is "Disabled." || warcore.GetStatus(fac2.FactionId) is "Disabled.")
+                                {
+                                    AlliancePlugin.warcore.DoNeutralUpdate(fac.FactionId, fac2.FactionId);
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        warcore.config.EnableOptionalWar = false;
                     }
                 }
-                catch (Exception)
+
+                if (ticks % 16 == 0)
                 {
-                }
-                chat = chat.AddMinutes(10);
-            }
-
-            if (TorchState == TorchSessionState.Loaded)
-            {
-                //Log.Info("Doing alliance tasks");
-
-                //     DateTime now = DateTime.Now;
-                //   if (config != null && config.AllowDiscord && !DiscordStuff.Ready && now >= RegisterMainBot)
-                //    {
-                //         DiscordStuff.RegisterDiscord();
-                //    }
-
-                if (DateTime.Now > NextUpdate)
-                {
-                    NextUpdate = DateTime.Now.AddMinutes(8);
-
-                    //try
-                    //{
-                    //    warcore.LoadFile();
-                    //}
-                    //catch (Exception ex)
-                    //{
-                    //    Log.Error(ex);
-
-                    //}
                     try
                     {
-                        OrganisePlayers();
+                        if (GridPrintQueue.Any() && TorchState == TorchSessionState.Loaded)
+                        {
+                            var item = GridPrintQueue.Pop();
+                            if (item != null)
+                            {
+                                Task.Run(async () =>
+                            {
+                                GridManager.SaveGrid(System.IO.Path.Combine(AlliancePlugin.path + "\\ShipyardData\\" + item.AllianceId + "\\") + item.gridCosts.getGridName() + ".xml", item.gridCosts.getGridName(), false, true, item.gridsToSave);
+
+                            });
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        AlliancePlugin.Log.Error("shipyard error " + e);
+                    }
+                }
+                if (ticks % 512 == 0)
+                {
+                    if (DateTime.Now >= NextSendToClient && TorchState == TorchSessionState.Loaded)
+                    {
+                        AllianceIntegrationCore.SendAllAllianceMemberDataToMods();
+                        NextSendToClient = DateTime.Now.AddMinutes(5);
+                    }
+
+                    var YEET = new Dictionary<ulong, DateTime>();
+                    var oof = new List<ulong>();
+                    var OtherYeet = new List<ulong>();
+
+                    foreach (var pair in UpdateThese.Where(pair => DateTime.Now >= pair.Value))
+                    {
+                        oof.Add(pair.Key);
+                        if (!YEET.ContainsKey(pair.Key))
+                        {
+                            YEET.Add(pair.Key, DateTime.Now.AddMinutes(1));
+
+                        }
+                        if (statusUpdate.TryGetValue(pair.Key, out var status))
+                        {
+                            //     AlliancePlugin.SendChatMessage("AllianceChatStatus", "true", pair.Key);
+                            statusUpdate.Remove(pair.Key);
+                        }
+                        //   if (otherAllianceShit.TryGetValue(pair.Key, out var allianceId))
+                        //   {
+                        //  var alliance = GetAlliance(allianceId);
+                        //  if (alliance != null)
+                        // {
+                        //   AlliancePlugin.SendChatMessage("AllianceColorConfig", alliance.r + " " + alliance.g + " " + alliance.b, pair.Key);
+                        //    AlliancePlugin.SendChatMessage("AllianceTitleConfig", alliance.GetTitle(pair.Key) + " ", pair.Key);
+                        //       otherAllianceShit.Remove(pair.Key);
+                        //  }
+                        //   }
+
+                        AllianceCommands.SendStatusToClient(AllianceChat.PeopleInAllianceChat.ContainsKey(pair.Key),
+                            pair.Key);
+                    }
+                    foreach (var id in oof)
+                    {
+                        if (UpdateThese.TryGetValue(id, out var time))
+                        {
+                            UpdateThese[id] = time.AddSeconds(5);
+                        }
+                    }
+                    oof.Clear();
+                    foreach (var pair in YEET.Where(pair => DateTime.Now > pair.Value))
+                    {
+                        OtherYeet.Add(pair.Key);
+                        UpdateThese.Remove(pair.Key);
+                    }
+                    foreach (var id in OtherYeet)
+                    {
+                        YEET.Remove(id);
+                    }
+                    OtherYeet.Clear();
+                }
+                ticks++;
+
+                if (ticks % 512 == 0)
+                {
+                    try
+                    {
+                        DoTaxStuff();
                     }
                     catch (Exception ex)
                     {
                         Log.Error(ex);
-
                     }
-                    //try
-                    //{
-                    //    LoadAllCaptureSites();
-                    //}
-                    //catch (Exception ex)
-                    //{
-                    //    Log.Error(ex);
-                    //}
-
-
-
-                    //dont write code at 4am, this stuff was broken for like 3 months
-
-                    try
+                    if (config.AllowDiscord && DateTime.Now >= InitDiscord)
                     {
-                        LoadAllAlliances();
+                        InitDiscord = InitDiscord.AddMinutes(1);
+                        foreach (var alliance in from keys in registerThese where DateTime.Now > keys.Value select GetAlliance(keys.Key) into alliance where alliance != null select alliance)
+                        {
+                            var SendingMessage = new AllianceChatMessage();
 
+                            SendingMessage.SenderPrefix = "Init";
+                            SendingMessage.MessageText = "Init Message";
+                            SendingMessage.AllianceId = alliance.AllianceId;
+                            SendingMessage.ChannelId = alliance.DiscordChannelId;
+                            SendingMessage.BotToken = alliance.DiscordToken;
+
+                            SendToMQ("AllianceMessage", SendingMessage);
+                        }
                     }
-                    catch (Exception ex)
-                    {  
-                        Log.Error(ex);
-                    }
-
-                    //try
-                    //{
-                    //    LoadAllGates();
-
-                    //}
-                    //catch (Exception ex)
-                    //{
-
-                    //    Log.Error(ex);
-                    //}
-
-
-                    //try
-                    //{
-                    //    LoadAllJumpZones();
-
-                    //}
-                    //catch (Exception ex)
-                    //{
-                    //    Log.Error(ex);
-                    //}
-
                 }
-            }
-            if (ticks % 32 == 0 && TorchState == TorchSessionState.Loaded)
-            {
                 try
                 {
-                    //GridRepair.DoRepairCycle();
+                    if (config.KothEnabled)
+                    {
+                        DoCaptureSiteStuff();
+                        DoKothStuff();
+                    }
                 }
                 catch (Exception ex)
                 {
                     Log.Error(ex);
-
                 }
-                if (config.JumpGatesEnabled)
+                if (DateTime.Now > chat)
                 {
                     try
                     {
-                        DoJumpGateStuff();
+                        foreach (var id in AllianceChat.PeopleInAllianceChat.Keys)
+                        {
+                            ShipyardCommands.SendMessage("Alliance chat", "You are in alliance chat, to leave use !alliance chat", Color.Green, (long)id);
+                        }
+                    }
+                    catch (Exception)
+                    {
+                    }
+                    chat = chat.AddMinutes(10);
+                }
+
+                if (TorchState == TorchSessionState.Loaded)
+                {
+                    //Log.Info("Doing alliance tasks");
+
+                    //     DateTime now = DateTime.Now;
+                    //   if (config != null && config.AllowDiscord && !DiscordStuff.Ready && now >= RegisterMainBot)
+                    //    {
+                    //         DiscordStuff.RegisterDiscord();
+                    //    }
+
+                    if (DateTime.Now > NextUpdate)
+                    {
+                        NextUpdate = DateTime.Now.AddMinutes(8);
+
+                        //try
+                        //{
+                        //    warcore.LoadFile();
+                        //}
+                        //catch (Exception ex)
+                        //{
+                        //    Log.Error(ex);
+
+                        //}
+                        try
+                        {
+                            OrganisePlayers();
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Error(ex);
+
+                        }
+                        //try
+                        //{
+                        //    LoadAllCaptureSites();
+                        //}
+                        //catch (Exception ex)
+                        //{
+                        //    Log.Error(ex);
+                        //}
+
+
+
+                        //dont write code at 4am, this stuff was broken for like 3 months
+
+                        try
+                        {
+                            LoadAllAlliances();
+
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Error(ex);
+                        }
+
+                        //try
+                        //{
+                        //    LoadAllGates();
+
+                        //}
+                        //catch (Exception ex)
+                        //{
+
+                        //    Log.Error(ex);
+                        //}
+
+
+                        //try
+                        //{
+                        //    LoadAllJumpZones();
+
+                        //}
+                        //catch (Exception ex)
+                        //{
+                        //    Log.Error(ex);
+                        //}
+
+                    }
+                }
+                if (ticks % 32 == 0 && TorchState == TorchSessionState.Loaded)
+                {
+                    try
+                    {
+                        //GridRepair.DoRepairCycle();
                     }
                     catch (Exception ex)
                     {
                         Log.Error(ex);
+
                     }
-                }
-            }
-            if (ticks % 128 == 0)
-            {
-
-                try
-                {
-
-
-                    //i should really split this into multiple methods so i dont have one huge method for everything
-                    foreach (var player in MySession.Static.Players.GetOnlinePlayers())
+                    if (config.JumpGatesEnabled)
                     {
-
-                        if (player.GetPosition() != null)
+                        try
                         {
-                            try
-                            {
-                                if (config.KothEnabled)
-                                {
-                                    foreach (var koth in KOTHs)
-                                    {
-                                        if (Vector3.Distance(player.GetPosition(), new Vector3(koth.x, koth.y, koth.z)) <= koth.CaptureRadiusInMetre)
-                                        {
-                                            if (!InCapRadius.ContainsKey(player.Id.SteamId))
-                                            {
-                                                InCapRadius.Add(player.Id.SteamId, koth.KothName);
-                                                var message2 = new NotificationMessage("You are inside the capture radius.", 10000, "Green");
-                                                //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
-                                                ModCommunication.SendMessageTo(message2, player.Id.SteamId);
-                                            }
-                                        }
-                                        else
-                                        {
-                                            if (InCapRadius.TryGetValue(player.Id.SteamId, out var name))
-                                            {
-                                                if (koth.KothName.Equals(name))
-                                                {
-                                                    InCapRadius.Remove(player.Id.SteamId);
-                                                    var message2 = new NotificationMessage("You are outside the capture radius.", 10000, "Red");
-                                                    //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
-                                                    ModCommunication.SendMessageTo(message2, player.Id.SteamId);
-                                                }
-                                            }
-                                        }
-                                    }
-                                    foreach (var site in sites)
-                                    {
-                                        var loc = site.GetCurrentLocation();
-                                        if (loc == null || !loc.WorldName.Equals(MyMultiplayer.Static.HostName) || !loc.Enabled)
-                                        {
-                                            continue;
-                                        }
-                                        if (Vector3.Distance(player.GetPosition(), new Vector3(loc.X, loc.Y, loc.Z)) <= loc.CaptureRadiusInMetre)
-                                        {
-                                            if (!InCapRadius.ContainsKey(player.Id.SteamId))
-                                            {
-                                                InCapRadius.Add(player.Id.SteamId, loc.Name);
-                                                var message2 = new NotificationMessage("You are inside the capture radius.", 10000, "Green");
-                                                //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
-                                                ModCommunication.SendMessageTo(message2, player.Id.SteamId);
-                                            }
-                                        }
-                                        else
-                                        {
-                                            if (InCapRadius.TryGetValue(player.Id.SteamId, out var name))
-                                            {
-                                                if (loc.Name.Equals(name))
-                                                {
-                                                    InCapRadius.Remove(player.Id.SteamId);
-                                                    var message2 = new NotificationMessage("You are outside the capture radius.", 10000, "Red");
-                                                    //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
-                                                    ModCommunication.SendMessageTo(message2, player.Id.SteamId);
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-
-                                Log.Error(ex);
-                            }
-                            try
-                            {
-                                foreach (var ter in Territories.Values)
-                                {
-                                    if (ter.Enabled)
-                                    {
-                                        if (Vector3.Distance(player.GetPosition(), new Vector3(ter.x, ter.y, ter.z)) <= ter.Radius)
-                                        {
-                                            SendEnterMessage(player, ter);
-                                        }
-                                        else
-                                        {
-                                            if (InTerritory.ContainsKey(player.Identity.IdentityId))
-                                            {
-                                                SendLeaveMessage(player, ter);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                Log.Error(ex);
-                            }
+                            DoJumpGateStuff();
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Error(ex);
                         }
                     }
-
                 }
-
-                catch (Exception ex)
+                if (ticks % 128 == 0)
                 {
-                    AlliancePlugin.Log.Error(ex);
-                }
-            }
 
+                    try
+                    {
+
+
+                        //i should really split this into multiple methods so i dont have one huge method for everything
+                        foreach (var player in MySession.Static.Players.GetOnlinePlayers())
+                        {
+
+                            if (player.GetPosition() != null)
+                            {
+                                try
+                                {
+                                    if (config.KothEnabled)
+                                    {
+                                        foreach (var koth in KOTHs)
+                                        {
+                                            if (Vector3.Distance(player.GetPosition(), new Vector3(koth.x, koth.y, koth.z)) <= koth.CaptureRadiusInMetre)
+                                            {
+                                                if (!InCapRadius.ContainsKey(player.Id.SteamId))
+                                                {
+                                                    InCapRadius.Add(player.Id.SteamId, koth.KothName);
+                                                    var message2 = new NotificationMessage("You are inside the capture radius.", 10000, "Green");
+                                                    //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
+                                                    ModCommunication.SendMessageTo(message2, player.Id.SteamId);
+                                                }
+                                            }
+                                            else
+                                            {
+                                                if (InCapRadius.TryGetValue(player.Id.SteamId, out var name))
+                                                {
+                                                    if (koth.KothName.Equals(name))
+                                                    {
+                                                        InCapRadius.Remove(player.Id.SteamId);
+                                                        var message2 = new NotificationMessage("You are outside the capture radius.", 10000, "Red");
+                                                        //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
+                                                        ModCommunication.SendMessageTo(message2, player.Id.SteamId);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        foreach (var site in sites)
+                                        {
+                                            var loc = site.GetCurrentLocation();
+                                            if (loc == null || !loc.WorldName.Equals(MyMultiplayer.Static.HostName) || !loc.Enabled)
+                                            {
+                                                continue;
+                                            }
+                                            if (Vector3.Distance(player.GetPosition(), new Vector3(loc.X, loc.Y, loc.Z)) <= loc.CaptureRadiusInMetre)
+                                            {
+                                                if (!InCapRadius.ContainsKey(player.Id.SteamId))
+                                                {
+                                                    InCapRadius.Add(player.Id.SteamId, loc.Name);
+                                                    var message2 = new NotificationMessage("You are inside the capture radius.", 10000, "Green");
+                                                    //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
+                                                    ModCommunication.SendMessageTo(message2, player.Id.SteamId);
+                                                }
+                                            }
+                                            else
+                                            {
+                                                if (InCapRadius.TryGetValue(player.Id.SteamId, out var name))
+                                                {
+                                                    if (loc.Name.Equals(name))
+                                                    {
+                                                        InCapRadius.Remove(player.Id.SteamId);
+                                                        var message2 = new NotificationMessage("You are outside the capture radius.", 10000, "Red");
+                                                        //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
+                                                        ModCommunication.SendMessageTo(message2, player.Id.SteamId);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+
+                                    Log.Error(ex);
+                                }
+                                try
+                                {
+                                    foreach (var ter in Territories.Values)
+                                    {
+                                        if (ter.Enabled)
+                                        {
+                                            if (Vector3.Distance(player.GetPosition(), new Vector3(ter.x, ter.y, ter.z)) <= ter.Radius)
+                                            {
+                                                SendEnterMessage(player, ter);
+                                            }
+                                            else
+                                            {
+                                                if (InTerritory.ContainsKey(player.Identity.IdentityId))
+                                                {
+                                                    SendLeaveMessage(player, ter);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    Log.Error(ex);
+                                }
+                            }
+                        }
+
+                    }
+
+                    catch (Exception ex)
+                    {
+                        AlliancePlugin.Log.Error(ex);
+                    }
+                }
+
+            }
+            catch (Exception)
+            {
+            }
 
 
         }

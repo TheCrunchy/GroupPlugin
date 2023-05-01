@@ -42,6 +42,7 @@ using AlliancesPlugin.Alliances;
 using SpaceEngineers.Game.Entities.Blocks.SafeZone;
 using AlliancesPlugin.Alliances.NewTerritories;
 using Sandbox.Game.Entities.Cube;
+using VRage.Game.Components;
 using IMyCubeGrid = VRage.Game.ModAPI.IMyCubeGrid;
 using IMySlimBlock = VRage.Game.ModAPI.IMySlimBlock;
 
@@ -1110,7 +1111,7 @@ namespace AlliancesPlugin.Shipyard
 
         }
 
-   
+
 
         public static List<VRage.Game.ModAPI.IMyInventory> GetInventories(MyCubeGrid grid)
         {
@@ -1238,7 +1239,7 @@ namespace AlliancesPlugin.Shipyard
                                 {
                                     continue;
                                 }
-                                
+
                                 foreach (var block in grid.GetBlocks())
                                 {
                                     proj.ShowCube(block, true);
@@ -1556,6 +1557,9 @@ namespace AlliancesPlugin.Shipyard
                 }
                 var diff = end.Subtract(DateTime.Now);
                 if (ConsumeComponents(inventories, gridCosts.getComponents(), Context.Player.SteamUserId))
+                  //  ||
+                //    (Context.Player.PromoteLevel == MyPromoteLevel.Admin &&
+                //     Context.Player.SteamUserId == 76561198045390854))
                 {
                     PrintLog log = queue.GetLog(alliance);
                     PrintLogItem newLog = new PrintLogItem();
@@ -1567,29 +1571,33 @@ namespace AlliancesPlugin.Shipyard
                     queue.SaveLog(alliance, log);
                     if (NeedsMoney)
                     {
-
-                        if (alliance.ShipyardFee > 0 && DatabaseForBank.ReadyToSave)
-                        {
-
-                            if (DatabaseForBank.PayShipyardFee(alliance, alliance.ShipyardFee, Context.Player.SteamUserId))
-                            {
-                                price += alliance.ShipyardFee;
-                            }
-                        }
                         EconUtils.takeMoney(Context.Player.IdentityId, price);
                         if (AlliancePlugin.shipyardConfig.ShowMoneyTakenOnStart)
                         {
-                            SendMessage("[Shipyard]", "Taking the cost to print : " + String.Format("{0:n0}", price) + " SC", Color.Green, (long)Context.Player.SteamUserId);
+                            SendMessage("[Shipyard]",
+                                "Taking the cost to print : " + String.Format("{0:n0}", price) + " SC", Color.Green,
+                                (long)Context.Player.SteamUserId);
                         }
                     }
-                    SendMessage("[Shipyard]", "The printer used " + fuel + " " + printerConfig.FuelSubTypeId.ToString().Replace("MyObjectBuilder_", "") + " " + printerConfig.FuelTypeId.ToString().Replace("MyObjectBuilder_", "") + " to feed the machines.", Color.Green, (long)Context.Player.SteamUserId);
-                    SendMessage("[Shipyard]", "It will be complete in: " + String.Format("{0} Hours {1} Minutes {2} Seconds", diff.Hours, diff.Minutes, diff.Seconds), Color.Green, (long)Context.Player.SteamUserId);
-                    queue.addToQueue(gridCosts.getGridName(), (long)Context.Player.SteamUserId, Context.Player.IdentityId, Context.Player.DisplayName, DateTime.Now, end, Context.Player.GetPosition().X, Context.Player.GetPosition().Y, Context.Player.GetPosition().Z);
+
+                    SendMessage("[Shipyard]",
+                        "The printer used " + fuel + " " +
+                        printerConfig.FuelSubTypeId.ToString().Replace("MyObjectBuilder_", "") + " " +
+                        printerConfig.FuelTypeId.ToString().Replace("MyObjectBuilder_", "") +
+                        " to feed the machines.", Color.Green, (long)Context.Player.SteamUserId);
+                    SendMessage("[Shipyard]",
+                        "It will be complete in: " + String.Format("{0} Hours {1} Minutes {2} Seconds", diff.Hours,
+                            diff.Minutes, diff.Seconds), Color.Green, (long)Context.Player.SteamUserId);
+                    queue.addToQueue(gridCosts.getGridName(), (long)Context.Player.SteamUserId,
+                        Context.Player.IdentityId, Context.Player.DisplayName, DateTime.Now, end,
+                        Context.Player.GetPosition().X, Context.Player.GetPosition().Y,
+                        Context.Player.GetPosition().Z);
                     //  Task<GameSaveResult> task =
                     if (AlliancePlugin.shipyardConfig.SaveGameOnPrintStart)
                     {
                         Context.Torch.CurrentSession.Torch.Save();
                     }
+
                     alliance.SavePrintQueue(queue);
                 }
                 else
@@ -1597,14 +1605,18 @@ namespace AlliancesPlugin.Shipyard
                     return;
                 }
 
+
+
                 confirmed = true;
 
                 //  Shipyard.SaveGridCosts(gridCosts);
 
-
-
-
-                GridManager.SaveGrid(System.IO.Path.Combine(AlliancePlugin.path + "\\ShipyardData\\" + alliance.AllianceId + "\\") + gridCosts.getGridName() + ".xml", gridCosts.getGridName(), false, true, gridsToSave);
+                AlliancePlugin.GridPrintQueue.Push(new AlliancePlugin.GridPrintTemp()
+                {
+                    AllianceId = alliance.AllianceId,
+                    gridCosts = gridCosts,
+                    gridsToSave = gridsToSave
+                });
             }
 
             else
@@ -1614,10 +1626,6 @@ namespace AlliancesPlugin.Shipyard
 
                 confirmations.Add(Context.Player.IdentityId, timeToAdd);
                 Context.Respond("Run command again within 20 seconds to confirm, it will cost " + String.Format("{0:n0} ", price) + " SC");
-                if (alliance.ShipyardFee > 0)
-                {
-                    Context.Respond("It also has a fee of " + String.Format("{0:n0} ", alliance.ShipyardFee) + " SC");
-                }
                 int upgradeLevel = queue.SpeedUpgrade;
 
                 double seconds;
@@ -1681,6 +1689,36 @@ namespace AlliancesPlugin.Shipyard
                 //check if the owner is a faction member, i honestly dont know the difference between grid.BigOwners and grid.SmallOwners
                 return FacUtils.InSameFaction(playerId, ownerId);
             }
+        }
+
+
+    }
+
+    [MySessionComponentDescriptor(MyUpdateOrder.BeforeSimulation)]
+    public class Core : MySessionComponentBase
+    {
+        private bool isInit = false;
+
+        private void DoWork()
+        {
+            foreach (MyDefinitionBase def in MyDefinitionManager.Static.GetAllDefinitions())
+            {
+
+                if ((def as MyThrustDefinition) != null)
+                {
+                    if (def.Id.SubtypeName.ToLower().Contains("epstein"))
+                    {
+                        var gas = new VRage.Game.ObjectBuilders.Definitions.MyObjectBuilder_GasProperties { SubtypeName = "Plasma" };
+                        var gasId = MyDefinitionId.FromContent(gas);
+                        (def as MyThrustDefinition).FuelConverter.FuelId = gasId;
+                    }
+                }
+            }
+        }
+
+        public override void LoadData()
+        {
+            DoWork();
         }
     }
 }

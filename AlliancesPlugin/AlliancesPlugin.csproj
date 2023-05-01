@@ -136,8 +136,9 @@
     <Reference Include="Sandbox.Graphics">
       <HintPath>..\..\Money\MoneyPlugin\MoneyPlugin\bin\Debug\Sandbox.Graphics.dll</HintPath>
     </Reference>
-    <Reference Include="SpaceEngineers.Game">
-      <HintPath>..\..\FixPlayerCommand\FixPlayerCommand\bin\Debug\SpaceEngineers.Game.dll</HintPath>
+    <Reference Include="SpaceEngineers.Game, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\4 Torch Server\DedicatedServer64\SpaceEngineers.Game.dll</HintPath>
     </Reference>
     <Reference Include="SpaceEngineers.ObjectBuilders, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
@@ -221,9 +222,6 @@
     <Compile Include="Alliances\NewTerritories\NewTerritoryHandler.cs" />
     <Compile Include="Alliances\NewTerritories\SafezoneBlockPatch.cs" />
     <Compile Include="Alliances\NewTerritories\TerritoryCommands.cs" />
-    <Compile Include="Alliances\Radar\RadarConfig.cs" />
-    <Compile Include="Alliances\Radar\RadarLogic.cs" />
-    <Compile Include="Alliances\Radar\RadarModel.cs" />
     <Compile Include="Alliances\Upgrades\GridRepairCommands.cs" />
     <Compile Include="Alliances\Upgrades\AssemblerCommands.cs" />
     <Compile Include="Alliances\Upgrades\AssemblerUpgrade.cs" />

@@ -17,7 +17,10 @@ namespace AlliancesPlugin.Alliances.Gates
         public static void DoGateLogic()
         {
             var players = MySession.Static.Players.GetOnlinePlayers();
-
+            if (AlliancePlugin.AllGates == null)
+            {
+                return;
+            }
             foreach (var gate in AlliancePlugin.AllGates.Values)
             {
                 if (!gate.Enabled)
@@ -32,14 +35,14 @@ namespace AlliancesPlugin.Alliances.Gates
                     continue;
 
                 var target = AlliancePlugin.AllGates[gate.TargetGateId];
-                if (!target.Enabled)
+                if (!target.Enabled || target == null)
                     continue;
                 if (target.TargetGateId == target.GateId)
                     continue;
 
                 if (!gate.WorldName.Equals(MyMultiplayer.Static.HostName))
                     continue;
-
+                
                 if (gate.RequirePilot)
                 {
                     foreach (var player in players)
@@ -93,6 +96,10 @@ namespace AlliancesPlugin.Alliances.Gates
                             continue;
                         }
 //     AlliancePlugin.Log.Info("1");
+                        if (player.Character == null)
+                        {
+                            continue;
+                        }
                         var Distance = Vector3.Distance(gate.Position, player.Character.PositionComp.GetPosition());
                         if (Distance <= gate.RadiusToJump)
                         {

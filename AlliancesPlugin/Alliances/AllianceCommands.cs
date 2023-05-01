@@ -677,6 +677,7 @@ namespace AlliancesPlugin.Alliances
 
             return gps;
         }
+
         [Command("list", "list all alliance")]
         [Permission(MyPromoteLevel.None)]
         public void AllianceList()
@@ -698,7 +699,6 @@ namespace AlliancesPlugin.Alliances
             {
                 Context.Respond(sb.ToString());
             }
-
         }
 
         [Command("join", "join an alliance")]
