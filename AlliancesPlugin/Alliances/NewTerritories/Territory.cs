@@ -6,7 +6,6 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using AlliancesPlugin.NewTerritoryCapture;
-using AlliancesPlugin.NewTerritoryCapture.Models;
 using AlliancesPlugin.Territory_Version_2.Interfaces;
 using VRage.Game;
 using VRageMath;

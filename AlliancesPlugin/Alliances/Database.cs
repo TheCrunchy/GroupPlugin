@@ -510,7 +510,7 @@ namespace AlliancesPlugin.Alliances
                     var collection = db.GetCollection<BankData>("BankData");
                     foreach (KeyValuePair<Guid, Dictionary<long, float>> key in taxes)
                     {
-                        Alliance alliance = AlliancePlugin.GetAlliance(AlliancePlugin.Territories[key.Key].Alliance);
+                       // Alliance alliance = AlliancePlugin.GetAlliance(AlliancePlugin.Territories[key.Key].Alliance);
 
                         long amount = 0;
                         foreach (float f in key.Value.Values)
@@ -540,13 +540,13 @@ namespace AlliancesPlugin.Alliances
                         {
                             if (EconUtils.getBalance(tax.Key) >= tax.Value)
                             {
-                                alliance.DepositTerritoryTax((long)tax.Value, MySession.Static.Players.TryGetSteamId(tax.Key),  AlliancePlugin.Territories[key.Key].Name);
+                             //   alliance.DepositTerritoryTax((long)tax.Value, MySession.Static.Players.TryGetSteamId(tax.Key),  AlliancePlugin.Territories[key.Key].Name);
                                 AlliancePlugin.OtherTaxingId.Remove(tax.Key);
                                 AlliancePlugin.OtherTaxingId.Add(tax.Key);
                                 EconUtils.takeMoney(tax.Key, (long)tax.Value);
                             }
                         }
-                        AlliancePlugin.SaveAllianceData(alliance);
+                   //     AlliancePlugin.SaveAllianceData(alliance);
 
                     }
                 }

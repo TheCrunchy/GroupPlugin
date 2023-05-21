@@ -81,7 +81,6 @@ namespace AlliancesPlugin.Alliances
                         else
                         {
                             foreach (var ter in from ter in AlliancePlugin.Territories.Values
-                                     where ter.Alliance != Guid.Empty && ter.Alliance == alliance.AllianceId
                                      let distance = Vector3.Distance(refin.CubeGrid.PositionComp.GetPosition(),
                                          new Vector3(ter.x, ter.y, ter.z))
                                      where distance <= ter.Radius
@@ -187,7 +186,6 @@ namespace AlliancesPlugin.Alliances
                             else
                             {
                                 foreach (var ter in from ter in AlliancePlugin.Territories.Values
-                                         where ter.Alliance != Guid.Empty && ter.Alliance == alliance.AllianceId
                                          let distance = Vector3.Distance(
                                              Assembler.CubeGrid.PositionComp.GetPosition(),
                                              new Vector3(ter.x, ter.y, ter.z))

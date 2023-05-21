@@ -123,10 +123,7 @@ namespace AlliancesPlugin.Alliances
             bool hasTerritory = false;
             foreach (Territory ter in AlliancePlugin.Territories.Values)
             {
-                if (ter.Alliance == this.AllianceId)
-                {
-                    hasTerritory = true;
-                }
+
             }
             if (hasTerritory)
             {
@@ -181,10 +178,7 @@ namespace AlliancesPlugin.Alliances
             bool hasTerritory = false;
             foreach (Territory ter in AlliancePlugin.Territories.Values)
             {
-                if (ter.Alliance == this.AllianceId)
-                {
-                    hasTerritory = true;
-                }
+           
             }
             if (hasTerritory)
             {

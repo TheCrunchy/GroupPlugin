@@ -24,7 +24,6 @@ namespace AlliancesPlugin.Alliances.NewTerritories
                 return;
             }
 
-            territory.Value.SiegeEndTime = DateTime.Now.AddHours(hours);
             AlliancePlugin.utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + territory.Value.Name + ".xml", territory.Value);
         }
 
@@ -46,7 +45,6 @@ namespace AlliancesPlugin.Alliances.NewTerritories
                 return;
             }
 
-            territory.Value.Alliance = alliance.AllianceId;
             AlliancePlugin.utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + territory.Value.Name + ".xml", territory.Value);
         }
     }

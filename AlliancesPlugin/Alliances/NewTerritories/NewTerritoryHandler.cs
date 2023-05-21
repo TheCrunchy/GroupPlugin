@@ -100,15 +100,6 @@ namespace AlliancesPlugin.Alliances.NewTerritories
                     MappedAlliances.Add(player, alliance.AllianceId);
                 }
             }
-            foreach (var territory in Territories.Where(x =>
-                         x.Enabled && x.IsUnderSiege && DateTime.Now >= x.NextSiegeCheck))
-            {
-                territory.NextSiegeCheck = DateTime.Now.AddMinutes(1);
-                foreach (var player in PlayerPositions.Where(player => IsPositionInTerritoryCap(player.Value, territory)))
-                {
-
-                }
-            }
         }
 
     }

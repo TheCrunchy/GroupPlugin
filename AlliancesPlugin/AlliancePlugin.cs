@@ -63,8 +63,8 @@ using static AlliancesPlugin.Alliances.NewTerritories.City;
 using AlliancesPlugin.WarOptIn;
 using AlliancesPlugin.KamikazeTerritories;
 using AlliancesPlugin.NewTerritoryCapture;
-using AlliancesPlugin.NewTerritoryCapture.Models;
 using AlliancesPlugin.NexusStuff;
+using AlliancesPlugin.Territory_Version_2.CapLogics;
 using Newtonsoft.Json;
 using Sandbox.Definitions;
 using SpaceEngineers.Game.EntityComponents.Blocks;
@@ -199,16 +199,6 @@ namespace AlliancesPlugin
                 }
             }
 
-            foreach (var ter in AlliancePlugin.Territories.Values)
-            {
-                if (alliance != null)
-                {
-                    if (ter.Alliance != Guid.Empty && ter.Alliance == alliance.AllianceId)
-                    {
-                        continue;
-                    }
-                }
-            }
 
             if (AlliancePlugin.TaxesToBeProcessed.ContainsKey(identityId.IdentityId))
             {
@@ -862,7 +852,7 @@ namespace AlliancesPlugin
                 // DiscordStuff.DisconnectDiscord();
                 foreach (var ter in AlliancePlugin.Territories.Values)
                 {
-                    AlliancePlugin.utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + ter.Name + ".xml", ter);
+                    AlliancePlugin.utils.WriteToJsonFile<Territory>(AlliancePlugin.path + "//Territories//" + ter.Name + ".json", ter);
                 }
 
                 foreach (var item in GridPrintQueue)
@@ -3662,7 +3652,6 @@ namespace AlliancesPlugin
                                                         {
                                                             var ter = utils.ReadFromXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + config.LinkedTerritory + ".xml");
 
-                                                            ter.Alliance = alliance.AllianceId;
                                                             utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + config.LinkedTerritory + ".xml", ter);
 
                                                             if (Territories.ContainsKey(ter.Id))
@@ -3681,7 +3670,6 @@ namespace AlliancesPlugin
                                                             ter.x = config.x;
                                                             ter.y = config.y;
                                                             ter.z = config.z;
-                                                            ter.Alliance = alliance.AllianceId;
 
                                                             utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + config.LinkedTerritory + ".xml", ter);
                                                             Territories.Add(ter.Id, ter);
@@ -3985,7 +3973,7 @@ namespace AlliancesPlugin
 
             Alliance alliance = null;
 
-            alliance = AlliancePlugin.GetAllianceNoLoading(ter.Alliance);
+          //  alliance = AlliancePlugin.GetAllianceNoLoading(ter.Alliance);
 
 
             var message2 = new NotificationMessage();
