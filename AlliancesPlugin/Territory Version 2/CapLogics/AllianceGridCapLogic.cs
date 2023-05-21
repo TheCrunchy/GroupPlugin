@@ -15,7 +15,9 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
         }
 
         public int Test2 = 5;
-        public Task<Tuple<bool, object>> ProcessCap()
+        private ICapLogic _capLogicImplementation;
+
+        public Task<Tuple<bool, object>> ProcessCap(ICapLogic point, Territory territory)
         {
             if (CanLoop())
             {

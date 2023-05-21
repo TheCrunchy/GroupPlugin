@@ -21,7 +21,6 @@ namespace AlliancesPlugin.Alliances.NewTerritories
         public int Radius = 50000;
         public bool Enabled = false;
         public IPointOwner Owner;
-
         public bool ForcesPvP = true;
 
         public List<ICapLogic> CapturePoints = new List<ICapLogic>();

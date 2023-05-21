@@ -24,7 +24,7 @@ namespace AlliancesPlugin.NewTerritoryCapture
 
                     try
                     {
-                        var capResult = await CapLogic.ProcessCap();
+                        var capResult = await CapLogic.ProcessCap(point, territory);
                         if (capResult.Item1)
                         {
                             AlliancePlugin.Log.Info("Cap did succeed");
@@ -55,6 +55,8 @@ namespace AlliancesPlugin.NewTerritoryCapture
                         }
                     }
                 }
+                //calculate ownership
+
             }
         }
     }

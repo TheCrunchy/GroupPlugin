@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AlliancesPlugin.Alliances.NewTerritories;
 using AlliancesPlugin.Territory_Version_2.Interfaces;
 
 namespace AlliancesPlugin.Territory_Version_2.CapLogics
@@ -16,7 +17,7 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
         }
 
         public string Test1 = "Test string";
-        public Task<Tuple<bool, object>> ProcessCap()
+        public Task<Tuple<bool, object>> ProcessCap(ICapLogic point, Territory territory)
         {
             if (CanLoop())
             {
