@@ -43,7 +43,6 @@ namespace AlliancesPlugin.NewTerritoryCapture
 
                     if (CapLogic.SecondaryLogics != null)
                     {
-
                         foreach (var item in CapLogic.SecondaryLogics)
                         {
                             try

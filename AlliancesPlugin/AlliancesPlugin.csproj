@@ -241,7 +241,6 @@
     <Compile Include="Territory Version 2\CapLogics\AllianceGridCapLogic.cs" />
     <Compile Include="Territory Version 2\CapLogics\AllianceSuitCapLogic.cs" />
     <Compile Include="Territory Version 2\CaptureHandler.cs" />
-    <Compile Include="Territory Version 2\CaptureLogic.cs" />
     <Compile Include="Hangar\HangarSlotUpgrade.cs" />
     <Compile Include="Alliances\Upgrades\MyProductionPatch.cs" />
     <Compile Include="Alliances\PlayerData.cs" />
