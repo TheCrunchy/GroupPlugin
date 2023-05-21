@@ -90,11 +90,10 @@ namespace AlliancesPlugin.Alliances
                         }
                         else
                         {
-                            if (bank.balance >= alliance.GetUpkeep() && CanDoItemUpkeep(alliance))
+                            if (bank.balance >= alliance.GetUpkeep())
                             {
                                 bank.balance -= alliance.GetUpkeep();
-                            DoItemUpkeep(alliance);
-                            collection.Update(bank);
+                                collection.Update(bank);
                                 AllianceChat.SendChatMessage(alliance.AllianceId, "Upkeep", "Paying upkeep of " + String.Format("{0:n0}", alliance.GetUpkeep()) + " SC.", true, 0);
                                 alliance.Upkeep(alliance.GetUpkeep(), 1);
                                 alliance.bankBalance -= alliance.GetUpkeep();
@@ -176,11 +175,10 @@ namespace AlliancesPlugin.Alliances
                         }
                         else
                         {
-                            if (bank.balance >= alliance.GetUpkeep() && CanDoItemUpkeep(alliance))
+                            if (bank.balance >= alliance.GetUpkeep())
                             {
                                 bank.balance -= alliance.GetUpkeep();
                                 collection.Update(bank);
-                                DoItemUpkeep(alliance);
                                 AllianceChat.SendChatMessage(alliance.AllianceId, "Upkeep", "Paying upkeep of " + String.Format("{0:n0}", alliance.GetUpkeep()) + " SC.", true, 0);
                                 alliance.Upkeep(alliance.GetUpkeep(), 1);
                               //  alliance.bankBalance -= alliance.GetUpkeep();
@@ -328,43 +326,43 @@ namespace AlliancesPlugin.Alliances
                 }
             }
         }
-        public static Boolean CanDoItemUpkeep(Alliance alliance)
-        {
-            if (!AlliancePlugin.config.DoItemUpkeep)
-            {
-                return true;
-            }
-            bool canPayItems = true;
-            using (var db = new LiteDatabase("Filename=" + AlliancePlugin.path + "//Vaults//" + alliance.AllianceId.ToString() + ".db;Connection=shared;Upgrade=True;"))
-            {
-                var collection = db.GetCollection<VaultData>("VaultData");
-                foreach (KeyValuePair<MyDefinitionId, int> key in AlliancePlugin.ItemUpkeep)
-                {
-                    var vault = collection.FindById(key.Key.ToString());
-                    if (vault == null)
-                    {
-                        vault = new VaultData
-                        {
-                            Id = key.Key.ToString(),
-                            count = 0
-                        };
-                        canPayItems = false;
-                        collection.Insert(vault);
-                    }
-                    else
-                    {
-                        if (vault.count < key.Value * alliance.GetFactionCount())
-                        {
-                            canPayItems = false;
-                        }
-                    }
-                }
+        //public static Boolean CanDoItemUpkeep(Alliance alliance)
+        //{
+        //    if (!AlliancePlugin.config.DoItemUpkeep)
+        //    {
+        //        return true;
+        //    }
+        //    bool canPayItems = true;
+        //    using (var db = new LiteDatabase("Filename=" + AlliancePlugin.path + "//Vaults//" + alliance.AllianceId.ToString() + ".db;Connection=shared;Upgrade=True;"))
+        //    {
+        //        var collection = db.GetCollection<VaultData>("VaultData");
+        //        foreach (KeyValuePair<MyDefinitionId, int> key in AlliancePlugin.ItemUpkeep)
+        //        {
+        //            var vault = collection.FindById(key.Key.ToString());
+        //            if (vault == null)
+        //            {
+        //                vault = new VaultData
+        //                {
+        //                    Id = key.Key.ToString(),
+        //                    count = 0
+        //                };
+        //                canPayItems = false;
+        //                collection.Insert(vault);
+        //            }
+        //            else
+        //            {
+        //                if (vault.count < key.Value * alliance.GetFactionCount())
+        //                {
+        //                    canPayItems = false;
+        //                }
+        //            }
+        //        }
 
 
-            }
+        //    }
 
-            return canPayItems;
-        }
+        //    return canPayItems;
+        //}
         public static Boolean DepositToVault(Alliance alliance, MyDefinitionId id, int amount)
         {
             try

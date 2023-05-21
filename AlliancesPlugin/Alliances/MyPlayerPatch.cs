@@ -19,16 +19,21 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using AlliancesPlugin.Alliances.NewTerritories;
 using AlliancesPlugin.KamikazeTerritories;
+using Sandbox.Definitions;
+using Sandbox.Game.Components;
 using Torch.Managers.PatchManager;
 using Torch.Managers.PatchManager.MSIL;
 using Torch.Mod;
 using Torch.Mod.Messages;
 using VRage.Game;
+using VRage.Game.Components;
 using VRage.Game.Gui;
 using VRage.Game.ModAPI;
 using VRageMath;
 using static HarmonyLib.AccessTools;
+using MyThrust = Sandbox.Game.Entities.MyThrust;
 
 namespace AlliancesPlugin
 {
@@ -108,6 +113,22 @@ namespace AlliancesPlugin
         //    }
         //}
 
+
+        [HarmonyPatch]
+        public class MyPatchClass
+        {
+            [HarmonyPrefix]
+            [HarmonyPatch(typeof(MyThrust), nameof(MyThrust.Render), MethodType.Getter)]
+            public static void ShipComponent_RepairFraction_Get(ref MyRenderComponentBase __result)
+            {
+                if (__result is MyNullRenderComponent)
+                {
+                    __result = new MyRenderComponentThrust();
+                }
+              
+            }
+        }
+
         [HarmonyPatch(typeof(MyPlayer))]
         [HarmonyPatch("GetRelationBetweenPlayers")]
         class PlayerPatch
@@ -115,6 +136,8 @@ namespace AlliancesPlugin
             static void Postfix(long playerId1,
       long playerId2, ref MyRelationsBetweenPlayerAndBlock __result)
             {
+
+
                 if (playerId1 == playerId2)
                 {
                     return;

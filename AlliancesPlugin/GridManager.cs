@@ -333,7 +333,7 @@ namespace AlliancesPlugin
                 if (shipBlueprints == null)
                 {
 
-                    Log.Warn("No ShipBlueprints in File '" + path + "'");
+                    AlliancePlugin.Log.Warn("No ShipBlueprints in File '" + path + "'");
 
                     if (context != null)
                         context.Respond("There arent any Grids in your file to import!");
@@ -347,7 +347,7 @@ namespace AlliancesPlugin
                     if (!LoadShipBlueprint(shipBlueprint, playerPosition, keepOriginalLocation, (long)steamID, name, context, force))
                     {
 
-                        Log.Warn("Error Loading ShipBlueprints from File '" + path + "'");
+                        AlliancePlugin.Log.Warn("Error Loading ShipBlueprints from File '" + path + "'");
                         return false;
                     }
                 }
@@ -355,7 +355,7 @@ namespace AlliancesPlugin
                 return true;
             }
 
-            Log.Warn("Error Loading File '" + path + "' check Keen Logs.");
+            AlliancePlugin.Log.Warn("Error Loading File '" + path + "' check Keen Logs.");
 
             return false;
         }
@@ -370,7 +370,7 @@ namespace AlliancesPlugin
             if (grids == null || grids.Length == 0)
             {
 
-                Log.Warn("No grids in blueprint!");
+                AlliancePlugin.Log.Warn("No grids in blueprint!");
 
                 if (context != null)
                     context.Respond("No grids in blueprint!");
@@ -401,7 +401,7 @@ namespace AlliancesPlugin
                 if (pos == null)
                 {
 
-                    Log.Warn("No free Space found!");
+                    AlliancePlugin.Log.Warn("No free Space found!");
 
                     if (context != null)
                         context.Respond("No free space available!");
@@ -414,7 +414,7 @@ namespace AlliancesPlugin
                 /* Update GridsPosition if that doesnt work get out of here. */
                 if (!UpdateGridsPosition(grids, newPosition))
                 {
-
+                    AlliancePlugin.Log.Warn("The File to be imported does not seem to be compatible with the server!");
                     if (context != null)
                         context.Respond("The File to be imported does not seem to be compatible with the server!");
 

@@ -32,9 +32,10 @@ namespace AlliancesPlugin.JumpGates
             Context.Respond("Refreshed the gates!");
             Context.Respond(AlliancePlugin.AllGates.Count + " Gates Loaded");
         }
+
         [Command("create", "create a gate")]
         [Permission(MyPromoteLevel.Admin)]
-        public void CreateGate(string name, int radiusToJump = 75)
+        public void CreateGate(string name, int radiusToJump = 75, bool generateZone = true)
         {
             AlliancePlugin.LoadAllGates();
             foreach (JumpGate tempgate in AlliancePlugin.AllGates.Values)
@@ -52,22 +53,25 @@ namespace AlliancesPlugin.JumpGates
                 RadiusToJump = radiusToJump,
                 WorldName = MyMultiplayer.Static.HostName
             };
-            gate.GeneratedZone2 = true;
-            MyObjectBuilder_SafeZone objectBuilderSafeZone = new MyObjectBuilder_SafeZone();
-            objectBuilderSafeZone.PositionAndOrientation = new MyPositionAndOrientation?(new MyPositionAndOrientation(gate.Position, Vector3.Forward, Vector3.Up));
-            objectBuilderSafeZone.PersistentFlags = MyPersistentEntityFlags2.InScene;
-            objectBuilderSafeZone.Shape = MySafeZoneShape.Sphere;
-            objectBuilderSafeZone.Radius = (float)gate.RadiusToJump;
-            objectBuilderSafeZone.Enabled = true;
-            objectBuilderSafeZone.DisplayName = gate.GateName + " zone";
-            objectBuilderSafeZone.ModelColor = Color.Green.ToVector3();
-            objectBuilderSafeZone.AllowedActions = MySafeZoneAction.Drilling | MySafeZoneAction.Building | MySafeZoneAction.Damage | MySafeZoneAction.Grinding | MySafeZoneAction.Shooting | MySafeZoneAction.Welding | MySafeZoneAction.LandingGearLock;
-            objectBuilderSafeZone.AccessTypeGrids = MySafeZoneAccess.Blacklist;
-            objectBuilderSafeZone.AccessTypeFloatingObjects = MySafeZoneAccess.Blacklist;
-            objectBuilderSafeZone.AccessTypeFactions = MySafeZoneAccess.Blacklist;
-            objectBuilderSafeZone.AccessTypePlayers = MySafeZoneAccess.Blacklist;
-            MyEntity ent = Sandbox.Game.Entities.MyEntities.CreateFromObjectBuilderAndAdd((MyObjectBuilder_EntityBase)objectBuilderSafeZone, true);
-            gate.SafeZoneEntityId = ent.EntityId;
+            if (generateZone)
+            {
+                gate.GeneratedZone2 = true;
+                MyObjectBuilder_SafeZone objectBuilderSafeZone = new MyObjectBuilder_SafeZone();
+                objectBuilderSafeZone.PositionAndOrientation = new MyPositionAndOrientation?(new MyPositionAndOrientation(gate.Position, Vector3.Forward, Vector3.Up));
+                objectBuilderSafeZone.PersistentFlags = MyPersistentEntityFlags2.InScene;
+                objectBuilderSafeZone.Shape = MySafeZoneShape.Sphere;
+                objectBuilderSafeZone.Radius = (float)gate.RadiusToJump;
+                objectBuilderSafeZone.Enabled = true;
+                objectBuilderSafeZone.DisplayName = gate.GateName + " zone";
+                objectBuilderSafeZone.ModelColor = Color.Green.ToVector3();
+                objectBuilderSafeZone.AllowedActions = MySafeZoneAction.Drilling | MySafeZoneAction.Building | MySafeZoneAction.Damage | MySafeZoneAction.Grinding | MySafeZoneAction.Shooting | MySafeZoneAction.Welding | MySafeZoneAction.LandingGearLock;
+                objectBuilderSafeZone.AccessTypeGrids = MySafeZoneAccess.Blacklist;
+                objectBuilderSafeZone.AccessTypeFloatingObjects = MySafeZoneAccess.Blacklist;
+                objectBuilderSafeZone.AccessTypeFactions = MySafeZoneAccess.Blacklist;
+                objectBuilderSafeZone.AccessTypePlayers = MySafeZoneAccess.Blacklist;
+                MyEntity ent = Sandbox.Game.Entities.MyEntities.CreateFromObjectBuilderAndAdd((MyObjectBuilder_EntityBase)objectBuilderSafeZone, true);
+                gate.SafeZoneEntityId = ent.EntityId;
+            }
             gate.Save();
             AlliancePlugin.AllGates.Add(gate.GateId, gate);
             Context.Respond("Gate created. To link to another gate use !jumpgate link gateName targetName");
@@ -111,7 +115,7 @@ namespace AlliancesPlugin.JumpGates
             objectBuilderSafeZone.AccessTypePlayers = MySafeZoneAccess.Blacklist;
             MyEntity ent = Sandbox.Game.Entities.MyEntities.CreateFromObjectBuilderAndAdd((MyObjectBuilder_EntityBase)objectBuilderSafeZone, true);
             gate1.SafeZoneEntityId = ent.EntityId;
-            
+
             AlliancePlugin.AllGates[gate1.GateId] = gate1;
             Context.Respond("Added the zone?");
             gate1.Save();
@@ -265,13 +269,15 @@ namespace AlliancesPlugin.JumpGates
                     gate1.Save();
                     gate2.Save();
 
-                }else {
+                }
+                else
+                {
                     Context.Respond("You dont have the rank to do this.");
                 }
 
             }
 
-        
+
         }
 
         [Command("rent", "rent a gate")]
@@ -350,12 +356,12 @@ namespace AlliancesPlugin.JumpGates
             StringBuilder sb = new StringBuilder();
             foreach (JumpGate gate in AlliancePlugin.AllGates.Values)
             {
-             if (gate.CanBeRented && DateTime.Now >= gate.NextRentAvailable)
+                if (gate.CanBeRented && DateTime.Now >= gate.NextRentAvailable)
                 {
                     sb.AppendLine(gate.GateName + " meta point cost " + gate.MetaPointRentCost + ". For " + gate.DaysPerRent + " days.");
                 }
             }
-   
+
 
             DialogMessage m2 = new DialogMessage("Rentable gates", "", sb.ToString());
             ModCommunication.SendMessageTo(m2, Context.Player.SteamUserId);
@@ -364,12 +370,12 @@ namespace AlliancesPlugin.JumpGates
         [Permission(MyPromoteLevel.Admin)]
         public void OutputGates()
         {
-            
+
             foreach (JumpGate gate in AlliancePlugin.AllGates.Values)
             {
                 Context.Respond(gate.GateName);
             }
-         
+
         }
         [Command("setowner", "set the owner of a gates")]
         [Permission(MyPromoteLevel.Admin)]

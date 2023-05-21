@@ -19,7 +19,11 @@
             TextWriter writer = null;
             try
             {
-                var contentsToWriteToFile = JsonConvert.SerializeObject(objectToWrite, Newtonsoft.Json.Formatting.Indented);
+                var contentsToWriteToFile = JsonConvert.SerializeObject(objectToWrite, new JsonSerializerSettings()
+                {
+                    TypeNameHandling = TypeNameHandling.Auto,
+                    Formatting = Newtonsoft.Json.Formatting.Indented
+                });
                 writer = new StreamWriter(filePath, append);
                 writer.Write(contentsToWriteToFile);
             }
@@ -37,7 +41,11 @@
             {
                 reader = new StreamReader(filePath);
                 var fileContents = reader.ReadToEnd();
-                return JsonConvert.DeserializeObject<T>(fileContents);
+                return JsonConvert.DeserializeObject<T>(fileContents, new JsonSerializerSettings()
+                {
+                    TypeNameHandling = TypeNameHandling.Auto,
+                    Formatting = Newtonsoft.Json.Formatting.Indented
+                });
             }
             finally
             {

@@ -62,6 +62,8 @@ using AlliancesPlugin.Integrations;
 using static AlliancesPlugin.Alliances.NewTerritories.City;
 using AlliancesPlugin.WarOptIn;
 using AlliancesPlugin.KamikazeTerritories;
+using AlliancesPlugin.NewTerritoryCapture;
+using AlliancesPlugin.NewTerritoryCapture.Models;
 using AlliancesPlugin.NexusStuff;
 using Newtonsoft.Json;
 using Sandbox.Definitions;
@@ -254,11 +256,13 @@ namespace AlliancesPlugin
             Directory.CreateDirectory(path + "//ShipMarket//Sold//");
 
             Directory.CreateDirectory(path + "//ShipMarket//Grids//");
-            if (!File.Exists(path + "//Territories//Example.xml"))
+            if (!File.Exists(path + "//Territories//Example.json"))
             {
                 var example = new Territory();
-                example.Enabled = false;
-                utils.WriteToXmlFile<Territory>(path + "//Territories//Example.xml", example, false);
+                example.CapturePoints.Add(new AllianceGridCapLogic(1));
+                example.CapturePoints.Add(new AllianceSuitCapLogic("Test string"));
+                example.Enabled = true;
+                utils.WriteToJsonFile<Territory>(path + "//Territories//Example.json", example, false);
             }
 
 
@@ -1193,7 +1197,7 @@ namespace AlliancesPlugin
             LoadAllAlliances();
             LoadAllGates();
             LoadAllRefineryUpgrades();
-
+            LoadAllTerritories();
 
             LoadItemUpkeep();
 
@@ -1492,6 +1496,11 @@ namespace AlliancesPlugin
                             {
                                 try
                                 {
+                                    if (!File.Exists(s))
+                                    {
+                                        KnownPaths.Remove(s);
+                                        continue;
+                                    }
                                     var alliance = jsonStuff.ReadFromJsonFile<Alliance>(s);
                                     if (alliance != null)
                                     {
@@ -1533,6 +1542,11 @@ namespace AlliancesPlugin
                         {
                             try
                             {
+                                if (!File.Exists(s))
+                                {
+                                    KnownPaths.Remove(s);
+                                    continue;
+                                }
                                 var alliance = jsonStuff.ReadFromJsonFile<Alliance>(s);
                                 if (alliance != null)
                                 {
@@ -1633,7 +1647,15 @@ namespace AlliancesPlugin
             {
                 try
                 {
-                    var ter = jsonStuff.ReadFromXmlFile<Territory>(s);
+                    var ter = new Territory();
+                    if (s.EndsWith(".xml"))
+                    {
+                        ter = jsonStuff.ReadFromXmlFile<Territory>(s);
+                    }
+                    if (s.EndsWith(".json"))
+                    {
+                        ter = jsonStuff.ReadFromJsonFile<Territory>(s);
+                    }
                     if (!ter.Enabled)
                     {
                         continue;
@@ -2076,6 +2098,43 @@ namespace AlliancesPlugin
             foreach (var id in Processed)
             {
                 TaxesToBeProcessed.Remove(id);
+            }
+        }
+
+        public void RemoveItem(int index, MyBlueprintDefinitionBase.Item[] items, out MyBlueprintDefinitionBase.Item[] updatedItems)
+        {
+            var newItems = new MyBlueprintDefinitionBase.Item[items.Length - 1];
+            for (int i = 0; i < newItems.Length; i++)
+            {
+                var j = i < index ? i : i + 1;
+                newItems[i] = items[j];
+            }
+            updatedItems = newItems;
+        }
+
+        private void DoWork()
+        {
+            foreach (MyDefinitionBase def in MyDefinitionManager.Static.GetAllDefinitions())
+            {
+                if (def as MyBlueprintDefinition != null)
+                {
+                    var bp = def as MyBlueprintDefinition;
+                    List<MyBlueprintDefinition.Item> IndexesToRemove = new List<MyBlueprintDefinition.Item>();
+                    for (int i = 0; i < bp.Prerequisites.Length; i++)
+                    {
+                        var item = bp.Prerequisites[i];
+                        if (item.Id.SubtypeName.Contains("LeadIngot") || item.Id.SubtypeName.Contains("TungstenIngot"))
+                        {
+                            IndexesToRemove.Add(item);
+                        }
+                    }
+                    var temp = bp.Prerequisites.ToList();
+                    foreach (var index in IndexesToRemove)
+                    {
+                        temp.Remove(index);
+                    }
+                    bp.Prerequisites = temp.ToArray();
+                }
             }
         }
         public static bool yeeted = false;
@@ -4056,6 +4115,18 @@ namespace AlliancesPlugin
                     else
                     {
                         warcore.config.EnableOptionalWar = false;
+                    }
+                }
+
+                if (ticks % 128 == 0)
+                {
+                    try
+                    {
+                        Task.Run(async () => { CaptureHandler.DoCaps(); });
+                    }
+                    catch (Exception e)
+                    {
+                        AlliancePlugin.Log.Error("Error in territory cap logic", e.ToString());
                     }
                 }
 

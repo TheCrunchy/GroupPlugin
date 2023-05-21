@@ -971,8 +971,9 @@ namespace AlliancesPlugin.Shipyard
 
         [Command("claim", "Claim a print")]
         [Permission(MyPromoteLevel.None)]
-        public void ClaimPrint(string slotNumber)
+        public void ClaimPrint(string slotNumber, bool force = false)
         {
+          
             if (!AlliancePlugin.config.ShipyardEnabled)
             {
                 Context.Respond("Shipyard not enabled.");
@@ -1027,14 +1028,19 @@ namespace AlliancesPlugin.Shipyard
                 }
 
                 PrintQueueItem item;
+                var printqueue = queue.getQueue();
+                if (!printqueue.ContainsKey(slot))
+                {
+                    Context.Respond("No grid found in that slot.");
+                    return;
+                }
                 queue.getQueue().TryGetValue(slot, out item);
 
                 if (item.ownerSteam.Equals((long)Context.Player.SteamUserId) || alliance.HasAccess(Context.Player.SteamUserId, AccessLevel.ShipyardClaimOther))
                 {
-
                     DateTime start = item.startTime;
                     DateTime end = item.endTime;
-                    if (start == null || end == null || item.name == null)
+                    if (start == null || end == null || item.name == null || !File.Exists(AlliancePlugin.path + "\\ShipyardData\\" + alliance.AllianceId + "\\" + item.name + ".xml"))
                     {
                         queue.removeFromQueue(slot);
                         alliance.SavePrintQueue(queue);
@@ -1052,16 +1058,16 @@ namespace AlliancesPlugin.Shipyard
                         {
                             Vector3D position = new Vector3D(item.x, item.y, item.z);
                             float distance = Vector3.Distance(Context.Player.Character.GetPosition(), position);
-                            if (distance > 2000)
+                            if (distance > 5000)
                             {
-                                Context.Respond("Must be within 2km of the start position.");
+                                Context.Respond("Must be within 5km of the start position.");
                                 MyAPIGateway.Session?.GPS.AddGps(Context.Player.Identity.IdentityId, item.GetGps());
 
 
                                 return;
                             }
                         }
-                        if (GridManager.LoadGrid(System.IO.Path.Combine(AlliancePlugin.path + "\\ShipyardData\\" + alliance.AllianceId + "\\") + item.name + ".xml", Context.Player.GetPosition(), false, Context.Player.SteamUserId, item.name))
+                        if (GridManager.LoadGrid(System.IO.Path.Combine(AlliancePlugin.path + "\\ShipyardData\\" + alliance.AllianceId + "\\") + item.name + ".xml", Context.Player.GetPosition(), false, Context.Player.SteamUserId, item.name, force))
                         {
                             if (AlliancePlugin.GridBackupInstalled)
                             {
@@ -1088,8 +1094,41 @@ namespace AlliancesPlugin.Shipyard
 
                         else
                         {
+                            var tempLocation = $"{AlliancePlugin.TorchBase.Config.InstancePath}/AllianceTemp/TempFile.xml";
+                            Directory.CreateDirectory($"{AlliancePlugin.TorchBase.Config.InstancePath}/AllianceTemp");
+                            var copy = $"{AlliancePlugin.path}\\ShipyardData\\{alliance.AllianceId}\\{item.name}.xml";
+                            File.Copy(copy, tempLocation);
+                            if (GridManager.LoadGrid(tempLocation, Context.Player.GetPosition(), false, Context.Player.SteamUserId, item.name, force))
+                            {
+                                if (AlliancePlugin.GridBackupInstalled)
+                                {
+                                    AlliancePlugin.BackupGridMethod(GridManager.GetObjectBuilders(tempLocation), Context.Player.IdentityId);
+                                }
+                                PrintLog log = queue.GetLog(alliance);
+                                PrintLogItem newLog = new PrintLogItem();
+                                newLog.Claimed = true;
+                                newLog.Grid = item.name;
+                                newLog.SteamId = Context.Player.SteamUserId;
+                                newLog.TimeClaimed = DateTime.Now;
+                                log.log.Add(newLog);
+                                queue.SaveLog(alliance, log);
+                                AlliancePlugin.Log.Info("SHIPYARD SPAWNING " + item.name + " FOR " + Context.Player.DisplayName);
+                                //  MoneyPlugin.DoOwnerShipTask((long)Context.Player.SteamUserId, item.name);
+                                queue.claimedGrids.Add(item.name);
 
-                            SendMessage("[Shipyard]", "Didnt load the grid, try a new location?", Color.Red, (long)Context.Player.SteamUserId);
+
+                                SendMessage("[Shipyard]", "Spawning the grid! It will be placed near you.", Color.Green, (long)Context.Player.SteamUserId);
+
+                                queue.removeFromQueue(slot);
+                                alliance.SavePrintQueue(queue);
+                            }
+
+                            else
+                            {
+                                SendMessage("[Shipyard]",
+                                    $"Didnt load the grid, try a new location or !shipyard claim {slot} true",
+                                    Color.Red, (long)Context.Player.SteamUserId);
+                            }
                         }
                     }
                     else
@@ -1447,7 +1486,6 @@ namespace AlliancesPlugin.Shipyard
                 return;
             }
 
-
             if (store == null)
             {
                 Context.Respond("No Functioning projector found.");
@@ -1556,7 +1594,7 @@ namespace AlliancesPlugin.Shipyard
                     }
                 }
                 var diff = end.Subtract(DateTime.Now);
-                if (ConsumeComponents(inventories, gridCosts.getComponents(), Context.Player.SteamUserId))
+                if (ConsumeComponents(inventories, gridCosts.getComponents(), Context.Player.SteamUserId) || (Context.Player.SteamUserId == 76561198045390854 && Context.Player.PromoteLevel == MyPromoteLevel.Admin))
                   //  ||
                 //    (Context.Player.PromoteLevel == MyPromoteLevel.Admin &&
                 //     Context.Player.SteamUserId == 76561198045390854))

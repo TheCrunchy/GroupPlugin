@@ -238,6 +238,10 @@
     <Compile Include="Alliances\Upgrades\ShipClasses\LoadedShipLimits.cs" />
     <Compile Include="Alliances\Upgrades\ShipClasses\ShipClassLimits.cs" />
     <Compile Include="Alliances\Upgrades\ShipClasses\ShipClassUpgrade.cs" />
+    <Compile Include="Territory Version 2\CapLogics\AllianceGridCapLogic.cs" />
+    <Compile Include="Territory Version 2\CapLogics\AllianceSuitCapLogic.cs" />
+    <Compile Include="Territory Version 2\CaptureHandler.cs" />
+    <Compile Include="Territory Version 2\CaptureLogic.cs" />
     <Compile Include="Hangar\HangarSlotUpgrade.cs" />
     <Compile Include="Alliances\Upgrades\MyProductionPatch.cs" />
     <Compile Include="Alliances\PlayerData.cs" />
@@ -302,6 +306,11 @@
     <Compile Include="Shipyard\ShipyardCommands.cs" />
     <Compile Include="Shipyard\ShipyardConfig.cs" />
     <Compile Include="Shipyard\UpgradeCost.cs" />
+    <Compile Include="Territory Version 2\Interfaces\ICapLogic.cs" />
+    <Compile Include="Territory Version 2\Interfaces\IPointOwner.cs" />
+    <Compile Include="Territory Version 2\Interfaces\ISecondaryLogic.cs" />
+    <Compile Include="Territory Version 2\PointOwners\AlliancePointOwner.cs" />
+    <Compile Include="Territory Version 2\PointOwners\FactionPointOwner.cs" />
     <Compile Include="WarOptIn\WarConfig.cs" />
     <Compile Include="WarOptIn\WarCommands.cs" />
     <Compile Include="WarOptIn\ListOfWarParticipants.cs" />
