@@ -64,32 +64,30 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
 
                     return Task.FromResult(Tuple.Create<bool, IPointOwner>(false, null));
                 }
-                else
+
+                var owner = foundAlliances.First();
+                var currentPointOwner = PointOwner.GetOwner() as Alliance;
+                if (currentPointOwner.AllianceId == owner)
                 {
-                    var owner = foundAlliances.First();
-                    var currentPointOwner = PointOwner.GetOwner() as Alliance;
-                    if (currentPointOwner.AllianceId == owner)
-                    {
-                        return Task.FromResult(Tuple.Create<bool, IPointOwner>(false, null));
-                    }
-                    var pointOwner = new AlliancePointOwner()
-                    {
-                        AllianceId = owner
-                    };
-                    AddToPoints(owner);
-                    var hasPoints = Points[owner];
-                    if (hasPoints < PointsToTake)
-                    {
-                        SendMessage($"Territory Capture {PointName}", $"{AlliancePlugin.GetAllianceNoLoading(owner).name} Cap Progress {hasPoints}/{PointsToTake}");
-                        return Task.FromResult(Tuple.Create<bool, IPointOwner>(false, null));
-                    }
-
-                    NextLoop = DateTime.Now.AddSeconds(SuccessfulCapLockoutTimeSeconds);
-
-                    PointOwner = pointOwner;
-                    SendMessage($"Territory Capture {PointName}", $"Captured by {AlliancePlugin.GetAllianceNoLoading(owner).name}, locking for {SuccessfulCapLockoutTimeSeconds / 60} Minutes");
-                    return Task.FromResult(Tuple.Create<bool, IPointOwner>(true, pointOwner));
+                    return Task.FromResult(Tuple.Create<bool, IPointOwner>(false, null));
                 }
+                var pointOwner = new AlliancePointOwner()
+                {
+                    AllianceId = owner
+                };
+                AddToPoints(owner);
+                var hasPoints = Points[owner];
+                if (hasPoints < PointsToTake)
+                {
+                    SendMessage($"Territory Capture {PointName}", $"{AlliancePlugin.GetAllianceNoLoading(owner).name} Cap Progress {hasPoints}/{PointsToTake}");
+                    return Task.FromResult(Tuple.Create<bool, IPointOwner>(false, null));
+                }
+
+                NextLoop = DateTime.Now.AddSeconds(SuccessfulCapLockoutTimeSeconds);
+
+                PointOwner = pointOwner;
+                SendMessage($"Territory Capture {PointName}", $"Captured by {AlliancePlugin.GetAllianceNoLoading(owner).name}, locking for {SuccessfulCapLockoutTimeSeconds / 60} Minutes");
+                return Task.FromResult(Tuple.Create<bool, IPointOwner>(true, pointOwner));
             }
 
             return Task.FromResult(Tuple.Create<bool, IPointOwner>(false, null));
