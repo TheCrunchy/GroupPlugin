@@ -63,7 +63,8 @@ namespace AlliancesPlugin.Alliances
         public int failedUpkeep = 0;
         public int RefineryUpgradeLevel = 0;
         public int AssemblerUpgradeLevel = 0;
-
+        public string DiscordWebhookCaps;
+        public string DiscordWebhookRadar;
         public Boolean ForceFriends = true;
 
         private ShipClassLimits _classLimits;

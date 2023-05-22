@@ -171,7 +171,10 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
                 var alliance = PointOwner.GetOwner();
                 if (alliance == null) return;
                 var temp = alliance as Alliance;
-                client.UploadData(temp.DiscordWebhook, Encoding.UTF8.GetBytes(payload));
+                if (temp.DiscordWebhookCaps != "")
+                {
+                    client.UploadData(temp.DiscordWebhookCaps, Encoding.UTF8.GetBytes(payload));
+                }
             }
             catch (Exception e)
             {
