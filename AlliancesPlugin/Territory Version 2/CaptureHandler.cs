@@ -27,11 +27,11 @@ namespace AlliancesPlugin.NewTerritoryCapture
                         var capResult = await CapLogic.ProcessCap(point, territory.Value);
                         if (capResult.Item1)
                         {
-                            AlliancePlugin.Log.Info("Cap did succeed");
+                          //  AlliancePlugin.Log.Info("Cap did succeed");
                         }
                         else
                         {
-                            AlliancePlugin.Log.Info("Cap did not succeed");
+                           // AlliancePlugin.Log.Info("Cap did not succeed");
                         }
                     }
                     catch (Exception e)

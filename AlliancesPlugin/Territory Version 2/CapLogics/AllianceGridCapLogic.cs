@@ -38,9 +38,10 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
         public string EmbedColorString = "5763719";
         public Task<Tuple<bool, IPointOwner>> ProcessCap(ICapLogic point, Territory territory)
         {
-            SendMessage("Test", "Test Message");
+          
             if (CanLoop())
             {
+                SendMessage("Test", "Test Message");
                 NextLoop = DateTime.Now.AddSeconds(SecondsBetweenLoops);
                 //do capture logic for suits in alliances
 

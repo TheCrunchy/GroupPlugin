@@ -16,7 +16,7 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
         {
             if (CanLoop())
             {
-                AlliancePlugin.Log.Info(Test1);
+             //   AlliancePlugin.Log.Info(Test1);
                 //do capture logic for suits in alliances
 
                 NextLoop = DateTime.Now.AddSeconds(SecondsBetweenLoops);
@@ -32,7 +32,7 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
 
         public List<ISecondaryLogic> SecondaryLogics { get; set; }
         public DateTime NextLoop { get; set; }
-        public int SecondsBetweenLoops { get; set; }
+        public int SecondsBetweenLoops { get; set; } = 60;
         public IPointOwner PointOwner { get; set; }
     }
 
