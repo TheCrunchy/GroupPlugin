@@ -11,13 +11,8 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
 
     public class AllianceSuitCapLogic : ICapLogic
     {
-        public AllianceSuitCapLogic(string Test1)
-        {
-            this.Test1 = Test1;
-        }
-
         public string Test1 = "Test string";
-        public Task<Tuple<bool, object>> ProcessCap(ICapLogic point, Territory territory)
+        public Task<Tuple<bool, IPointOwner>> ProcessCap(ICapLogic point, Territory territory)
         {
             if (CanLoop())
             {
@@ -27,7 +22,7 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
                 NextLoop = DateTime.Now.AddSeconds(SecondsBetweenLoops);
             }
 
-            return Task.FromResult(Tuple.Create<bool, Object>(false, null));
+            return Task.FromResult(Tuple.Create<bool, IPointOwner>(false, null));
         }
 
         public bool CanLoop()

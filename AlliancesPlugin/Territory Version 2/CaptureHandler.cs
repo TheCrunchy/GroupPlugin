@@ -24,7 +24,7 @@ namespace AlliancesPlugin.NewTerritoryCapture
 
                     try
                     {
-                        var capResult = await CapLogic.ProcessCap(point, territory);
+                        var capResult = await CapLogic.ProcessCap(point, territory.Value);
                         if (capResult.Item1)
                         {
                             AlliancePlugin.Log.Info("Cap did succeed");
@@ -36,7 +36,7 @@ namespace AlliancesPlugin.NewTerritoryCapture
                     }
                     catch (Exception e)
                     {
-                        AlliancePlugin.Log.Error($"Error on capture logic loop of type {CapLogic.GetType()}", e.ToString());
+                        AlliancePlugin.Log.Error($"Error on capture logic loop of type {CapLogic.GetType()}, { e.ToString()}");
                     }
                     //mostly testing, i dont intend to do anything here if a cap is or isnt successful, other than change the territory owner if % is high enough 
 
@@ -46,11 +46,11 @@ namespace AlliancesPlugin.NewTerritoryCapture
                         {
                             try
                             {
-                                await item.DoSecondaryLogic();
+                                await item.DoSecondaryLogic(CapLogic, territory.Value);
                             }
                             catch (Exception e)
                             {
-                                AlliancePlugin.Log.Error($"Error on secondary logic loop of type {item.GetType()}", e.ToString());
+                                AlliancePlugin.Log.Error($"Error on secondary logic loop of type {item.GetType()} { e.ToString()}");
                             }
                         }
                     }

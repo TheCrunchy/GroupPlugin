@@ -238,6 +238,7 @@
     <Compile Include="Alliances\Upgrades\ShipClasses\LoadedShipLimits.cs" />
     <Compile Include="Alliances\Upgrades\ShipClasses\ShipClassLimits.cs" />
     <Compile Include="Alliances\Upgrades\ShipClasses\ShipClassUpgrade.cs" />
+    <Compile Include="GPSHelper.cs" />
     <Compile Include="Territory Version 2\CapLogics\AllianceGridCapLogic.cs" />
     <Compile Include="Territory Version 2\CapLogics\AllianceSuitCapLogic.cs" />
     <Compile Include="Territory Version 2\CaptureHandler.cs" />
