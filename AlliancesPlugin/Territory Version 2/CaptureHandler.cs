@@ -14,6 +14,7 @@ namespace AlliancesPlugin.NewTerritoryCapture
 
         public static async Task DoCaps()
         {
+            List<Territory> TerritoriesToRecalc = new List<Territory>();
             foreach (var territory in AlliancePlugin.Territories)
             {
                 foreach (var point in territory.Value.CapturePoints)
@@ -27,7 +28,11 @@ namespace AlliancesPlugin.NewTerritoryCapture
                         var capResult = await CapLogic.ProcessCap(point, territory.Value);
                         if (capResult.Item1)
                         {
-                          //  AlliancePlugin.Log.Info("Cap did succeed");
+                            if (!TerritoriesToRecalc.Contains(territory.Value))
+                            {
+                                TerritoriesToRecalc.Add(territory.Value);
+                            }
+                            //  AlliancePlugin.Log.Info("Cap did succeed");
                         }
                         else
                         {
@@ -55,8 +60,11 @@ namespace AlliancesPlugin.NewTerritoryCapture
                         }
                     }
                 }
-                //calculate ownership
 
+                foreach (var ter in TerritoriesToRecalc.Distinct())
+                {
+                    //recalc ownership here
+                }
             }
         }
     }
