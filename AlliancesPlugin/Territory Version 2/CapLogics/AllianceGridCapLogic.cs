@@ -28,9 +28,9 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
         public List<ISecondaryLogic> SecondaryLogics { get; set; }
         public DateTime NextLoop { get; set; }
         public int SecondsBetweenLoops { get; set; } = 60;
-        public int SuccessfulCapLockoutTime = 3600;
+        public int SuccessfulCapLockoutTimeSeconds = 3600;
 
-        public int PointsToTake = 1;
+        public int PointsToTake = 15;
 
         public Dictionary<Guid, int> Points = new Dictionary<Guid, int>();
         public IPointOwner PointOwner { get; set; }
@@ -41,7 +41,6 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
           
             if (CanLoop())
             {
-                SendMessage("Test", "Test Message");
                 NextLoop = DateTime.Now.AddSeconds(SecondsBetweenLoops);
                 //do capture logic for suits in alliances
 
@@ -79,7 +78,7 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
                 {
                     if (contested)
                     {
-                        SendMessage($"Territory Capture", $"{PointName}, Contested, point not captured.");
+                        SendMessage($"Territory Capture {PointName}", $"Contested, point not captured.");
                     }
 
                     return Task.FromResult(Tuple.Create<bool, IPointOwner>(false, null));
@@ -105,9 +104,14 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
                         Points.Add(owner, 1);
                     }
                     var hasPoints = Points[owner];
-                    if (hasPoints < PointsToTake) return Task.FromResult(Tuple.Create<bool, IPointOwner>(false, null));
-                    NextLoop = DateTime.Now.AddSeconds(SuccessfulCapLockoutTime);
+                    if (hasPoints < PointsToTake)
+                    {
+                        SendMessage($"Territory Capture {PointName}", $"{AlliancePlugin.GetAllianceNoLoading(owner).name} Cap Progress {hasPoints}/{PointsToTake}");
+                        return Task.FromResult(Tuple.Create<bool, IPointOwner>(false, null));
+                    }
+                    NextLoop = DateTime.Now.AddSeconds(SuccessfulCapLockoutTimeSeconds);
                     PointOwner = pointOwner;
+                    SendMessage($"Territory Capture {PointName}", $"Captured by {AlliancePlugin.GetAllianceNoLoading(owner).name}, locking for {SuccessfulCapLockoutTimeSeconds / 60} Minutes");
                     return Task.FromResult(Tuple.Create<bool, IPointOwner>(true, pointOwner));
                 }
             }
@@ -119,7 +123,7 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
         {
             var client = new WebClient();
             client.Headers.Add("Content-Type", "application/json");
-
+            //send to ingame and nexus 
             var payloadJson = JsonConvert.SerializeObject(new
             {
                 username = author,
@@ -128,7 +132,7 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
                     new
                     {
                         description = message,
-                        title = "Capture Message",
+                        title = author,
                         color = EmbedColorString,
                     }
                 }

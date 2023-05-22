@@ -26,7 +26,7 @@ namespace AlliancesPlugin.NewTerritoryCapture
                     try
                     {
                         var capResult = await CapLogic.ProcessCap(point, territory.Value);
-                        if (capResult.Item1)
+                        if (capResult.Item1 && capResult.Item2 != null)
                         {
                             if (!TerritoriesToRecalc.Contains(territory.Value))
                             {
