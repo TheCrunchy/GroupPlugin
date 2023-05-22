@@ -75,6 +75,7 @@ namespace AlliancesPlugin
 {
     public class AlliancePlugin : TorchPluginBase
     {
+        public static Random random = new Random();
         public static MethodInfo sendChange;
         public static TorchSessionState TorchState;
         private TorchSessionManager sessionManager;

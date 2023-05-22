@@ -5,23 +5,39 @@ using System.Text;
 using System.Threading.Tasks;
 using AlliancesPlugin.Alliances.NewTerritories;
 using AlliancesPlugin.Territory_Version_2.Interfaces;
+using NLog.Fluent;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using Sandbox.ModAPI.Ingame;
+using VRage;
+using VRage.Game;
 using VRage.Game.ModAPI;
+using VRage.ObjectBuilders;
 using VRageMath;
 
 namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
 {
     public class LootLogic : ISecondaryLogic
     {
+        public class LootItem
+        {
+            public string TypeId = "Ore";
+            public string SubtypeId = "Iron";
+            public double MinAmount = 1;
+            public double MaxAmount = 5;
+        }
+
         public DateTime NextLoop { get; set; }
         public Vector3 GridPosition { get; set; }
         public string GridOwnerFacTag = "SPRT";
         public bool SpawnInNamedCargo = false;
         public string NamedCargoTerminalName = "Default";
-        public int SecondsBetweenLoops { get; set; }
+        public int SecondsBetweenLoops { get; set; } = 3600;
         public bool RequireOwner = true;
         public bool MultiplyLootAmountByOwnershipPercentage = true;
+
+        public List<LootItem> Loot = new List<LootItem>();
+
         public Task DoSecondaryLogic(ICapLogic point, Territory territory)
         {
             if (CanLoop())
@@ -39,9 +55,16 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
                     return Task.CompletedTask;
                 }
 
+                foreach (var item in Loot.Where(item => item.TypeId != null && item.TypeId != string.Empty))
+                {
+                    if (!MyDefinitionId.TryParse("MyObjectBuilder_" + item.TypeId + "/" + item.SubtypeId, out var id))
+                        continue;
+                    
+                    var amount = AlliancePlugin.random.NextDouble() * (item.MaxAmount - item.MinAmount) + item.MaxAmount;
 
+                    inventory.AddItems((MyFixedPoint)amount, (MyObjectBuilder_PhysicalObject)MyObjectBuilderSerializer.CreateNewObject(id));
+                }
             }
-
             return Task.CompletedTask;
         }
 
@@ -66,7 +89,6 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
                     {
                         return block.GetInventory();
                     }
-                    continue;
                 }
                 else
                 {
