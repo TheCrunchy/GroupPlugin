@@ -3628,9 +3628,7 @@ namespace AlliancesPlugin
                                                         {
                                                             var ter = new Territory();
                                                             ter.Name = config.LinkedTerritory;
-                                                            ter.x = config.x;
-                                                            ter.y = config.y;
-                                                            ter.z = config.z;
+                                 
 
                                                             utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + config.LinkedTerritory + ".xml", ter);
                                                             Territories.Add(ter.Id, ter);
@@ -4404,7 +4402,7 @@ namespace AlliancesPlugin
                                     {
                                         if (ter.Enabled)
                                         {
-                                            if (Vector3.Distance(player.GetPosition(), new Vector3(ter.x, ter.y, ter.z)) <= ter.Radius)
+                                            if (Vector3.Distance(player.GetPosition(), ter.Position) <= ter.Radius)
                                             {
                                                 SendEnterMessage(player, ter);
                                             }

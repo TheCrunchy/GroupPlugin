@@ -65,7 +65,7 @@ namespace AlliancesPlugin.Alliances
                             if (AlliancePlugin.Territories.TryGetValue(terId, out var ter))
                             {
                                 var distance = Vector3.Distance(refin.CubeGrid.PositionComp.GetPosition(),
-                                    new Vector3(ter.x, ter.y, ter.z));
+                                    ter.Position);
                                 if (distance <= ter.Radius)
                                 {
                                     IsInsideTerritory.Remove(refin.EntityId);
@@ -82,7 +82,7 @@ namespace AlliancesPlugin.Alliances
                         {
                             foreach (var ter in from ter in AlliancePlugin.Territories.Values
                                      let distance = Vector3.Distance(refin.CubeGrid.PositionComp.GetPosition(),
-                                         new Vector3(ter.x, ter.y, ter.z))
+                                        ter.Position)
                                      where distance <= ter.Radius
                                      select ter)
                             {
@@ -170,7 +170,7 @@ namespace AlliancesPlugin.Alliances
                                 {
                                     var distance = Vector3.Distance(
                                         Assembler.CubeGrid.PositionComp.GetPosition(),
-                                        new Vector3(ter.x, ter.y, ter.z));
+                                       ter.Position);
                                     if (distance <= ter.Radius)
                                     {
                                         IsInsideTerritory.Remove(Assembler.EntityId);
@@ -188,7 +188,7 @@ namespace AlliancesPlugin.Alliances
                                 foreach (var ter in from ter in AlliancePlugin.Territories.Values
                                          let distance = Vector3.Distance(
                                              Assembler.CubeGrid.PositionComp.GetPosition(),
-                                             new Vector3(ter.x, ter.y, ter.z))
+                                             ter.Position)
                                          where distance <= ter.Radius
                                          select ter)
                                 {

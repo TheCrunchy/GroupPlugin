@@ -55,11 +55,6 @@ namespace AlliancesPlugin.Alliances.NewTerritories
             var distance = Vector3.Distance(PlayerPos, territory.Position);
             return !(distance > territory.Radius);
         }
-        public static bool IsPositionInTerritoryCap(Vector3D PlayerPos, Territory territory)
-        {
-            var distance = Vector3.Distance(PlayerPos, territory.CapPosition);
-            return !(distance > territory.Radius);
-        }
 
         public static void TransferOwnership()
         {

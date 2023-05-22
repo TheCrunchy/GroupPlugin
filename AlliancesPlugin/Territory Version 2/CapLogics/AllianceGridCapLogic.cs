@@ -21,7 +21,7 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
     public class AllianceGridCapLogic : ICapLogic
     {
         public string PointName = "Example name";
-        public string GPSofPoint = "Put a gps here";
+        public Vector3 GPSofPoint;
         public string GridOwnerTag = "SPRT";
 
         public int CaptureRadius = 5000;
@@ -44,13 +44,13 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
                 NextLoop = DateTime.Now.AddSeconds(SecondsBetweenLoops);
                 //do capture logic for suits in alliances
 
-                var gpspoint = GPSHelper.ScanChat(GPSofPoint);
-                if (gpspoint == null)
+                var gpspoint = GPSofPoint;
+                if (gpspoint == new Vector3())
                 {
-                    AlliancePlugin.Log.Info($"GPS string for point {PointName} is not in correct format");
+                    AlliancePlugin.Log.Info($"GPS for point {PointName} is not set");
                     return Task.FromResult(Tuple.Create<bool, IPointOwner>(false, null));
                 }
-                var sphere = new BoundingSphereD(gpspoint.Coords, CaptureRadius * 2);
+                var sphere = new BoundingSphereD(gpspoint, CaptureRadius * 2);
 
                 var foundAlliances = FindAttackers(sphere);
                 var contested = foundAlliances.Contains(Guid.Empty) || foundAlliances.Count > 1;
