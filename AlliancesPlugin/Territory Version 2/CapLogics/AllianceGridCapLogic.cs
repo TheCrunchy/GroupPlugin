@@ -38,7 +38,7 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
         public string EmbedColorString = "5763719";
         public Task<Tuple<bool, IPointOwner>> ProcessCap(ICapLogic point, Territory territory)
         {
-          
+
             if (CanLoop())
             {
                 NextLoop = DateTime.Now.AddSeconds(SecondsBetweenLoops);
@@ -52,27 +52,8 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
                 }
                 var sphere = new BoundingSphereD(gpspoint.Coords, CaptureRadius * 2);
 
-                var contested = false;
-                var foundAlliances = new List<Guid>();
-                foreach (var grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
-                {
-                    var fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
-                    if (fac != null && fac.Tag.Equals(GridOwnerTag))
-                    {
-                        continue;
-                    }
-
-                    var alliance = AlliancePlugin.GetAllianceNoLoading(fac as MyFaction);
-                    if (alliance == null)
-                    {
-                        contested = true;
-                    }
-                }
-
-                if (!contested)
-                {
-                    contested = foundAlliances.Count > 1;
-                }
+                var foundAlliances = FindAttackers(sphere);
+                var contested = foundAlliances.Contains(Guid.Empty) || foundAlliances.Count > 1;
 
                 if (contested || !foundAlliances.Any())
                 {
@@ -95,21 +76,16 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
                     {
                         AllianceId = owner
                     };
-                    if (Points.TryGetValue(owner, out int currentPoints))
-                    {
-                        Points[owner] = currentPoints + 1;
-                    }
-                    else
-                    {
-                        Points.Add(owner, 1);
-                    }
+                    AddToPoints(owner);
                     var hasPoints = Points[owner];
                     if (hasPoints < PointsToTake)
                     {
                         SendMessage($"Territory Capture {PointName}", $"{AlliancePlugin.GetAllianceNoLoading(owner).name} Cap Progress {hasPoints}/{PointsToTake}");
                         return Task.FromResult(Tuple.Create<bool, IPointOwner>(false, null));
                     }
+
                     NextLoop = DateTime.Now.AddSeconds(SuccessfulCapLockoutTimeSeconds);
+
                     PointOwner = pointOwner;
                     SendMessage($"Territory Capture {PointName}", $"Captured by {AlliancePlugin.GetAllianceNoLoading(owner).name}, locking for {SuccessfulCapLockoutTimeSeconds / 60} Minutes");
                     return Task.FromResult(Tuple.Create<bool, IPointOwner>(true, pointOwner));
@@ -117,6 +93,47 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
             }
 
             return Task.FromResult(Tuple.Create<bool, IPointOwner>(false, null));
+        }
+
+        private List<Guid> FindAttackers(BoundingSphereD sphere)
+        {
+            var foundAlliances = new List<Guid>();
+            foreach (var grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
+            {
+                var fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
+                if (fac != null && fac.Tag.Equals(GridOwnerTag))
+                {
+                    continue;
+                }
+
+                var alliance = AlliancePlugin.GetAllianceNoLoading(fac as MyFaction);
+                if (alliance == null)
+                {
+                    if (!foundAlliances.Contains(Guid.Empty))
+                    {
+                        foundAlliances.Add(Guid.Empty);
+                    }
+                }
+
+                if (!foundAlliances.Contains(alliance.AllianceId))
+                {
+                    foundAlliances.Add(alliance.AllianceId);
+                }
+            }
+
+            return foundAlliances;
+        }
+
+        private void AddToPoints(Guid owner)
+        {
+            if (Points.TryGetValue(owner, out int currentPoints))
+            {
+                Points[owner] = currentPoints + 1;
+            }
+            else
+            {
+                Points.Add(owner, 1);
+            }
         }
 
         public void SendMessage(string author, string message)
@@ -140,8 +157,8 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
             );
 
             var payload = payloadJson;
-          
-        client.UploadData(DiscordWebhook, Encoding.UTF8.GetBytes(payload));
+
+            client.UploadData(DiscordWebhook, Encoding.UTF8.GetBytes(payload));
         }
 
         public bool CanLoop()
