@@ -136,6 +136,7 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
 
         public void SendMessage(string author, string message)
         {
+
             var client = new WebClient();
             client.Headers.Add("Content-Type", "application/json");
             //send to ingame and nexus 
@@ -155,8 +156,27 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
             );
 
             var payload = payloadJson;
+            try
+            {
+                client.UploadData(DiscordWebhook, Encoding.UTF8.GetBytes(payload));
+            }
+            catch (Exception e)
+            {
+                AlliancePlugin.Log.Error($"Alliance Grid Cap Discord webhook error, {e}");
+            }
 
-            client.UploadData(DiscordWebhook, Encoding.UTF8.GetBytes(payload));
+            try
+            {
+
+                var alliance = PointOwner.GetOwner();
+                if (alliance == null) return;
+                var temp = alliance as Alliance;
+                client.UploadData(temp.DiscordWebhook, Encoding.UTF8.GetBytes(payload));
+            }
+            catch (Exception e)
+            {
+                AlliancePlugin.Log.Error($"Alliance Discord webhook error, {e}");
+            }
         }
 
         public bool CanLoop()
