@@ -89,8 +89,8 @@ namespace AlliancesPlugin.Alliances
                                 continue;
                             }
 
-                            AllianceChat.SendChatMessage(alliance.AllianceId, "Alliance",
-                                faction.Tag + " was kicked from the alliance!", true, 0);
+                            AllianceChat.SendChatMessage(alliance.AllianceId, $"{AlliancePlugin.config.PrefixName}",
+                                faction.Tag + $" was kicked from the {AlliancePlugin.config.PrefixName}!", true, 0);
                             alliance.AllianceMembers.Remove(faction.FactionId);
                             foreach (long id in alliance.AllianceMembers)
                             {
@@ -118,8 +118,8 @@ namespace AlliancesPlugin.Alliances
                                 var tempAlliance = AlliancePlugin.GetAllianceNoLoading(faction as MyFaction);
                                 if (tempAlliance != null)
                                 {
-                                    AllianceChat.SendChatMessage(tempAlliance.AllianceId, "Alliance",
-                                        faction.Tag + " was kicked from the alliance!", true, 0);
+                                    AllianceChat.SendChatMessage(tempAlliance.AllianceId, $"{AlliancePlugin.config.PrefixName}",
+                                        faction.Tag + $" was kicked from the {AlliancePlugin.config.PrefixName}!", true, 0);
                                     tempAlliance.AllianceMembers.Remove(faction.FactionId);
                                     foreach (long id in tempAlliance.AllianceMembers)
                                     {
@@ -192,14 +192,14 @@ namespace AlliancesPlugin.Alliances
             MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
             if (fac == null)
             {
-                Context.Respond("Only factions can be in alliances.");
+                Context.Respond($"Only factions can be in {AlliancePlugin.config.PrefixName}.");
                 return;
             }
 
             Alliance alliance = AlliancePlugin.GetAlliance(fac);
             if (alliance == null)
             {
-                Context.Respond("You are not a member of an alliance, or the id wasnt valid");
+                Context.Respond($"You are not a member of an {AlliancePlugin.config.PrefixName}, or the id wasnt valid");
                 return;
             }
             if (alliance.SupremeLeader == Context.Player.SteamUserId ||
@@ -228,7 +228,7 @@ namespace AlliancesPlugin.Alliances
                                 var check = AlliancePlugin.GetAllianceNoLoading(newAlliance.name);
                                 if (check.AllianceId != newAlliance.AllianceId)
                                 {
-                                    Context.Respond("Alliance name is in use, no changes have been saved.");
+                                    Context.Respond($"{AlliancePlugin.config.PrefixName} name is in use, no changes have been saved.");
                                     return;
                                 }
                             }
@@ -242,8 +242,8 @@ namespace AlliancesPlugin.Alliances
                                 {
                                     continue;
                                 }
-                                AllianceChat.SendChatMessage(alliance.AllianceId, "Alliance",
-                                    faction.Tag + " was kicked from the alliance!", true, 0);
+                                AllianceChat.SendChatMessage(alliance.AllianceId, $"{AlliancePlugin.config.PrefixName}",
+                                    faction.Tag + $" was kicked from the {AlliancePlugin.config.PrefixName}!", true, 0);
                                 alliance.AllianceMembers.Remove(faction.FactionId);
                                 foreach (long id in alliance.AllianceMembers)
                                 {
@@ -309,13 +309,13 @@ namespace AlliancesPlugin.Alliances
             MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
             if (fac == null)
             {
-                Context.Respond("Only factions can be in alliances.");
+                Context.Respond($"Only factions can be in {AlliancePlugin.config.PrefixName}.");
                 return;
             }
             Alliance alliance = AlliancePlugin.GetAlliance(AllianceName);
             if (alliance == null)
             {
-                Context.Respond("You are not a member of an alliance, or the id wasnt valid");
+                Context.Respond($"You are not a member of an {AlliancePlugin.config.PrefixName}, or the id wasnt valid");
                 return;
             }
             Task.Run(async () =>
@@ -365,18 +365,7 @@ namespace AlliancesPlugin.Alliances
         [Permission(MyPromoteLevel.None)]
         public void AllianceOpenEditor()
         {
-            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
-            if (fac == null)
-            {
-                Context.Respond("Only factions can be in alliances.");
-                return;
-            }
-            Alliance alliance = AlliancePlugin.GetAlliance(fac);
-            if (alliance == null)
-            {
-                Context.Respond("You are not a member of an alliance, or the id wasnt valid");
-                return;
-            }
+            if (IsNotInAlliance(out var alliance)) return;
             Task.Run(async () =>
          {
              alliance.DiscordToken = "Yeah im not sending this lmao";
@@ -415,7 +404,26 @@ namespace AlliancesPlugin.Alliances
                  throw;
              }
          });
+        }
 
+        private bool IsNotInAlliance(out Alliance alliance)
+        {
+            alliance = null;
+            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
+            if (fac == null)
+            {
+                Context.Respond($"Only factions can be in {AlliancePlugin.config.PrefixName}.");
+                return true;
+            }
+
+            alliance = AlliancePlugin.GetAlliance(fac);
+            if (alliance == null)
+            {
+                Context.Respond($"You are not a member of an {AlliancePlugin.config.PrefixName}, or the id wasnt valid");
+                return true;
+            }
+
+            return false;
         }
 
         public class RequestBody
@@ -428,18 +436,12 @@ namespace AlliancesPlugin.Alliances
         [Permission(MyPromoteLevel.None)]
         public void AllianceToken(string token)
         {
-            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
-            if (fac == null)
-            {
-                Context.Respond("Only factions can be in alliances.");
-                return;
-            }
+            if (IsNotInAlliance(out var alliance)) return;
             if (token.Length < 59)
             {
                 Context.Respond("Token not a valid length!");
                 return;
             }
-            Alliance alliance = AlliancePlugin.GetAlliance(fac);
             if (alliance != null)
             {
                 if (alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
@@ -522,13 +524,7 @@ namespace AlliancesPlugin.Alliances
         [Permission(MyPromoteLevel.None)]
         public void AllianceColor(int r, int g, int b)
         {
-            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
-            if (fac == null)
-            {
-                Context.Respond("Only factions can be in alliances.");
-                return;
-            }
-            Alliance alliance = AlliancePlugin.GetAlliance(fac);
+            if (IsNotInAlliance(out var alliance)) return;
             if (alliance != null)
             {
                 if (alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
@@ -691,7 +687,7 @@ namespace AlliancesPlugin.Alliances
 
             if (Context.Player != null)
             {
-                DialogMessage m = new DialogMessage("Alliance List", "", sb.ToString());
+                DialogMessage m = new DialogMessage($"{AlliancePlugin.config.PrefixName} List", "", sb.ToString());
                 ModCommunication.SendMessageTo(m, Context.Player.SteamUserId);
 
             }
@@ -724,13 +720,8 @@ namespace AlliancesPlugin.Alliances
             }
 
             MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
-            if (fac == null)
-            {
-                Context.Respond("Only factions can join alliances");
-                return;
-            }
-            Alliance temp = AlliancePlugin.GetAlliance(fac);
-            if (temp != null)
+            if (IsNotInAlliance(out var t)) return;
+            if (t != null)
             {
                 Context.Respond("You can only be in one alliance at a time!");
                 return;
@@ -792,14 +783,8 @@ namespace AlliancesPlugin.Alliances
         [Permission(MyPromoteLevel.None)]
         public void AllianceDescription(string description)
         {
-            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
-            if (fac == null)
-            {
-                Context.Respond("Only factions can be in alliances.");
-                return;
-            }
+            if (IsNotInAlliance(out var alliance)) return;
 
-            Alliance alliance = AlliancePlugin.GetAlliance(fac);
             if (alliance != null)
             {
                 if (alliance.HasPermissionToInvite(Context.Player.SteamUserId))
@@ -859,13 +844,7 @@ namespace AlliancesPlugin.Alliances
         [Permission(MyPromoteLevel.None)]
         public void AllianceTax(string rank, string tax)
         {
-            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
-            if (fac == null)
-            {
-                Context.Respond("Only factions can be in alliances.");
-                return;
-            }
-            Alliance alliance = AlliancePlugin.GetAlliance(fac);
+            if (IsNotInAlliance(out var alliance)) return;
             float amount = float.Parse(tax.Replace("%", ""));
             amount = amount / 100;
             if (amount > 0.5f)
@@ -926,13 +905,7 @@ namespace AlliancesPlugin.Alliances
         [Permission(MyPromoteLevel.None)]
         public void AlliancePermissions(string rank, string permission, Boolean enabled)
         {
-            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
-            if (fac == null)
-            {
-                Context.Respond("Only factions can be in alliances.");
-                return;
-            }
-            Alliance alliance = AlliancePlugin.GetAlliance(fac);
+            if (IsNotInAlliance(out var alliance)) return;
             if (!Enum.TryParse(permission, out AccessLevel level))
             {
                 Context.Respond("Unable to read that permission, you can change, HangarSave, HangarLoad, HangarLoadOther, Kick, Invite, ShipyardStart, ShipyardClaim, ShipyardClaimOther, DividendPay, BankWithdraw, PayFromBank, AddEnemy, RemoveEnemy, GrantLowerTitle, Vote, RecieveDividend, TaxExempt, ChangeTax, RevokeLowerTitle.");
@@ -989,14 +962,7 @@ namespace AlliancesPlugin.Alliances
         [Permission(MyPromoteLevel.None)]
         public void ViewPermissions()
         {
-            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
-            if (fac == null)
-            {
-                Context.Respond("Only factions can be in alliances.");
-                return;
-            }
-            Alliance alliance = AlliancePlugin.GetAlliance(fac);
-
+            if (IsNotInAlliance(out var alliance)) return;
 
             if (alliance != null)
             {
@@ -1042,14 +1008,7 @@ namespace AlliancesPlugin.Alliances
         [Permission(MyPromoteLevel.None)]
         public void AllianceCreateRank(string rankName, int permissionLevel)
         {
-            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
-            if (fac == null)
-            {
-                Context.Respond("Only factions can be in alliances.");
-                return;
-            }
-            Alliance alliance = AlliancePlugin.GetAlliance(fac);
-
+            if (IsNotInAlliance(out var alliance)) return;
 
 
             if (alliance != null)
@@ -1093,14 +1052,7 @@ namespace AlliancesPlugin.Alliances
         [Permission(MyPromoteLevel.None)]
         public void AllianceMakeNewRank(string rankName, int permissionLevel = 100)
         {
-            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
-            if (fac == null)
-            {
-                Context.Respond("Only factions can be in alliances.");
-                return;
-            }
-            Alliance alliance = AlliancePlugin.GetAlliance(fac);
-
+            if (IsNotInAlliance(out var alliance)) return;
 
 
             if (alliance != null)
@@ -1142,14 +1094,7 @@ namespace AlliancesPlugin.Alliances
         [Permission(MyPromoteLevel.None)]
         public void AllianceDeleteRank(string rankName)
         {
-            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
-            if (fac == null)
-            {
-                Context.Respond("Only factions can be in alliances.");
-                return;
-            }
-            Alliance alliance = AlliancePlugin.GetAlliance(fac);
-
+            if (IsNotInAlliance(out var alliance)) return;
             if (alliance != null)
             {
                 if (alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
@@ -1197,14 +1142,7 @@ namespace AlliancesPlugin.Alliances
         [Permission(MyPromoteLevel.None)]
         public void AllianceToggleFriendly()
         {
-            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
-            if (fac == null)
-            {
-                Context.Respond("Only factions can be in alliances.");
-                return;
-            }
-            Alliance alliance = AlliancePlugin.GetAlliance(fac);
-
+            if (IsNotInAlliance(out var alliance)) return;
             if (alliance == null)
             {
                 Context.Respond("You are not a member of an alliance.");
@@ -1226,13 +1164,7 @@ namespace AlliancesPlugin.Alliances
         [Permission(MyPromoteLevel.None)]
         public void AlliancePlayerPermissions(string playerName, string permission, Boolean enabled)
         {
-            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
-            if (fac == null)
-            {
-                Context.Respond("Only factions can be in alliances.");
-                return;
-            }
-            Alliance alliance = AlliancePlugin.GetAlliance(fac);
+            if (IsNotInAlliance(out var alliance)) return;
             if (!Enum.TryParse(permission, out AccessLevel level))
             {
                 Context.Respond("Unable to read that permission, you can change, HangarSave, HangarLoad, HangarLoadOther, Kick, Invite, ShipyardStart, ShipyardClaim, ShipyardClaimOther, DividendPay, BankWithdraw, PayFromBank, AddEnemy, RemoveEnemy, GrantLowerTitle, Vote, RecieveDividend, TaxExempt, ChangeTax, RevokeLowerTitle.");
@@ -1304,12 +1236,7 @@ namespace AlliancesPlugin.Alliances
         [Permission(MyPromoteLevel.Admin)]
         public void AllianceForceAdd(string tag)
         {
-            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
-            if (fac == null)
-            {
-                Context.Respond("Only factions can be in alliances.");
-                return;
-            }
+            if (IsNotInAlliance(out var alliance)) return;
             IMyFaction fac2 = MySession.Static.Factions.TryGetFactionByTag(tag);
             if (fac2 == null)
             {
@@ -1317,7 +1244,6 @@ namespace AlliancesPlugin.Alliances
                 return;
             }
 
-            Alliance alliance = AlliancePlugin.GetAlliance(fac);
             if (alliance != null)
             {
                 if (alliance.HasPermissionToInvite(Context.Player.SteamUserId))
@@ -1343,12 +1269,7 @@ namespace AlliancesPlugin.Alliances
         [Permission(MyPromoteLevel.None)]
         public void AllianceInvite(string tag)
         {
-            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
-            if (fac == null)
-            {
-                Context.Respond("Only factions can be in alliances.");
-                return;
-            }
+            if (IsNotInAlliance(out var alliance)) return;
             IMyFaction fac2 = MySession.Static.Factions.TryGetFactionByTag(tag);
             if (fac2 == null)
             {
@@ -1356,7 +1277,6 @@ namespace AlliancesPlugin.Alliances
                 return;
             }
 
-            Alliance alliance = AlliancePlugin.GetAlliance(fac);
             if (alliance != null)
             {
                 if (alliance.HasPermissionToInvite(Context.Player.SteamUserId))
@@ -1394,7 +1314,7 @@ namespace AlliancesPlugin.Alliances
             alliance = AlliancePlugin.GetAlliance(name);
             if (alliance == null)
             {
-                Context.Respond("Could not find that alliance.");
+                Context.Respond($"Could not find that alliance.");
                 return;
             }
 

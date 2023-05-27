@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AlliancesPlugin.Alliances;
 using AlliancesPlugin.Alliances.NewTerritories;
+using AlliancesPlugin.NewTerritoryCapture;
 using AlliancesPlugin.Territory_Version_2.Interfaces;
 using AlliancesPlugin.Territory_Version_2.PointOwners;
 using Newtonsoft.Json;
@@ -34,8 +35,6 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
 
         public Dictionary<Guid, int> Points = new Dictionary<Guid, int>();
         public IPointOwner PointOwner { get; set; }
-        public string DiscordWebhook = "https://discord.com/api/webhooks/1110180136118132827/DpKhjeIFUxwJqw8r1piKs0fnJ4HZCg4EcHiSCvzlHT0szKptgSoZNVHym7KdN8FjxKbc";
-        public string EmbedColorString = "5763719";
         public Task<Tuple<bool, IPointOwner>> ProcessCap(ICapLogic point, Territory territory)
         {
 
@@ -59,7 +58,7 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
                 {
                     if (contested)
                     {
-                        SendMessage($"Territory Capture {PointName}", $"Contested, point not captured.");
+                        CaptureHandler.SendMessage($"Territory Capture {PointName}", $"Contested, point not captured.", territory, point.PointOwner);
                     }
 
                     return Task.FromResult(Tuple.Create<bool, IPointOwner>(false, null));
@@ -79,14 +78,15 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
                 var hasPoints = Points[owner];
                 if (hasPoints < PointsToTake)
                 {
-                    SendMessage($"Territory Capture {PointName}", $"{AlliancePlugin.GetAllianceNoLoading(owner).name} Cap Progress {hasPoints}/{PointsToTake}");
+                    CaptureHandler.SendMessage($"Territory Capture {PointName}", $"{AlliancePlugin.GetAllianceNoLoading(owner).name} Cap Progress {hasPoints}/{PointsToTake}", territory, point.PointOwner);
                     return Task.FromResult(Tuple.Create<bool, IPointOwner>(false, null));
                 }
 
                 NextLoop = DateTime.Now.AddSeconds(SuccessfulCapLockoutTimeSeconds);
 
-                PointOwner = pointOwner;
-                SendMessage($"Territory Capture {PointName}", $"Captured by {AlliancePlugin.GetAllianceNoLoading(owner).name}, locking for {SuccessfulCapLockoutTimeSeconds / 60} Minutes");
+          
+                CaptureHandler.SendMessage($"Territory Capture {PointName}", $"Captured by {AlliancePlugin.GetAllianceNoLoading(owner).name}, locking for {SuccessfulCapLockoutTimeSeconds / 60} Minutes", territory, point.PointOwner);
+                this.PointOwner = pointOwner;
                 return Task.FromResult(Tuple.Create<bool, IPointOwner>(true, pointOwner));
             }
 
@@ -131,54 +131,6 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
             else
             {
                 Points.Add(owner, 1);
-            }
-        }
-
-        public void SendMessage(string author, string message)
-        {
-
-            var client = new WebClient();
-            client.Headers.Add("Content-Type", "application/json");
-            //send to ingame and nexus 
-            var payloadJson = JsonConvert.SerializeObject(new
-            {
-                username = author,
-                embeds = new[]
-                {
-                    new
-                    {
-                        description = message,
-                        title = author,
-                        color = EmbedColorString,
-                    }
-                }
-            }
-            );
-
-            var payload = payloadJson;
-            try
-            {
-                client.UploadData(DiscordWebhook, Encoding.UTF8.GetBytes(payload));
-            }
-            catch (Exception e)
-            {
-                AlliancePlugin.Log.Error($"Alliance Grid Cap Discord webhook error, {e}");
-            }
-
-            try
-            {
-
-                var alliance = PointOwner.GetOwner();
-                if (alliance == null) return;
-                var temp = alliance as Alliance;
-                if (temp.DiscordWebhookCaps != "")
-                {
-                    client.UploadData(temp.DiscordWebhookCaps, Encoding.UTF8.GetBytes(payload));
-                }
-            }
-            catch (Exception e)
-            {
-                AlliancePlugin.Log.Error($"Alliance Discord webhook error, {e}");
             }
         }
 

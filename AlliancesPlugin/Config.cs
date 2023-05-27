@@ -42,5 +42,6 @@ namespace AlliancesPlugin
         public bool TerritoryTaxes = true;
         public string EditorUrl = "https://crunchplugins.co.uk";
         public bool UsingNexusChat = true;
+        public string PrefixName = "Alliance";
     }
 }
