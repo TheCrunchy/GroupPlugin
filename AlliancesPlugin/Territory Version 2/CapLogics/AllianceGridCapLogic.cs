@@ -15,7 +15,6 @@ using Sandbox.Game.Screens.Helpers;
 using Sandbox.Game.World;
 using Sandbox.ModAPI;
 using VRageMath;
-using VRageRender.Voxels;
 
 namespace AlliancesPlugin.Territory_Version_2.CapLogics
 {

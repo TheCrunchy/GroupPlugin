@@ -68,7 +68,6 @@ using Newtonsoft.Json;
 using Sandbox.Definitions;
 using SpaceEngineers.Game.EntityComponents.Blocks;
 using Torch.Managers.PatchManager;
-using VRageRender.Messages;
 
 namespace AlliancesPlugin
 {

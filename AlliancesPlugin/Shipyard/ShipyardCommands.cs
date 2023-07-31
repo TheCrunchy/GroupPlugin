@@ -17,7 +17,6 @@ using VRage.Game;
 using VRage.Game.ModAPI;
 using VRage.Game.ModAPI.Ingame;
 using Torch.API.Managers;
-using Torch.Server.ViewModels;
 using Sandbox.Engine.Multiplayer;
 using Torch.ViewModels;
 using Torch.Managers;
