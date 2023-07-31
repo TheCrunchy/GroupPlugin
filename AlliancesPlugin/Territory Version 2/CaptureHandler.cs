@@ -137,10 +137,6 @@ namespace AlliancesPlugin.NewTerritoryCapture
             };
         }
 
-        public static async Task SendTerritoryTransferMessage(Territory ter, string message)
-        {
-
-        }
 
         public static void SendMessage(string author, string message, Territory ter, IPointOwner owner)
         {

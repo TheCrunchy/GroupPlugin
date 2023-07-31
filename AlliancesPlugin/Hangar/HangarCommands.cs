@@ -250,7 +250,7 @@ namespace AlliancesPlugin.Hangar
                     return;
                 }
                 HangarData hangar = alliance.LoadHangar();
-             
+
                 HangarUpgrade cost = new HangarUpgrade();
                 if (!upgrade)
                 {
@@ -267,7 +267,7 @@ namespace AlliancesPlugin.Hangar
                     {
                         sb.AppendLine("Current upgrade number : 0");
                     }
-                   
+
                     foreach (KeyValuePair<int, HangarUpgrade> key in slotUpgrades)
                     {
                         sb.AppendLine("Upgrade number " + key.Key);
@@ -392,7 +392,7 @@ namespace AlliancesPlugin.Hangar
                         }
                         else
                         {
-                            if (ShipyardCommands.ConsumeComponents(invents, cost.getItemsRequired() ,Context.Player.SteamUserId))
+                            if (ShipyardCommands.ConsumeComponents(invents, cost.getItemsRequired(), Context.Player.SteamUserId))
                             {
                                 if (hangar == null)
                                 {
@@ -418,7 +418,7 @@ namespace AlliancesPlugin.Hangar
             }
         }
 
-   
+
         public static Dictionary<long, DateTime> cooldowns = new Dictionary<long, DateTime>();
         public string GetCooldownMessage(DateTime time)
         {
@@ -573,7 +573,7 @@ namespace AlliancesPlugin.Hangar
 
                 return;
             }
-         if (path.EndsWith(".txt"))
+            if (path.EndsWith(".txt"))
             {
                 File.Delete(path);
                 return;
@@ -616,12 +616,15 @@ namespace AlliancesPlugin.Hangar
             {
                 cooldowns.Add(Context.Player.IdentityId, DateTime.Now.AddSeconds(60));
             }
-            if (MyGravityProviderSystem.IsPositionInNaturalGravity(Context.Player.GetPosition()))
-            {
-                Context.Respond("You cannot use this command in natural gravity!");
-                return;
-            }
 
+            if (!AlliancePlugin.config.HangarInGravity)
+            {
+                if (MyGravityProviderSystem.IsPositionInNaturalGravity(Context.Player.GetPosition()))
+                {
+                    Context.Respond("You cannot use this command in natural gravity!");
+                    return;
+                }
+            }
             foreach (DeniedLocation denied in AlliancePlugin.HangarDeniedLocations)
             {
                 if (Vector3.Distance(Context.Player.GetPosition(), new Vector3(denied.x, denied.y, denied.z)) <= denied.radius)

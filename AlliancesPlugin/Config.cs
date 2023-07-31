@@ -43,5 +43,7 @@ namespace AlliancesPlugin
         public string EditorUrl = "https://crunchplugins.co.uk";
         public bool UsingNexusChat = true;
         public string PrefixName = "Alliance";
+        public bool HangarInGravity = false;
+        public bool ShipyardInGravity = false;
     }
 }
