@@ -45,7 +45,6 @@ using System.Text.RegularExpressions;
 using Sandbox.Game.Entities.Cube;
 using Sandbox.Game.Entities.Blocks;
 using SpaceEngineers.Game.Entities.Blocks.SafeZone;
-using DSharpPlus;
 using SpaceEngineers.Game.Entities.Blocks;
 using Sandbox.Game.GameSystems.BankingAndCurrency;
 using HarmonyLib;
