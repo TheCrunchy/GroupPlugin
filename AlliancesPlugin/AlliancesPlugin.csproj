@@ -95,9 +95,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\0Harmony.dll</HintPath>
     </Reference>
-    <Reference Include="DSharpPlus">
-      <HintPath>..\..\..\DSharpPlus.dll</HintPath>
-    </Reference>
     <Reference Include="Emzi0767.Common">
       <HintPath>..\Emzi0767.Common.dll</HintPath>
     </Reference>

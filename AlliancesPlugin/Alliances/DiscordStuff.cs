@@ -18,7 +18,6 @@
 using System;
 using AlliancesPlugin.KOTH;
 using AlliancesPlugin.Shipyard;
-using DSharpPlus.Entities;
 using VRageMath;
 
 namespace AlliancesPlugin.Alliances

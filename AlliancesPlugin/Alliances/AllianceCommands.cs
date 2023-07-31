@@ -1,8 +1,6 @@
 ﻿using AlliancesPlugin.Hangar;
 using AlliancesPlugin.Shipyard;
 using AlliancesPlugin.WarOptIn;
-using DSharpPlus;
-using DSharpPlus.Entities;
 using Newtonsoft.Json;
 using Sandbox.Engine.Multiplayer;
 using Sandbox.Game;
