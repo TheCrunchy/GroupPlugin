@@ -3094,6 +3094,48 @@ namespace AlliancesPlugin.Alliances
 
         }
 
+        [Command("webhook", "set your alliance discord webhook")]
+        [Permission(MyPromoteLevel.None)]
+        public void Webhook(string hook, string type = "captures")
+        {
+            MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
+            if (fac == null)
+            {
+                Context.Respond("Only factions can be in alliances.");
+                return;
+            }
+            Alliance alliance = AlliancePlugin.GetAlliance(fac);
+      
+            if (alliance != null)
+            {
+
+
+                if (alliance.SupremeLeader.Equals(Context.Player.SteamUserId))
+                {
+                    switch (type.ToLower())
+                    {
+                        case "captures":
+                            alliance.DiscordWebhookCaps = hook;
+                            Context.Respond("Successfully set the capture webhook");
+                            break;
+                        case "radar":
+                            alliance.DiscordWebhookRadar = hook;
+                            Context.Respond("Successfully set the radar webhook");
+                            break;
+                        default:
+                            Context.Respond("Error, Available types are Captures and Radar");
+                            break;
+                    }
+         
+                    AlliancePlugin.SaveAllianceData(alliance);
+                }
+                else
+                {
+                    Context.Respond("Only the " + alliance.LeaderTitle + " can change the webhook.");
+                }
+             
+            }
+        }
 
         [Command("change leader", "change the leader of the alliance")]
         [Permission(MyPromoteLevel.None)]
