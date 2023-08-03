@@ -250,43 +250,9 @@ namespace AlliancesPlugin
                 var example = new Territory();
                 example.CapturePoints.Add(new AllianceGridCapLogic());
                 example.CapturePoints.Add(new AllianceSuitCapLogic());
-                example.Enabled = true;
+                example.Enabled = false;
                 utils.WriteToJsonFile<Territory>(path + "//Territories//Example.json", example, false);
             }
-
-
-
-            if (!File.Exists(path + "//Territories//CityConfigs//Example.xml"))
-            {
-                var template = new City();
-                var item = new CraftedItem();
-                item.SubtypeId = "Iron";
-                item.TypeId = "Ore";
-                item.AmountPerCraft = 50;
-                item.ChanceToCraft = 1;
-                item.SecondsBetweenCycles = 60;
-                item.SpaceCreditsPerCraft = 0;
-                var rec = new RecipeItem();
-                rec.TypeId = "Ingot";
-                rec.SubtypeId = "Iron";
-                rec.Amount = 1;
-                rec.SpaceCreditsPerCraft = 0;
-                item.RequiredItems.Add(rec);
-                template.CraftableItems.Add(item);
-                template.SpawnedItems.Add(new SpawnedItem()
-                {
-                    TypeId = "Ingot",
-                    SubtypeId = "Iron",
-                    AmountPerSpawn = 1,
-                    SecondsBetweenSpawns = 60
-                });
-                template.CityRadius = 50000;
-                template.CityType = "Default Example";
-                template.SafeZoneSubTypeId = "SafeZoneBlock";
-                utils.WriteToXmlFile<City>(path + "//Territories//CityConfigs//Example.xml", template, false);
-            }
-
-
 
             TorchBase = Torch;
             LoadAllAlliances();

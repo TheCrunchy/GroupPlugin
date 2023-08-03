@@ -65,7 +65,7 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
 
                 var owner = foundAlliances.First();
                 var currentPointOwner = PointOwner.GetOwner() as Alliance;
-                if (currentPointOwner.AllianceId == owner)
+                if (currentPointOwner != null && currentPointOwner.AllianceId == owner)
                 {
                     return Task.FromResult(Tuple.Create<bool, IPointOwner>(false, null));
                 }
