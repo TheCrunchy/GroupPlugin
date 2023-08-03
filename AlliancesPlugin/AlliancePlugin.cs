@@ -64,6 +64,8 @@ using AlliancesPlugin.KamikazeTerritories;
 using AlliancesPlugin.NewTerritoryCapture;
 using AlliancesPlugin.NexusStuff;
 using AlliancesPlugin.Territory_Version_2.CapLogics;
+using AlliancesPlugin.Territory_Version_2.Interfaces;
+using AlliancesPlugin.Territory_Version_2.SecondaryLogics;
 using Newtonsoft.Json;
 using Sandbox.Definitions;
 using SpaceEngineers.Game.EntityComponents.Blocks;
@@ -248,8 +250,13 @@ namespace AlliancesPlugin
             if (!File.Exists(path + "//Territories//Example.json"))
             {
                 var example = new Territory();
-                example.CapturePoints.Add(new AllianceGridCapLogic());
-                example.CapturePoints.Add(new AllianceSuitCapLogic());
+                var logic = new AllianceGridCapLogic();
+                logic.SecondaryLogics = new List<ISecondaryLogic>();
+                var loot = new LootLogic();
+                loot.Loot = new List<LootLogic.LootItem>();
+                loot.Loot.Add(new LootLogic.LootItem());
+                logic.SecondaryLogics.Add(loot);
+                example.CapturePoints.Add(logic);
                 example.Enabled = false;
                 utils.WriteToJsonFile<Territory>(path + "//Territories//Example.json", example, false);
             }
