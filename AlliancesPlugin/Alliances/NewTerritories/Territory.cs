@@ -27,7 +27,7 @@ namespace AlliancesPlugin.Alliances.NewTerritories
         public string EntryMessage = "You are in {name} Territory";
         public string ControlledMessage = "Controlled by {alliance}";
         public string ExitMessage = "You have left {name} Territory";
-        public Vector3D Position => new Vector3();
+        public Vector3D Position;
         public string DiscordWebhook = "https://discord.com/api/webhooks/1110180136118132827/DpKhjeIFUxwJqw8r1piKs0fnJ4HZCg4EcHiSCvzlHT0szKptgSoZNVHym7KdN8FjxKbc";
         public string EmbedColorString = "5763719";
 

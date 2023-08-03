@@ -47,5 +47,13 @@ namespace AlliancesPlugin.Alliances.NewTerritories
 
             AlliancePlugin.utils.WriteToXmlFile<Territory>(AlliancePlugin.path + "//Territories//" + territory.Value.Name + ".xml", territory.Value);
         }
+
+        [Command("reload", "reload territories")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void Load()
+        {
+            AlliancePlugin.LoadAllTerritories();
+            Context.Respond(AlliancePlugin.Territories.Count.ToString() + " loaded");
+        }
     }
 }

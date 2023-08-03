@@ -1577,6 +1577,11 @@ namespace AlliancesPlugin
                         continue;
                     }
 
+                    if (ter.WorldName != MyMultiplayer.Static.HostName)
+                    {
+                        Log.Info($"Doesnt match world name {ter.WorldName} expected {MyMultiplayer.Static.HostName}");
+                        continue;
+                    }
                     if (Territories.ContainsKey(ter.Id))
                     {
                         Log.Info($"Duplicate territory ID at {s}");

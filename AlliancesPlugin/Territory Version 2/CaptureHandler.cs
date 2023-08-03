@@ -8,10 +8,12 @@ using System.Text;
 using System.Threading.Tasks;
 using AlliancesPlugin.Alliances;
 using AlliancesPlugin.Alliances.NewTerritories;
+using AlliancesPlugin.Shipyard;
 using AlliancesPlugin.Territory_Version_2.Interfaces;
 using AlliancesPlugin.Territory_Version_2.PointOwners;
 using Newtonsoft.Json;
 using Sandbox.Game.World;
+using VRageMath;
 
 namespace AlliancesPlugin.NewTerritoryCapture
 {
@@ -140,7 +142,7 @@ namespace AlliancesPlugin.NewTerritoryCapture
 
         public static void SendMessage(string author, string message, Territory ter, IPointOwner owner)
         {
-
+            ShipyardCommands.SendMessage(author, message, Color.Pink, 0l);
             var client = new WebClient();
             client.Headers.Add("Content-Type", "application/json");
             //send to ingame and nexus 
