@@ -169,19 +169,22 @@ namespace AlliancesPlugin.NewTerritoryCapture
                 AlliancePlugin.Log.Error($"Alliance Grid Cap Discord webhook error, {e}");
             }
 
-            try
+            if (owner != null)
             {
-                var alliance = owner.GetOwner();
-                if (alliance == null) return;
-                var temp = alliance as Alliance;
-                if (temp.DiscordWebhookCaps != "")
+                try
                 {
-                    client.UploadData(temp.DiscordWebhookCaps, Encoding.UTF8.GetBytes(payload));
+                    var alliance = owner.GetOwner();
+                    if (alliance == null) return;
+                    var temp = alliance as Alliance;
+                    if (temp.DiscordWebhookCaps != "")
+                    {
+                        client.UploadData(temp.DiscordWebhookCaps, Encoding.UTF8.GetBytes(payload));
+                    }
                 }
-            }
-            catch (Exception e)
-            {
-                AlliancePlugin.Log.Error($"Alliance Discord webhook error, {e}");
+                catch (Exception e)
+                {
+                    AlliancePlugin.Log.Error($"Alliance Discord webhook error, {e}");
+                }
             }
         }
 

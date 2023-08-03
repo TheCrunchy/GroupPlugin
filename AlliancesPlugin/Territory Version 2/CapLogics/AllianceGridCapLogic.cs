@@ -57,18 +57,32 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
                 {
                     if (contested)
                     {
-                        CaptureHandler.SendMessage($"Territory Capture {PointName}", $"Contested, point not captured.", territory, point.PointOwner);
-                    }
+                        if (point.PointOwner != null)
+                        {
+                            CaptureHandler.SendMessage($"Territory Capture {PointName}",
+                                $"Contested, point not captured.", territory, point.PointOwner);
 
+                        }
+                        else
+                        {
+                            CaptureHandler.SendMessage($"Territory Capture {PointName}",
+                                $"Contested, point not captured.", territory, null);
+                        }
+                
+                    }
                     return Task.FromResult(Tuple.Create<bool, IPointOwner>(false, null));
                 }
 
                 var owner = foundAlliances.First();
-                var currentPointOwner = PointOwner.GetOwner() as Alliance;
-                if (currentPointOwner != null && currentPointOwner.AllianceId == owner)
+                if (PointOwner != null)
                 {
-                    return Task.FromResult(Tuple.Create<bool, IPointOwner>(false, null));
+                    var currentPointOwner = PointOwner.GetOwner() as Alliance;
+                    if (currentPointOwner != null && currentPointOwner.AllianceId == owner)
+                    {
+                        return Task.FromResult(Tuple.Create<bool, IPointOwner>(false, null));
+                    }
                 }
+
                 var pointOwner = new AlliancePointOwner()
                 {
                     AllianceId = owner
@@ -97,8 +111,11 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
             var foundAlliances = new List<Guid>();
             foreach (var grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
             {
+                if (grid.Projector != null)
+                    continue;
+
                 var fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
-                if (fac != null && fac.Tag.Equals(GridOwnerTag))
+                if ((fac != null && fac.Tag.Equals(GridOwnerTag)) || fac == null)
                 {
                     continue;
                 }
