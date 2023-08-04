@@ -38,32 +38,39 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
 
         public List<LootItem> Loot = new List<LootItem>();
 
+        public bool Enabled { get; set; }
+
         public Task DoSecondaryLogic(ICapLogic point, Territory territory)
         {
-            if (CanLoop())
+            if (!Enabled)
             {
-                NextLoop = DateTime.Now.AddSeconds(SecondsBetweenLoops);
-                if (RequireOwner && point.PointOwner == null)
-                {
-                    return Task.CompletedTask;
-                }
+                return Task.CompletedTask;
+            }
+            if (!CanLoop()) return Task.CompletedTask;
+            NextLoop = DateTime.Now.AddSeconds(SecondsBetweenLoops);
+            if (RequireOwner && point.PointOwner == null)
+            {
+                return Task.CompletedTask;
+            }
 
-                var inventory = GetGridInventory();
-                if (inventory == null)
-                {
-                    AlliancePlugin.Log.Info($"Could not find inventory for grid at position {GridPosition.ToString()}");
-                    return Task.CompletedTask;
-                }
+            var inventory = GetGridInventory();
+            if (inventory == null)
+            {
+                AlliancePlugin.Log.Info($"Could not find inventory for grid at position {GridPosition.ToString()}");
+                return Task.CompletedTask;
+            }
 
-                foreach (var item in Loot.Where(item => item.TypeId != null && item.TypeId != string.Empty))
-                {
-                    if (!MyDefinitionId.TryParse("MyObjectBuilder_" + item.TypeId + "/" + item.SubtypeId, out var id))
-                        continue;
+            foreach (var item in Loot.Where(item => !string.IsNullOrEmpty(item.TypeId)))
+            {
+                if (!MyDefinitionId.TryParse("MyObjectBuilder_" + item.TypeId + "/" + item.SubtypeId, out var id))
+                    continue;
                     
-                    var amount = AlliancePlugin.random.NextDouble() * (item.MaxAmount - item.MinAmount) + item.MaxAmount;
-
-                    inventory.AddItems((MyFixedPoint)amount, (MyObjectBuilder_PhysicalObject)MyObjectBuilderSerializer.CreateNewObject(id));
+                var amount = AlliancePlugin.random.NextDouble() * (item.MaxAmount - item.MinAmount) + item.MaxAmount;
+                if (MultiplyLootAmountByOwnershipPercentage)
+                {
+                    amount *= territory.PercentOwned;
                 }
+                inventory.AddItems((MyFixedPoint)amount, (MyObjectBuilder_PhysicalObject)MyObjectBuilderSerializer.CreateNewObject(id));
             }
             return Task.CompletedTask;
         }

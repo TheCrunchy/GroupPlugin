@@ -255,7 +255,22 @@ namespace AlliancesPlugin
                 var loot = new LootLogic();
                 loot.Loot = new List<LootLogic.LootItem>();
                 loot.Loot.Add(new LootLogic.LootItem());
+                var craft = new LootConverter();
+                LootConverter.CraftedItem item = new LootConverter.CraftedItem();
+                item.typeid = "Ore";
+                item.subtypeid = "Iron";
+                item.amountPerCraft = 500;
+                item.chanceToCraft = 1;
+
+                LootConverter.RecipeItem recipe = new LootConverter.RecipeItem();
+                recipe.typeid = "Ore";
+                recipe.subtypeid = "Stone";
+                recipe.amount = 500;
+
+                item.RequriedItems.Add(recipe);
+                craft.CraftableItems.Add(item);
                 logic.SecondaryLogics.Add(loot);
+                logic.SecondaryLogics.Add(craft);
                 example.CapturePoints.Add(logic);
                 example.Enabled = false;
                 utils.WriteToJsonFile<Territory>(path + "//Territories//Example.json", example, false);
