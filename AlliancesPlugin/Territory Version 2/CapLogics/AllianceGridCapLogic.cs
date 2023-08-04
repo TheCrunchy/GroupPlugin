@@ -57,18 +57,7 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
                 {
                     if (contested)
                     {
-                        if (point.PointOwner != null)
-                        {
-                            CaptureHandler.SendMessage($"Territory Capture {PointName}",
-                                $"Contested, point not captured.", territory, point.PointOwner);
-
-                        }
-                        else
-                        {
-                            CaptureHandler.SendMessage($"Territory Capture {PointName}",
-                                $"Contested, point not captured.", territory, null);
-                        }
-                
+                        CaptureHandler.SendMessage($"Territory Capture {PointName}", $"Contested, point not captured.", territory, point.PointOwner ?? null);
                     }
                     return Task.FromResult(Tuple.Create<bool, IPointOwner>(false, null));
                 }
@@ -82,7 +71,6 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
                         return Task.FromResult(Tuple.Create<bool, IPointOwner>(false, null));
                     }
                 }
-
                 var pointOwner = new AlliancePointOwner()
                 {
                     AllianceId = owner
@@ -128,10 +116,12 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
                         foundAlliances.Add(Guid.Empty);
                     }
                 }
-
-                if (!foundAlliances.Contains(alliance.AllianceId))
+                else
                 {
-                    foundAlliances.Add(alliance.AllianceId);
+                    if (!foundAlliances.Contains(alliance.AllianceId))
+                    {
+                        foundAlliances.Add(alliance.AllianceId);
+                    }
                 }
             }
 

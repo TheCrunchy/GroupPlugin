@@ -121,6 +121,16 @@ namespace AlliancesPlugin.NewTerritoryCapture
 
         public static async Task TransferOwnershipToAlliance(Guid allianceId, Territory ter)
         {
+     
+            if (allianceId == Guid.Empty)
+            {
+                SendMessage("Territory has been captured.", $"{ter.Name} captured by the {AlliancePlugin.config.PrefixName} Unknown alliance.", ter, ter.Owner);
+                ter.Owner = new AlliancePointOwner()
+                {
+                    AllianceId = Guid.Empty
+                };
+                return;
+            }
             var alliance = AlliancePlugin.GetAlliance(allianceId);
             SendMessage("Territory has been captured.", $"{ter.Name} captured by the {AlliancePlugin.config.PrefixName} {alliance.name}.", ter, ter.Owner);
             ter.Owner = new AlliancePointOwner()
