@@ -310,12 +310,17 @@ namespace Crunch
 					if (position == null){
 						return;
 					}
+					var lastDistance = 0;
                     foreach (var area in PlayerData.PvPAreas)
                     {
 									 //   MyLog.Default.WriteLineAndConsole($"26");
 				
                         var distance = Vector3.Distance(position, area.Position);
+						if (lastDistance > distance)(
+							continue
+						}
 						//  MyLog.Default.WriteLineAndConsole($"27");
+						lastDistance = distance;
                         if (distance <= area.Distance)
                         {
                             if (area.Name != null)

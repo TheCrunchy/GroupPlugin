@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AlliancesPlugin.Alliances.Upgrades;
 using AlliancesPlugin.KamikazeTerritories;
+using AlliancesPlugin.Territory_Version_2.CapLogics;
 using Sandbox.Game.Entities.Cube;
 using Sandbox.Game.World;
 using Sandbox.ModAPI;
@@ -254,6 +255,20 @@ namespace AlliancesPlugin.Integrations
                     Position = territory.Value.Position,
                     Distance = territory.Value.Radius
                 });
+
+                foreach (var capture in territory.Value.CapturePoints)
+                {
+                    if (capture is AllianceGridCapLogic gridcap)
+                    {
+                        message.PvPAreas.Add(new PvPArea()
+                        {
+                            AreaForcesPvP = true,
+                            Name = gridcap.PointName,
+                            Position = gridcap.GPSofPoint,
+                            Distance = gridcap.CaptureRadius
+                        });
+                    }
+                }
             }
 
             var statusM = MyAPIGateway.Utilities.SerializeToBinary(message);

@@ -1,237 +1,181 @@
-﻿//using NLog;
-//using NLog.Config;
-//using NLog.Targets;
-//using Sandbox.Game.Entities;
-//using Sandbox.Game.GameSystems;
-//using Sandbox.Game.Multiplayer;
-//using Sandbox.Game.World;
-//using Sandbox.ModAPI;
-//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Reflection;
-//using System.Text;
-//using System.Threading.Tasks;
-//using Torch.Managers.PatchManager;
-//using Torch.Mod;
-//using Torch.Mod.Messages;
-//using VRageMath;
-//using HarmonyLib;
+﻿using NLog;
+using NLog.Config;
+using NLog.Targets;
+using Sandbox.Game.Entities;
+using Sandbox.Game.GameSystems;
+using Sandbox.Game.Multiplayer;
+using Sandbox.Game.World;
+using Sandbox.ModAPI;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
+using Torch.Managers.PatchManager;
+using Torch.Mod;
+using Torch.Mod.Messages;
+using VRageMath;
+using HarmonyLib;
+using Sandbox.Game.GUI;
 
-//namespace AlliancesPlugin
-//{
-//    [PatchShim]
-//    public static class JumpPatch
-//    {
-//        public static List<JumpZone> Zones = new List<JumpZone>();
+namespace AlliancesPlugin
+{
+    [PatchShim]
+    public static class JumpPatch
+    {
+        public static Logger Log = LogManager.GetLogger("JumpLog");
+        public static void ApplyLogging()
+        {
+            var rules = LogManager.Configuration.LoggingRules;
 
+            for (int i = rules.Count - 1; i >= 0; i--)
+            {
 
-//        public static Logger Log = LogManager.GetLogger("JumpLog");
-//        public static void ApplyLogging()
-//        {
+                var rule = rules[i];
 
-//            var rules = LogManager.Configuration.LoggingRules;
-
-//            for (int i = rules.Count - 1; i >= 0; i--)
-//            {
-
-//                var rule = rules[i];
-
-//                if (rule.LoggerNamePattern == "JumpLog")
-//                    rules.RemoveAt(i);
-//            }
+                if (rule.LoggerNamePattern == "JumpLog")
+                    rules.RemoveAt(i);
+            }
 
 
 
-//            var logTarget = new FileTarget
-//            {
-//                FileName = "Logs/JumpLog-" + DateTime.Now.Day + "-" + DateTime.Now.Month + "-" + DateTime.Now.Year + ".txt",
-//                Layout = "${var:logStamp} ${var:logContent}"
-//            };
+            var logTarget = new FileTarget
+            {
+                FileName = "Logs/JumpLog-" + DateTime.Now.Day + "-" + DateTime.Now.Month + "-" + DateTime.Now.Year + ".txt",
+                Layout = "${var:logStamp} ${var:logContent}"
+            };
 
-//            var logRule = new LoggingRule("JumpLog", LogLevel.Debug, logTarget)
-//            {
-//                Final = true
-//            };
+            var logRule = new LoggingRule("JumpLog", LogLevel.Debug, logTarget)
+            {
+                Final = true
+            };
 
-//            rules.Insert(0, logRule);
+            rules.Insert(0, logRule);
 
-//            LogManager.Configuration.Reload();
-//        }
-
-
-//        internal static readonly MethodInfo RequestJump =
-//    typeof(MyGridJumpDriveSystem).GetMethod("OnJumpRequested", BindingFlags.Static | BindingFlags.NonPublic) ??
-//    throw new Exception("Failed to find patch method");
-
-//        internal static readonly MethodInfo DenyJumpPatch =
-//            typeof(JumpPatch).GetMethod(nameof(PatchRequestJump), BindingFlags.Static | BindingFlags.Public) ??
-//            throw new Exception("Failed to find patch method");
-//        //    internal static readonly MethodInfo DenyJumpPatch2 =
-//        //typeof(JumpPatch).GetMethod(nameof(PatchRequestJump2), BindingFlags.Static | BindingFlags.Public) ??
-//        //  throw new Exception("Failed to find patch method");
-
-//        public static void Patch(PatchContext ctx)
-//        {
-
-//            ctx.GetPattern(RequestJump).Prefixes.Add(DenyJumpPatch);
-//          //  ctx.GetPattern(RequestJump).Suffixes.Add(DenyJumpPatch2);
-//            Log.Info("Patching Successful jump drive stuff");
-//            ApplyLogging();
-//        }
+            LogManager.Configuration.Reload();
+        }
 
 
+        internal static readonly MethodInfo RequestJump =
+    typeof(MyJumpDrive).GetMethod("UpdateAfterSimulation100", BindingFlags.Instance | BindingFlags.Public) ??
+    throw new Exception("Failed to find patch method");
 
-//        //public static void PatchRequestJump2(long entityId, Vector3D jumpTarget, long userId)
-//        //{
-//        //    MyCubeGrid grid = MyAPIGateway.Entities.GetEntityById(entityId) as MyCubeGrid;
+        internal static readonly MethodInfo DenyJumpPatch =
+            typeof(JumpPatch).GetMethod(nameof(PatchRequestJump), BindingFlags.Static | BindingFlags.Public) ??
+            throw new Exception("Failed to find patch method");
+        public static void Patch(PatchContext ctx)
+        {
 
-//        //    if (grid == null)
-//        //    {
-//        //        return;
-//        //    }
+        //    ctx.GetPattern(RequestJump).Prefixes.Add(DenyJumpPatch);
 
-//        //    Traverse.Create(grid.GridSystems.JumpSystem).Field("m_jumpTimeLeft").SetValue(3f);
-//        //}
-//            public static bool PatchRequestJump(long entityId, Vector3D jumpTarget, long userId)
-//        {
-//            MyCubeGrid grid = MyAPIGateway.Entities.GetEntityById(entityId) as MyCubeGrid;
-
-//            if (grid == null)
-//            {
-//                return false;
-//            }
-//            float distance2 = Vector3.Distance(jumpTarget, grid.PositionComp.GetPosition());
-//            Log.Info("grid name " + grid.DisplayName + "Target loc " +jumpTarget.ToString() + " Distance to target " + distance2);
-//            //return false;
-//            if (userId == 0)
-//            {
-
-//                Log.Info("grid name " + grid.DisplayName);
-//                Log.Info(FacUtils.GetOwner(grid) + " grid owner id, requested by 0, which is probably a hacker or some shit, these are the people online at the time");
-//                StringBuilder players = new StringBuilder();
-//                foreach (MyPlayer player in MySession.Static.Players.GetOnlinePlayers())
-//                {
-//                    if (player.Id != null && player.Id.SteamId != null && player.DisplayName != null)
-//                    {
-//                        players.AppendLine(player.Id.SteamId + " " + player.DisplayName);
-//                    }
-//                    else
-//                    {
-//                        players.AppendLine("Something null here, identity id " + player.Identity.IdentityId);
-//                    }
-
-//                }
-//                Log.Info(players);
-//                if (AlliancePlugin.config.DisableJumpsWithId0)
-//                {
-
-//                    return false;
-//                }
-//            }
-//            else
-//            {
-//                Log.Info(FacUtils.GetOwner(grid) + " grid owner id, requested by " + userId + " grid name " + grid.DisplayName);
-//            }
-//            foreach (JumpZone zone in Zones)
-//            {
+            //  ctx.GetPattern(RequestJump).Suffixes.Add(DenyJumpPatch2);
+            Log.Info("Patching Successful jump drive stuff");
+            ApplyLogging();
+        }
 
 
-//                float distance = Vector3.Distance(zone.GetPosition(), grid.PositionComp.GetPosition());
+        public static void PatchRequestJump(MyJumpDrive __instance)
+        {
+            MyCubeGrid grid = __instance.CubeGrid;
+   
 
-//                if (distance <= zone.Radius && !zone.AllowExit)
-//                {
-//                    if (zone.GetExcludedExit() != null && zone.AllowExcludedExit)
-//                    {
-//                        bool canExit = false;
-//                        foreach (MyJumpDrive drive in grid.GetFatBlocks().OfType<MyJumpDrive>())
-//                        {
-//                            if (!zone.GetExcludedExit().Contains(drive.BlockDefinition.BlockPairName))
-//                            {
-//                                drive.Enabled = false;
-//                            }
-//                            else
-//                            {
-//                                canExit = true;
-//                            }
-
-//                        }
-//                        if (canExit)
-//                        {
-
-//                            // newPos = grid.WorldMatrix.Forward + 1000;
-//                            //worldMatrix = MatrixD.CreateWorld(newPos, grid.WorldMatrix.Forward, grid.WorldMatrix.Up);
-//                            return true;
-//                        }
-
-//                    }
-//                    NotificationMessage message = new NotificationMessage("You cannot jump out of this area.", 8000, "Red");
-//                    //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
-//                    ModCommunication.SendMessageTo(message, MySession.Static.Players.TryGetSteamId(userId));
-//                    return false;
-//                }
-
-//                distance = Vector3.Distance(zone.GetPosition(), jumpTarget);
-
-//                if (distance <= zone.Radius && !zone.AllowEntry)
-//                {
-//                    if (zone.GetExcludedEntry() != null && zone.AllowExcludedEntry)
-//                    {
-//                        bool canExit = false;
-//                        foreach (MyJumpDrive drive in grid.GetFatBlocks().OfType<MyJumpDrive>())
-//                        {
-//                            if (!zone.GetExcludedExit().Contains(drive.BlockDefinition.BlockPairName))
-//                            {
-//                                drive.Enabled = false;
-//                            }
-//                            else
-//                            {
-//                                canExit = true;
-//                            }
-//                        }
-//                        if (canExit)
-//                        {
-//                            //newPos = grid.WorldMatrix.Forward + 1000;
-//                            // worldMatrix = MatrixD.CreateWorld(newPos, grid.WorldMatrix.Forward, grid.WorldMatrix.Up);
-//                            return true;
-//                        }
-//                    }
-//                    NotificationMessage message = new NotificationMessage("You cannot jump into this area.", 8000, "Red");
-//                    //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
-//                    ModCommunication.SendMessageTo(message, MySession.Static.Players.TryGetSteamId(userId));
-//                    return false;
-//                }
-//            }
-
+            if (grid == null)
+            {
+                return;
+            }
            
-//            //MyCockpit controller = null;
-//            //foreach (MyCockpit cockpit in grid.GetFatBlocks().OfType<MyCockpit>())
-//            //{
-//            //    if (cockpit.Pilot != null)
-//            //    {
-//            //        if (cockpit.Pilot.ControlSteamId.Equals(MySession.Static.Players.TryGetSteamId(userId)))
-//            //        {
-//            //            controller = cockpit;
-//            //        }
-//            //    }
-//            //}
-//            //AlliancePlugin.Log.Info("1");
-//            //if (controller != null)
-//            //{
-//            //    AlliancePlugin.Log.Info("2");
-//            //    MatrixD worldMatrix = MatrixD.CreateWorld(controller.WorldMatrix.Translation, controller.WorldMatrix.Forward, controller.WorldMatrix.Up);
-//            //    Vector3D distance2 = worldMatrix.Forward * 1000;
-//            //    worldMatrix.Translation += distance2;
-//            //    thing.matrix = worldMatrix;
-//            //    thing.gridId = grid.EntityId;
-//            //    AlliancePlugin.jumpies.Add(thing);
+            var target = grid.GridSystems.JumpSystem.GetJumpDriveTarget();
+            if (grid.GridSystems.JumpSystem.IsJumping)
+            {
+                       grid.GridSystems.JumpSystem.AbortJump(MyGridJumpDriveSystem.MyJumpFailReason.Locked);
+                //      Log.Info(target.ToString());
+                foreach (MyCockpit cockpit in grid.GetFatBlocks().OfType<MyCockpit>())
+                {
+                    if (cockpit.Pilot != null)
+                    {
+                        NotificationMessage message = new NotificationMessage("You cannot jump into this area.", 8000, "Red");
+                        //        //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
+                        ModCommunication.SendMessageTo(message, MySession.Static.Players.TryGetSteamId(cockpit.Pilot.GetPlayerIdentityId()));
+                    }
+                }
 
-//            //    Vector3D? newPosition = MyEntities.FindFreePlace(worldMatrix.Translation, (float)GridManager.FindBoundingSphere(controller.CubeGrid).Radius);
-//            //    return false;
+            }
 
-//            //}
-//            return true;
+         
+
+            return;
+        }
+
+    }
+}
+
+//foreach (JumpZone zone in Zones)
+//{
+
+
+//    float distance = Vector3.Distance(zone.GetPosition(), grid.PositionComp.GetPosition());
+
+//    if (distance <= zone.Radius && !zone.AllowExit)
+//    {
+//        if (zone.GetExcludedExit() != null && zone.AllowExcludedExit)
+//        {
+//            bool canExit = false;
+//            foreach (MyJumpDrive drive in grid.GetFatBlocks().OfType<MyJumpDrive>())
+//            {
+//                if (!zone.GetExcludedExit().Contains(drive.BlockDefinition.BlockPairName))
+//                {
+//                    drive.Enabled = false;
+//                }
+//                else
+//                {
+//                    canExit = true;
+//                }
+
+//            }
+//            if (canExit)
+//            {
+
+//                // newPos = grid.WorldMatrix.Forward + 1000;
+//                //worldMatrix = MatrixD.CreateWorld(newPos, grid.WorldMatrix.Forward, grid.WorldMatrix.Up);
+//                return true;
+//            }
+
 //        }
+//        NotificationMessage message = new NotificationMessage("You cannot jump out of this area.", 8000, "Red");
+//        //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
+//        ModCommunication.SendMessageTo(message, MySession.Static.Players.TryGetSteamId(userId));
+//        return false;
+//    }
 
+//    distance = Vector3.Distance(zone.GetPosition(), jumpTarget);
+
+//    if (distance <= zone.Radius && !zone.AllowEntry)
+//    {
+//        if (zone.GetExcludedEntry() != null && zone.AllowExcludedEntry)
+//        {
+//            bool canExit = false;
+//            foreach (MyJumpDrive drive in grid.GetFatBlocks().OfType<MyJumpDrive>())
+//            {
+//                if (!zone.GetExcludedExit().Contains(drive.BlockDefinition.BlockPairName))
+//                {
+//                    drive.Enabled = false;
+//                }
+//                else
+//                {
+//                    canExit = true;
+//                }
+//            }
+//            if (canExit)
+//            {
+//                //newPos = grid.WorldMatrix.Forward + 1000;
+//                // worldMatrix = MatrixD.CreateWorld(newPos, grid.WorldMatrix.Forward, grid.WorldMatrix.Up);
+//                return true;
+//            }
+//        }
+//        NotificationMessage message = new NotificationMessage("You cannot jump into this area.", 8000, "Red");
+//        //this is annoying, need to figure out how to check the exact world time so a duplicate message isnt possible
+//        ModCommunication.SendMessageTo(message, MySession.Static.Players.TryGetSteamId(userId));
+//        return false;
 //    }
 //}

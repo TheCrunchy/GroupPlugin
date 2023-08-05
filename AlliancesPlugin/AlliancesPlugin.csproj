@@ -296,6 +296,7 @@
     <Compile Include="Territory Version 2\Models\Crafting.cs" />
     <Compile Include="Territory Version 2\PointOwners\AlliancePointOwner.cs" />
     <Compile Include="Territory Version 2\PointOwners\FactionPointOwner.cs" />
+    <Compile Include="Territory Version 2\SecondaryLogics\BlockDisablerLogic.cs" />
     <Compile Include="Territory Version 2\SecondaryLogics\LootConverter.cs" />
     <Compile Include="Territory Version 2\SecondaryLogics\LootLogic.cs" />
     <Compile Include="Territory Version 2\SecondaryLogics\RadarLogic.cs" />
