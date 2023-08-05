@@ -105,6 +105,7 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
 
         public void FindGrids()
         {
+            FoundGrids.Clear();
             var sphere = new BoundingSphereD(GridPosition, 2500 * 2);
             foreach (var grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
             {

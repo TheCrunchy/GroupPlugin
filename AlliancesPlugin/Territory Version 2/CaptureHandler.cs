@@ -10,7 +10,9 @@ using AlliancesPlugin.Territory_Version_2.Interfaces;
 using AlliancesPlugin.Territory_Version_2.Models;
 using AlliancesPlugin.Territory_Version_2.PointOwners;
 using Newtonsoft.Json;
+using Sandbox.Game.Screens.Helpers;
 using Sandbox.Game.World;
+using VRage.Game.ModAPI;
 using VRageMath;
 
 namespace AlliancesPlugin.Territory_Version_2
@@ -137,6 +139,8 @@ namespace AlliancesPlugin.Territory_Version_2
             {
                 AllianceId = allianceId
             };
+
+            AlliancePlugin.utils.WriteToJsonFile<Territory>(AlliancePlugin.path + "//Territories//" + ter.Name + ".json", ter);
         }
 
         public static async Task TransferOwnershipToFaction(long factionId, Territory ter)
@@ -147,8 +151,54 @@ namespace AlliancesPlugin.Territory_Version_2
             {
                 FactionId = factionId
             };
+            AlliancePlugin.utils.WriteToJsonFile<Territory>(AlliancePlugin.path + "//Territories//" + ter.Name + ".json", ter);
         }
 
+        public static void SendRadarMessage(Object owner, String message)
+        {
+            switch (owner)
+            {
+                case Alliance alliance:
+                    {
+                    
+                        if (alliance.DiscordWebhookRadar != "")
+                        {
+                            var payloadJson = JsonConvert.SerializeObject(new
+                            {
+                                username = "Radar Hit",
+                                embeds = new[]
+                                    {
+                                    new
+                                    {
+                                        description = $"{message}",
+                                        title = "Radar Hit",
+                                        color = "15548997"
+                                    }
+                                }
+                            }
+                            );
+                            var payload = payloadJson;
+                            try
+                            {
+                                var client = new WebClient();
+                                client.Headers.Add("Content-Type", "application/json");
+                                client.UploadData(alliance.DiscordWebhookRadar, Encoding.UTF8.GetBytes(payload));
+                            }
+                            catch (Exception e)
+                            {
+                                AlliancePlugin.Log.Error($"Alliance Radar Error webhook error, {e}");
+                            }
+
+                        }
+                    }
+                    break;
+                case IMyFaction faction:
+                    {
+                        AlliancePlugin.Log.Error($"Radar not implemented for factions");
+                    }
+                    break;
+            }
+        }
 
         public static void SendMessage(string author, string message, Territory ter, IPointOwner owner)
         {
@@ -172,9 +222,11 @@ namespace AlliancesPlugin.Territory_Version_2
             );
 
             var payload = payloadJson;
+
+            var utf8 = Encoding.UTF8.GetBytes(payload);
             try
             {
-                client.UploadData(ter.DiscordWebhook, Encoding.UTF8.GetBytes(payload));
+                client.UploadData(ter.DiscordWebhook, utf8 );
             }
             catch (Exception e)
             {
@@ -190,7 +242,9 @@ namespace AlliancesPlugin.Territory_Version_2
                 var temp = alliance as Alliance;
                 if (temp.DiscordWebhookCaps != "")
                 {
-                    client.UploadData(temp.DiscordWebhookCaps, Encoding.UTF8.GetBytes(payload));
+                    var client2 = new WebClient();
+                    client2.Headers.Add("Content-Type", "application/json");
+                    client2.UploadData(temp.DiscordWebhookCaps, utf8);
                 }
             }
             catch (Exception e)

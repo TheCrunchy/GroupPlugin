@@ -97,7 +97,7 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
         private List<Guid> FindAttackers(BoundingSphereD sphere)
         {
             var foundAlliances = new List<Guid>();
-            foreach (var grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
+            foreach (var grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>().Where(x => x.BlocksCount >= 1))
             {
                 if (grid.Projector != null)
                     continue;

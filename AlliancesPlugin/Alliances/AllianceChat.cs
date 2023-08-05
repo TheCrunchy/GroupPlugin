@@ -137,7 +137,11 @@ namespace AlliancesPlugin.Alliances
 
             foreach (var id in OtherMembers)
             {
-                ShipyardCommands.SendMessage(message.SenderPrefix.Replace("**", ""), message.MessageText, new Color(alliance.r, alliance.g, alliance.b), (long)id);
+                if (!(message.SenderPrefix.Replace("**", "") is "Radar"))
+                {
+                    ShipyardCommands.SendMessage(message.SenderPrefix.Replace("**", ""), message.MessageText, new Color(alliance.r, alliance.g, alliance.b), (long)id);
+                }
+      
                 var gpscol = (MyGpsCollection)MyAPIGateway.Session?.GPS;
 
                 if (ScanChat(message.MessageText, null) == null) continue;

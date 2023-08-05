@@ -268,13 +268,19 @@ namespace AlliancesPlugin
                 recipe.typeid = "Ore";
                 recipe.subtypeid = "Stone";
                 recipe.amount = 500;
-
+                var radar = new RadarLogic();
+                radar.Distance = 50000;
+                radar.Enabled = true;
+                radar.Priority = 1;
+                radar.RequireOwner = true;
+                logic.SecondaryLogics.Add(radar);
                 item.RequriedItems.Add(recipe);
                 craft.CraftableItems.Add(item);
                 logic.SecondaryLogics.Add(loot);
                 logic.SecondaryLogics.Add(craft);
                 example.CapturePoints.Add(logic);
                 example.Enabled = false;
+        
                 utils.WriteToJsonFile<Territory>(path + "//Territories//Example.json", example, false);
             }
 
@@ -930,7 +936,8 @@ namespace AlliancesPlugin
                 reward.TypeId = "Ingot";
                 loot.loot.Add(reward);
                 reward = new RewardItem();
-
+      
+                
                 reward.MetaPoint = 50;
                 loot.loot.Add(reward);
                 site.loot.Add(loot);
@@ -4010,6 +4017,7 @@ namespace AlliancesPlugin
 
         public static bool Loading = false;
         private FileUtils jsonStuff = new FileUtils();
+        DateTime NextSave = DateTime.Now;
         public override async void Update()
         {
             try
@@ -4062,6 +4070,15 @@ namespace AlliancesPlugin
                     catch (Exception e)
                     {
                         AlliancePlugin.Log.Error("Error in territory cap logic", e.ToString());
+                    }
+
+                    if (DateTime.Now > NextSave)
+                    {
+                        NextSave = DateTime.Now.AddMinutes(5);
+                        foreach (var ter in Territories)
+                        {
+                            AlliancePlugin.utils.WriteToJsonFile<Territory>(AlliancePlugin.path + "//Territories//" + ter.Value.Name + ".json", ter.Value);
+                        }
                     }
                 }
 

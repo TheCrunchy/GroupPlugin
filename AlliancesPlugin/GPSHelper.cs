@@ -52,6 +52,26 @@ namespace AlliancesPlugin
             }
             return null;
         }
+
+        public static MyGps CreateGps(Vector3D Position, Color gpsColor, String Name, String Reason)
+        {
+
+            MyGps gps = new MyGps
+            {
+                Coords = Position,
+                Name = Name,
+                DisplayName = Name,
+                GPSColor = gpsColor,
+                IsContainerGPS = true,
+                ShowOnHud = true,
+                DiscardAt = new TimeSpan(0, 0, 10, 0),
+                Description = "Radar Hit \n" + Reason,
+            };
+            gps.UpdateHash();
+
+
+            return gps;
+        }
     }
 
 }
