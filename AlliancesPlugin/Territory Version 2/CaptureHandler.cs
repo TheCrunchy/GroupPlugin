@@ -17,8 +17,6 @@ namespace AlliancesPlugin.Territory_Version_2
 {
     public static class CaptureHandler
     {
-        private static List<Territory> territories = new List<Territory>();
-
         public static async Task DoCaps()
         {
             List<Territory> TerritoriesToRecalc = new List<Territory>();
@@ -43,7 +41,7 @@ namespace AlliancesPlugin.Territory_Version_2
                         }
                         else
                         {
-                           // AlliancePlugin.Log.Info("Cap did not succeed");
+                            // AlliancePlugin.Log.Info("Cap did not succeed");
                         }
                     }
                     catch (Exception e)
@@ -52,24 +50,24 @@ namespace AlliancesPlugin.Territory_Version_2
                     }
                     //mostly testing, i dont intend to do anything here if a cap is or isnt successful, other than change the territory owner if % is high enough 
 
-                    if (CapLogic.SecondaryLogics != null)
+                    if (CapLogic.SecondaryLogics == null) continue;
+
+                    foreach (var item in CapLogic.SecondaryLogics.OrderBy(x => x.Priority))
                     {
-                        foreach (var item in CapLogic.SecondaryLogics.OrderBy(x => x.Priority))
+                        try
                         {
-                            try
+                            var result = await item.DoSecondaryLogic(CapLogic, territory.Value);
+                            if (!result)
                             {
-                               var result = await item.DoSecondaryLogic(CapLogic, territory.Value);
-                               if (!result)
-                               {
-                                   break;
-                               }
-                            }
-                            catch (Exception e)
-                            {
-                                AlliancePlugin.Log.Error($"Error on secondary logic loop of type {item.GetType()} { e.ToString()}");
+                                break;
                             }
                         }
+                        catch (Exception e)
+                        {
+                            AlliancePlugin.Log.Error($"Error on secondary logic loop of type {item.GetType()} { e.ToString()}");
+                        }
                     }
+
                 }
 
                 foreach (var ter in TerritoriesToRecalc.Distinct())
@@ -123,7 +121,7 @@ namespace AlliancesPlugin.Territory_Version_2
 
         public static async Task TransferOwnershipToAlliance(Guid allianceId, Territory ter)
         {
-     
+
             if (allianceId == Guid.Empty)
             {
                 SendMessage("Territory has been captured.", $"{ter.Name} captured by the {AlliancePlugin.config.PrefixName} Unknown alliance.", ter, ter.Owner);
@@ -159,9 +157,9 @@ namespace AlliancesPlugin.Territory_Version_2
             client.Headers.Add("Content-Type", "application/json");
             //send to ingame and nexus 
             var payloadJson = JsonConvert.SerializeObject(new
-                {
-                    username = author,
-                    embeds = new[]
+            {
+                username = author,
+                embeds = new[]
                     {
                         new
                         {
@@ -170,7 +168,7 @@ namespace AlliancesPlugin.Territory_Version_2
                             color = ter.EmbedColorString,
                         }
                     }
-                }
+            }
             );
 
             var payload = payloadJson;
@@ -183,23 +181,23 @@ namespace AlliancesPlugin.Territory_Version_2
                 AlliancePlugin.Log.Error($"Alliance Grid Cap Discord webhook error, {e}");
             }
 
-            if (owner != null)
+            if (owner == null) return;
+
+            try
             {
-                try
+                var alliance = owner.GetOwner();
+                if (alliance == null) return;
+                var temp = alliance as Alliance;
+                if (temp.DiscordWebhookCaps != "")
                 {
-                    var alliance = owner.GetOwner();
-                    if (alliance == null) return;
-                    var temp = alliance as Alliance;
-                    if (temp.DiscordWebhookCaps != "")
-                    {
-                        client.UploadData(temp.DiscordWebhookCaps, Encoding.UTF8.GetBytes(payload));
-                    }
-                }
-                catch (Exception e)
-                {
-                    AlliancePlugin.Log.Error($"Alliance Discord webhook error, {e}");
+                    client.UploadData(temp.DiscordWebhookCaps, Encoding.UTF8.GetBytes(payload));
                 }
             }
+            catch (Exception e)
+            {
+                AlliancePlugin.Log.Error($"Alliance Discord webhook error, {e}");
+            }
+
         }
 
     }

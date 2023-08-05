@@ -41,24 +41,24 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
 
         public bool Enabled { get; set; }
 
-        public Task DoSecondaryLogic(ICapLogic point, Territory territory)
+        public Task<bool> DoSecondaryLogic(ICapLogic point, Territory territory)
         {
             if (!Enabled)
             {
-                return Task.CompletedTask;
+                return Task.FromResult(true);
             }
-            if (!CanLoop()) return Task.CompletedTask;
+            if (!CanLoop()) return Task.FromResult(true);
             NextLoop = DateTime.Now.AddSeconds(SecondsBetweenLoops);
             if (RequireOwner && point.PointOwner == null)
             {
-                return Task.CompletedTask;
+                return Task.FromResult(true);
             }
 
             var inventory = GetGridInventory();
             if (inventory == null)
             {
                 AlliancePlugin.Log.Info($"Could not find inventory for grid at position {GridPosition.ToString()}");
-                return Task.CompletedTask;
+                return Task.FromResult(true);
             }
 
             foreach (var item in Loot.Where(item => !string.IsNullOrEmpty(item.TypeId)))
@@ -73,7 +73,7 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
                 }
                 inventory.AddItems((MyFixedPoint)amount, (MyObjectBuilder_PhysicalObject)MyObjectBuilderSerializer.CreateNewObject(id));
             }
-            return Task.CompletedTask;
+            return Task.FromResult(true);
         }
 
         public IMyInventory GetGridInventory()
