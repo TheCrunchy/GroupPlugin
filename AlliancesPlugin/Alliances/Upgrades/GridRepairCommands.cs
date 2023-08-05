@@ -1,14 +1,11 @@
-﻿using AlliancesPlugin.Alliances.NewTerritories;
-using AlliancesPlugin.KOTH;
-using AlliancesPlugin.Shipyard;
-using Sandbox.Game.Entities;
-using Sandbox.Game.World;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using AlliancesPlugin.Shipyard;
+using AlliancesPlugin.Territory_Version_2.Models;
+using Sandbox.Game.Entities;
+using Sandbox.Game.World;
 using Torch.Commands;
 using Torch.Commands.Permissions;
 using Torch.Mod;
@@ -17,7 +14,7 @@ using VRage.Game.ModAPI;
 using VRage.Groups;
 using VRageMath;
 
-namespace AlliancesPlugin.Alliances
+namespace AlliancesPlugin.Alliances.Upgrades
 {
     [Category("gridrepair")]
     public class GridRepairCommands : CommandModule

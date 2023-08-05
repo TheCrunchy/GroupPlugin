@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using VRageMath;
+﻿using VRageMath;
 
-namespace AlliancesPlugin
+namespace AlliancesPlugin.JumpZones
 {
     public class JumpThing
     {

@@ -1,15 +1,12 @@
-﻿using Sandbox.Game.Entities.Cube;
-using Sandbox.Game.World;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+using Sandbox.Game.Entities.Cube;
+using Sandbox.Game.World;
 using Torch.Managers.PatchManager;
 using VRage.Game;
 
-namespace AlliancesPlugin
+namespace AlliancesPlugin.KOTH
 {
     [PatchShim]
     public class FunctionalBlockPatch

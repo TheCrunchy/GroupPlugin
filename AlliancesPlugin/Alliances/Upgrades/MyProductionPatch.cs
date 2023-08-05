@@ -1,24 +1,12 @@
-﻿using AlliancesPlugin.Alliances.NewTerritories;
-using AlliancesPlugin.KOTH;
-using HarmonyLib;
-using Sandbox.Definitions;
-using Sandbox.Game.Entities.Cube;
-using Sandbox.Game.Multiplayer;
-using Sandbox.Game.World;
-using Sandbox.ModAPI;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+using Sandbox.Game.Entities.Cube;
+using Sandbox.Game.World;
 using Torch.Managers.PatchManager;
-using VRage;
-using VRage.Game;
-using VRage.ObjectBuilders;
 using VRageMath;
 
-namespace AlliancesPlugin.Alliances
+namespace AlliancesPlugin.Alliances.Upgrades
 {
     [PatchShim]
     public static class MyProductionPatch

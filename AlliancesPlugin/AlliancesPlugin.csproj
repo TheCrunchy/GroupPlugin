@@ -202,7 +202,6 @@
     <Compile Include="Alliances\AlliancePackage.cs" />
     <Compile Include="Alliances\AllianceSendToDiscord.cs" />
     <Compile Include="Alliances\Gates\NewGateLogic.cs" />
-    <Compile Include="Alliances\NewTerritories\City.cs" />
     <Compile Include="Alliances\NewTerritories\CityHandler.cs" />
     <Compile Include="Alliances\NewTerritories\NewTerritoryHandler.cs" />
     <Compile Include="Alliances\NewTerritories\SafezoneBlockPatch.cs" />
@@ -251,7 +250,7 @@
     <Compile Include="JumpZones\JumpThing.cs" />
     <Compile Include="KOTH\FunctionalBlockPatch.cs" />
     <Compile Include="KOTH\SlimBlockPatch.cs" />
-    <Compile Include="Alliances\NewTerritories\Territory.cs" />
+    <Compile Include="Territory Version 2\Models\Territory.cs" />
     <Compile Include="MiscCommands.cs" />
     <Compile Include="Alliances\RankPermissions.cs" />
     <Compile Include="Alliances\StorePatchTaxes.cs" />
@@ -294,6 +293,7 @@
     <Compile Include="Territory Version 2\Interfaces\ICapLogic.cs" />
     <Compile Include="Territory Version 2\Interfaces\IPointOwner.cs" />
     <Compile Include="Territory Version 2\Interfaces\ISecondaryLogic.cs" />
+    <Compile Include="Territory Version 2\Models\Crafting.cs" />
     <Compile Include="Territory Version 2\PointOwners\AlliancePointOwner.cs" />
     <Compile Include="Territory Version 2\PointOwners\FactionPointOwner.cs" />
     <Compile Include="Territory Version 2\SecondaryLogics\LootConverter.cs" />

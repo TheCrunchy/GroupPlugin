@@ -1,15 +1,9 @@
-﻿using AlliancesPlugin.Alliances;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
 using AlliancesPlugin.Shipyard;
-using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.Game.World;
 using Sandbox.ModAPI.Ingame;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Torch.Commands;
 using Torch.Commands.Permissions;
 using VRage;
@@ -19,7 +13,7 @@ using VRage.Game.ModAPI.Ingame;
 using VRage.Groups;
 using VRage.ObjectBuilders;
 
-namespace AlliancesPlugin
+namespace AlliancesPlugin.Alliances
 {
     [Category("vault")]
     public class VaultCommands : CommandModule

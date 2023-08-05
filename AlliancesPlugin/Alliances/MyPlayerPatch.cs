@@ -1,41 +1,13 @@
-﻿using AlliancesPlugin.Alliances;
-using HarmonyLib;
-using NLog;
-using NLog.Config;
-using NLog.Targets;
-using Sandbox.Game.Entities;
-using Sandbox.Game.Entities.Blocks;
-using Sandbox.Game.Entities.Cube;
-using Sandbox.Game.GameSystems;
-using Sandbox.Game.Gui;
-using Sandbox.Game.GUI;
-using Sandbox.Game.SessionComponents;
-using Sandbox.Game.World;
-using Sandbox.ModAPI;
-using SpaceEngineers.Game.World;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using AlliancesPlugin.Alliances.NewTerritories;
-using AlliancesPlugin.KamikazeTerritories;
-using Sandbox.Definitions;
+﻿using HarmonyLib;
 using Sandbox.Game.Components;
+using Sandbox.Game.World;
 using Torch.Managers.PatchManager;
-using Torch.Managers.PatchManager.MSIL;
-using Torch.Mod;
-using Torch.Mod.Messages;
 using VRage.Game;
 using VRage.Game.Components;
-using VRage.Game.Gui;
 using VRage.Game.ModAPI;
-using VRageMath;
-using static HarmonyLib.AccessTools;
 using MyThrust = Sandbox.Game.Entities.MyThrust;
 
-namespace AlliancesPlugin
+namespace AlliancesPlugin.Alliances
 {
     [PatchShim]
     public static class MyPlayerPatch

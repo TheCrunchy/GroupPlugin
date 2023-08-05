@@ -1,23 +1,10 @@
-﻿using AlliancesPlugin.KOTH;
-using AlliancesPlugin.Shipyard;
-using Sandbox.Definitions;
-using Sandbox.Game.Entities;
-using Sandbox.Game.Entities.Blocks;
-using Sandbox.Game.Entities.Cube;
-using Sandbox.Game.World;
-using Sandbox.ModAPI;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Torch.Commands;
-using VRage.Game;
-using VRage.Game.ModAPI;
+using Sandbox.Game.Entities;
+using Sandbox.Game.World;
 using VRage.Groups;
-using VRageMath;
 
-namespace AlliancesPlugin.Alliances
+namespace AlliancesPlugin.Alliances.Upgrades
 {
     public class GridRepair
     {

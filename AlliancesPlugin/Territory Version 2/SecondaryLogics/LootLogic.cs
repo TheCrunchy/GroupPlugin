@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AlliancesPlugin.Alliances.NewTerritories;
 using AlliancesPlugin.Territory_Version_2.Interfaces;
+using AlliancesPlugin.Territory_Version_2.Models;
 using NLog.Fluent;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
@@ -115,5 +116,6 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
             return DateTime.Now >= NextLoop;
         }
 
+        public int Priority { get; set; }
     }
 }

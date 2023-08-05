@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
-using ProtoBuf;
+﻿using ProtoBuf;
 using VRageMath;
 
-namespace AlliancesPlugin.KamikazeTerritories
+namespace AlliancesPlugin.Integrations
 {
     [ProtoContract]
     public class PvPArea

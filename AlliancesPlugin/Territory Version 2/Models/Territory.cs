@@ -1,16 +1,9 @@
-﻿using AlliancesPlugin.Alliances.NewTerritories;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http.Headers;
-using System.Text;
-using System.Threading.Tasks;
-using AlliancesPlugin.NewTerritoryCapture;
 using AlliancesPlugin.Territory_Version_2.Interfaces;
-using VRage.Game;
 using VRageMath;
 
-namespace AlliancesPlugin.Alliances.NewTerritories
+namespace AlliancesPlugin.Territory_Version_2.Models
 {
     public class Territory
     {

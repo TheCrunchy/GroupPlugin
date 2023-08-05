@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AlliancesPlugin.Territory_Version_2.Models;
 using Sandbox.Game.Entities;
 using Sandbox.Game.World;
 using Torch.Collections;

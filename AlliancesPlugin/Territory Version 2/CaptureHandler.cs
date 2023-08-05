@@ -2,20 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Reflection;
-using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 using AlliancesPlugin.Alliances;
-using AlliancesPlugin.Alliances.NewTerritories;
 using AlliancesPlugin.Shipyard;
 using AlliancesPlugin.Territory_Version_2.Interfaces;
+using AlliancesPlugin.Territory_Version_2.Models;
 using AlliancesPlugin.Territory_Version_2.PointOwners;
 using Newtonsoft.Json;
 using Sandbox.Game.World;
 using VRageMath;
 
-namespace AlliancesPlugin.NewTerritoryCapture
+namespace AlliancesPlugin.Territory_Version_2
 {
     public static class CaptureHandler
     {
@@ -56,11 +54,15 @@ namespace AlliancesPlugin.NewTerritoryCapture
 
                     if (CapLogic.SecondaryLogics != null)
                     {
-                        foreach (var item in CapLogic.SecondaryLogics)
+                        foreach (var item in CapLogic.SecondaryLogics.OrderBy(x => x.Priority))
                         {
                             try
                             {
-                                await item.DoSecondaryLogic(CapLogic, territory.Value);
+                               var result = await item.DoSecondaryLogic(CapLogic, territory.Value);
+                               if (!result)
+                               {
+                                   break;
+                               }
                             }
                             catch (Exception e)
                             {

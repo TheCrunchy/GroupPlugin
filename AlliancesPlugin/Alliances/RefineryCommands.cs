@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AlliancesPlugin.Alliances.Upgrades;
 using Torch.Commands;
 using Torch.Commands.Permissions;
 using Torch.Mod;

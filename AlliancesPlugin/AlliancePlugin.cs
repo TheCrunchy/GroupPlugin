@@ -57,14 +57,16 @@ using System.Threading.Tasks;
 using AlliancesPlugin.Alliances.Gates;
 using static AlliancesPlugin.JumpGates.JumpGate;
 using AlliancesPlugin.Alliances.NewTerritories;
+using AlliancesPlugin.Alliances.Upgrades;
 using AlliancesPlugin.Integrations;
-using static AlliancesPlugin.Alliances.NewTerritories.City;
+using AlliancesPlugin.JumpZones;
 using AlliancesPlugin.WarOptIn;
 using AlliancesPlugin.KamikazeTerritories;
-using AlliancesPlugin.NewTerritoryCapture;
 using AlliancesPlugin.NexusStuff;
+using AlliancesPlugin.Territory_Version_2;
 using AlliancesPlugin.Territory_Version_2.CapLogics;
 using AlliancesPlugin.Territory_Version_2.Interfaces;
+using AlliancesPlugin.Territory_Version_2.Models;
 using AlliancesPlugin.Territory_Version_2.SecondaryLogics;
 using Newtonsoft.Json;
 using Sandbox.Definitions;
@@ -256,13 +258,13 @@ namespace AlliancesPlugin
                 loot.Loot = new List<LootLogic.LootItem>();
                 loot.Loot.Add(new LootLogic.LootItem());
                 var craft = new LootConverter();
-                LootConverter.CraftedItem item = new LootConverter.CraftedItem();
+                var item = new CraftedItem();
                 item.typeid = "Ore";
                 item.subtypeid = "Iron";
                 item.amountPerCraft = 500;
                 item.chanceToCraft = 1;
 
-                LootConverter.RecipeItem recipe = new LootConverter.RecipeItem();
+                var recipe = new RecipeItem();
                 recipe.typeid = "Ore";
                 recipe.subtypeid = "Stone";
                 recipe.amount = 500;
@@ -1574,12 +1576,6 @@ namespace AlliancesPlugin
             KamikazeTerritories.MessageHandler.LoadFile();
             Territories.Clear();
             var jsonStuff = new FileUtils();
-            CityHandler.CityTemplates.Clear();
-            foreach (var s in Directory.GetFiles(path + "//Territories//CityConfigs"))
-            {
-                var template = jsonStuff.ReadFromXmlFile<City>(s);
-                CityHandler.CityTemplates.Add(template);
-            }
 
             foreach (var s in Directory.GetFiles(path + "//Territories//"))
             {

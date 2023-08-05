@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AlliancesPlugin.Alliances.NewTerritories;
 using AlliancesPlugin.Territory_Version_2.Interfaces;
+using AlliancesPlugin.Territory_Version_2.Models;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Ingame;
@@ -40,47 +41,36 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
         public bool RequireOwner = true;
 
         public List<CraftedItem> CraftableItems = new List<CraftedItem>();
-        public class RecipeItem
-        {
-            public string typeid;
-            public string subtypeid;
-            public int amount;
-        }
-
-        public class CraftedItem
-        {
-            public bool Enabled = true;
-            public string typeid;
-            public string subtypeid;
-            public double chanceToCraft = 0.5;
-            public int amountPerCraft;
-            public List<RecipeItem> RequriedItems = new List<RecipeItem>();
-        }
-
+        
         private List<MyCubeGrid> FoundGrids = new List<MyCubeGrid>();
 
         public bool Enabled { get; set; }
+        public bool CanLoop()
+        {
+            return DateTime.Now >= NextLoop;
+        }
 
-        public Task DoSecondaryLogic(ICapLogic point, Territory territory)
+        public int Priority { get; set; }
+        public Task<bool> DoSecondaryLogic(ICapLogic point, Territory territory)
         {
             if (!Enabled)
             {
-                return Task.CompletedTask;
+                return Task.FromResult(true);
             }
 
-            if (!CanLoop()) return Task.CompletedTask;
+            if (!CanLoop()) return Task.FromResult(true);
 
             NextLoop = DateTime.Now.AddSeconds(SecondsBetweenLoops);
             if (RequireOwner && point.PointOwner == null)
             {
-                return Task.CompletedTask;
+                return Task.FromResult(true);
             }
             FindGrids();
             var inventory = GetGridInventory();
             if (inventory == null || !FoundGrids.Any())
             {
                 AlliancePlugin.Log.Info($"Could not find inventory for grid at position {GridPosition.ToString()}");
-                return Task.CompletedTask;
+                return Task.FromResult(true);
             }
             var LCD = GetPanel();
 
@@ -109,11 +99,8 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
                 comps.Clear();
             }
 
-            if (LCD != null)
-            {
-                LCD.WriteText(builder.ToString());
-            }
-            return Task.CompletedTask;
+            LCD?.WriteText(builder.ToString());
+            return Task.FromResult(true);
         }
 
         public void FindGrids()
@@ -151,9 +138,9 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
             foreach (KeyValuePair<MyDefinitionId, int> c in components)
             {
                 MyFixedPoint needed = CountComponentsTwo(inventories, c.Key, c.Value, toRemove);
-                if (needed > 0 && panel != null)
+                if (needed > 0)
                 {
-                    panel.WriteText("Crafting error, missing " + needed + " " + c.Key.SubtypeName + " All components must be inside one grid.");
+                    panel?.WriteText("Crafting error, missing " + needed + " " + c.Key.SubtypeName + " All components must be inside this grid.");
                 }
                 return false;
             }
@@ -189,23 +176,19 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
         public static MyFixedPoint CountComponentsTwo(IEnumerable<VRage.Game.ModAPI.IMyInventory> inventories, MyDefinitionId id, int amount, ICollection<MyTuple<VRage.Game.ModAPI.IMyInventory, VRage.Game.ModAPI.IMyInventoryItem, MyFixedPoint>> items)
         {
             MyFixedPoint targetAmount = amount;
-            foreach (VRage.Game.ModAPI.IMyInventory inv in inventories)
+            foreach (var inv in inventories)
             {
-                VRage.Game.ModAPI.IMyInventoryItem invItem = inv.FindItem(id);
-                if (invItem != null)
+                var invItem = inv.FindItem(id);
+                if (invItem == null) continue;
+                if (invItem.Amount >= targetAmount)
                 {
-                    if (invItem.Amount >= targetAmount)
-                    {
-                        items.Add(new MyTuple<VRage.Game.ModAPI.IMyInventory, VRage.Game.ModAPI.IMyInventoryItem, MyFixedPoint>(inv, invItem, targetAmount));
-                        targetAmount = 0;
-                        break;
-                    }
-                    else
-                    {
-                        items.Add(new MyTuple<VRage.Game.ModAPI.IMyInventory, VRage.Game.ModAPI.IMyInventoryItem, MyFixedPoint>(inv, invItem, invItem.Amount));
-                        targetAmount -= invItem.Amount;
-                    }
+                    items.Add(new MyTuple<VRage.Game.ModAPI.IMyInventory, VRage.Game.ModAPI.IMyInventoryItem, MyFixedPoint>(inv, invItem, targetAmount));
+                    targetAmount = 0;
+                    break;
                 }
+
+                items.Add(new MyTuple<VRage.Game.ModAPI.IMyInventory, VRage.Game.ModAPI.IMyInventoryItem, MyFixedPoint>(inv, invItem, invItem.Amount));
+                targetAmount -= invItem.Amount;
             }
             return targetAmount;
         }
@@ -238,9 +221,6 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
 
             return null;
         }
-        public bool CanLoop()
-        {
-            return DateTime.Now >= NextLoop;
-        }
+
     }
 }

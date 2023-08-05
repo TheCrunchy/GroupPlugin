@@ -17,6 +17,8 @@ using VRageMath;
 using AlliancesPlugin.KOTH;
 using AlliancesPlugin.Alliances.NewTerritories;
 using AlliancesPlugin.Alliances.Upgrades;
+using AlliancesPlugin.Alliances.Upgrades.ShipClasses;
+using AlliancesPlugin.Territory_Version_2.Models;
 
 namespace AlliancesPlugin.Alliances
 {
