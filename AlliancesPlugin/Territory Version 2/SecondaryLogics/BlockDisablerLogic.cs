@@ -28,31 +28,41 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
 
         public Task<bool> DoSecondaryLogic(ICapLogic point, Territory territory)
         {
+            //this crashes server 
             if (!Enabled)
             {
                 return Task.FromResult(true);
             }
 
             if (!CanLoop()) return Task.FromResult(true);
-
+            AlliancePlugin.Log.Info("1");
             NextLoop = DateTime.Now.AddSeconds(SecondsBetweenLoops);
             if (RequireOwner && point.PointOwner == null)
             {
                 return Task.FromResult(true);
             }
+
+            AlliancePlugin.Log.Info("2");
             var temp = point.PointOwner ?? territory.Owner;
-
+            AlliancePlugin.Log.Info("3");
             var owner = temp.GetOwner();
-
+            AlliancePlugin.Log.Info("4");
             StringBuilder builder = new StringBuilder();
             FindGrids();
+            AlliancePlugin.Log.Info("5");
             if (DisableLargeGrid)
             {
                 foreach (var grid in FoundGrids.Where(x => x.GridSizeEnum == MyCubeSize.Large))
                 {
-                    foreach (MyFunctionalBlock block in grid.GetFatBlocks())
+                    AlliancePlugin.Log.Info("6");
+                    foreach (MyCubeBlock block in grid.GetFatBlocks())
                     {
-                        block.Enabled = false;
+                        AlliancePlugin.Log.Info("7");
+                        if (block is MyFunctionalBlock func)
+                        {
+                            AlliancePlugin.Log.Info("8");
+                            func.Enabled = false;
+                        }
                     }
                 }
             }
@@ -61,9 +71,12 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
             {
                 foreach (var grid in FoundGrids.Where(x => x.GridSizeEnum == MyCubeSize.Small))
                 {
-                    foreach (MyFunctionalBlock block in grid.GetFatBlocks())
+                    foreach (MyCubeBlock block in grid.GetFatBlocks())
                     {
-                        block.Enabled = false;
+                        if (block is MyFunctionalBlock func)
+                        {
+                            func.Enabled = false;
+                        }
                     }
                 }
             }
