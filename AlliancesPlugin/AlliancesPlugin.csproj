@@ -301,6 +301,7 @@
     <Compile Include="Territory Version 2\SecondaryLogics\LootConverter.cs" />
     <Compile Include="Territory Version 2\SecondaryLogics\LootLogic.cs" />
     <Compile Include="Territory Version 2\SecondaryLogics\RadarLogic.cs" />
+    <Compile Include="Territory Version 2\SecondaryLogics\SafezoneLogic.cs" />
     <Compile Include="WarOptIn\Temp1.cs" />
     <Compile Include="WarOptIn\Temp2.cs" />
     <Compile Include="WarOptIn\WarConfig.cs" />

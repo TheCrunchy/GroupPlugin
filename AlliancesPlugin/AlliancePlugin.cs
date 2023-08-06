@@ -255,6 +255,7 @@ namespace AlliancesPlugin
                 var logic = new AllianceGridCapLogic();
                 var logic2 = new BlockOwnershipLogic();
                 logic.SecondaryLogics = new List<ISecondaryLogic>();
+                logic2.SecondaryLogics = new List<ISecondaryLogic>();
                 var loot = new LootLogic();
                 loot.Loot = new List<LootLogic.LootItem>();
                 loot.Loot.Add(new LootLogic.LootItem());
@@ -264,7 +265,7 @@ namespace AlliancesPlugin
                 item.subtypeid = "Iron";
                 item.amountPerCraft = 500;
                 item.chanceToCraft = 1;
-
+                logic2.SecondaryLogics.Add(new SafezoneLogic());
                 var recipe = new RecipeItem();
                 recipe.typeid = "Ore";
                 recipe.subtypeid = "Stone";
@@ -281,6 +282,7 @@ namespace AlliancesPlugin
                 logic.SecondaryLogics.Add(craft);
                 example.CapturePoints.Add(logic);
                 example.CapturePoints.Add(logic2);
+
                 example.Enabled = false;
         
                 utils.WriteToJsonFile<Territory>(path + "//Territories//Example.json", example, false);
