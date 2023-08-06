@@ -23,6 +23,6 @@ namespace AlliancesPlugin.Territory_Version_2.Models
         public Vector3D Position;
         public string DiscordWebhook = "https://discord.com/api/webhooks/1110180136118132827/DpKhjeIFUxwJqw8r1piKs0fnJ4HZCg4EcHiSCvzlHT0szKptgSoZNVHym7KdN8FjxKbc";
         public string EmbedColorString = "5763719";
-
+        public List<ISecondaryLogic> SecondaryLogics = new List<ISecondaryLogic>();
     }
 }

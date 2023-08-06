@@ -24,6 +24,24 @@ namespace AlliancesPlugin.Territory_Version_2
             List<Territory> TerritoriesToRecalc = new List<Territory>();
             foreach (var territory in AlliancePlugin.Territories)
             {
+                if (territory.Value.SecondaryLogics.Any())
+                {
+                    foreach (var item in territory.Value.SecondaryLogics.OrderBy(x => x.Priority))
+                    {
+                        try
+                        {
+                            var result = await item.DoSecondaryLogic(null, territory.Value);
+                            if (!result)
+                            {
+                                break;
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            AlliancePlugin.Log.Error($"Error on secondary logic loop of type {item.GetType()} { e.ToString()}");
+                        }
+                    }
+                }
                 foreach (var point in territory.Value.CapturePoints)
                 {
                     ICapLogic CapLogic;
@@ -203,6 +221,7 @@ namespace AlliancesPlugin.Territory_Version_2
         public static void SendMessage(string author, string message, Territory ter, IPointOwner owner)
         {
             ShipyardCommands.SendMessage(author, message, Color.Pink, 0l);
+          
             var client = new WebClient();
             client.Headers.Add("Content-Type", "application/json");
             //send to ingame and nexus 

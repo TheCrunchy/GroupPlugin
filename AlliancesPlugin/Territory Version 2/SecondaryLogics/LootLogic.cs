@@ -49,7 +49,10 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
             }
             if (!CanLoop()) return Task.FromResult(true);
             NextLoop = DateTime.Now.AddSeconds(SecondsBetweenLoops);
-            if (RequireOwner && point.PointOwner == null)
+
+            var temp = point.PointOwner ?? territory.Owner;
+
+            if (RequireOwner && temp == null)
             {
                 return Task.FromResult(true);
             }

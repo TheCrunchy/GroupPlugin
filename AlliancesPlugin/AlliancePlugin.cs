@@ -253,6 +253,7 @@ namespace AlliancesPlugin
             {
                 var example = new Territory();
                 var logic = new AllianceGridCapLogic();
+                var logic2 = new BlockOwnershipLogic();
                 logic.SecondaryLogics = new List<ISecondaryLogic>();
                 var loot = new LootLogic();
                 loot.Loot = new List<LootLogic.LootItem>();
@@ -279,6 +280,7 @@ namespace AlliancesPlugin
                 logic.SecondaryLogics.Add(loot);
                 logic.SecondaryLogics.Add(craft);
                 example.CapturePoints.Add(logic);
+                example.CapturePoints.Add(logic2);
                 example.Enabled = false;
         
                 utils.WriteToJsonFile<Territory>(path + "//Territories//Example.json", example, false);

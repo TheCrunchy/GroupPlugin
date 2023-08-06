@@ -85,7 +85,6 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
 
                 NextLoop = DateTime.Now.AddSeconds(SuccessfulCapLockoutTimeSeconds);
 
-          
                 CaptureHandler.SendMessage($"Territory Capture {PointName}", $"Captured by {AlliancePlugin.GetAllianceNoLoading(owner).name}, locking for {SuccessfulCapLockoutTimeSeconds / 60} Minutes", territory, point.PointOwner);
                 this.PointOwner = pointOwner;
                 return Task.FromResult(Tuple.Create<bool, IPointOwner>(true, pointOwner));

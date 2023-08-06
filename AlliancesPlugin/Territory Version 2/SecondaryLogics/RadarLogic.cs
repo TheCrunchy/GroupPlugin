@@ -38,8 +38,9 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
             {
                 return Task.FromResult(true);
             }
+            var temp = point.PointOwner ?? territory.Owner;
 
-            var owner = point.PointOwner.GetOwner();
+            var owner = temp.GetOwner();
 
             StringBuilder builder = new StringBuilder();
             FindGrids();
