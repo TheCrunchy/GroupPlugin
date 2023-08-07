@@ -35,51 +35,55 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
             }
 
             if (!CanLoop()) return Task.FromResult(true);
-            AlliancePlugin.Log.Info("1");
+        //    AlliancePlugin.Log.Info("1");
             NextLoop = DateTime.Now.AddSeconds(SecondsBetweenLoops);
             if (RequireOwner && point.PointOwner == null)
             {
                 return Task.FromResult(true);
             }
 
-            AlliancePlugin.Log.Info("2");
+  //         AlliancePlugin.Log.Info("2");
             var temp = point.PointOwner ?? territory.Owner;
-            AlliancePlugin.Log.Info("3");
+    //        AlliancePlugin.Log.Info("3");
             var owner = temp.GetOwner();
-            AlliancePlugin.Log.Info("4");
+       //     AlliancePlugin.Log.Info("4");
             StringBuilder builder = new StringBuilder();
             FindGrids();
-            AlliancePlugin.Log.Info("5");
-            if (DisableLargeGrid)
-            {
-                foreach (var grid in FoundGrids.Where(x => x.GridSizeEnum == MyCubeSize.Large))
-                {
-                    AlliancePlugin.Log.Info("6");
-                    foreach (MyCubeBlock block in grid.GetFatBlocks())
-                    {
-                        AlliancePlugin.Log.Info("7");
-                        if (block is MyFunctionalBlock func)
-                        {
-                            AlliancePlugin.Log.Info("8");
-                            func.Enabled = false;
-                        }
-                    }
-                }
-            }
+        //    AlliancePlugin.Log.Info("5");
 
-            if (DisableSmallGrid)
-            {
-                foreach (var grid in FoundGrids.Where(x => x.GridSizeEnum == MyCubeSize.Small))
+        //    MyAPIGateway.Utilities.InvokeOnGameThread(() =>
+        //    {
+                if (DisableLargeGrid)
                 {
-                    foreach (MyCubeBlock block in grid.GetFatBlocks())
+                    foreach (var grid in FoundGrids.Where(x => x.GridSizeEnum == MyCubeSize.Large))
                     {
-                        if (block is MyFunctionalBlock func)
+                      //  AlliancePlugin.Log.Info("6");
+                        foreach (MyCubeBlock block in grid.GetFatBlocks())
                         {
-                            func.Enabled = false;
+                         //   AlliancePlugin.Log.Info("7");
+                            if (block is MyFunctionalBlock func)
+                            {
+                               // AlliancePlugin.Log.Info("8");
+                                FunctionalBlockPatch.AddBlockToDisable(block.EntityId, this.SecondsBetweenLoops);
+                            }
                         }
                     }
                 }
-            }
+
+                if (DisableSmallGrid)
+                {
+                    foreach (var grid in FoundGrids.Where(x => x.GridSizeEnum == MyCubeSize.Small))
+                    {
+                        foreach (MyCubeBlock block in grid.GetFatBlocks())
+                        {
+                            if (block is MyFunctionalBlock func)
+                            {
+                                FunctionalBlockPatch.AddBlockToDisable(block.EntityId, this.SecondsBetweenLoops);
+                            }
+                        }
+                    }
+                }
+       //     });
 
             return Task.FromResult(true);
         }

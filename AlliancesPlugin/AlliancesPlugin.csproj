@@ -251,6 +251,7 @@
     <Compile Include="JumpZones\JumpThing.cs" />
     <Compile Include="KOTH\FunctionalBlockPatch.cs" />
     <Compile Include="KOTH\SlimBlockPatch.cs" />
+    <Compile Include="Territory Version 2\FunctionalBlockPatch.cs" />
     <Compile Include="Territory Version 2\Models\Territory.cs" />
     <Compile Include="MiscCommands.cs" />
     <Compile Include="Alliances\RankPermissions.cs" />

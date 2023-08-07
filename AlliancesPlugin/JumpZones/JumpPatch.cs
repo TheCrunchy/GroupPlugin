@@ -67,7 +67,7 @@ namespace AlliancesPlugin
         public static void Patch(PatchContext ctx)
         {
 
-        //    ctx.GetPattern(RequestJump).Prefixes.Add(DenyJumpPatch);
+            //    ctx.GetPattern(RequestJump).Prefixes.Add(DenyJumpPatch);
 
             //  ctx.GetPattern(RequestJump).Suffixes.Add(DenyJumpPatch2);
             Log.Info("Patching Successful jump drive stuff");
@@ -78,17 +78,20 @@ namespace AlliancesPlugin
         public static void PatchRequestJump(MyJumpDrive __instance)
         {
             MyCubeGrid grid = __instance.CubeGrid;
-   
+
 
             if (grid == null)
             {
                 return;
             }
-           
+
             var target = grid.GridSystems.JumpSystem.GetJumpDriveTarget();
+
+
             if (grid.GridSystems.JumpSystem.IsJumping)
             {
-                       grid.GridSystems.JumpSystem.AbortJump(MyGridJumpDriveSystem.MyJumpFailReason.Locked);
+                __instance.Enabled = false;
+                //         grid.GridSystems.JumpSystem.AbortJump(MyGridJumpDriveSystem.MyJumpFailReason.Locked);
                 //      Log.Info(target.ToString());
                 foreach (MyCockpit cockpit in grid.GetFatBlocks().OfType<MyCockpit>())
                 {
@@ -102,7 +105,7 @@ namespace AlliancesPlugin
 
             }
 
-         
+
 
             return;
         }
