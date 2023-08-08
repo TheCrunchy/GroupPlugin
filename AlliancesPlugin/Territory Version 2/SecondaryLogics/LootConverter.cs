@@ -77,7 +77,10 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
                 return Task.FromResult(true);
             }
             var LCD = GetPanel();
-
+            MyAPIGateway.Utilities.InvokeOnGameThread(() =>
+            {
+                LCD.WriteText("");
+            });
             StringBuilder builder = new StringBuilder();
             foreach (CraftedItem item in this.CraftableItems.Where(x => x.Enabled))
             {
