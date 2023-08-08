@@ -257,7 +257,9 @@ namespace AlliancesPlugin
                 logic.SecondaryLogics = new List<ISecondaryLogic>();
                 logic2.SecondaryLogics = new List<ISecondaryLogic>();
                 var block = new BlockDisablerLogic();
+                var thrust = new ThrustDisablerLogic();
                 logic2.SecondaryLogics.Add(block);
+                logic2.SecondaryLogics.Add(thrust);
                 var loot = new LootLogic();
                 loot.Loot = new List<LootLogic.LootItem>();
                 loot.Loot.Add(new LootLogic.LootItem());
