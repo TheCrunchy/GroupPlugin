@@ -223,7 +223,7 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
                 }
             }
 
-            return null;
+            return foundInvents;
         }
 
     }
