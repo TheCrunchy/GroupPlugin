@@ -22,7 +22,7 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
 {
     public class LootConverter : ISecondaryLogic
     {
-      
+
         public class LootItem
         {
             public string TypeId = "Ore";
@@ -41,7 +41,7 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
         public bool RequireOwner = true;
 
         public List<CraftedItem> CraftableItems = new List<CraftedItem>();
-        
+
         private List<MyCubeGrid> FoundGrids = new List<MyCubeGrid>();
 
         public bool Enabled { get; set; }
@@ -70,21 +70,21 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
             }
             FindGrids();
             var inventory = GetGridInventory();
-            if (inventory == null || !FoundGrids.Any())
+            if (inventory == null || !FoundGrids.Any() || !inventory.Any())
             {
                 AlliancePlugin.Log.Info($"Could not find inventory for grid at position {GridPosition.ToString()}");
+               // AlliancePlugin.Log.Info(inventory.Count);
                 return Task.FromResult(true);
             }
             var LCD = GetPanel();
 
             StringBuilder builder = new StringBuilder();
-            var inventories = GetGridInventory();
             foreach (CraftedItem item in this.CraftableItems.Where(x => x.Enabled))
             {
                 double yeet = AlliancePlugin.rand.NextDouble();
                 if (!(yeet <= item.chanceToCraft)) continue;
                 var comps = new Dictionary<MyDefinitionId, int>();
-   
+
                 if (!MyDefinitionId.TryParse("MyObjectBuilder_" + item.typeid, item.subtypeid,
                         out MyDefinitionId id)) continue;
                 foreach (RecipeItem recipe in item.RequriedItems)
@@ -95,14 +95,21 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
                     }
                 }
 
-   
-                if (!ConsumeComponents(inventory, comps, LCD)) continue;
-                SpawnItems(id, item.amountPerCraft);
-                builder.AppendLine($"Successfully crafted {item.subtypeid} {item.typeid.Replace("MyObjectBuilder_", "")}");
-                comps.Clear();
-            }
+             //   AlliancePlugin.Log.Info($"Checking {comps.Count}");
 
-            LCD?.WriteText(builder.ToString());
+                if (!ConsumeComponents(inventory, comps, LCD)) continue;
+           //     AlliancePlugin.Log.Info("It consumed");
+                SpawnItems(id, item.amountPerCraft);
+          //      AlliancePlugin.Log.Info("Checking 2");
+                builder.AppendLine(
+                    $"Successfully crafted {item.subtypeid} {item.typeid.Replace("MyObjectBuilder_", "")}");
+                comps.Clear();
+
+            }
+            MyAPIGateway.Utilities.InvokeOnGameThread(() =>
+            {
+                LCD?.WriteText(builder.ToString(), true);
+            });
             return Task.FromResult(true);
         }
 
@@ -142,18 +149,22 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
             foreach (KeyValuePair<MyDefinitionId, int> c in components)
             {
                 MyFixedPoint needed = CountComponentsTwo(inventories, c.Key, c.Value, toRemove);
+
                 if (needed > 0)
                 {
-                    panel?.WriteText("Crafting error, missing " + needed + " " + c.Key.SubtypeName + " All components must be inside this grid.");
+                    MyAPIGateway.Utilities.InvokeOnGameThread(() =>
+                    {
+                        panel?.WriteText("Crafting error, missing " + needed + " " + c.Key.SubtypeName + " All components must be inside this grid.");
+                    });
+                 //   AlliancePlugin.Log.Info("Not found components");
+                    return false;
                 }
-                return false;
             }
-
-            foreach (MyTuple<VRage.Game.ModAPI.IMyInventory, VRage.Game.ModAPI.IMyInventoryItem, MyFixedPoint> item in toRemove)
-                MyAPIGateway.Utilities.InvokeOnGameThread(() =>
-                {
-                    item.Item1.RemoveItemAmount(item.Item2, item.Item3);
-                });
+            MyAPIGateway.Utilities.InvokeOnGameThread(() =>
+            {
+                foreach (MyTuple<VRage.Game.ModAPI.IMyInventory, VRage.Game.ModAPI.IMyInventoryItem, MyFixedPoint> item in toRemove)
+                item.Item1.RemoveItemAmount(item.Item2, item.Item3);
+            });
             return true;
         }
 
@@ -215,7 +226,7 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
                 }
                 else
                 {
-                    var cargo = grid.GetBlocks().OfType<MyCargoContainer>();
+                    var cargo = grid.GetFatBlocks().OfType<MyCargoContainer>();
                     foreach (var carg in cargo)
                     {
                         foundInvents.Add(carg.GetInventory());
