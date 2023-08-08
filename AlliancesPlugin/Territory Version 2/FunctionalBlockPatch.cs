@@ -4,8 +4,10 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Sandbox.Game.Entities;
 using Sandbox.Game.Entities.Cube;
 using Torch.Managers.PatchManager;
+using VRage.Game;
 using VRage.Game.ObjectBuilders;
 
 namespace AlliancesPlugin.Territory_Version_2
@@ -14,6 +16,10 @@ namespace AlliancesPlugin.Territory_Version_2
     public static class FunctionalBlockPatch
     {
 
+        internal static readonly MethodInfo update1 =
+            typeof(MyFunctionalBlock).GetMethod("UpdateBeforeSimulation",
+                BindingFlags.Instance | BindingFlags.Public) ??
+            throw new Exception("Failed to find patch method");
         internal static readonly MethodInfo update =
             typeof(MyFunctionalBlock).GetMethod("UpdateBeforeSimulation10",
                 BindingFlags.Instance | BindingFlags.Public) ??
@@ -58,6 +64,7 @@ namespace AlliancesPlugin.Territory_Version_2
                 return true;
             }
 
+            DeleteCount.Remove(blockEntityId);
             BlocksDisabled.Remove(blockEntityId);
 
             return false;
@@ -65,18 +72,44 @@ namespace AlliancesPlugin.Territory_Version_2
 
         public static void Patch(PatchContext ctx)
         {
+            ctx.GetPattern(update1).Prefixes.Add(updatePatch);
             ctx.GetPattern(update).Prefixes.Add(updatePatch);
             ctx.GetPattern(update2).Prefixes.Add(updatePatch);
             ctx.GetPattern(enabledUpdate).Prefixes.Add(functionalBlockPatch);
         }
 
+        public static Dictionary<long, int> DeleteCount = new Dictionary<long, int>();
         public static bool PatchTurningOn(MyFunctionalBlock __instance)
         {
-            return !IsDisabled(__instance.EntityId);
+            if (IsDisabled(__instance.EntityId))
+            {
+                if (DeleteCount.ContainsKey(__instance.EntityId))
+                {
+                    DeleteCount[__instance.EntityId] += 1;
+                }
+                else
+                {
+                    DeleteCount.Add(__instance.EntityId, 1);
+                }
+                //   AlliancePlugin.Log.Info("Disabling");
+                __instance.Enabled = false;
+                return false;
+            }
+
+            return true;
         }
 
         public static Boolean KeepDisabled(MyFunctionalBlock __instance)
         {
+            if (DeleteCount.ContainsKey(__instance.EntityId))
+            {
+                if (DeleteCount[__instance.EntityId] >= 10)
+                {
+                    __instance.Enabled = false;
+                    __instance.SlimBlock.DoDamage(__instance.SlimBlock.MaxIntegrity * 50, MyDamageType.Fire);
+                    return false;
+                }
+            }
             if (IsDisabled(__instance.EntityId))
             {
                 __instance.Enabled = false;

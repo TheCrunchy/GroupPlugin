@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using AlliancesPlugin.Alliances;
 using AlliancesPlugin.Territory_Version_2.Interfaces;
 using AlliancesPlugin.Territory_Version_2.Models;
+using Sandbox.Common.ObjectBuilders;
 using Sandbox.Game.Entities;
 using Sandbox.Game.Entities.Cube;
 using Sandbox.ModAPI;
@@ -60,32 +61,36 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
                 foreach (var grid in FoundGrids.Where(x => x.GridSizeEnum == MyCubeSize.Large))
                 {
                     //  AlliancePlugin.Log.Info("6");
-                    foreach (MyThrust block in grid.GetBlocks().OfType<MyThrust>())
+                    foreach (MyThrust block in grid.GetFatBlocks().Where(x => x.BlockDefinition != null && x.BlockDefinition.Id.TypeId == typeof(MyObjectBuilder_Thrust)))
                     {
-                        if (block.GridThrustDirection == Vector3I.Backward && DisabledDirections.Contains("BACKWARD"))
+                     //   AlliancePlugin.Log.Info("thruster large");
+                        if (block.GridThrustDirection == Vector3I.Backward && !DisabledDirections.Contains("BACKWARD"))
                         {
-                            FunctionalBlockPatch.AddBlockToDisable(block.EntityId, this.SecondsBetweenLoops);
+                          //  AlliancePlugin.Log.Info("BACKWARD");
+                            continue;
                         }
-                        if (block.GridThrustDirection == Vector3I.Forward && DisabledDirections.Contains("FORWARD"))
+                        if (block.GridThrustDirection == Vector3I.Forward && !DisabledDirections.Contains("FORWARD"))
                         {
-                            FunctionalBlockPatch.AddBlockToDisable(block.EntityId, this.SecondsBetweenLoops);
+                           // AlliancePlugin.Log.Info("FORWARD");
+                            continue;
                         }
-                        if (block.GridThrustDirection == Vector3I.Left && DisabledDirections.Contains("LEFT"))
+                        if (block.GridThrustDirection == Vector3I.Left && !DisabledDirections.Contains("LEFT"))
                         {
-                            FunctionalBlockPatch.AddBlockToDisable(block.EntityId, this.SecondsBetweenLoops);
+                            continue;
                         }
-                        if (block.GridThrustDirection == Vector3I.Right && DisabledDirections.Contains("RIGHT"))
+                        if (block.GridThrustDirection == Vector3I.Right && !DisabledDirections.Contains("RIGHT"))
                         {
-                            FunctionalBlockPatch.AddBlockToDisable(block.EntityId, this.SecondsBetweenLoops);
+                            continue;
                         }
-                        if (block.GridThrustDirection == Vector3I.Up && DisabledDirections.Contains("UP"))
+                        if (block.GridThrustDirection == Vector3I.Up && !DisabledDirections.Contains("UP"))
                         {
-                            FunctionalBlockPatch.AddBlockToDisable(block.EntityId, this.SecondsBetweenLoops);
+                            continue;
                         }
-                        if (block.GridThrustDirection == Vector3I.Down && DisabledDirections.Contains("DOWN"))
+                        if (block.GridThrustDirection == Vector3I.Down && !DisabledDirections.Contains("DOWN"))
                         {
-                            FunctionalBlockPatch.AddBlockToDisable(block.EntityId, this.SecondsBetweenLoops);
+                            continue;
                         }
+                        FunctionalBlockPatch.AddBlockToDisable(block.EntityId, this.SecondsBetweenLoops);
                     }
                 }
             }
@@ -94,32 +99,35 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
             {
                 foreach (var grid in FoundGrids.Where(x => x.GridSizeEnum == MyCubeSize.Small))
                 {
-                    foreach (MyThrust block in grid.GetBlocks().OfType<MyThrust>())
+                    foreach (MyThrust block in grid.GetFatBlocks().Where(x => x.BlockDefinition != null && x.BlockDefinition.Id.TypeId == typeof(MyObjectBuilder_Thrust)))
                     {
-                        if (block.GridThrustDirection == Vector3I.Backward && DisabledDirections.Contains("BACKWARD"))
+                        if (block.GridThrustDirection == Vector3I.Backward && !DisabledDirections.Contains("BACKWARD"))
                         {
-                            FunctionalBlockPatch.AddBlockToDisable(block.EntityId, this.SecondsBetweenLoops);
+                            //  AlliancePlugin.Log.Info("BACKWARD");
+                            continue;
                         }
-                        if (block.GridThrustDirection == Vector3I.Forward && DisabledDirections.Contains("FORWARD"))
+                        if (block.GridThrustDirection == Vector3I.Forward && !DisabledDirections.Contains("FORWARD"))
                         {
-                            FunctionalBlockPatch.AddBlockToDisable(block.EntityId, this.SecondsBetweenLoops);
+                            // AlliancePlugin.Log.Info("FORWARD");
+                            continue;
                         }
-                        if (block.GridThrustDirection == Vector3I.Left && DisabledDirections.Contains("LEFT"))
+                        if (block.GridThrustDirection == Vector3I.Left && !DisabledDirections.Contains("LEFT"))
                         {
-                            FunctionalBlockPatch.AddBlockToDisable(block.EntityId, this.SecondsBetweenLoops);
+                            continue;
                         }
-                        if (block.GridThrustDirection == Vector3I.Right && DisabledDirections.Contains("RIGHT"))
+                        if (block.GridThrustDirection == Vector3I.Right && !DisabledDirections.Contains("RIGHT"))
                         {
-                            FunctionalBlockPatch.AddBlockToDisable(block.EntityId, this.SecondsBetweenLoops);
+                            continue;
                         }
-                        if (block.GridThrustDirection == Vector3I.Up && DisabledDirections.Contains("UP"))
+                        if (block.GridThrustDirection == Vector3I.Up && !DisabledDirections.Contains("UP"))
                         {
-                            FunctionalBlockPatch.AddBlockToDisable(block.EntityId, this.SecondsBetweenLoops);
+                            continue;
                         }
-                        if (block.GridThrustDirection == Vector3I.Down && DisabledDirections.Contains("DOWN"))
+                        if (block.GridThrustDirection == Vector3I.Down && !DisabledDirections.Contains("DOWN"))
                         {
-                            FunctionalBlockPatch.AddBlockToDisable(block.EntityId, this.SecondsBetweenLoops);
+                            continue;
                         }
+                        FunctionalBlockPatch.AddBlockToDisable(block.EntityId, this.SecondsBetweenLoops);
                     }
                 }
             }
