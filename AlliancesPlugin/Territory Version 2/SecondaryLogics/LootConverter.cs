@@ -105,7 +105,7 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
                 SpawnItems(id, item.amountPerCraft);
           //      AlliancePlugin.Log.Info("Checking 2");
                 builder.AppendLine(
-                    $"Successfully crafted {item.subtypeid} {item.typeid.Replace("MyObjectBuilder_", "")}");
+                    $"Successfully crafted {item.subtypeid} {item.typeid.Replace("MyObjectBuilder_", "")} at {DateTime.Now:HH-mm}");
                 comps.Clear();
 
             }
@@ -157,7 +157,7 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
                 {
                     MyAPIGateway.Utilities.InvokeOnGameThread(() =>
                     {
-                        panel?.WriteText("Crafting error, missing " + needed + " " + c.Key.SubtypeName + " All components must be inside this grid.");
+                        panel?.WriteText($"Crafting error, missing " + needed + " " + c.Key.SubtypeName + $" All components must be inside this grid. at {DateTime.Now:HH-mm}");
                     });
                  //   AlliancePlugin.Log.Info("Not found components");
                     return false;
