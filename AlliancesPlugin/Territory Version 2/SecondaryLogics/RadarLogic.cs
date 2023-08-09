@@ -114,7 +114,7 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
             var sphere = new BoundingSphereD(RadarCentre, Distance * 2);
             foreach (var grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>().Where(x => x.Projector == null && x.BlocksCount >= MinimumBlocksToHit))
             {
-         //       AlliancePlugin.Log.Info("grid 2");
+                //       AlliancePlugin.Log.Info("grid 2");
                 var owner = FacUtils.GetOwner(grid);
            //     AlliancePlugin.Log.Info("grid 3");
                 var fac = FacUtils.GetPlayersFaction(owner);

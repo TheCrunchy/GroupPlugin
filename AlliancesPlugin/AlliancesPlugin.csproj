@@ -223,6 +223,7 @@
     <Compile Include="Alliances\Upgrades\ShipClasses\ShipClassLimits.cs" />
     <Compile Include="Alliances\Upgrades\ShipClasses\ShipClassUpgrade.cs" />
     <Compile Include="GPSHelper.cs" />
+    <Compile Include="SlimBlockPatch.cs" />
     <Compile Include="Territory Version 2\CapLogics\AllianceGridCapLogic.cs" />
     <Compile Include="Territory Version 2\CapLogics\AllianceSuitCapLogic.cs" />
     <Compile Include="Territory Version 2\CapLogics\BlockOwnershipLogic.cs" />
@@ -249,8 +250,6 @@
     <Compile Include="Alliances\VaultCommands.cs" />
     <Compile Include="Alliances\VaultData.cs" />
     <Compile Include="JumpZones\JumpThing.cs" />
-    <Compile Include="KOTH\FunctionalBlockPatch.cs" />
-    <Compile Include="KOTH\SlimBlockPatch.cs" />
     <Compile Include="Territory Version 2\FunctionalBlockPatch.cs" />
     <Compile Include="Territory Version 2\Models\Territory.cs" />
     <Compile Include="MiscCommands.cs" />
@@ -270,12 +269,9 @@
     <Compile Include="JumpZones\JumpPatch.cs" />
     <Compile Include="JumpZones\JumpZone.cs" />
     <Compile Include="JumpZones\ZoneCommands.cs" />
-    <Compile Include="KOTH\DenialPoint.cs" />
     <Compile Include="EconUtils.cs" />
     <Compile Include="FacUtils.cs" />
     <Compile Include="FileUtils.cs" />
-    <Compile Include="KOTH\KothCommands.cs" />
-    <Compile Include="KOTH\KothConfig.cs" />
     <Compile Include="NewCaptureSite\CaptureSite.cs" />
     <Compile Include="NewCaptureSite\Location.cs" />
     <Compile Include="NewCaptureSite\LootLocation.cs" />

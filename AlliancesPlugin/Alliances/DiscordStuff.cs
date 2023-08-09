@@ -16,7 +16,6 @@
 //using AlliancesPlugin.NewCaptureSite;
 
 using System;
-using AlliancesPlugin.KOTH;
 using AlliancesPlugin.Shipyard;
 using VRageMath;
 
@@ -275,20 +274,6 @@ namespace AlliancesPlugin.Alliances
         //            }
         //            Discord?.DisconnectAsync();
         //        }
-        public static void SendMessageToDiscord(string messageText, KothConfig config)
-        {
-            var message = new AllianceSendToDiscord
-            {
-                MessageText = messageText,
-                SenderPrefix = config.KothName,
-                SendToIngame = true,
-                DoEmbed = false,
-                ChannelId = AlliancePlugin.config.DiscordChannelId
-            };
-
-            AlliancePlugin.SendToMQ(MQPatching.MQPluginPatch.AllianceSendToDiscord, message);
-        }
-
         public static void SendMessageToDiscord(string name, string messageText, NewCaptureSite.CaptureSite config,
             Boolean Embed = true)
         {

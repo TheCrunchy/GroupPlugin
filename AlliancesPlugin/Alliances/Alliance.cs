@@ -14,7 +14,7 @@ using AlliancesPlugin.JumpGates;
 using VRage.Game;
 using System.Numerics;
 using VRageMath;
-using AlliancesPlugin.KOTH;
+
 using AlliancesPlugin.Alliances.NewTerritories;
 using AlliancesPlugin.Alliances.Upgrades;
 using AlliancesPlugin.Alliances.Upgrades.ShipClasses;
