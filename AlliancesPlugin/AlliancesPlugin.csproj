@@ -205,7 +205,7 @@
     <Compile Include="Alliances\NewTerritories\CityHandler.cs" />
     <Compile Include="Alliances\NewTerritories\NewTerritoryHandler.cs" />
     <Compile Include="Alliances\NewTerritories\SafezoneBlockPatch.cs" />
-    <Compile Include="Alliances\NewTerritories\TerritoryCommands.cs" />
+    <Compile Include="Territory Version 2\TerritoryCommands.cs" />
     <Compile Include="Alliances\Upgrades\GridRepairCommands.cs" />
     <Compile Include="Alliances\Upgrades\AssemblerCommands.cs" />
     <Compile Include="Alliances\Upgrades\AssemblerUpgrade.cs" />
@@ -222,6 +222,7 @@
     <Compile Include="Alliances\Upgrades\ShipClasses\LoadedShipLimits.cs" />
     <Compile Include="Alliances\Upgrades\ShipClasses\ShipClassLimits.cs" />
     <Compile Include="Alliances\Upgrades\ShipClasses\ShipClassUpgrade.cs" />
+    <Compile Include="FunctionalBlockPatch.cs" />
     <Compile Include="GPSHelper.cs" />
     <Compile Include="SlimBlockPatch.cs" />
     <Compile Include="Territory Version 2\CapLogics\AllianceGridCapLogic.cs" />

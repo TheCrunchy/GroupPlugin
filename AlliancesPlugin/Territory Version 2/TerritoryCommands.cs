@@ -4,7 +4,9 @@ using System.Linq;
 using System.Runtime.Remoting.Contexts;
 using System.Text;
 using System.Threading.Tasks;
+using AlliancesPlugin.Territory_Version_2.Interfaces;
 using AlliancesPlugin.Territory_Version_2.Models;
+using Sandbox.Engine.Multiplayer;
 using Torch.Commands;
 using Torch.Commands.Permissions;
 using VRage.Game.ModAPI;
@@ -55,6 +57,21 @@ namespace AlliancesPlugin.Alliances.NewTerritories
         {
             AlliancePlugin.LoadAllTerritories();
             Context.Respond(AlliancePlugin.Territories.Count.ToString() + " loaded");
+        }
+
+
+        [Command("create", "create territory at current position")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void Create(string name)
+        {
+            Territory territory = new Territory();
+            territory.Position = Context.Player.GetPosition();
+            territory.Name = name;
+            territory.SecondaryLogics = new List<ISecondaryLogic>();
+            territory.CapturePoints = new List<ICapLogic>();
+            territory.WorldName = MyMultiplayer.Static.HostName;
+            AlliancePlugin.utils.WriteToJsonFile<Territory>(AlliancePlugin.path + "//Territories//" + territory.Name + ".json", territory);
+            Context.Respond("Created");
         }
     }
 }
