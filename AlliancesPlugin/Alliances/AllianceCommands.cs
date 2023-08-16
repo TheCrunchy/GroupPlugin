@@ -141,7 +141,7 @@ namespace AlliancesPlugin.Alliances
                                 alliance.ForceAddMember(faction.FactionId);
                             }
 
-                        
+
                         }
 
                         alliance.EditorInvites = new List<string>();
@@ -719,7 +719,13 @@ namespace AlliancesPlugin.Alliances
             }
 
             MyFaction fac = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
-            if (IsNotInAlliance(out var t)) return;
+            if (fac == null)
+            {
+                Context.Respond($"Only factions can be in {AlliancePlugin.config.PrefixName}.");
+                return;
+            }
+
+            var t = AlliancePlugin.GetAlliance(fac);
             if (t != null)
             {
                 Context.Respond("You can only be in one alliance at a time!");
@@ -2114,7 +2120,7 @@ namespace AlliancesPlugin.Alliances
                 }
             }
         }
- 
+
         [Command("name", "change the alliance name")]
         [Permission(MyPromoteLevel.None)]
         public void SetAllianceName(string name)
@@ -3106,7 +3112,7 @@ namespace AlliancesPlugin.Alliances
                 return;
             }
             Alliance alliance = AlliancePlugin.GetAlliance(fac);
-      
+
             if (alliance != null)
             {
 
@@ -3127,14 +3133,14 @@ namespace AlliancesPlugin.Alliances
                             Context.Respond("Error, Available types are Captures and Radar");
                             break;
                     }
-         
+
                     AlliancePlugin.SaveAllianceData(alliance);
                 }
                 else
                 {
                     Context.Respond("Only the " + alliance.LeaderTitle + " can change the webhook.");
                 }
-             
+
             }
         }
 

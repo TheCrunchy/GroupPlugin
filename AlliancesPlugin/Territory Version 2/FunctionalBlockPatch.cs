@@ -113,8 +113,10 @@ namespace AlliancesPlugin.Territory_Version_2
             if (IsDisabled(__instance.EntityId))
             {
                 __instance.Enabled = false;
+                return false;
             }
-            return false;
+
+            return true;
         }
     }
 }

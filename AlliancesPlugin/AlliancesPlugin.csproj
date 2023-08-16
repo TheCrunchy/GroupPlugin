@@ -222,9 +222,8 @@
     <Compile Include="Alliances\Upgrades\ShipClasses\LoadedShipLimits.cs" />
     <Compile Include="Alliances\Upgrades\ShipClasses\ShipClassLimits.cs" />
     <Compile Include="Alliances\Upgrades\ShipClasses\ShipClassUpgrade.cs" />
-    <Compile Include="FunctionalBlockPatch.cs" />
     <Compile Include="GPSHelper.cs" />
-    <Compile Include="SlimBlockPatch.cs" />
+    <Compile Include="Territory Version 2\SlimBlockPatch.cs" />
     <Compile Include="Territory Version 2\CapLogics\AllianceGridCapLogic.cs" />
     <Compile Include="Territory Version 2\CapLogics\AllianceSuitCapLogic.cs" />
     <Compile Include="Territory Version 2\CapLogics\BlockOwnershipLogic.cs" />
