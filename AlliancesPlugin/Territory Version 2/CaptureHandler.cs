@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AlliancesPlugin.Alliances;
 using AlliancesPlugin.Shipyard;
+using AlliancesPlugin.Territory_Version_2.CapLogics;
 using AlliancesPlugin.Territory_Version_2.Interfaces;
 using AlliancesPlugin.Territory_Version_2.Models;
 using AlliancesPlugin.Territory_Version_2.PointOwners;
@@ -30,7 +31,7 @@ namespace AlliancesPlugin.Territory_Version_2
                     {
                         try
                         {
-                            var result = await item.DoSecondaryLogic(null, territory.Value);
+                            var result = await item.DoSecondaryLogic(new AllianceGridCapLogic(), territory.Value);
                             if (!result)
                             {
                                 break;
