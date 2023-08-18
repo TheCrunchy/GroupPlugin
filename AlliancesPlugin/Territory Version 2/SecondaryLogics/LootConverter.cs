@@ -221,10 +221,15 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
                 {
                     var gridTerminalSys = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(grid);
 
-                    var block = gridTerminalSys.GetBlockWithName(NamedCargoTerminalName);
-                    if (block != null)
+               //     var block = gridTerminalSys.GetBlocks()
+                    var blocks = new List<Sandbox.ModAPI.IMyTerminalBlock>();
+                    gridTerminalSys.GetBlocks(blocks);
+                    foreach (var block in blocks.Where(x => x.CustomName == this.NamedCargoTerminalName))
                     {
-                        foundInvents.Add(block.GetInventory());
+                        if (block != null)
+                        {
+                            foundInvents.Add(block.GetInventory());
+                        }
                     }
                 }
                 else
