@@ -79,7 +79,7 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
             var LCD = GetPanel();
             MyAPIGateway.Utilities.InvokeOnGameThread(() =>
             {
-                LCD.WriteText("");
+                LCD?.WriteText("");
             });
             StringBuilder builder = new StringBuilder();
             foreach (CraftedItem item in this.CraftableItems.Where(x => x.Enabled))
@@ -224,12 +224,9 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
                //     var block = gridTerminalSys.GetBlocks()
                     var blocks = new List<Sandbox.ModAPI.IMyTerminalBlock>();
                     gridTerminalSys.GetBlocks(blocks);
-                    foreach (var block in blocks.Where(x => x.CustomName == this.NamedCargoTerminalName))
+                    foreach (var block in blocks.Where(x => x.CustomName.Trim() == this.NamedCargoTerminalName))
                     {
-                        if (block != null)
-                        {
-                            foundInvents.Add(block.GetInventory());
-                        }
+                        foundInvents.Add(block.GetInventory());
                     }
                 }
                 else
