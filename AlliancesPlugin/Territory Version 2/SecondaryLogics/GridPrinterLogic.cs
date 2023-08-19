@@ -35,7 +35,7 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
 
             IPointOwner temp = point.PointOwner ?? territory.Owner;
 
-            if (RequireOwner && temp == null)
+            if (RequireOwner && point.PointOwner == null)
             {
                 return Task.FromResult(true);
             }
