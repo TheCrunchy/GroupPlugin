@@ -22,7 +22,7 @@ namespace AlliancesPlugin.Territory_Version_2
     {
         public static async Task DoCaps()
         {
-            List<Territory> TerritoriesToRecalc = new List<Territory>();
+            List<Guid> TerritoriesToRecalc = new List<Guid>();
             foreach (var territory in AlliancePlugin.Territories)
             {
                 if (territory.Value.SecondaryLogics.Any())
@@ -54,9 +54,9 @@ namespace AlliancesPlugin.Territory_Version_2
                         var capResult = await CapLogic.ProcessCap(point, territory.Value);
                         if (capResult.Item1 && capResult.Item2 != null)
                         {
-                            if (!TerritoriesToRecalc.Contains(territory.Value))
+                            if (!TerritoriesToRecalc.Contains(territory.Value.Id))
                             {
-                                TerritoriesToRecalc.Add(territory.Value);
+                                TerritoriesToRecalc.Add(territory.Value.Id);
                             }
                             //  AlliancePlugin.Log.Info("Cap did succeed");
                         }
@@ -91,7 +91,7 @@ namespace AlliancesPlugin.Territory_Version_2
 
                 }
 
-                foreach (var ter in TerritoriesToRecalc.Distinct())
+                foreach (var ter in AlliancePlugin.Territories.Where(x => TerritoriesToRecalc.Contains(x.Value.Id)).Select(x => x.Value))
                 {
                     var temp = new Dictionary<Object, int>();
                     foreach (var point in ter.CapturePoints)

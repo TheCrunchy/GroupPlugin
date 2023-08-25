@@ -52,6 +52,10 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
 
                 var foundAlliances = FindAttackers(sphere);
                 var contested = foundAlliances.Contains(Guid.Empty) || foundAlliances.Count > 1;
+                if (!foundAlliances.Any())
+                {
+                    return Task.FromResult(Tuple.Create<bool, IPointOwner>(false, null));
+                }
 
                 if (contested || !foundAlliances.Any())
                 {
