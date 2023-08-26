@@ -21,7 +21,7 @@ namespace AlliancesPlugin.Alliances.Upgrades
         public static Dictionary<int, GridRepairUpgrades> upgrades = new Dictionary<int, GridRepairUpgrades>();
         public static long CalculatePriceForComponents(Dictionary<String, int> components, long identityIdForAllianceChecks)
         {
-            long output = 0;
+            long output = 1;
             if (AllianceIds.TryGetValue(identityIdForAllianceChecks, out Guid allianceId))
             {
                 Alliance alliance = AlliancePlugin.GetAllianceNoLoading(allianceId);
@@ -84,6 +84,7 @@ namespace AlliancesPlugin.Alliances.Upgrades
             int blockCount = 0;
             int fixedblocks = 0;
             long PriceSoFar = 0;
+       //     AlliancePlugin.Log.Info("build 1");
             HashSet<MySlimBlock> blocks3 = grid.GetBlocks();
             foreach (MySlimBlock block in blocks3)
             {
@@ -92,6 +93,7 @@ namespace AlliancesPlugin.Alliances.Upgrades
                     if (PriceSoFar > 0)
                     {
                         EconUtils.takeMoney(identityId, PriceSoFar);
+                  //      AlliancePlugin.Log.Info("pay 1");
                     }
                     return;
                 }
@@ -114,12 +116,12 @@ namespace AlliancesPlugin.Alliances.Upgrades
                     }
 
                     long tempPrice = (long)(CalculatePriceForComponents(temp, identityId) * priceMultiplier);
+               //     AlliancePlugin.Log.Info($"{tempPrice} {PriceSoFar}");
                     if (EconUtils.getBalance(identityId) >= (PriceSoFar + tempPrice))
                     {
                         PriceSoFar += tempPrice;
                         block.ClearConstructionStockpile(null);
-
-
+                    
                         block.IncreaseMountLevel(block.MaxIntegrity, owner, null, 10000, true);
 
                         MyCubeBlock cubeBlock = block.FatBlock;
@@ -135,6 +137,8 @@ namespace AlliancesPlugin.Alliances.Upgrades
                     }
                     else
                     {
+                   //     AlliancePlugin.Log.Info("pay 2");
+
                         if (PriceSoFar > 0)
                         {
                             EconUtils.takeMoney(identityId, PriceSoFar);
@@ -151,6 +155,8 @@ namespace AlliancesPlugin.Alliances.Upgrades
             if (PriceSoFar > 0)
             {
                 EconUtils.takeMoney(identityId, PriceSoFar);
+             //   AlliancePlugin.Log.Info("pay 3");
+
             }
 
             PriceSoFar = 0;

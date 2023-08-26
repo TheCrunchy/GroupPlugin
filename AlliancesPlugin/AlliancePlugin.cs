@@ -270,6 +270,7 @@ namespace AlliancesPlugin
                 craft.CraftableItems.Add(item);
                 logic.SecondaryLogics.Add(loot);
                 logic.SecondaryLogics.Add(craft);
+                logic.SecondaryLogics.Add(new GridPrinterLogic());
                 example.CapturePoints.Add(logic);
                 example.CapturePoints.Add(logic2);
                 example.Enabled = false;
