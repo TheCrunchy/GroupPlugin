@@ -90,53 +90,53 @@ namespace AlliancesPlugin.Territory_Version_2
                     }
 
                 }
+            }
 
-                foreach (var ter in AlliancePlugin.Territories.Where(x => TerritoriesToRecalc.Contains(x.Value.Id)).Select(x => x.Value))
+            foreach (var ter in AlliancePlugin.Territories.Where(x => TerritoriesToRecalc.Contains(x.Value.Id)).Select(x => x.Value))
+            {
+                var temp = new Dictionary<Object, int>();
+                foreach (var point in ter.CapturePoints)
                 {
-                    var temp = new Dictionary<Object, int>();
-                    foreach (var point in ter.CapturePoints)
+                    switch (point.PointOwner)
                     {
-                        switch (point.PointOwner)
-                        {
-                            case AlliancePointOwner alliance when temp.ContainsKey(alliance.AllianceId):
-                                temp[alliance.AllianceId] += 1;
-                                break;
-                            case AlliancePointOwner alliance:
-                                temp.Add(alliance.AllianceId, 1);
-                                break;
-                            case FactionPointOwner faction when temp.ContainsKey(faction.FactionId):
-                                temp[faction.FactionId] += 1;
-                                break;
-                            case FactionPointOwner faction:
-                                temp.Add(faction.FactionId, 1);
-                                break;
-                        }
+                        case AlliancePointOwner alliance when temp.ContainsKey(alliance.AllianceId):
+                            temp[alliance.AllianceId] += 1;
+                            break;
+                        case AlliancePointOwner alliance:
+                            temp.Add(alliance.AllianceId, 1);
+                            break;
+                        case FactionPointOwner faction when temp.ContainsKey(faction.FactionId):
+                            temp[faction.FactionId] += 1;
+                            break;
+                        case FactionPointOwner faction:
+                            temp.Add(faction.FactionId, 1);
+                            break;
                     }
-
-                    if (temp.Any())
-                    {
-                        var max = temp.OrderByDescending(x => x.Value).First();
-
-                        var ownedPercent = max.Value / ter.CapturePoints.Count * 100;
-                        if (ownedPercent < ter.PercentRequiredToOwn)
-                        {
-                            ter.Owner = null;
-                            continue;
-                            //fail message
-                        }
-                        switch (max.Key)
-                        {
-                            case Guid id:
-                                await TransferOwnershipToAlliance(id, ter);
-                                break;
-                            case long facId:
-                                await TransferOwnershipToFaction(facId, ter);
-                                break;
-                        }
-                    }
-
-                    //recalc ownership here
                 }
+
+                if (temp.Any())
+                {
+                    var max = temp.OrderByDescending(x => x.Value).First();
+
+                    var ownedPercent = max.Value / ter.CapturePoints.Count * 100;
+                    if (ownedPercent < ter.PercentRequiredToOwn)
+                    {
+                        ter.Owner = null;
+                        continue;
+                        //fail message
+                    }
+                    switch (max.Key)
+                    {
+                        case Guid id:
+                            await TransferOwnershipToAlliance(id, ter);
+                            break;
+                        case long facId:
+                            await TransferOwnershipToFaction(facId, ter);
+                            break;
+                    }
+                }
+
+                //recalc ownership here
             }
         }
 
