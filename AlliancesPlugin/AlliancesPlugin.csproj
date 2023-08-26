@@ -215,7 +215,7 @@
     <Compile Include="Alliances\Database.cs" />
     <Compile Include="Alliances\DiscordStuff.cs" />
     <Compile Include="Alliances\Encryption.cs" />
-    <Compile Include="Alliances\Upgrades\GridRepair.cs" />
+    <Compile Include="Territory Version 2\GridRepair.cs" />
     <Compile Include="Alliances\Upgrades\GridRepairUpgrades.cs" />
     <Compile Include="Alliances\ItemRequirement.cs" />
     <Compile Include="Alliances\MyPlayerPatch.cs" />
