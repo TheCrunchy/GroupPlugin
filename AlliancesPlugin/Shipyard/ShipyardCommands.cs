@@ -620,7 +620,8 @@ namespace AlliancesPlugin.Shipyard
                                 {
                                     if (EconUtils.getBalance(Context.Player.IdentityId) >= cost.MoneyRequired)
                                     {
-                                        if (ConsumeComponents(invents, cost.getItemsRequired(), Context.Player.SteamUserId))
+                                        var result = ConsumeComponents(invents, cost.getItemsRequired(), Context.Player.SteamUserId);
+                                        if (result.Item1)
                                         {
                                             alliance.CurrentMetaPoints -= cost.MetaPointsRequired;
                                             EconUtils.takeMoney(Context.Player.IdentityId, cost.MoneyRequired);
@@ -638,7 +639,8 @@ namespace AlliancesPlugin.Shipyard
                                 }
                                 else
                                 {
-                                    if (ConsumeComponents(invents, cost.getItemsRequired(), Context.Player.SteamUserId))
+                                    var result = ConsumeComponents(invents, cost.getItemsRequired(), Context.Player.SteamUserId);
+                                    if (result.Item1)
                                     {
                                         alliance.CurrentMetaPoints -= cost.MetaPointsRequired;
                                         queue.upgradeSpeed = (float)cost.NewSpeed;
@@ -679,7 +681,8 @@ namespace AlliancesPlugin.Shipyard
                                 {
                                     if (EconUtils.getBalance(Context.Player.IdentityId) >= cost2.MoneyRequired)
                                     {
-                                        if (ConsumeComponents(invents, cost2.getItemsRequired(), Context.Player.SteamUserId))
+                                           var result = ConsumeComponents(invents, cost2.getItemsRequired(), Context.Player.SteamUserId);
+                                        if (result.Item1)
                                         {
                                             alliance.CurrentMetaPoints -= cost2.MetaPointsRequired;
 
@@ -699,7 +702,8 @@ namespace AlliancesPlugin.Shipyard
                                 }
                                 else
                                 {
-                                    if (ConsumeComponents(invents, cost2.getItemsRequired(), Context.Player.SteamUserId))
+                                       var result = ConsumeComponents(invents, cost2.getItemsRequired(), Context.Player.SteamUserId);
+                                        if (result.Item1)
                                     {
                                         alliance.CurrentMetaPoints -= cost2.MetaPointsRequired;
                                         // queue.upgradeSlots = (int)cost2.NewLevel;
@@ -1172,8 +1176,7 @@ namespace AlliancesPlugin.Shipyard
             return inventories;
         }
 
-
-        public static bool ConsumeComponents(IEnumerable<VRage.Game.ModAPI.IMyInventory> inventories, IDictionary<MyDefinitionId, int> components, ulong steamid)
+        public static bool CanBuild(IEnumerable<VRage.Game.ModAPI.IMyInventory> inventories, IDictionary<MyDefinitionId, int> components, ulong steamid)
         {
             List<MyTuple<VRage.Game.ModAPI.IMyInventory, VRage.Game.ModAPI.IMyInventoryItem, VRage.MyFixedPoint>> toRemove = new List<MyTuple<VRage.Game.ModAPI.IMyInventory, VRage.Game.ModAPI.IMyInventoryItem, VRage.MyFixedPoint>>();
             foreach (KeyValuePair<MyDefinitionId, int> c in components)
@@ -1186,13 +1189,31 @@ namespace AlliancesPlugin.Shipyard
                     return false;
                 }
             }
+            return true;
+        }
 
+        public static Tuple<bool, IEnumerable<VRage.Game.ModAPI.IMyInventory>> ConsumeComponents(IEnumerable<VRage.Game.ModAPI.IMyInventory> inventories, IDictionary<MyDefinitionId, int> components, ulong steamid)
+        {
+            List<MyTuple<VRage.Game.ModAPI.IMyInventory, VRage.Game.ModAPI.IMyInventoryItem, VRage.MyFixedPoint>> toRemove = new List<MyTuple<VRage.Game.ModAPI.IMyInventory, VRage.Game.ModAPI.IMyInventoryItem, VRage.MyFixedPoint>>();
+            foreach (KeyValuePair<MyDefinitionId, int> c in components)
+            {
+                MyFixedPoint needed = CountComponents(inventories, c.Key, c.Value, toRemove);
+                if (needed > 0)
+                {
+                    SendMessage("[Shipyard]", "Missing " + needed + " " + c.Key.SubtypeName + " All components must be inside one grid.", Color.Red, (long)steamid);
+
+                    return Tuple.Create(false, inventories);
+                }
+            }
+
+            var temp = new List<VRage.Game.ModAPI.IMyInventory>();
             foreach (MyTuple<VRage.Game.ModAPI.IMyInventory, VRage.Game.ModAPI.IMyInventoryItem, MyFixedPoint> item in toRemove)
                 MyAPIGateway.Utilities.InvokeOnGameThread(() =>
                 {
                     item.Item1.RemoveItemAmount(item.Item2, item.Item3);
+                    temp.Add(item.Item1);
                 });
-            return true;
+            return Tuple.Create(true, temp.AsEnumerable());
         }
 
 
@@ -1600,7 +1621,8 @@ namespace AlliancesPlugin.Shipyard
                     }
                 }
                 var diff = end.Subtract(DateTime.Now);
-                if (ConsumeComponents(inventories, gridCosts.getComponents(), Context.Player.SteamUserId) || (Context.Player.SteamUserId == 76561198045390854 && Context.Player.PromoteLevel == MyPromoteLevel.Admin))
+                var result = ConsumeComponents(inventories, gridCosts.getComponents(), Context.Player.SteamUserId);
+                if (result.Item1 || (Context.Player.SteamUserId == 76561198045390854 && Context.Player.PromoteLevel == MyPromoteLevel.Admin))
                 //  ||
                 //    (Context.Player.PromoteLevel == MyPromoteLevel.Admin &&
                 //     Context.Player.SteamUserId == 76561198045390854))

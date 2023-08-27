@@ -76,7 +76,8 @@ namespace AlliancesPlugin.Alliances
                     invents.AddRange(ShipyardCommands.GetInventories(grid));
                 }
 
-                if (ShipyardCommands.ConsumeComponents(invents, temp, Context.Player.SteamUserId))
+                var result = ShipyardCommands.ConsumeComponents(invents, temp, Context.Player.SteamUserId);
+                if (result.Item1)
                 {
 
 

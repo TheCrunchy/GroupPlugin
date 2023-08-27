@@ -1,99 +1,92 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using AlliancesPlugin.Shipyard;
+using AlliancesPlugin.Territory_Version_2.Models;
 using Sandbox.Definitions;
+using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.Game.Entities.Blocks;
 using Sandbox.Game.Entities.Cube;
 using Sandbox.Game.World;
 using Sandbox.ModAPI;
+using Torch.Managers.PatchManager;
 using VRage.Game;
 using VRage.Game.ModAPI;
 using VRage.Groups;
+using VRage.Utils;
 using VRageMath;
 
 namespace AlliancesPlugin.Alliances.Upgrades
 {
-    public class GridRepair
+
+    [PatchShim]
+    public static class ProjPatch
     {
-        public static Dictionary<long, Guid> AllianceIds = new Dictionary<long, Guid>();
-        public static Dictionary<int, GridRepairUpgrades> upgrades = new Dictionary<int, GridRepairUpgrades>();
-        public static long CalculatePriceForComponents(Dictionary<String, int> components, long identityIdForAllianceChecks)
+        internal static readonly MethodInfo DamageRequest =
+            typeof(MyProjectorBase).GetMethod("OnOffsetChangedSuccess", BindingFlags.Instance | BindingFlags.NonPublic) ??
+            throw new Exception("Failed to find patch method");
+
+        internal static readonly MethodInfo patchSlimDamage =
+            typeof(ProjPatch).GetMethod(nameof(DoProjChange), BindingFlags.Static | BindingFlags.Public) ??
+            throw new Exception("Failed to find patch method");
+
+        public static void Patch(PatchContext ctx)
         {
-            long output = 1;
-            if (AllianceIds.TryGetValue(identityIdForAllianceChecks, out Guid allianceId))
-            {
-                Alliance alliance = AlliancePlugin.GetAllianceNoLoading(allianceId);
-                if (alliance != null)
-                {
-                    if (upgrades.TryGetValue(alliance.GridRepairUpgrade, out GridRepairUpgrades level))
-                    {
 
-
-                        foreach (KeyValuePair<String, int> pair in components)
-                        {
-                            output += level.getCost(pair.Key) * pair.Value;
-                        }
-                    }
-                    else
-                    {
-                        return 500000000000000l;
-                    }
-                }
-            }
-
-            return output;
-
+            ctx.GetPattern(DamageRequest).Prefixes.Add(patchSlimDamage);
+            AlliancePlugin.Log.Info("Patching projectors");
         }
 
-        public static Boolean IsBannedComponent(Dictionary<String, int> components, long identityIdForAllianceChecks)
-        {
-            if (AllianceIds.TryGetValue(identityIdForAllianceChecks, out Guid allianceId))
-            {
-                Alliance alliance = AlliancePlugin.GetAllianceNoLoading(allianceId);
-                if (alliance != null)
-                {
-                    if (upgrades.TryGetValue(alliance.GridRepairUpgrade, out GridRepairUpgrades upgrade))
-                    {
-                     
 
-                        foreach (KeyValuePair<String, int> pair in components)
-                        {
-                            if (upgrade.BannedComponents.Contains(pair.Key))
-                            {
-                                return true;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        AlliancePlugin.Log.Info("Couldnt find the upgrade level");
-                        return true;
-                    }
-                }
+        public static bool DoProjChange(MyProjectorBase __instance, Vector3I positionOffset,
+            Vector3I rotationOffset,
+            float scale,
+            bool showOnlyBuildable)
+        {
+            if (GridRepair.WorkingProjectors.Contains(__instance.CubeGrid.EntityId))
+            {
+                AlliancePlugin.Log.Error("Denied proj movement");
+                return false;
             }
 
-            return false;
+            AlliancePlugin.Log.Error("not denying proj movement");
+            return true;
         }
-        public static List<long> yeet = new List<long>();
 
-        public static void BuildProjected(MyCubeGrid grid, long identityId, int fixPerCycle, int buildPerCycle, string prefix, float priceMultiplier)
+    }
+
+    public static class GridRepair
+    {
+
+        public static List<long> WorkingProjectors = new List<long>();
+
+
+
+        public static void BuildProjected(MyCubeGrid grid, long identityId, int fixPerCycle, int buildPerCycle, string prefix, float priceMultiplier, Dictionary<string, ComponentCost> componentCosts, bool requireMoney, bool consumeComponents, List<IMyInventory> inventories)
         {
+            WorkingProjectors.Clear();  
+            WorkingProjectors.Add(grid.EntityId);
             int BannedCount = 0;
             int blockCount = 0;
             int fixedblocks = 0;
             long PriceSoFar = 0;
-       //     AlliancePlugin.Log.Info("build 1");
+            var steamid = (long)MySession.Static.Players.TryGetSteamId(identityId);
+            //     AlliancePlugin.Log.Info("build 1");
             HashSet<MySlimBlock> blocks3 = grid.GetBlocks();
+
+            var converted = new Dictionary<MyDefinitionId, int>();
+            var convertedRemove = new Dictionary<MyDefinitionId, int>();
+
             foreach (MySlimBlock block in blocks3)
             {
                 if (fixedblocks >= fixPerCycle)
                 {
-                    if (PriceSoFar > 0)
+                    if (PriceSoFar > 0 && requireMoney)
                     {
                         EconUtils.takeMoney(identityId, PriceSoFar);
-                  //      AlliancePlugin.Log.Info("pay 1");
+                        //      AlliancePlugin.Log.Info("pay 1");
                     }
                     return;
                 }
@@ -103,63 +96,91 @@ namespace AlliancesPlugin.Alliances.Upgrades
 
                 if (block.CurrentDamage > 0 || block.HasDeformation || !block.IsFullIntegrity)
                 {
-                    //check for components and if they can afford it
                     Dictionary<string, int> temp = new Dictionary<string, int>();
                     block.GetMissingComponents(temp);
-                    //CONVERT THE TEMP TO DEFINITION IDS, OR IDS TO STRINGS AND CHECK AGAINST THOSE
+                    bool banned = false;
+                    long tempPrice = 0;
+                    BannedCount = CalcPriceAndBanned(priceMultiplier, componentCosts, temp, BannedCount, ref banned, ref tempPrice);
 
-
-                    if (IsBannedComponent(temp, identityId))
+                    if (banned)
                     {
-                        BannedCount++;
                         continue;
                     }
-
-                    long tempPrice = (long)(CalculatePriceForComponents(temp, identityId) * priceMultiplier);
-               //     AlliancePlugin.Log.Info($"{tempPrice} {PriceSoFar}");
-                    if (EconUtils.getBalance(identityId) >= (PriceSoFar + tempPrice))
+              
+                    foreach (var comp in temp)
                     {
-                        PriceSoFar += tempPrice;
-                        block.ClearConstructionStockpile(null);
-                    
-                        block.IncreaseMountLevel(block.MaxIntegrity, owner, null, 10000, true);
+                        if (MyDefinitionId.TryParse(comp.Key, out var def))
+                        {
+                            converted.Add(def, comp.Value);
+                        }
+                    }
+                    if (requireMoney)
+                    {
+                        if (EconUtils.getBalance(identityId) >= (PriceSoFar + tempPrice))
+                        {
+                            if (consumeComponents)
+                            {
+                                if (!ShipyardCommands.CanBuild(inventories, converted,
+                                        (ulong)steamid))
+                                {
+                                    if (PriceSoFar > 0)
+                                    {
+                                        EconUtils.takeMoney(identityId, PriceSoFar);
+                                        PriceSoFar = 0;
+                                    }
 
-                        MyCubeBlock cubeBlock = block.FatBlock;
+                                    ShipyardCommands.ConsumeComponents(inventories, convertedRemove,
+                                        (ulong)steamid);
+                                    return;
+                                }
 
-                        if (cubeBlock != null)
+                                convertedRemove = converted.ToDictionary(x => x.Key, x => x.Value); ;
+                            }
+                            PriceSoFar += tempPrice;
+                            fixedblocks = RepairBlock(grid, block, owner, fixedblocks);
+                        }
+                        else
                         {
 
-                            grid.ChangeOwnerRequest(grid, cubeBlock, 0, MyOwnershipShareModeEnum.Faction);
-                            if (owner != 0)
-                                grid.ChangeOwnerRequest(grid, cubeBlock, owner, MyOwnershipShareModeEnum.Faction);
+                            if (PriceSoFar > 0)
+                            {
+                                EconUtils.takeMoney(identityId, PriceSoFar);
+                                PriceSoFar = 0;
+                            }
+                            ShipyardCommands.SendMessage(prefix, $"Cannot afford repair cost, cancelling repair. You require {tempPrice:n0}" + " more SC.", Color.Red, steamid);
+                            return;
                         }
-                        fixedblocks++;
                     }
-                    else
+                    else if (consumeComponents)
                     {
-                   //     AlliancePlugin.Log.Info("pay 2");
-
-                        if (PriceSoFar > 0)
+                        if (!ShipyardCommands.CanBuild(inventories, converted,
+                                (ulong)steamid))
                         {
-                            EconUtils.takeMoney(identityId, PriceSoFar);
+                            ShipyardCommands.ConsumeComponents(inventories, convertedRemove,
+                                (ulong)steamid);
+                            return;
                         }
-                        yeet.Add(grid.EntityId);
-                        AllianceIds.Remove(identityId);
-                        ShipyardCommands.SendMessage(prefix, $"Cannot afford repair cost, cancelling repair. You require {tempPrice:n0}" + " more SC.", Color.Red, (long)MySession.Static.Players.TryGetSteamId(identityId));
-                        return;
+                        convertedRemove = converted.ToDictionary(x => x.Key, x => x.Value); ;
                     }
 
+                    fixedblocks = RepairBlock(grid, block, owner, fixedblocks);
                 }
 
             }
-            if (PriceSoFar > 0)
-            {
-                EconUtils.takeMoney(identityId, PriceSoFar);
-             //   AlliancePlugin.Log.Info("pay 3");
 
+            if (consumeComponents)
+            {
+                ShipyardCommands.ConsumeComponents(inventories, convertedRemove,
+                    (ulong)steamid);
             }
 
-            PriceSoFar = 0;
+            if (PriceSoFar > 0 && requireMoney)
+            {
+                EconUtils.takeMoney(identityId, PriceSoFar);
+                PriceSoFar = 0;
+            }
+
+      
             IMyCubeGrid projectedGrid = null;
             IMyProjector projector = null;
             foreach (MyProjectorBase proj in grid.GetFatBlocks().OfType<MyProjectorBase>())
@@ -181,161 +202,240 @@ namespace AlliancesPlugin.Alliances.Upgrades
 
             List<VRage.Game.ModAPI.IMySlimBlock> remove = new List<IMySlimBlock>();
             List<VRage.Game.ModAPI.IMySlimBlock> notConnected = new List<IMySlimBlock>();
-            if (projectedGrid != null)
+            if (projectedGrid == null) return;
+
+            List<VRage.Game.ModAPI.IMySlimBlock> blocks = new List<VRage.Game.ModAPI.IMySlimBlock>();
+
+
+            int Cycle = 0; 
+            PriceSoFar = 0;
+            Dictionary<MyDefinitionId, int> comps = new Dictionary<MyDefinitionId, int>();
+            Dictionary<MyDefinitionId, int> removeComps = new Dictionary<MyDefinitionId, int>();
+            while (blockCount <= buildPerCycle)
             {
-                // AlliancePlugin.Log.Info("Projector");
-                List<VRage.Game.ModAPI.IMySlimBlock> blocks = new List<VRage.Game.ModAPI.IMySlimBlock>();
-
-
-                int Cycle = 0;
-
-                //im 100% sure this will be an infinite loop
-
-                while (blockCount <= buildPerCycle)
+                if (projector.RemainingBlocks == BannedCount)
                 {
-                    if (projector.RemainingBlocks == BannedCount)
+                    if (consumeComponents)
                     {
-                        yeet.Add(grid.EntityId);
-                        AllianceIds.Remove(identityId);
-
-                        ShipyardCommands.SendMessage(prefix, "Grid repair should be complete.", Color.Green, (long)MySession.Static.Players.TryGetSteamId(identityId));
-                        return;
-
+                        ShipyardCommands.ConsumeComponents(inventories, removeComps,
+                            (ulong)steamid);
                     }
-                    Cycle++;
-                    projectedGrid.GetBlocks(blocks);
 
-                    //foreach (VRage.Game.ModAPI.IMySlimBlock block in remove)
-                    //{
+                    ShipyardCommands.SendMessage(prefix, "Grid repair should be complete.", Color.Green, steamid);
+                    return;
 
-                    //    projectedGrid.RemoveBlock(block);
-                    //    blocks.Remove(block);
-                    //}
+                }
+                Cycle++;
+                projectedGrid.GetBlocks(blocks);
 
-                    if (Cycle >= 20)
+                if (Cycle >= 20)
+                {
+                 //   AlliancePlugin.Log.Info("Hit 20 cycle");
+                    if (consumeComponents)
                     {
-                        if (PriceSoFar > 0)
+                        ShipyardCommands.ConsumeComponents(inventories, removeComps,
+                            (ulong)steamid);
+                    }
+                    if (PriceSoFar > 0 && requireMoney)
+                    {
+                        EconUtils.takeMoney(identityId, PriceSoFar);
+                        PriceSoFar = 0;
+                    }
+                    if (BannedCount == blocks.Count)
+                    {
+                        ShipyardCommands.SendMessage(prefix, "Grid repair should be complete.", Color.Green, steamid);
+                    }
+                    return;
+                }
+
+
+                if (blocks.Count == 0)
+                {
+                    if (consumeComponents)
+                    {
+                        ShipyardCommands.ConsumeComponents(inventories, removeComps,
+                            (ulong)steamid);
+                    }
+
+                    ShipyardCommands.SendMessage(prefix, "Grid repair should be complete.", Color.Green, steamid);
+                    if (PriceSoFar > 0 && requireMoney)
+                    {
+                        EconUtils.takeMoney(identityId, PriceSoFar);
+                        PriceSoFar = 0;
+                    }
+                    return;
+                }
+                foreach (VRage.Game.ModAPI.IMySlimBlock block2 in blocks)
+                {
+
+                    if (blockCount >= buildPerCycle)
+                    {
+                        if (consumeComponents)
+                        {
+                            ShipyardCommands.ConsumeComponents(inventories, removeComps,
+                                (ulong)steamid);
+                        }
+                        if (PriceSoFar > 0 & requireMoney)
                         {
                             EconUtils.takeMoney(identityId, PriceSoFar);
-                        }
-                        if (BannedCount == blocks.Count)
-                        {
-                            yeet.Add(grid.EntityId);
-                            AllianceIds.Remove(identityId);
-                            ShipyardCommands.SendMessage(prefix, "Grid repair should be complete.", Color.Green, (long)MySession.Static.Players.TryGetSteamId(identityId));
+                            PriceSoFar = 0;
                         }
                         return;
-                        //   blockCount = buildPerCycle;
-
                     }
+                    Dictionary<string, int> convertedProj = new Dictionary<string, int>();
 
-
-
-                    int baseBlocks = grid.BlocksCount;
-
-                    int Percent = Convert.ToInt32(projector.TotalBlocks * 0.5);
-                    if (blocks.Count == 0)
+                    if (projector.CanBuild(block2, true) == BuildCheckResult.OK)
                     {
-                        yeet.Add(grid.EntityId);
-                        AllianceIds.Remove(identityId);
-                        ShipyardCommands.SendMessage(prefix, "Grid repair should be complete.", Color.Green, (long)MySession.Static.Players.TryGetSteamId(identityId));
-                        if (PriceSoFar > 0)
+    
+                        ShipyardCommands.GetComponents((MyCubeBlockDefinition)block2.BlockDefinition, comps);
+                        foreach (KeyValuePair<MyDefinitionId, int> pair in comps)
                         {
-                            EconUtils.takeMoney(identityId, PriceSoFar);
+                            if (convertedProj.ContainsKey(pair.Key.SubtypeName.ToString()))
+                            {
+                                convertedProj[pair.Key.SubtypeName.ToString()] += pair.Value;
+                            }
+                            else
+                            {
+                                convertedProj.Add(pair.Key.SubtypeName.ToString(), pair.Value);
+                            }
+                        
+                        }
+                        bool banned = false;
+                        long tempPrice = 0;
+                        BannedCount = CalcPriceAndBanned(priceMultiplier, componentCosts, convertedProj, BannedCount, ref banned, ref tempPrice);
+                  //      AlliancePlugin.Log.Info($"{PriceSoFar}");
+                        if (banned)
+                        {
+                            continue;
                         }
 
-                        //   AlliancePlugin.Log.Info("No projected blocks so removing the grid from cycle");
-                        return;
-                    }
-                    if (baseBlocks < Percent)
-                    {
-                        yeet.Add(grid.EntityId);
-                        ShipyardCommands.SendMessage(prefix, "50 Percent of grid is not built. Cancelling repair. " + (Percent - baseBlocks) + " Built blocks are required", Color.Green, (long)MySession.Static.Players.TryGetSteamId(identityId));
-                        return;
-                    }
-
-                    foreach (VRage.Game.ModAPI.IMySlimBlock block2 in blocks)
-                    {
-
-                        if (blockCount >= buildPerCycle)
+                        if (requireMoney)
                         {
-                            if (PriceSoFar > 0)
-                            {
-                                EconUtils.takeMoney(identityId, PriceSoFar);
-                            }
-                            return;
-                        }
-
-
-                        if (projector.CanBuild(block2, true) == BuildCheckResult.OK)
-                        {
-
-                            Dictionary<MyDefinitionId, int> comps = new Dictionary<MyDefinitionId, int>();
-
-                            //we still want this method to calculate SC cost
-
-                            Dictionary<string, int> converted = new Dictionary<string, int>();
-
-                            ShipyardCommands.GetComponents((MyCubeBlockDefinition)block2.BlockDefinition, comps);
-
-                            //make a method to calculate price
-                            foreach (KeyValuePair<MyDefinitionId, int> pair in comps)
-                            {
-                                converted.Add(pair.Key.SubtypeName.ToString(), pair.Value);
-                                //     AlliancePlugin.Log.Info(pair.Key.SubtypeName.ToString());
-                            }
-                            if (IsBannedComponent(converted, identityId))
-                            {
-                                remove.Add(block2);
-                                BannedCount++;
-                                continue;
-                            }
-                            long tempPrice = CalculatePriceForComponents(converted, identityId);
-
                             if (EconUtils.getBalance(identityId) >= PriceSoFar + tempPrice)
                             {
+                                if (consumeComponents)
+                                {
+                                    if (!ShipyardCommands.CanBuild(inventories, comps,
+                                            (ulong)steamid))
+                                    {
+                                        if (PriceSoFar > 0)
+                                        {
+                                            EconUtils.takeMoney(identityId, PriceSoFar);
+                                            PriceSoFar = 0;
+                                        }
+                                        foreach (var item in removeComps)
+                                        {
+                                            AlliancePlugin.Log.Info($"{item.Key} {item.Value}");
+                                        }
+                                        ShipyardCommands.ConsumeComponents(inventories, removeComps,
+                                            (ulong)steamid);
+                                        return;
+                                    }
+
+                                    removeComps = comps.ToDictionary(x => x.Key, x => x.Value);
+                                }
                                 PriceSoFar += tempPrice;
-                                projector.Build(block2, identityId, identityId, true);
-                                //       AlliancePlugin.Log.Info("building");
-                                blockCount++;
+                                blockCount = BuildProjected(identityId, projector, block2, blockCount);
                             }
                             else
                             {
                                 if (PriceSoFar > 0)
                                 {
                                     EconUtils.takeMoney(identityId, PriceSoFar);
+                                    PriceSoFar = 0;
                                 }
-                                yeet.Add(grid.EntityId);
-                                AllianceIds.Remove(identityId);
-                                ShipyardCommands.SendMessage(prefix, "Cannot afford repair cost, cancelling repair. You require " + String.Format("{0:n0}", tempPrice) + " more SC.", Color.Red, (long)MySession.Static.Players.TryGetSteamId(identityId));
+                                if (consumeComponents)
+                                {
+                                    ShipyardCommands.ConsumeComponents(inventories, removeComps,
+                                        (ulong)steamid);
+                                }
+                                ShipyardCommands.SendMessage(prefix, "Cannot afford repair cost, cancelling repair. You require " + String.Format("{0:n0}", tempPrice) + " more SC.", Color.Red, steamid);
                                 return;
                             }
-
                         }
-                        if (blockCount >= buildPerCycle)
+                        else if (consumeComponents)
                         {
-                            if (PriceSoFar > 0)
+
+                            if (!ShipyardCommands.CanBuild(inventories, comps,
+                                    (ulong)steamid))
                             {
-                                EconUtils.takeMoney(identityId, PriceSoFar);
-                            }
+                                ShipyardCommands.ConsumeComponents(inventories, removeComps,
+                                    (ulong)steamid);
+                            
                             return;
+                            }
+                            removeComps = comps.ToDictionary(x => x.Key, x => x.Value); ;
                         }
+
+
+                        blockCount = BuildProjected(identityId, projector, block2, blockCount);
                     }
+
                 }
 
-                if (blockCount >= buildPerCycle)
+                if (PriceSoFar > 0 & requireMoney)
                 {
-                    if (PriceSoFar > 0)
-                    {
-                        EconUtils.takeMoney(identityId, PriceSoFar);
-                    }
+                    EconUtils.takeMoney(identityId, PriceSoFar);
+                    PriceSoFar = 0;
                 }
             }
 
-            //    yeet.Add(grid.EntityId);
-            //    AllianceIds.Remove(identityId);
-            //    ShipyardCommands.SendMessage("ACME", "Grid repair should be complete.", Color.Green, (long)MySession.Static.Players.TryGetSteamId(identityId));
-            //    //    AlliancePlugin.Log.Info("Couldnt find projector");
+            if (consumeComponents)
+            {
+                ShipyardCommands.ConsumeComponents(inventories, removeComps,
+                    (ulong)steamid);
             }
+
         }
+
+        private static int BuildProjected(long identityId, IMyProjector projector, IMySlimBlock block2, int blockCount)
+        {
+            projector.Build(block2, identityId, identityId, true);
+            blockCount++;
+            return blockCount;
+        }
+
+        private static int RepairBlock(MyCubeGrid grid, MySlimBlock block, long owner, int fixedblocks)
+        {
+            block.ClearConstructionStockpile(null);
+
+            block.IncreaseMountLevel(block.MaxIntegrity, owner, null, 10000, true);
+
+            MyCubeBlock cubeBlock = block.FatBlock;
+
+            if (cubeBlock != null)
+            {
+                grid.ChangeOwnerRequest(grid, cubeBlock, 0, MyOwnershipShareModeEnum.Faction);
+                if (owner != 0)
+                    grid.ChangeOwnerRequest(grid, cubeBlock, owner, MyOwnershipShareModeEnum.Faction);
+            }
+
+            fixedblocks++;
+            return fixedblocks;
+        }
+
+        private static int CalcPriceAndBanned(float priceMultiplier, Dictionary<string, ComponentCost> componentCosts, Dictionary<string, int> temp,
+            int BannedCount, ref bool banned, ref long tempPrice)
+        {
+            foreach (var keyset in temp)
+            {
+                if (componentCosts.TryGetValue(keyset.Key, out var comp))
+                {
+                    if (comp.IsBannedComponent)
+                    {
+                        BannedCount++;
+                        banned = true;
+                    }
+
+                    tempPrice += (long)((temp.Count * comp.Cost) * priceMultiplier);
+                }
+                else
+                {
+                    tempPrice += (long)((temp.Count * 10000) * priceMultiplier);
+                }
+            }
+
+            return BannedCount;
+        }
+    }
 }

@@ -369,7 +369,9 @@ namespace AlliancesPlugin.Hangar
 
                             if (EconUtils.getBalance(Context.Player.IdentityId) >= cost.MoneyRequired)
                             {
-                                if (ShipyardCommands.ConsumeComponents(invents, cost.getItemsRequired(), Context.Player.SteamUserId))
+                                var result = ShipyardCommands.ConsumeComponents(invents, cost.getItemsRequired(),
+                                    Context.Player.SteamUserId);
+                                if (result.Item1)
                                 {
                                     if (hangar == null)
                                     {
@@ -392,7 +394,9 @@ namespace AlliancesPlugin.Hangar
                         }
                         else
                         {
-                            if (ShipyardCommands.ConsumeComponents(invents, cost.getItemsRequired(), Context.Player.SteamUserId))
+                            var result = ShipyardCommands.ConsumeComponents(invents, cost.getItemsRequired(),
+                                Context.Player.SteamUserId);
+                            if (result.Item1)
                             {
                                 if (hangar == null)
                                 {

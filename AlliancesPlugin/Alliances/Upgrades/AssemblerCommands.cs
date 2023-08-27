@@ -92,7 +92,9 @@ namespace AlliancesPlugin.Alliances.Upgrades
 
                     if (EconUtils.getBalance(Context.Player.IdentityId) >= upgrade.MoneyRequired)
                     {
-                        if (ShipyardCommands.ConsumeComponents(invents, upgrade.getItemsRequired(), Context.Player.SteamUserId))
+                        var result = ShipyardCommands.ConsumeComponents(invents, upgrade.getItemsRequired(),
+                            Context.Player.SteamUserId);
+                        if (result.Item1)
                         {
                             alliance.CurrentMetaPoints -= upgrade.MetaPointsRequired;
                             EconUtils.takeMoney(Context.Player.IdentityId, upgrade.MoneyRequired);
@@ -108,7 +110,9 @@ namespace AlliancesPlugin.Alliances.Upgrades
                 }
                 else
                 {
-                    if (ShipyardCommands.ConsumeComponents(invents, upgrade.getItemsRequired(), Context.Player.SteamUserId))
+                    var result = ShipyardCommands.ConsumeComponents(invents, upgrade.getItemsRequired(),
+                        Context.Player.SteamUserId);
+                    if (result.Item1)
                     {
                         alliance.CurrentMetaPoints -= upgrade.MetaPointsRequired;
                         alliance.AssemblerUpgradeLevel = newUpgrade;

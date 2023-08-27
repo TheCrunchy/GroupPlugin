@@ -235,48 +235,7 @@ namespace AlliancesPlugin
 
             Directory.CreateDirectory(path + "//PlayerData//");
 
-            if (!File.Exists(path + "//Territories//Example.json"))
-            {
-                var example = new Territory();
-                var logic = new AllianceGridCapLogic();
-                var logic2 = new BlockOwnershipLogic();
-                logic.SecondaryLogics = new List<ISecondaryLogic>();
-                logic2.SecondaryLogics = new List<ISecondaryLogic>();
-                var block = new BlockDisablerLogic();
-                var thrust = new ThrustDisablerLogic();
-                logic2.SecondaryLogics.Add(block);
-                logic2.SecondaryLogics.Add(thrust);
-                var loot = new LootLogic();
-                loot.Loot = new List<LootLogic.LootItem>();
-                loot.Loot.Add(new LootLogic.LootItem());
-                var craft = new LootConverter();
-                var item = new CraftedItem();
-                item.typeid = "Ore";
-                item.subtypeid = "Iron";
-                item.amountPerCraft = 500;
-                item.chanceToCraft = 1;
-                logic2.SecondaryLogics.Add(new SafezoneLogic());
-                var recipe = new RecipeItem();
-                recipe.typeid = "Ore";
-                recipe.subtypeid = "Stone";
-                recipe.amount = 500;
-                var radar = new RadarLogic();
-                radar.Distance = 50000;
-                radar.Enabled = true;
-                radar.Priority = 1;
-                radar.RequireOwner = true;
-                logic.SecondaryLogics.Add(radar);
-                item.RequriedItems.Add(recipe);
-                craft.CraftableItems.Add(item);
-                logic.SecondaryLogics.Add(loot);
-                logic.SecondaryLogics.Add(craft);
-                logic.SecondaryLogics.Add(new GridPrinterLogic());
-                example.CapturePoints.Add(logic);
-                example.CapturePoints.Add(logic2);
-                example.Enabled = false;
-
-                utils.WriteToJsonFile<Territory>(path + "//Territories//Example.json", example, false);
-            }
+         
 
             TorchBase = Torch;
             LoadAllAlliances();
@@ -770,7 +729,51 @@ namespace AlliancesPlugin
                     Log.Info("Changing Range");
                 }
             }
+            if (!File.Exists(path + "//Territories//Example.json"))
+            {
+                var example = new Territory();
+                var logic = new AllianceGridCapLogic();
+                var logic2 = new BlockOwnershipLogic();
+                logic.SecondaryLogics = new List<ISecondaryLogic>();
+                logic2.SecondaryLogics = new List<ISecondaryLogic>();
+                var block = new BlockDisablerLogic();
+                var thrust = new ThrustDisablerLogic();
+                logic2.SecondaryLogics.Add(block);
+                logic2.SecondaryLogics.Add(thrust);
+                var loot = new LootLogic();
+                loot.Loot = new List<LootLogic.LootItem>();
+                loot.Loot.Add(new LootLogic.LootItem());
+                var craft = new LootConverter();
+                var item = new CraftedItem();
+                item.typeid = "Ore";
+                item.subtypeid = "Iron";
+                item.amountPerCraft = 500;
+                item.chanceToCraft = 1;
+                logic2.SecondaryLogics.Add(new SafezoneLogic());
+                var recipe = new RecipeItem();
+                recipe.typeid = "Ore";
+                recipe.subtypeid = "Stone";
+                recipe.amount = 500;
+                var radar = new RadarLogic();
+                radar.Distance = 50000;
+                radar.Enabled = true;
+                radar.Priority = 1;
+                radar.RequireOwner = true;
+                logic.SecondaryLogics.Add(radar);
+                item.RequriedItems.Add(recipe);
+                craft.CraftableItems.Add(item);
+                logic.SecondaryLogics.Add(loot);
+                logic.SecondaryLogics.Add(craft);
+                var printer = new GridPrinterLogic();
+                printer.AddComponentCost("AdminKit", 5000000, true);
+                printer.AddComponentCost("AdminComponent", 5000000, true);
+                logic.SecondaryLogics.Add(printer);
+                example.CapturePoints.Add(logic);
+                example.CapturePoints.Add(logic2);
+                example.Enabled = false;
 
+                utils.WriteToJsonFile<Territory>(path + "//Territories//Example.json", example, false);
+            }
             MyAPIGateway.Multiplayer.RegisterMessageHandler(8544, Integrations.AllianceIntegrationCore.ReceiveModMessage);
             KamikazeTerritories.MessageHandler.LoadFile();
             Directory.CreateDirectory(AlliancePlugin.path + "//OptionalWar//");
@@ -1115,23 +1118,6 @@ namespace AlliancesPlugin
         }
         public void LoadAllRefineryUpgrades()
         {
-            GridRepair.upgrades.Clear();
-            foreach (var s in Directory.GetFiles(path + "//WaystationRepairUpgrades//"))
-            {
-                var upgrade = utils.ReadFromXmlFile<GridRepairUpgrades>(s);
-                if (upgrade.Enabled)
-                {
-                    upgrade.AddComponentCostToDictionary();
-                    if (!GridRepair.upgrades.ContainsKey(upgrade.UpgradeId))
-                    {
-                        GridRepair.upgrades.Add(upgrade.UpgradeId, upgrade);
-                    }
-                    else
-                    {
-                        Log.Error("Duplicate ID for upgrades " + s);
-                    }
-                }
-            }
             MyProductionPatch.upgrades.Clear();
             foreach (var s in Directory.GetFiles(path + "//RefineryUpgrades//"))
             {
