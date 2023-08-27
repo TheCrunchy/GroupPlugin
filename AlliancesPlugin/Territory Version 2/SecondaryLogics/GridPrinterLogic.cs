@@ -9,6 +9,7 @@ using AlliancesPlugin.Territory_Version_2.Models;
 using Sandbox.Definitions;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
+using Sandbox.Game.Entities.Blocks;
 using Sandbox.Game.World;
 using Sandbox.ModAPI;
 using Torch.Mod;
@@ -123,7 +124,8 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
                 {
                     var grid2 = grid.CubeGrid as MyCubeGrid;
                     //    AlliancePlugin.Log.Info("1");
-
+               var proj = grid as MyProjectorBase;
+               
                     MyAPIGateway.Utilities.InvokeOnGameThread(() =>
                         {
                             GridRepair.BuildProjected(grid2, grid.OwnerId, RepairsPerCycle, BlocksPerCycle,
@@ -215,7 +217,7 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
                         continue;
                     }
                 }
-                if (FoundProjectors.Count < MaximumProjectors)
+                if (FoundProjectors.Count < MaximumProjectors && grid.BuildableBlocksCount > 0)
                 {
                     //      AlliancePlugin.Log.Info("found");
                     FoundProjectors.Add(grid);

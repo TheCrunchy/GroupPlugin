@@ -20,53 +20,13 @@ using VRageMath;
 
 namespace AlliancesPlugin.Alliances.Upgrades
 {
-
-    [PatchShim]
-    public static class ProjPatch
-    {
-        internal static readonly MethodInfo DamageRequest =
-            typeof(MyProjectorBase).GetMethod("OnOffsetChangedSuccess", BindingFlags.Instance | BindingFlags.NonPublic) ??
-            throw new Exception("Failed to find patch method");
-
-        internal static readonly MethodInfo patchSlimDamage =
-            typeof(ProjPatch).GetMethod(nameof(DoProjChange), BindingFlags.Static | BindingFlags.Public) ??
-            throw new Exception("Failed to find patch method");
-
-        public static void Patch(PatchContext ctx)
-        {
-
-            ctx.GetPattern(DamageRequest).Prefixes.Add(patchSlimDamage);
-            AlliancePlugin.Log.Info("Patching projectors");
-        }
-
-
-        public static bool DoProjChange(MyProjectorBase __instance, Vector3I positionOffset,
-            Vector3I rotationOffset,
-            float scale,
-            bool showOnlyBuildable)
-        {
-            if (GridRepair.WorkingProjectors.Contains(__instance.CubeGrid.EntityId))
-            {
-                AlliancePlugin.Log.Error("Denied proj movement");
-                return false;
-            }
-
-            AlliancePlugin.Log.Error("not denying proj movement");
-            return true;
-        }
-
-    }
-
     public static class GridRepair
     {
 
         public static List<long> WorkingProjectors = new List<long>();
-
-
-
         public static void BuildProjected(MyCubeGrid grid, long identityId, int fixPerCycle, int buildPerCycle, string prefix, float priceMultiplier, Dictionary<string, ComponentCost> componentCosts, bool requireMoney, bool consumeComponents, List<IMyInventory> inventories)
         {
-            WorkingProjectors.Clear();  
+            WorkingProjectors.Clear();
             WorkingProjectors.Add(grid.EntityId);
             int BannedCount = 0;
             int blockCount = 0;
@@ -106,7 +66,7 @@ namespace AlliancesPlugin.Alliances.Upgrades
                     {
                         continue;
                     }
-              
+
                     foreach (var comp in temp)
                     {
                         if (MyDefinitionId.TryParse(comp.Key, out var def))
@@ -180,7 +140,7 @@ namespace AlliancesPlugin.Alliances.Upgrades
                 PriceSoFar = 0;
             }
 
-      
+
             IMyCubeGrid projectedGrid = null;
             IMyProjector projector = null;
             foreach (MyProjectorBase proj in grid.GetFatBlocks().OfType<MyProjectorBase>())
@@ -206,13 +166,27 @@ namespace AlliancesPlugin.Alliances.Upgrades
 
             List<VRage.Game.ModAPI.IMySlimBlock> blocks = new List<VRage.Game.ModAPI.IMySlimBlock>();
 
-
-            int Cycle = 0; 
+            int Cycle = 0;
             PriceSoFar = 0;
             Dictionary<MyDefinitionId, int> comps = new Dictionary<MyDefinitionId, int>();
             Dictionary<MyDefinitionId, int> removeComps = new Dictionary<MyDefinitionId, int>();
             while (blockCount <= buildPerCycle)
             {
+                if (projector.BuildableBlocksCount == 0)
+                {
+                    if (consumeComponents)
+                    {
+                        ShipyardCommands.ConsumeComponents(inventories, removeComps,
+                            (ulong)steamid);
+                    }
+                    if (PriceSoFar > 0 && requireMoney)
+                    {
+                        EconUtils.takeMoney(identityId, PriceSoFar);
+                        PriceSoFar = 0;
+                    }
+                    return;
+                }
+
                 if (projector.RemainingBlocks == BannedCount)
                 {
                     if (consumeComponents)
@@ -220,7 +194,11 @@ namespace AlliancesPlugin.Alliances.Upgrades
                         ShipyardCommands.ConsumeComponents(inventories, removeComps,
                             (ulong)steamid);
                     }
-
+                    if (PriceSoFar > 0 && requireMoney)
+                    {
+                        EconUtils.takeMoney(identityId, PriceSoFar);
+                        PriceSoFar = 0;
+                    }
                     ShipyardCommands.SendMessage(prefix, "Grid repair should be complete.", Color.Green, steamid);
                     return;
 
@@ -230,7 +208,7 @@ namespace AlliancesPlugin.Alliances.Upgrades
 
                 if (Cycle >= 20)
                 {
-                 //   AlliancePlugin.Log.Info("Hit 20 cycle");
+                    //   AlliancePlugin.Log.Info("Hit 20 cycle");
                     if (consumeComponents)
                     {
                         ShipyardCommands.ConsumeComponents(inventories, removeComps,
@@ -286,7 +264,7 @@ namespace AlliancesPlugin.Alliances.Upgrades
 
                     if (projector.CanBuild(block2, true) == BuildCheckResult.OK)
                     {
-    
+
                         ShipyardCommands.GetComponents((MyCubeBlockDefinition)block2.BlockDefinition, comps);
                         foreach (KeyValuePair<MyDefinitionId, int> pair in comps)
                         {
@@ -298,12 +276,12 @@ namespace AlliancesPlugin.Alliances.Upgrades
                             {
                                 convertedProj.Add(pair.Key.SubtypeName.ToString(), pair.Value);
                             }
-                        
+
                         }
                         bool banned = false;
                         long tempPrice = 0;
                         BannedCount = CalcPriceAndBanned(priceMultiplier, componentCosts, convertedProj, BannedCount, ref banned, ref tempPrice);
-                  //      AlliancePlugin.Log.Info($"{PriceSoFar}");
+                        //      AlliancePlugin.Log.Info($"{PriceSoFar}");
                         if (banned)
                         {
                             continue;
@@ -361,8 +339,8 @@ namespace AlliancesPlugin.Alliances.Upgrades
                             {
                                 ShipyardCommands.ConsumeComponents(inventories, removeComps,
                                     (ulong)steamid);
-                            
-                            return;
+
+                                return;
                             }
                             removeComps = comps.ToDictionary(x => x.Key, x => x.Value); ;
                         }
