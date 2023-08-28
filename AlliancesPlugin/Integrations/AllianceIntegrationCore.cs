@@ -103,9 +103,9 @@ namespace AlliancesPlugin.Integrations
         {
             return MyProductionPatch.GetAssemblerSpeedMultiplier(PlayerId, Assembler);
         }
-        public static double GetRefinerySpeedMultiplier(long PlayerId, MyAssembler Assembler)
+        public static double GetRefinerySpeedMultiplier(long PlayerId, MyRefinery Refin)
         {
-            return MyProductionPatch.GetAssemblerSpeedMultiplier(PlayerId, Assembler);
+            return MyProductionPatch.GetRefinerySpeedMultiplier(PlayerId, Refin);
         }
 
 

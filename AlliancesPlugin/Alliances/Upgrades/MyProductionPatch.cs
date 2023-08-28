@@ -18,6 +18,11 @@ namespace AlliancesPlugin.Alliances.Upgrades
         public static Dictionary<long, DateTime> TimeChecks = new Dictionary<long, DateTime>();
         public static Dictionary<long, Guid> InsideHere = new Dictionary<long, Guid>();
 
+        public static double GetRefinerySpeedMultiplier(long PlayerIdentityId, MyRefinery refin)
+        {
+            return 1;
+        }
+
         public static double GetRefineryYieldMultiplier(long PlayerIdentityId, MyRefinery refin)
         {
             var faction = MySession.Static.Factions.GetPlayerFaction(PlayerIdentityId);
