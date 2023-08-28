@@ -206,6 +206,7 @@
     <Compile Include="Alliances\NewTerritories\NewTerritoryHandler.cs" />
     <Compile Include="Alliances\NewTerritories\SafezoneBlockPatch.cs" />
     <Compile Include="Territory Version 2\Models\ComponentCost.cs" />
+    <Compile Include="Territory Version 2\SecondaryLogics\GridDamagerLogic.cs" />
     <Compile Include="Territory Version 2\TerritoryCommands.cs" />
     <Compile Include="Alliances\Upgrades\AssemblerCommands.cs" />
     <Compile Include="Alliances\Upgrades\AssemblerUpgrade.cs" />

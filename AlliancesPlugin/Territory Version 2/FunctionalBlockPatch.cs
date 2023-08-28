@@ -55,6 +55,17 @@ namespace AlliancesPlugin.Territory_Version_2
                 BlocksDisabled.Add(blockEntityId, DateTime.Now.AddSeconds(secondsToDisable));
             }
         }
+        public static void AddBlockToDamage(long blockEntityId, float damage)
+        {
+            if (DamageThese.ContainsKey(blockEntityId))
+            {
+                DamageThese[blockEntityId] += damage;
+            }
+            else
+            {
+                DamageThese.Add(blockEntityId, damage);
+            }
+        }
 
         public static Boolean IsDisabled(long blockEntityId)
         {
@@ -78,6 +89,7 @@ namespace AlliancesPlugin.Territory_Version_2
             ctx.GetPattern(enabledUpdate).Prefixes.Add(functionalBlockPatch);
         }
 
+        public static Dictionary<long, float> DamageThese = new Dictionary<long, float>();
         public static Dictionary<long, int> DeleteCount = new Dictionary<long, int>();
         public static bool PatchTurningOn(MyFunctionalBlock __instance)
         {
@@ -101,6 +113,13 @@ namespace AlliancesPlugin.Territory_Version_2
 
         public static Boolean KeepDisabled(MyFunctionalBlock __instance)
         {
+            if (DamageThese.TryGetValue(__instance.EntityId, out var damage))
+            {
+
+                __instance.SlimBlock.DoDamage(damage, MyDamageType.Fire);
+                __instance.SlimBlock.UpdateVisual(true);
+                DamageThese.Remove(__instance.EntityId);
+            }
             if (DeleteCount.ContainsKey(__instance.EntityId))
             {
                 if (DeleteCount[__instance.EntityId] >= 10)

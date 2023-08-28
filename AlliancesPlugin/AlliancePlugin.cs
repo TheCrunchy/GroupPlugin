@@ -77,6 +77,35 @@ namespace AlliancesPlugin
 {
     public class AlliancePlugin : TorchPluginBase
     {
+        public static List<ComponentCost> repairCost = new List<ComponentCost>();
+        public static Dictionary<String, ComponentCost> ComponentCosts = new Dictionary<string, ComponentCost>();
+        public void AddComponentCost(string subtype, long cost, bool banned)
+        {
+            if (repairCost.Any(x => x.SubTypeId == subtype))
+            {
+                return;
+            }
+            repairCost.Add(new ComponentCost()
+            {
+                SubTypeId = subtype,
+                Cost = cost,
+                IsBannedComponent = banned
+            });
+        }
+
+        public void AddComponentCostToDictionary()
+        {
+            foreach (ComponentCost comp in repairCost)
+            {
+                if (!ComponentCosts.ContainsKey(comp.SubTypeId))
+                {
+                    ComponentCosts.Add(comp.SubTypeId, comp);
+                }
+            }
+        }
+
+
+
         public static Random random = new Random();
         public static MethodInfo sendChange;
         public static TorchSessionState TorchState;
@@ -737,8 +766,18 @@ namespace AlliancesPlugin
                 logic.SecondaryLogics = new List<ISecondaryLogic>();
                 logic2.SecondaryLogics = new List<ISecondaryLogic>();
                 var block = new BlockDisablerLogic();
+                block.TargetedSubtypes = new List<string>()
+                {
+                    "ShipWelder"
+                };
+                var block2 = new GridDamagerLogic();
+                block2.TargetedSubtypes = new List<string>()
+                {
+                    "LargeBlockBeacon"
+                };
                 var thrust = new ThrustDisablerLogic();
                 logic2.SecondaryLogics.Add(block);
+                logic2.SecondaryLogics.Add(block2);
                 logic2.SecondaryLogics.Add(thrust);
                 var loot = new LootLogic();
                 loot.Loot = new List<LootLogic.LootItem>();
@@ -765,8 +804,7 @@ namespace AlliancesPlugin
                 logic.SecondaryLogics.Add(loot);
                 logic.SecondaryLogics.Add(craft);
                 var printer = new GridPrinterLogic();
-                printer.AddComponentCost("AdminKit", 5000000, true);
-                printer.AddComponentCost("AdminComponent", 5000000, true);
+
                 logic.SecondaryLogics.Add(printer);
                 example.CapturePoints.Add(logic);
                 example.CapturePoints.Add(logic2);
@@ -813,6 +851,23 @@ namespace AlliancesPlugin
 
             AllianceChat.ApplyLogging();
             TorchState = TorchSessionState.Loaded;
+            repairCost = new List<ComponentCost>();
+            if (File.Exists($"{path}/ComponentCosts.json"))
+            {
+                repairCost = utils.ReadFromJsonFile<List<ComponentCost>>($"{path}/ComponentCosts.json");
+            }
+            AddComponentCost("AdminKit", 5000000, true);
+            AddComponentCost("AdminComponent", 5000000, true);
+
+            foreach (MyDefinitionBase def in MyDefinitionManager.Static.GetAllDefinitions())
+            {
+                if ((def as MyComponentDefinition) == null) continue;
+                var min = (def as MyComponentDefinition).MinimalPricePerUnit;
+                this.AddComponentCost(def.Id.SubtypeName, 1000, false);
+            }
+
+            utils.WriteToJsonFile($"{path}/ComponentCosts.json", repairCost);
+
             _chatmanager = Torch.CurrentSession.Managers.GetManager<ChatManagerServer>();
 
             if (_chatmanager == null)

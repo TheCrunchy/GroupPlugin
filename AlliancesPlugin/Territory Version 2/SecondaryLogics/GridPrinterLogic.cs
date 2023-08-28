@@ -38,56 +38,20 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
         public int Radius = 250;
         public int SecondsBetweenLoops { get; set; } = 10;
         public float PriceMultiplier = 1f;
-        public int PriceIfNotDefined = 1000;
         public bool RequireMoney = true;
         public bool RequireComponents = false;
         public string CargoGridOwnerTag = "CIA";
         public string CargoGridTerminalName = "Shipyard Cargo";
         public bool UseNamedCargo = true;
-        private Dictionary<String, ComponentCost> ComponentCosts = new Dictionary<string, ComponentCost>();
-        public List<ComponentCost> repairCost = new List<ComponentCost>();
+   
         private List<MyCubeGrid> FoundGrids = new List<MyCubeGrid>();
 
-        public void AddComponentCost(string subtype, long cost, bool banned)
-        {
-            if (repairCost.Any(x => x.SubTypeId == subtype))
-            {
-                return;
-            }
-            repairCost.Add(new ComponentCost()
-            {
-                SubTypeId = subtype,
-                Cost = cost,
-                IsBannedComponent = banned
-            });
-        }
-        public void AddComponentCostToDictionary()
-        {
-            foreach (ComponentCost comp in repairCost)
-            {
-                if (!ComponentCosts.ContainsKey(comp.SubTypeId))
-                {
-                    ComponentCosts.Add(comp.SubTypeId, comp);
-                }
-            }
-        }
-
+   
         private List<IMyInventory> FoundInventories = new List<IMyInventory>();
         private bool setup = false;
         public Task<bool> DoSecondaryLogic(ICapLogic point, Territory territory)
         {
 
-            if (!setup)
-            {
-                AddComponentCostToDictionary();
-                foreach (MyDefinitionBase def in MyDefinitionManager.Static.GetAllDefinitions())
-                {
-                    if ((def as MyComponentDefinition) == null) continue;
-                    var min = (def as MyComponentDefinition).MinimalPricePerUnit;
-                    this.AddComponentCost(def.Id.SubtypeName, PriceIfNotDefined, false);
-                }
-                setup = true;
-            }
             if (!Enabled)
             {
                 return Task.FromResult(true);
@@ -129,7 +93,7 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
                     MyAPIGateway.Utilities.InvokeOnGameThread(() =>
                         {
                             GridRepair.BuildProjected(grid2, grid.OwnerId, RepairsPerCycle, BlocksPerCycle,
-                                PrinterPrefix, PriceMultiplier, ComponentCosts, RequireMoney, RequireComponents, FoundInventories);
+                                PrinterPrefix, PriceMultiplier, AlliancePlugin.ComponentCosts, RequireMoney, RequireComponents, FoundInventories);
                         }
                     );
                     if (Cooldowns.ContainsKey(grid.EntityId))

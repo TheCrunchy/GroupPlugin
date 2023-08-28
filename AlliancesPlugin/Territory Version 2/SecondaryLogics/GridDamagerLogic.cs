@@ -3,29 +3,26 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using AlliancesPlugin.Alliances;
 using AlliancesPlugin.Territory_Version_2.Interfaces;
 using AlliancesPlugin.Territory_Version_2.Models;
 using Sandbox.Game.Entities;
-using Sandbox.Game.Entities.Cube;
 using Sandbox.ModAPI;
 using VRage.Game;
 using VRageMath;
 
 namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
 {
-    public class BlockDisablerLogic : ISecondaryLogic
+    public class GridDamagerLogic : ISecondaryLogic
     {
-        public bool Enabled { get; set; }
-        public bool RequireOwner = true;
+        public int Priority { get; set; }
         public Vector3 CentrePosition { get; set; }
         public int Distance { get; set; }
         public string IgnoredFactionTags = "SPRT,TAG2";
         private List<MyCubeGrid> FoundGrids = new List<MyCubeGrid>();
-
-        public bool DisableLargeGrid = true;
-        public bool DisableSmallGrid = true;
         public List<String> TargetedSubtypes;
+        public bool RequireOwner { get; set; }
+        public bool Enabled { get; set; }
+        public float Damage = 1000;
         public Task<bool> DoSecondaryLogic(ICapLogic point, Territory territory)
         {
             if (!Enabled)
@@ -34,37 +31,35 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
             }
 
             if (!CanLoop()) return Task.FromResult(true);
+            //    AlliancePlugin.Log.Info("1");
+
             NextLoop = DateTime.Now.AddSeconds(SecondsBetweenLoops);
             if (RequireOwner && point.PointOwner == null)
             {
                 return Task.FromResult(true);
             }
 
-            var temp = point.PointOwner ?? territory.Owner;
-            var owner = temp.GetOwner();
-            StringBuilder builder = new StringBuilder();
+            var explodeThese = new List<MyCubeBlock>();
             FindGrids();
-
             foreach (var grid in FoundGrids)
             {
-                if (grid.GridSizeEnum == MyCubeSize.Large && !DisableLargeGrid)
-                {
-                    continue;
-                }
-                if (grid.GridSizeEnum == MyCubeSize.Small && !DisableSmallGrid)
-                {
-                    continue;
-                }
                 foreach (var block in grid.GetFatBlocks().Where(block => block.BlockDefinition.Id != null &&
                                                                          TargetedSubtypes.Contains(block.BlockDefinition.Id.SubtypeId.ToString())))
                 {
-                    FunctionalBlockPatch.AddBlockToDisable(block.EntityId, this.SecondsBetweenLoops);
+                    explodeThese.Add(block);
                 }
             }
+            MyAPIGateway.Utilities.InvokeOnGameThread(() =>
+            {
+                foreach (var block in explodeThese)
+                {
+                    block.SlimBlock.DoDamage(Damage, MyDamageType.Fire);
+                }
+            });
+
             return Task.FromResult(true);
         }
 
-        public int MinimumBlocksToHit = 1;
         public DateTime NextLoop { get; set; }
         public int SecondsBetweenLoops { get; set; }
         public bool CanLoop()
@@ -72,13 +67,11 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
             return DateTime.Now >= NextLoop;
         }
 
-        public int Priority { get; set; }
-
         public void FindGrids()
         {
             FoundGrids.Clear();
             var sphere = new BoundingSphereD(CentrePosition, Distance * 2);
-            foreach (var grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>().Where(x => x.Projector == null && x.BlocksCount >= MinimumBlocksToHit))
+            foreach (var grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>().Where(x => x.Projector == null && x.BlocksCount >= 1))
             {
                 var owner = FacUtils.GetOwner(grid);
                 var fac = FacUtils.GetPlayersFaction(owner);
