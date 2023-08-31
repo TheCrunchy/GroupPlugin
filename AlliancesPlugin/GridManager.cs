@@ -22,6 +22,7 @@ using VRage.Game.Entity;
 using VRage.Game.ModAPI.Ingame;
 using VRage.Groups;
 using VRage.ObjectBuilders;
+using VRage.ObjectBuilders.Private;
 using VRageMath;
 
 namespace AlliancesPlugin
@@ -31,7 +32,6 @@ namespace AlliancesPlugin
     //https://github.com/LordTylus/SE-Torch-ALE-Core/blob/master/GridManager.cs
     public static class GridManager
     {
-
         public static readonly Logger Log = LogManager.GetCurrentClassLogger();
 
         public static string newGridName;
@@ -88,7 +88,7 @@ namespace AlliancesPlugin
                 objectBuilders.Add(objectBuilder);
             }
 
-            MyObjectBuilder_ShipBlueprintDefinition definition = MyObjectBuilderSerializer.CreateNewObject<MyObjectBuilder_ShipBlueprintDefinition>();
+            MyObjectBuilder_ShipBlueprintDefinition definition = MyObjectBuilderSerializerKeen.CreateNewObject<MyObjectBuilder_ShipBlueprintDefinition>();
 
             definition.Id = new MyDefinitionId(new MyObjectBuilderType(typeof(MyObjectBuilder_ShipBlueprintDefinition)), name);
             definition.CubeGrids = objectBuilders.Select(x => (MyObjectBuilder_CubeGrid)x.Clone()).ToArray();
@@ -146,7 +146,7 @@ namespace AlliancesPlugin
                 }
             }
 
-            MyObjectBuilder_Definitions builderDefinition = MyObjectBuilderSerializer.CreateNewObject<MyObjectBuilder_Definitions>();
+            MyObjectBuilder_Definitions builderDefinition = MyObjectBuilderSerializerKeen.CreateNewObject<MyObjectBuilder_Definitions>();
             builderDefinition.ShipBlueprints = new MyObjectBuilder_ShipBlueprintDefinition[] { definition };
 
             return builderDefinition.ShipBlueprints;
@@ -155,7 +155,7 @@ namespace AlliancesPlugin
         public static bool SaveGrid(string path, string filename, bool keepOriginalOwner, bool keepProjection, List<MyObjectBuilder_CubeGrid> objectBuilders)
         {
 
-            MyObjectBuilder_ShipBlueprintDefinition definition = MyObjectBuilderSerializer.CreateNewObject<MyObjectBuilder_ShipBlueprintDefinition>();
+            MyObjectBuilder_ShipBlueprintDefinition definition = MyObjectBuilderSerializerKeen.CreateNewObject<MyObjectBuilder_ShipBlueprintDefinition>();
 
             definition.Id = new MyDefinitionId(new MyObjectBuilderType(typeof(MyObjectBuilder_ShipBlueprintDefinition)), filename);
             definition.CubeGrids = objectBuilders.Select(x => (MyObjectBuilder_CubeGrid)x.Clone()).ToArray();
@@ -232,15 +232,14 @@ namespace AlliancesPlugin
                 }
             }
 
-            MyObjectBuilder_Definitions builderDefinition = MyObjectBuilderSerializer.CreateNewObject<MyObjectBuilder_Definitions>();
+            MyObjectBuilder_Definitions builderDefinition = MyObjectBuilderSerializerKeen.CreateNewObject<MyObjectBuilder_Definitions>();
             builderDefinition.ShipBlueprints = new MyObjectBuilder_ShipBlueprintDefinition[] { definition };
-
-            return MyObjectBuilderSerializer.SerializeXML(path, false, builderDefinition);
+            return MyObjectBuilderSerializerKeen.SerializeXML(path, true, builderDefinition);
         }
         public static bool SaveGridNoDelete(string path, string filename, bool keepOriginalOwner, bool keepProjection, List<MyObjectBuilder_CubeGrid> objectBuilders)
         {
 
-            MyObjectBuilder_ShipBlueprintDefinition definition = MyObjectBuilderSerializer.CreateNewObject<MyObjectBuilder_ShipBlueprintDefinition>();
+            MyObjectBuilder_ShipBlueprintDefinition definition = MyObjectBuilderSerializerKeen.CreateNewObject<MyObjectBuilder_ShipBlueprintDefinition>();
 
             definition.Id = new MyDefinitionId(new MyObjectBuilderType(typeof(MyObjectBuilder_ShipBlueprintDefinition)), filename);
             definition.CubeGrids = objectBuilders.Select(x => (MyObjectBuilder_CubeGrid)x.Clone()).ToArray();
@@ -289,14 +288,14 @@ namespace AlliancesPlugin
                 }
             }
 
-            MyObjectBuilder_Definitions builderDefinition = MyObjectBuilderSerializer.CreateNewObject<MyObjectBuilder_Definitions>();
+            MyObjectBuilder_Definitions builderDefinition = MyObjectBuilderSerializerKeen.CreateNewObject<MyObjectBuilder_Definitions>();
             builderDefinition.ShipBlueprints = new MyObjectBuilder_ShipBlueprintDefinition[] { definition };
 
-            return MyObjectBuilderSerializer.SerializeXML(path, false, builderDefinition);
+            return MyObjectBuilderSerializerKeen.SerializeXML(path, true, builderDefinition);
         }
         public static List<MyObjectBuilder_CubeGrid> GetObjectBuilders(string path)
         {
-            if (MyObjectBuilderSerializer.DeserializeXML(path, out MyObjectBuilder_Definitions Definition))
+            if (MyObjectBuilderSerializerKeen.DeserializeXML(path, out MyObjectBuilder_Definitions Definition))
             {
                 List<MyObjectBuilder_CubeGrid> gridsToReturn = new List<MyObjectBuilder_CubeGrid>();
                 if (Definition.Prefabs != null && Definition.Prefabs.Count() != 0)
@@ -325,7 +324,7 @@ namespace AlliancesPlugin
         }
         public static bool LoadGrid(string path, Vector3D playerPosition, bool keepOriginalLocation, ulong steamID, String name, bool force = false, CommandContext context = null)
         {
-            if (MyObjectBuilderSerializer.DeserializeXML(path, out MyObjectBuilder_Definitions myObjectBuilder_Definitions))
+            if (MyObjectBuilderSerializerKeen.DeserializeXML(path, out MyObjectBuilder_Definitions myObjectBuilder_Definitions))
             {
 
                 var shipBlueprints = myObjectBuilder_Definitions.ShipBlueprints;

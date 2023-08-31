@@ -14,6 +14,7 @@ using VRage;
 using VRage.Game;
 using VRage.Game.ModAPI;
 using VRage.ObjectBuilders;
+using VRage.ObjectBuilders.Private;
 using VRageMath;
 
 namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
@@ -74,7 +75,7 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
                 {
                     amount *= territory.PercentOwned;
                 }
-                inventory.AddItems((MyFixedPoint)amount, (MyObjectBuilder_PhysicalObject)MyObjectBuilderSerializer.CreateNewObject(id));
+                inventory.AddItems((MyFixedPoint)amount, (MyObjectBuilder_PhysicalObject)MyObjectBuilderSerializerKeen.CreateNewObject(id));
             }
             return Task.FromResult(true);
         }

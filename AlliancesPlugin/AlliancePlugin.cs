@@ -264,7 +264,7 @@ namespace AlliancesPlugin
 
             Directory.CreateDirectory(path + "//PlayerData//");
 
-         
+
 
             TorchBase = Torch;
             LoadAllAlliances();
@@ -907,46 +907,6 @@ namespace AlliancesPlugin
             {
                 Directory.CreateDirectory(path + "//ShipyardUpgrades//OldFiles//");
             }
-            if (!Directory.Exists(path + "//RefineryUpgrades//"))
-            {
-                Directory.CreateDirectory(path + "//RefineryUpgrades//");
-            }
-            if (!Directory.Exists(path + "//AssemblerUpgrades//"))
-            {
-                Directory.CreateDirectory(path + "//AssemblerUpgrades//");
-            }
-            if (!File.Exists(path + "//AssemblerUpgrades//Example.xml"))
-            {
-                var upgrade = new AssemblerUpgrade();
-                var list = new AssemblerUpgrade.AssemblerBuffList();
-                list.buffs.Add(new AssemblerUpgrade.AssemblerBuff());
-                upgrade.buffedRefineries.Add(list);
-                var req = new ItemRequirement();
-                upgrade.items.Add(req);
-                utils.WriteToXmlFile<AssemblerUpgrade>(path + "//AssemblerUpgrades//Example.xml", upgrade);
-                upgrade.UpgradeId = 2;
-                list.buffs.Add(new AssemblerUpgrade.AssemblerBuff());
-                upgrade.buffedRefineries.Add(list);
-                upgrade.items.Add(req);
-                utils.WriteToXmlFile<AssemblerUpgrade>(path + "//AssemblerUpgrades//Example2.xml", upgrade);
-
-            }
-            if (!File.Exists(path + "//RefineryUpgrades//Example.xml"))
-            {
-                var upgrade = new RefineryUpgrade();
-                var list = new RefineryUpgrade.RefineryBuffList();
-                list.buffs.Add(new RefineryUpgrade.RefineryBuff());
-                upgrade.buffedRefineries.Add(list);
-                var req = new ItemRequirement();
-                upgrade.items.Add(req);
-                utils.WriteToXmlFile<RefineryUpgrade>(path + "//RefineryUpgrades//Example.xml", upgrade);
-                upgrade.UpgradeId = 2;
-                list.buffs.Add(new RefineryUpgrade.RefineryBuff());
-                upgrade.buffedRefineries.Add(list);
-                upgrade.items.Add(req);
-                utils.WriteToXmlFile<RefineryUpgrade>(path + "//RefineryUpgrades//Example2.xml", upgrade);
-
-            }
             if (!Directory.Exists(path + "//HangarUpgrades//"))
             {
                 Directory.CreateDirectory(path + "//HangarUpgrades//");
@@ -1482,7 +1442,7 @@ namespace AlliancesPlugin
                     var ter = new Territory();
                     if (s.EndsWith(".xml"))
                     {
-                        ter = jsonStuff.ReadFromXmlFile<Territory>(s);
+                        continue;
                     }
                     if (s.EndsWith(".json"))
                     {
@@ -2161,7 +2121,7 @@ namespace AlliancesPlugin
                             Log.Error(ex);
 
                         }
-                        
+
                         try
                         {
                             LoadAllAlliances();

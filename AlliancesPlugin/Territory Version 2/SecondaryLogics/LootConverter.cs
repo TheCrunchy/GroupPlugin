@@ -14,6 +14,7 @@ using VRage;
 using VRage.Game;
 using VRage.Game.ModAPI.Ingame;
 using VRage.ObjectBuilders;
+using VRage.ObjectBuilders.Private;
 using VRageMath;
 using IMyInventory = VRage.Game.ModAPI.IMyInventory;
 using IMyTextPanel = Sandbox.ModAPI.IMyTextPanel;
@@ -138,7 +139,7 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
                 MyItemType itemType = new MyInventoryItemFilter(id.TypeId + "/" + id.SubtypeName).ItemType;
                 if (cargo.CanItemsBeAdded(amount, itemType))
                 {
-                    cargo.AddItems(amount, (MyObjectBuilder_PhysicalObject)MyObjectBuilderSerializer.CreateNewObject(id));
+                    cargo.AddItems(amount, (MyObjectBuilder_PhysicalObject)MyObjectBuilderSerializerKeen.CreateNewObject(id));
                     return true;
                 }
             }

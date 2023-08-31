@@ -12,6 +12,7 @@ using VRage.Game.ModAPI;
 using VRage.Game.ModAPI.Ingame;
 using VRage.Groups;
 using VRage.ObjectBuilders;
+using VRage.ObjectBuilders.Private;
 
 namespace AlliancesPlugin.Alliances
 {
@@ -137,7 +138,7 @@ namespace AlliancesPlugin.Alliances
                         if (DatabaseForBank.WithdrawFromVault(alliance, id, amount))
                         {
                             AllianceChat.SendChatMessage(alliance.AllianceId, "Vault", Context.Player.DisplayName + " withdrew " + amount.ToString() + " " + id.ToString() + " to the vault.", true, 0L);
-                            Context.Player.Character.GetInventory().AddItems((MyFixedPoint)amount, (MyObjectBuilder_PhysicalObject)MyObjectBuilderSerializer.CreateNewObject(id));
+                            Context.Player.Character.GetInventory().AddItems((MyFixedPoint)amount, (MyObjectBuilder_PhysicalObject)MyObjectBuilderSerializerKeen.CreateNewObject(id));
                         }
                         else
                         {

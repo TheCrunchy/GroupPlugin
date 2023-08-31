@@ -605,7 +605,7 @@
 //                        MyItemType itemType = new MyInventoryItemFilter(id.TypeId + "/" + id.SubtypeName).ItemType;
 //                        if (inv.CanItemsBeAdded(amount, itemType))
 //                        {
-//                            inv.AddItems(amount, (MyObjectBuilder_PhysicalObject)MyObjectBuilderSerializer.CreateNewObject(id));
+//                            inv.AddItems(amount, (MyObjectBuilder_PhysicalObject)MyObjectBuilderSerializerKeen.CreateNewObject(id));
 //                            //      CrunchEconCore.Log.Info("SPAWNING 3 " + amount);
 //                            return true;
 //                        }
