@@ -26,7 +26,7 @@ using AlliancesPlugin.Shipyard;
 
 namespace AlliancesPlugin.Hangar
 {
-    [Category("ah")]
+    [Category("oldah")]
     public class HangarCommands : CommandModule
     {
         public static Boolean IsDeniedLocation(Vector3 Position)
@@ -594,6 +594,8 @@ namespace AlliancesPlugin.Hangar
         [Permission(MyPromoteLevel.None)]
         public void SaveToHangar()
         {
+            Context.Respond("Plugin is deprecated, only loading is enabled. use !ah");
+            return;
             if (!AlliancePlugin.config.HangarEnabled)
             {
                 Context.Respond("Alliance hangar is not enabled.");
