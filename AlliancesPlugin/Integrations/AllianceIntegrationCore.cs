@@ -31,13 +31,13 @@ namespace AlliancesPlugin.Integrations
             return alliance == null ? Guid.Empty : alliance.AllianceId;
         }
 
-        public static bool CanSaveToHangar(long steamId, Guid AllianceId)
+        public static bool CanSaveToHangar(ulong steamId, Guid AllianceId)
         {
             var alliance = AlliancePlugin.GetAlliance(AllianceId);
             return alliance.HasAccess((ulong)steamId, AccessLevel.HangarSave);
         }
 
-        public static bool CanLoadFromHangar(long steamId, Guid AllianceId)
+        public static bool CanLoadFromHangar(ulong steamId, Guid AllianceId)
         {
             var alliance = AlliancePlugin.GetAlliance(AllianceId);
             return alliance.HasAccess((ulong)steamId, AccessLevel.HangarLoad);
