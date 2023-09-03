@@ -568,6 +568,7 @@ namespace AlliancesPlugin.Hangar
                 Context.Respond("Alliance has not unlocked the hangar to unlock use !ah upgrade true");
             }
         }
+
         public static FileUtils utils = new FileUtils();
         public static void LoadHangarUpgrade(string path)
         {

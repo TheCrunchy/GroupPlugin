@@ -31,16 +31,15 @@ namespace AlliancesPlugin.Integrations
             return alliance == null ? Guid.Empty : alliance.AllianceId;
         }
 
-        public static bool CanSaveToHangar(ulong steamId, Guid AllianceId)
+        public static bool HasAccess(ulong steamId, Guid AllianceId, string permission)
         {
-            var alliance = AlliancePlugin.GetAlliance(AllianceId);
-            return alliance.HasAccess((ulong)steamId, AccessLevel.HangarSave);
-        }
+            if (!Enum.TryParse(permission, out AccessLevel level))
+            {
+                return false;
+            }
 
-        public static bool CanLoadFromHangar(ulong steamId, Guid AllianceId)
-        {
             var alliance = AlliancePlugin.GetAlliance(AllianceId);
-            return alliance.HasAccess((ulong)steamId, AccessLevel.HangarLoad);
+            return alliance.HasAccess((ulong)steamId, level);
         }
 
         public static Alliance GetAllianceObj(string factionTag)

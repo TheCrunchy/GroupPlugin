@@ -207,6 +207,7 @@
     <Compile Include="Alliances\NewTerritories\SafezoneBlockPatch.cs" />
     <Compile Include="Territory Version 2\Models\ComponentCost.cs" />
     <Compile Include="Territory Version 2\SecondaryLogics\GridDamagerLogic.cs" />
+    <Compile Include="Territory Version 2\SecondaryLogics\GridPasterLogic.cs" />
     <Compile Include="Territory Version 2\TerritoryCommands.cs" />
     <Compile Include="Alliances\Upgrades\AssemblerCommands.cs" />
     <Compile Include="Alliances\Upgrades\AssemblerUpgrade.cs" />
@@ -273,10 +274,6 @@
     <Compile Include="EconUtils.cs" />
     <Compile Include="FacUtils.cs" />
     <Compile Include="FileUtils.cs" />
-    <Compile Include="NewCaptureSite\CaptureSite.cs" />
-    <Compile Include="NewCaptureSite\Location.cs" />
-    <Compile Include="NewCaptureSite\LootLocation.cs" />
-    <Compile Include="NewCaptureSite\RewardItem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReputationPatch.cs" />
     <Compile Include="Shipyard\GridCosts.cs" />

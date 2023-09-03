@@ -274,26 +274,6 @@ namespace AlliancesPlugin.Alliances
         //            }
         //            Discord?.DisconnectAsync();
         //        }
-        public static void SendMessageToDiscord(string name, string messageText, NewCaptureSite.CaptureSite config,
-            Boolean Embed = true)
-        {
-
-            var message = new AllianceSendToDiscord
-            {
-                MessageText = messageText,
-                SenderPrefix = name,
-                SendToIngame = true,
-                DoEmbed = Embed,
-                EmbedB = config.FDiscordB,
-                EmbedG = config.FDiscordG,
-                EmbedR = config.FDiscordR,
-                ChannelId = config.AllianceSite
-                    ? AlliancePlugin.config.DiscordChannelId
-                    : config.FactionDiscordChannelId
-            };
-
-            AlliancePlugin.SendToMQ(MQPatching.MQPluginPatch.AllianceSendToDiscord, message);
-        }
     }
 }
 //        public static void SendMessageToDiscord(string message)

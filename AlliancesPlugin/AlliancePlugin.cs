@@ -47,7 +47,6 @@ using SpaceEngineers.Game.Entities.Blocks.SafeZone;
 using SpaceEngineers.Game.Entities.Blocks;
 using Sandbox.Game.GameSystems.BankingAndCurrency;
 using HarmonyLib;
-using AlliancesPlugin.NewCaptureSite;
 using Sandbox.ModAPI.Weapons;
 using Sandbox.Game.Weapons;
 using Sandbox.Game;
@@ -804,8 +803,10 @@ namespace AlliancesPlugin
                 logic.SecondaryLogics.Add(loot);
                 logic.SecondaryLogics.Add(craft);
                 var printer = new GridPrinterLogic();
+                var paster = new GridPasterLogic();
 
                 logic.SecondaryLogics.Add(printer);
+                logic.SecondaryLogics.Add(paster);
                 example.CapturePoints.Add(logic);
                 example.CapturePoints.Add(logic2);
                 example.Enabled = false;
