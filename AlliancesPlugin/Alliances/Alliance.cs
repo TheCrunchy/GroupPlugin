@@ -128,23 +128,6 @@ namespace AlliancesPlugin.Alliances
             {
 
             }
-            if (hasTerritory)
-            {
-                if (this.RefineryUpgradeLevel > 0)
-                {
-                    if (MyProductionPatch.upgrades.ContainsKey(this.RefineryUpgradeLevel))
-                    {
-                        upkeep += MyProductionPatch.upgrades[this.RefineryUpgradeLevel].AddsToUpkeep;
-                    }
-                }
-                if (this.AssemblerUpgradeLevel > 0)
-                {
-                    if (MyProductionPatch.assemblerupgrades.ContainsKey(this.AssemblerUpgradeLevel))
-                    {
-                        upkeep += MyProductionPatch.assemblerupgrades[this.AssemblerUpgradeLevel].AddsToUpkeep;
-                    }
-                }
-            }
             var cutoff = DateTime.Now - TimeSpan.FromDays(3);
             upkeep += AlliancePlugin.config.BaseUpkeepFee;
             foreach (long id in AllianceMembers)
@@ -183,24 +166,7 @@ namespace AlliancesPlugin.Alliances
             {
            
             }
-            if (hasTerritory)
-            {
-                if (this.RefineryUpgradeLevel > 0)
-                {
-                    if (MyProductionPatch.upgrades.ContainsKey(this.RefineryUpgradeLevel))
-                    {
-                        upkeep += MyProductionPatch.upgrades[this.RefineryUpgradeLevel].AddsToUpkeep;
-                    }
-                }
-                if (this.AssemblerUpgradeLevel > 0)
-                {
-                    if (MyProductionPatch.assemblerupgrades.ContainsKey(this.AssemblerUpgradeLevel))
-                    {
-                        upkeep += MyProductionPatch.assemblerupgrades[this.AssemblerUpgradeLevel].AddsToUpkeep;
-                    }
-                }
-            }
- 
+
             var cutoff = DateTime.Now - TimeSpan.FromDays(3);
             upkeep += AlliancePlugin.config.BaseUpkeepFee;
             foreach (long id in AllianceMembers)

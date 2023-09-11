@@ -802,6 +802,7 @@ namespace AlliancesPlugin
                 craft.CraftableItems.Add(item);
                 logic.SecondaryLogics.Add(loot);
                 logic.SecondaryLogics.Add(craft);
+                logic.SecondaryLogics.Add(new ProductionBuffLogic());
                 var printer = new GridPrinterLogic();
                 var paster = new GridPasterLogic();
 
@@ -1012,7 +1013,6 @@ namespace AlliancesPlugin
 
             LoadAllAlliances();
             LoadAllGates();
-            LoadAllRefineryUpgrades();
             LoadAllTerritories();
 
             LoadItemUpkeep();
@@ -1130,43 +1130,6 @@ namespace AlliancesPlugin
             foreach (var s in Directory.GetFiles(path + "//HangarUpgrades//"))
             {
                 HangarCommands.LoadHangarUpgrade(s);
-            }
-        }
-        public void LoadAllRefineryUpgrades()
-        {
-            MyProductionPatch.upgrades.Clear();
-            foreach (var s in Directory.GetFiles(path + "//RefineryUpgrades//"))
-            {
-                var upgrade = utils.ReadFromXmlFile<RefineryUpgrade>(s);
-                if (upgrade.Enabled)
-                {
-                    upgrade.PutBuffedInDictionary();
-                    if (!MyProductionPatch.upgrades.ContainsKey(upgrade.UpgradeId))
-                    {
-                        MyProductionPatch.upgrades.Add(upgrade.UpgradeId, upgrade);
-                    }
-                    else
-                    {
-                        Log.Error("Duplicate ID for upgrades " + s);
-                    }
-                }
-            }
-            MyProductionPatch.assemblerupgrades.Clear();
-            foreach (var s in Directory.GetFiles(path + "//AssemblerUpgrades//"))
-            {
-                var upgrade = utils.ReadFromXmlFile<AssemblerUpgrade>(s);
-                if (upgrade.Enabled)
-                {
-                    upgrade.PutBuffedInDictionary();
-                    if (!MyProductionPatch.assemblerupgrades.ContainsKey(upgrade.UpgradeId))
-                    {
-                        MyProductionPatch.assemblerupgrades.Add(upgrade.UpgradeId, upgrade);
-                    }
-                    else
-                    {
-                        Log.Error("Duplicate ID for upgrades " + s);
-                    }
-                }
             }
         }
         public int ticks;

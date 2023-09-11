@@ -208,9 +208,8 @@
     <Compile Include="Territory Version 2\Models\ComponentCost.cs" />
     <Compile Include="Territory Version 2\SecondaryLogics\GridDamagerLogic.cs" />
     <Compile Include="Territory Version 2\SecondaryLogics\GridPasterLogic.cs" />
+    <Compile Include="Territory Version 2\SecondaryLogics\ProductionBuffLogic.cs" />
     <Compile Include="Territory Version 2\TerritoryCommands.cs" />
-    <Compile Include="Alliances\Upgrades\AssemblerCommands.cs" />
-    <Compile Include="Alliances\Upgrades\AssemblerUpgrade.cs" />
     <Compile Include="Alliances\BankData.cs" />
     <Compile Include="Alliances\BankLog.cs" />
     <Compile Include="Alliances\BankLogItem.cs" />
@@ -218,7 +217,6 @@
     <Compile Include="Alliances\DiscordStuff.cs" />
     <Compile Include="Alliances\Encryption.cs" />
     <Compile Include="Territory Version 2\GridRepair.cs" />
-    <Compile Include="Alliances\Upgrades\GridRepairUpgrades.cs" />
     <Compile Include="Alliances\ItemRequirement.cs" />
     <Compile Include="Alliances\MyPlayerPatch.cs" />
     <Compile Include="Alliances\Upgrades\ShipClasses\LoadedShipLimits.cs" />
@@ -231,10 +229,8 @@
     <Compile Include="Territory Version 2\CapLogics\BlockOwnershipLogic.cs" />
     <Compile Include="Territory Version 2\CaptureHandler.cs" />
     <Compile Include="Hangar\HangarSlotUpgrade.cs" />
-    <Compile Include="Alliances\Upgrades\MyProductionPatch.cs" />
+    <Compile Include="Territory Version 2\ProductionBuffs.cs" />
     <Compile Include="Alliances\PlayerData.cs" />
-    <Compile Include="Alliances\RefineryCommands.cs" />
-    <Compile Include="Alliances\Upgrades\RefineryUpgrade.cs" />
     <Compile Include="Integrations\AllianceData.cs" />
     <Compile Include="Integrations\AllianceIntegrationCore.cs" />
     <Compile Include="Integrations\BoolStatus.cs" />

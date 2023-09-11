@@ -107,16 +107,16 @@ namespace AlliancesPlugin.Integrations
 
         public static double GetRefineryYieldMultiplier(long PlayerId, MyRefinery Refin)
         {
-            return MyProductionPatch.GetRefineryYieldMultiplier(PlayerId, Refin);
+            return ProductionBuffs.GetRefineryYieldMultiplier(PlayerId, Refin);
         }
 
         public static double GetAssemblerSpeedMultiplier(long PlayerId, MyAssembler Assembler)
         {
-            return MyProductionPatch.GetAssemblerSpeedMultiplier(PlayerId, Assembler);
+            return ProductionBuffs.GetAssemblerSpeedMultiplier(PlayerId, Assembler);
         }
         public static double GetRefinerySpeedMultiplier(long PlayerId, MyRefinery Refin)
         {
-            return MyProductionPatch.GetRefinerySpeedMultiplier(PlayerId, Refin);
+            return ProductionBuffs.GetRefinerySpeedMultiplier(PlayerId, Refin);
         }
 
 
