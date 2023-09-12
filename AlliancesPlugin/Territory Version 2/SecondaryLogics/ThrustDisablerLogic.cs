@@ -144,7 +144,7 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
             return DateTime.Now >= NextLoop;
         }
 
-        public int Priority { get; set; }
+        public int Priority { get; set; } = 1;
 
         public void FindGrids()
         {

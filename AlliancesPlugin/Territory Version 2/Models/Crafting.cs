@@ -22,4 +22,11 @@ namespace AlliancesPlugin.Territory_Version_2.Models
         public int amountPerCraft;
         public List<RecipeItem> RequriedItems = new List<RecipeItem>();
     }
+
+    public class UpkeepItem
+    {
+        public string typeid;
+        public string subtypeid;
+        public int amount;
+    }
 }

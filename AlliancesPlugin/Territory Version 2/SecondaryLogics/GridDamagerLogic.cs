@@ -14,7 +14,7 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
 {
     public class GridDamagerLogic : ISecondaryLogic
     {
-        public int Priority { get; set; }
+        public int Priority { get; set; } = 1;
         public Vector3 CentrePosition { get; set; }
         public int Distance { get; set; }
         public string IgnoredFactionTags = "SPRT,TAG2";

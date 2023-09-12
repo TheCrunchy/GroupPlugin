@@ -23,7 +23,7 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
 {
     public class GridPasterLogic : ISecondaryLogic
     {
-        public bool Enabled { get; set; }
+        public bool Enabled { get; set; } 
         public bool RequireOwner { get; set; }
         public string PrinterPrefix = "Welding Interns";
         //public bool ConsumeComponents { get; set; }
@@ -190,6 +190,6 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
             return DateTime.Now >= NextLoop;
         }
 
-        public int Priority { get; set; }
+        public int Priority { get; set; } = 1;
     }
 }

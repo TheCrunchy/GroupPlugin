@@ -803,6 +803,13 @@ namespace AlliancesPlugin
                 logic.SecondaryLogics.Add(loot);
                 logic.SecondaryLogics.Add(craft);
                 logic.SecondaryLogics.Add(new ProductionBuffLogic());
+                logic.SecondaryLogics.Add(new UpkeepLogic()
+                {
+                    UpkeepItems = new List<UpkeepItem>()
+                {
+                    new UpkeepItem(){typeid = "Ingot",subtypeid = "Iron", amount = 10000},
+                }
+                });
                 var printer = new GridPrinterLogic();
                 var paster = new GridPasterLogic();
 
