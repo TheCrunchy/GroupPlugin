@@ -20,7 +20,16 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
 {
     public class AllianceGridCapLogic : ICapLogic
     {
-        public string PointName = "Example name";
+        public string PointName { get; set; } = "Example name";
+        public void AddSecondaryLogic(ISecondaryLogic logic)
+        {
+            if (SecondaryLogics == null)
+            {
+                SecondaryLogics = new List<ISecondaryLogic>();
+            }
+            SecondaryLogics.Add(logic);
+        }
+
         public Vector3 GPSofPoint;
         public string GridOwnerTag = "SPRT";
 

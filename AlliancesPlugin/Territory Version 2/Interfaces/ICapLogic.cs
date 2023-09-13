@@ -17,6 +17,7 @@ namespace AlliancesPlugin.Territory_Version_2.Interfaces
         DateTime NextLoop { get; set; }
         int SecondsBetweenLoops { get; set; }
         IPointOwner PointOwner { get; set; }
-
+        string PointName { get; set; }
+        void AddSecondaryLogic(ISecondaryLogic logic);
     }
 }

@@ -17,6 +17,14 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
 {
     public class BlockOwnershipLogic : ICapLogic
     {
+        public void AddSecondaryLogic(ISecondaryLogic logic)
+        {
+            if (SecondaryLogics == null)
+            {
+                SecondaryLogics = new List<ISecondaryLogic>();
+            }
+            SecondaryLogics.Add(logic);
+        }
         public long BlockId;
         public Task<Tuple<bool, IPointOwner>> ProcessCap(ICapLogic point, Territory territory)
         {
@@ -116,7 +124,7 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
             return DateTime.Now >= NextLoop;
         }
         public int SuccessfulCapLockoutTimeSeconds = 3600;
-        public string PointName = "Example name";
+        public string PointName { get; set; } = "Example name";
         public Vector3 GPSofPoint;
         public int DistanceCheck = 1000;
         public string ClaimBlockSubType = "claimblock";

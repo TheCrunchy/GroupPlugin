@@ -12,6 +12,14 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
 
     public class AllianceSuitCapLogic : ICapLogic
     {
+        public void AddSecondaryLogic(ISecondaryLogic logic)
+        {
+            if (SecondaryLogics == null)
+            {
+                SecondaryLogics = new List<ISecondaryLogic>();
+            }
+            SecondaryLogics.Add(logic);
+        }
         public string Test1 = "Test string";
         public Task<Tuple<bool, IPointOwner>> ProcessCap(ICapLogic point, Territory territory)
         {
@@ -35,6 +43,7 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
         public DateTime NextLoop { get; set; }
         public int SecondsBetweenLoops { get; set; } = 60;
         public IPointOwner PointOwner { get; set; }
+        public string PointName { get; set; }
     }
 
 }
