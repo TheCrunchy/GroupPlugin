@@ -333,7 +333,8 @@ namespace AlliancesPlugin.Alliances
              request.AddStringBody(allianceJson, DataFormat.Json);
              //   var parameter = new BodyParameter("allianceJson", allianceJson, "application/json", DataFormat.Json);
              //   request.Parameters.AddParameter(parameter);
-
+          ;
+             var steamId = MySession.Static.Players.TryGetSteamId(Context.Player.IdentityId);
              try
              {
 

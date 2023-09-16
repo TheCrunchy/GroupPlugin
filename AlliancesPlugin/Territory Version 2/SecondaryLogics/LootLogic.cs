@@ -104,7 +104,7 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
                 }
                 else
                 {
-                    var cargo = grid.GetBlocks().OfType<MyCargoContainer>();
+                    var cargo = grid.GetBlocks().OfType<Sandbox.ModAPI.IMyCargoContainer>();
                     if (cargo != null && cargo.Any())
                     {
                         return cargo.First().GetInventory();
