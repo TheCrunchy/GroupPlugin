@@ -31,7 +31,7 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
             NextLoop = DateTime.Now.AddSeconds(SecondsBetweenLoops);
 
             IPointOwner temp = point.PointOwner ?? territory.Owner;
-            BoundingSphereD sphere = new BoundingSphereD(SafezonePosition, 200);
+            BoundingSphereD sphere = new BoundingSphereD(SafezonePosition, 5000);
             var foundzone = MyAPIGateway.Entities.GetEntityById(SafezoneId);
             if (temp == null)
             {
