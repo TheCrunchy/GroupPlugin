@@ -16,8 +16,13 @@ namespace AlliancesPlugin.Territory_Version_2
                                                                  throw new Exception("Failed to find patch method");
         public static void Patch(PatchContext ctx)
         {
-            var HandleMessageMethod = AlliancePlugin.SKO.GetType().GetMethod("SKO.Torch.Plugins.Tweaks.Modules.SafeZoneModule.IsEmptySafeZone", BindingFlags.Instance | BindingFlags.NonPublic);
-            if (HandleMessageMethod == null) return;
+            var HandleMessageMethod = AlliancePlugin.SKO.GetType().Assembly.GetType("SKO.Torch.Plugins.Tweaks.Modules.SafeZoneModule").GetMethod("IsEmptySafeZone", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (HandleMessageMethod == null)
+            {
+                AlliancePlugin.Log.Info("SKO NULL");
+                return;
+            }
+
             AlliancePlugin.Log.Info("Patched SKO");
             ctx.GetPattern(HandleMessageMethod).Suffixes.Add(HandleMessagePatch);
         }
