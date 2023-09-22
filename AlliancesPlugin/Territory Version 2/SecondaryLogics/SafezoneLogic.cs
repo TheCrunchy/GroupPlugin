@@ -49,6 +49,10 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
             if (foundzone != null)
             {
                 var zone = foundzone as MySafeZone;
+                if (!CaptureHandler.TrackedSafeZoneIds.Contains(zone.EntityId))
+                {
+                    CaptureHandler.TrackedSafeZoneIds.Add(zone.EntityId);
+                }
                 zone.Factions.Clear();
                 foreach (var member in alliance.AllianceMembers)
                 {
@@ -65,7 +69,10 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
                 foreach (MySafeZone zone in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MySafeZone>())
                 {
                     zone.Factions.Clear();
-           
+                    if (!CaptureHandler.TrackedSafeZoneIds.Contains(zone.EntityId))
+                    {
+                        CaptureHandler.TrackedSafeZoneIds.Add(zone.EntityId);
+                    }
                     SafezoneId = zone.EntityId;
                     foreach (var member in alliance.AllianceMembers)
                     {

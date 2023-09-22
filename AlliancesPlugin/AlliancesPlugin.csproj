@@ -210,6 +210,7 @@
     <Compile Include="Territory Version 2\SecondaryLogics\GridPasterLogic.cs" />
     <Compile Include="Territory Version 2\SecondaryLogics\ProductionBuffLogic.cs" />
     <Compile Include="Territory Version 2\SecondaryLogics\UpkeepLogic.cs" />
+    <Compile Include="Territory Version 2\SkoTweaksPatch.cs" />
     <Compile Include="Territory Version 2\TerritoryCommands.cs" />
     <Compile Include="Alliances\BankData.cs" />
     <Compile Include="Alliances\BankLog.cs" />

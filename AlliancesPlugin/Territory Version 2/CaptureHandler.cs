@@ -20,6 +20,7 @@ namespace AlliancesPlugin.Territory_Version_2
 {
     public static class CaptureHandler
     {
+        public static List<long> TrackedSafeZoneIds = new List<long>();
         public static async Task DoCaps()
         {
             List<Guid> TerritoriesToRecalc = new List<Guid>();

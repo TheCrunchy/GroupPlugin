@@ -123,6 +123,7 @@ namespace AlliancesPlugin
         public static FileUtils utils = new FileUtils();
         public static ITorchPlugin GridBackup;
         public static ITorchPlugin MQ;
+        public static ITorchPlugin SKO;
         public static MethodInfo BackupGrid;
 
         public static ITorchBase TorchBase;
@@ -154,6 +155,11 @@ namespace AlliancesPlugin
                 BackupGrid = GridBackupPlugin.GetType().GetMethod("BackupGridsManuallyWithBuilders", BindingFlags.Public | BindingFlags.Instance, null, new Type[2] { typeof(List<MyObjectBuilder_CubeGrid>), typeof(long) }, null);
                 GridBackup = GridBackupPlugin;
                 GridBackupInstalled = true;
+            }
+            if (Plugins.Plugins.TryGetValue(Guid.Parse("34d803f7-42f9-450e-a942-6ed06abdc011"), out var Sko))
+            {
+                SKO = Sko;
+                SkoTweaksPatch.Patch(Patches.AcquireContext());
             }
 
             if (Plugins.Plugins.TryGetValue(Guid.Parse("319afed6-6cf7-4865-81c3-cc207b70811d"), out var MQPlugin))
