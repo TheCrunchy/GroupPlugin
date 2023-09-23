@@ -35,9 +35,17 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
             var foundzone = MyAPIGateway.Entities.GetEntityById(SafezoneId);
             if (temp == null)
             {
-                var zone = foundzone as MySafeZone;
-                zone.Factions.Clear();
-                MySessionComponentSafeZones.RequestUpdateSafeZone((MyObjectBuilder_SafeZone)zone.GetObjectBuilder());
+                if (foundzone != null)
+                {
+                    var zone = foundzone as MySafeZone;
+                    if (!CaptureHandler.TrackedSafeZoneIds.Contains(zone.EntityId))
+                    {
+                        CaptureHandler.TrackedSafeZoneIds.Add(zone.EntityId);
+                    }
+                    zone.Factions.Clear();
+                    MySessionComponentSafeZones.RequestUpdateSafeZone((MyObjectBuilder_SafeZone)zone.GetObjectBuilder());
+                }
+           
                 return Task.FromResult(true);
             }
             var alliance = temp.GetOwner() as Alliance;
