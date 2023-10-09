@@ -69,7 +69,6 @@ namespace Crunch
             if (messageText.ToLower().StartsWith("/a") || messageText.ToLower().StartsWith("/alliance"))
             {
                 MyAPIGateway.Utilities.ShowMessage("Alliances", $"use !a");
-                return true;
             }
             return false;
         }
