@@ -49,8 +49,30 @@ namespace Crunch
             // Set TickCounter always to zero at startup
             TickCounter = 0;
             if (MyAPIGateway.Utilities == null) { MyAPIGateway.Utilities = MyAPIUtilities.Static; }
+            MyAPIGateway.Utilities.MessageEntered += Utilities_MessageEntered;
         }
 
+        static void Utilities_MessageEntered(string messageText, ref bool sendToOthers)
+        {
+            if (ProcessClientMessage(messageText))
+                sendToOthers = false;
+        }
+
+        protected override void UnloadData()
+        {
+            MyAPIGateway.Utilities.MessageEntered -= Utilities_MessageEntered;
+			MyAPIGateway.Multiplayer.UnregisterSecureMessageHandler(8544, MessageHandler);
+
+        }
+        public static bool ProcessClientMessage(string messageText)
+        {
+            if (messageText.ToLower().StartsWith("/a") || messageText.ToLower().StartsWith("/alliance"))
+            {
+                MyAPIGateway.Utilities.ShowMessage("Alliances", $"use !a");
+                return true;
+            }
+            return false;
+        }
         /*
 		 * BeforeStart
 		 * 
@@ -101,20 +123,22 @@ namespace Crunch
                         var warstatus = MyAPIGateway.Utilities.SerializeFromBinary<BoolStatus>(data.Member);
                         WarStatus = warstatus.Enabled;
                         break;
-					case "HudStatus":
+                    case "HudStatus":
                         var temp = MyAPIGateway.Utilities.SerializeFromBinary<BoolStatus>(data.Member);
                         HudEnabled = temp.Enabled;
-						if (HudEnabled){
-							HudModule.SetAreaVisible();
-						}
-						else {
-							HudModule.SetAreaNotVisible();
-						}
+                        if (HudEnabled)
+                        {
+                            HudModule.SetAreaVisible();
+                        }
+                        else
+                        {
+                            HudModule.SetAreaNotVisible();
+                        }
                         break;
                     case "PvPAreas":
-                            var playerData = MyAPIGateway.Utilities.SerializeFromBinary<PlayerDataPvP>(data.Member);
-                            PlayerData = playerData;
-                            break;
+                        var playerData = MyAPIGateway.Utilities.SerializeFromBinary<PlayerDataPvP>(data.Member);
+                        PlayerData = playerData;
+                        break;
                     case "SinglePVPArea":
                     default:
                         break;
@@ -171,7 +195,7 @@ namespace Crunch
                 // ignored
             }
         }
-		public bool HudEnabled = true;
+        public bool HudEnabled = true;
         public DateTime NextUpdate = DateTime.Now.AddMinutes(1);
         public bool FirstRun = false;
         /*
@@ -182,206 +206,205 @@ namespace Crunch
         public override void UpdateAfterSimulation()
         {
             TickCounter += 1;
-		   // MyLog.Default.WriteLineAndConsole($"1");
+            // MyLog.Default.WriteLineAndConsole($"1");
 
             if (TickCounter < 10 && !FirstRun)
             {
                 return;
             }
-			 //   MyLog.Default.WriteLineAndConsole($"2");
-		
-			if (HudModule == null)
+            //   MyLog.Default.WriteLineAndConsole($"2");
+
+            if (HudModule == null)
             {
                 return;
             }
-			//    MyLog.Default.WriteLineAndConsole($"3");
-			
-		    if (MyAPIGateway.Session == null)
-			{
-				return;
-			}
-			 //   MyLog.Default.WriteLineAndConsole($"4");
-		
-			if (MyAPIGateway.Session.LocalHumanPlayer == null)
-			{
-				return;
-	     	}
-			//    MyLog.Default.WriteLineAndConsole($"5");
-		
-			if (MyAPIGateway.Multiplayer == null){
-				return;
-			}
-			 //   MyLog.Default.WriteLineAndConsole($"6");
-		
+            //    MyLog.Default.WriteLineAndConsole($"3");
+
+            if (MyAPIGateway.Session == null)
+            {
+                return;
+            }
+            //   MyLog.Default.WriteLineAndConsole($"4");
+
+            if (MyAPIGateway.Session.LocalHumanPlayer == null)
+            {
+                return;
+            }
+            //    MyLog.Default.WriteLineAndConsole($"5");
+
+            if (MyAPIGateway.Multiplayer == null)
+            {
+                return;
+            }
+            //   MyLog.Default.WriteLineAndConsole($"6");
+
             if (DateTime.Now >= NextUpdate || !FirstRun)
             {
-			//	MyLog.Default.WriteLineAndConsole($"7");
-	
-                var player = MyAPIGateway.Session.LocalHumanPlayer.SteamUserId;
-			//	    MyLog.Default.WriteLineAndConsole($"8");
+                //	MyLog.Default.WriteLineAndConsole($"7");
 
-				if (player == null){
-					return;
-				}
-			//	    MyLog.Default.WriteLineAndConsole($"9");
-	
-				FirstRun = true;
+                var player = MyAPIGateway.Session.LocalHumanPlayer.SteamUserId;
+                //	    MyLog.Default.WriteLineAndConsole($"8");
+
+                if (player == null)
+                {
+                    return;
+                }
+                //	    MyLog.Default.WriteLineAndConsole($"9");
+
+                FirstRun = true;
                 var territoryRequest = new DataRequest()
                 {
                     SteamId = player,
                     DataType = "Territory"
                 };
-		//		    MyLog.Default.WriteLineAndConsole($"10");
-	
+                //		    MyLog.Default.WriteLineAndConsole($"10");
+
                 var request1 = MyAPIGateway.Utilities.SerializeToBinary(territoryRequest);
-  //  MyLog.Default.WriteLineAndConsole($"11");
-	
+                //  MyLog.Default.WriteLineAndConsole($"11");
+
                 var warStatusRequest = new DataRequest()
                 {
                     SteamId = player,
                     DataType = "WarStatus"
                 };
-		//		    MyLog.Default.WriteLineAndConsole($"12");
-		
+                //		    MyLog.Default.WriteLineAndConsole($"12");
+
                 var request2 = MyAPIGateway.Utilities.SerializeToBinary(warStatusRequest);
-	
+
                 var modmessage1 = new ModMessage()
                 {
                     Type = "DataRequest",
                     Member = request1
                 };
-				//    MyLog.Default.WriteLineAndConsole($"14");
-		
+                //    MyLog.Default.WriteLineAndConsole($"14");
+
                 var modmessage2 = new ModMessage()
                 {
                     Type = "DataRequest",
                     Member = request2
                 };
-				
-				
+
+
                 var modmessage3 = new ModMessage()
                 {
                     Type = "DataRequest",
                     Member = request2
                 };
-			//	    MyLog.Default.WriteLineAndConsole($"15");
-			
+                //	    MyLog.Default.WriteLineAndConsole($"15");
+
                 var bytes1 = MyAPIGateway.Utilities.SerializeToBinary(modmessage1);
-			//	    MyLog.Default.WriteLineAndConsole($"16");
-			
+                //	    MyLog.Default.WriteLineAndConsole($"16");
+
                 var bytes2 = MyAPIGateway.Utilities.SerializeToBinary(modmessage2);
-				
-				         var bytes3 = MyAPIGateway.Utilities.SerializeToBinary(modmessage3);
-  //  MyLog.Default.WriteLineAndConsole($"17");
-		
+
+                var bytes3 = MyAPIGateway.Utilities.SerializeToBinary(modmessage3);
+                //  MyLog.Default.WriteLineAndConsole($"17");
+
                 MyAPIGateway.Multiplayer.SendMessageToServer(8544, bytes1);
-				//    MyLog.Default.WriteLineAndConsole($"18");
-			
+                //    MyLog.Default.WriteLineAndConsole($"18");
+
                 MyAPIGateway.Multiplayer.SendMessageToServer(8544, bytes2);
-				//    MyLog.Default.WriteLineAndConsole($"19");
-		
+                //    MyLog.Default.WriteLineAndConsole($"19");
+
                 NextUpdate = DateTime.Now.AddMinutes(3);
-				//    MyLog.Default.WriteLineAndConsole($"20");
-		
+                //    MyLog.Default.WriteLineAndConsole($"20");
+
             }
-			if (!HudEnabled){
-				return;
-			}
+            if (!HudEnabled)
+            {
+                return;
+            }
             if (TickCounter % 64 == 0) // Check if player is in an area every 10 seconds
             {
-				 //   MyLog.Default.WriteLineAndConsole($"21");
-		
-          
-				//    MyLog.Default.WriteLineAndConsole($"22");
-		
-				//    MyLog.Default.WriteLineAndConsole($"23");
-			
+                //   MyLog.Default.WriteLineAndConsole($"21");
+
+
+                //    MyLog.Default.WriteLineAndConsole($"22");
+
+                //    MyLog.Default.WriteLineAndConsole($"23");
+
                 if (PlayerData != null && PlayerData.PvPAreas != null)
                 {
-					      HudModule.SetAreaName("Not in Area");
-						   HudModule.SetAreaPvPEnabled(false);
+                    HudModule.SetAreaName("Not in Area");
+                    HudModule.SetAreaPvPEnabled(false);
                     var player = MyAPIGateway.Session.LocalHumanPlayer;
-								//    MyLog.Default.WriteLineAndConsole($"24");
-					if (player.Character == null){
-						return;
-					}
+                    //    MyLog.Default.WriteLineAndConsole($"24");
+                    if (player.Character == null)
+                    {
+                        return;
+                    }
                     var position = player.Character.GetPosition();
-								//    MyLog.Default.WriteLineAndConsole($"25");
-					if (position == null){
-						return;
-					}
-					var lastDistance = 0;
+                    //    MyLog.Default.WriteLineAndConsole($"25");
+                    if (position == null)
+                    {
+                        return;
+                    }
+                    var lastDistance = 0f;
                     foreach (var area in PlayerData.PvPAreas)
                     {
-									 //   MyLog.Default.WriteLineAndConsole($"26");
-				
-                        var distance = Vector3.Distance(position, area.Position);
-						if (lastDistance > distance)(
-							continue
-						}
-						//  MyLog.Default.WriteLineAndConsole($"27");
-						lastDistance = distance;
-                        if (distance <= area.Distance)
-                        {
-                            if (area.Name != null)
-                            {
-                                //HudModule.SetAreaName(area.Name);
-                                HudModule.SetAreaName($"{area.Name}");
-                            }
+                        //   MyLog.Default.WriteLineAndConsole($"26");
 
-                            // Set PvP Area PvP Enabled
-                            HudModule.SetAreaPvPEnabled(area.AreaForcesPvP);
+                        var distance = Vector3.Distance(position, area.Position);
+                        if (lastDistance > distance) {
+                        continue;
+                    }
+                    //  MyLog.Default.WriteLineAndConsole($"27");
+                    lastDistance = distance;
+                    if (distance <= area.Distance)
+                    {
+                        if (area.Name != null)
+                        {
+                            //HudModule.SetAreaName(area.Name);
+                            HudModule.SetAreaName($"{area.Name}");
                         }
+
+                        // Set PvP Area PvP Enabled
+                        HudModule.SetAreaPvPEnabled(area.AreaForcesPvP);
                     }
                 }
-				
-                if (WarStatus)
-                {
-                    HudModule.SetAreaPvPEnabled(true);
-                }
             }
-        }
 
-        protected override void UnloadData()
-        {
-            MyAPIGateway.Multiplayer.UnregisterSecureMessageHandler(8544, MessageHandler);
-        }
-
-
-        private void InitClient()
-        {
-            _isInitialized = true; // Set this first to block any other calls from UpdateAfterSimulation().
-            _isClientRegistered = true;
-            //  ClientLogger.Init("CrunchChat_Client.Log", false, 0); // comment this out if logging is not required for the Client. "AppData\Roaming\SpaceEngineers\Storage"
-            // ClientLogger.WriteStart("CrunchChat Client Log Started");
-
-        }
-
-        private void InitServer()
-        {
-            try
+            if (WarStatus)
             {
-                _isInitialized = true; // Set this first to block any other calls from UpdateAfterSimulation().
-                _isServerRegistered = true;
-                //   ServerLogger.Init("CrunchChat.Log", false, 0); // comment this out if logging is not required for the Server.
-                //   ServerLogger.WriteStart("CrunchChat Server Log Started");
-                //  ServerLogger.WriteInfo("CrunchChat Server Version {0}", Mod_Config.modVersion.ToString());
-                //  ServerLogger.WriteInfo("CrunchChat Communiction Server Version {0}", Mod_Config.ModCommunicationVersion);
-                //  if (ServerLogger.IsActive)
-                //     VRage.Utils.MyLog.Default.WriteLine(string.Format("##Mod## LST Server Logging File: {0}", ServerLogger.LogFile));
-
-
-
-            }
-            catch (Exception e)
-            {
-                //   CrunchChat.Instance.ServerLogger.WriteException(e, "Core::InitServer");
+                HudModule.SetAreaPvPEnabled(true);
             }
         }
+    }
 
-        #endregion
-
-
+    private void InitClient()
+    {
+        _isInitialized = true; // Set this first to block any other calls from UpdateAfterSimulation().
+        _isClientRegistered = true;
+        //  ClientLogger.Init("CrunchChat_Client.Log", false, 0); // comment this out if logging is not required for the Client. "AppData\Roaming\SpaceEngineers\Storage"
+        // ClientLogger.WriteStart("CrunchChat Client Log Started");
 
     }
+
+    private void InitServer()
+    {
+        try
+        {
+            _isInitialized = true; // Set this first to block any other calls from UpdateAfterSimulation().
+            _isServerRegistered = true;
+            //   ServerLogger.Init("CrunchChat.Log", false, 0); // comment this out if logging is not required for the Server.
+            //   ServerLogger.WriteStart("CrunchChat Server Log Started");
+            //  ServerLogger.WriteInfo("CrunchChat Server Version {0}", Mod_Config.modVersion.ToString());
+            //  ServerLogger.WriteInfo("CrunchChat Communiction Server Version {0}", Mod_Config.ModCommunicationVersion);
+            //  if (ServerLogger.IsActive)
+            //     VRage.Utils.MyLog.Default.WriteLine(string.Format("##Mod## LST Server Logging File: {0}", ServerLogger.LogFile));
+
+
+
+        }
+        catch (Exception e)
+        {
+            //   CrunchChat.Instance.ServerLogger.WriteException(e, "Core::InitServer");
+        }
+    }
+
+    #endregion
+
+
+
+}
 }
