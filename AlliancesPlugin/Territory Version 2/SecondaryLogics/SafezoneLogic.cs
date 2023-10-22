@@ -35,8 +35,16 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
             var foundzone = MyAPIGateway.Entities.GetEntityById(SafezoneId);
             if (temp == null)
             {
+                if (DebugMessages)
+                {
+                    AlliancePlugin.Log.Info($"Safezone Debug {point.PointName} owner is null");
+                }
                 if (foundzone != null)
                 {
+                    if (DebugMessages)
+                    {
+                        AlliancePlugin.Log.Info($"Safezone Debug {point.PointName} clearing the filters");
+                    }
                     var zone = foundzone as MySafeZone;
                     if (!CaptureHandler.TrackedSafeZoneIds.Contains(zone.EntityId))
                     {
@@ -51,11 +59,19 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
             var alliance = temp.GetOwner() as Alliance;
             if (alliance == null)
             {
+                if (DebugMessages)
+                {
+                    AlliancePlugin.Log.Info($"Safezone Debug {point.PointName} Alliance is null");
+                }
                 return Task.FromResult(true);
             }
     
             if (foundzone != null)
             {
+                if (DebugMessages)
+                {
+                    AlliancePlugin.Log.Info($"Safezone Debug {point.PointName} Using safezoneid from file, zone isnt null");
+                }
                 var zone = foundzone as MySafeZone;
                 if (!CaptureHandler.TrackedSafeZoneIds.Contains(zone.EntityId))
                 {
@@ -76,6 +92,10 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
             {
                 foreach (MySafeZone zone in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MySafeZone>())
                 {
+                    if (DebugMessages)
+                    {
+                        AlliancePlugin.Log.Info($"Safezone Debug {point.PointName} zone hasnt been found yet, {zone.EntityId} is a zone");
+                    }
                     zone.Factions.Clear();
                     if (!CaptureHandler.TrackedSafeZoneIds.Contains(zone.EntityId))
                     {
@@ -94,13 +114,17 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
                 }
 
             }
-         
 
+            if (DebugMessages)
+            {
+                AlliancePlugin.Log.Info($"Safezone Debug {point.PointName} zone logic cycle done");
+            }
             return Task.FromResult(true);
         }
 
         public DateTime NextLoop { get; set; }
         public int SecondsBetweenLoops { get; set; }
+        public bool DebugMessages { get; set; } = false;
         public bool CanLoop()
         {
             return DateTime.Now >= NextLoop;

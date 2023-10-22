@@ -11,9 +11,11 @@ using AlliancesPlugin.Territory_Version_2.Models;
 using AlliancesPlugin.Territory_Version_2.PointOwners;
 using Newtonsoft.Json;
 using Sandbox.Game.Entities;
+using Sandbox.Game.GameSystems;
 using Sandbox.Game.Screens.Helpers;
 using Sandbox.Game.World;
 using Sandbox.ModAPI;
+using VRage.Game;
 using VRageMath;
 
 namespace AlliancesPlugin.Territory_Version_2.CapLogics
@@ -43,6 +45,9 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
 
         public Dictionary<Guid, int> Points = new Dictionary<Guid, int>();
         public IPointOwner PointOwner { get; set; }
+
+        public bool AllowSmallGrid { get; set; } 
+
         public Task<Tuple<bool, IPointOwner>> ProcessCap(ICapLogic point, Territory territory)
         {
 
@@ -113,6 +118,11 @@ namespace AlliancesPlugin.Territory_Version_2.CapLogics
             {
                 if (grid.Projector != null)
                     continue;
+
+                if (grid.GridSizeEnum == MyCubeSize.Small && !AllowSmallGrid)
+                {
+                    continue;
+                }
 
                 var fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
                 if ((fac != null && fac.Tag.Equals(GridOwnerTag)) || fac == null)

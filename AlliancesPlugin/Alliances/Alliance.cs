@@ -742,7 +742,7 @@ namespace AlliancesPlugin.Alliances
                 sb.AppendLine(s);
             }
 
-            foreach (long id in EnemyFactions)
+            foreach (long id in EnemyFactions.Distinct())
             {
                 IMyFaction fac = MySession.Static.Factions.TryGetFactionById(id);
                 if (fac != null)

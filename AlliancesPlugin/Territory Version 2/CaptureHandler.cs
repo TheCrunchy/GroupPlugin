@@ -181,7 +181,7 @@ namespace AlliancesPlugin.Territory_Version_2
                 case Alliance alliance:
                     {
                     
-                        if (alliance.DiscordWebhookRadar != "")
+                        if (!string.IsNullOrWhiteSpace(alliance.DiscordWebhookRadar))
                         {
                             var payloadJson = JsonConvert.SerializeObject(new
                             {
@@ -261,7 +261,7 @@ namespace AlliancesPlugin.Territory_Version_2
                 var alliance = owner.GetOwner();
                 if (alliance == null) return;
                 var temp = alliance as Alliance;
-                if (temp.DiscordWebhookCaps != "")
+                if (!string.IsNullOrWhiteSpace(temp.DiscordWebhookCaps))
                 {
                     var client2 = new WebClient();
                     client2.Headers.Add("Content-Type", "application/json");
