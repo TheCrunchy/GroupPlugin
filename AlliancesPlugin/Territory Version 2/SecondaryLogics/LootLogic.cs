@@ -12,10 +12,11 @@ using Sandbox.ModAPI;
 using Sandbox.ModAPI.Ingame;
 using VRage;
 using VRage.Game;
-using VRage.Game.ModAPI;
+using VRage.Game.ModAPI.Ingame;
 using VRage.ObjectBuilders;
 using VRage.ObjectBuilders.Private;
 using VRageMath;
+using IMyInventory = VRage.Game.ModAPI.IMyInventory;
 
 namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
 {
@@ -39,6 +40,7 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
         public bool MultiplyLootAmountByOwnershipPercentage = true;
 
         public List<LootItem> Loot = new List<LootItem>();
+        private List<MyCubeGrid> FoundGrids = new List<MyCubeGrid>();
 
         public bool Enabled { get; set; }
 
@@ -57,7 +59,7 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
             {
                 return Task.FromResult(true);
             }
-
+            FindGrids();
             var inventory = GetGridInventory();
             if (inventory == null)
             {
@@ -75,13 +77,13 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
                 {
                     amount *= territory.PercentOwned;
                 }
-                inventory.AddItems((MyFixedPoint)amount, (MyObjectBuilder_PhysicalObject)MyObjectBuilderSerializerKeen.CreateNewObject(id));
+                SpawnItems(id, (MyFixedPoint)amount);
             }
             return Task.FromResult(true);
         }
-
-        public IMyInventory GetGridInventory()
+        public void FindGrids()
         {
+            FoundGrids.Clear();
             var sphere = new BoundingSphereD(GridPosition, 2500 * 2);
             foreach (var grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>())
             {
@@ -92,27 +94,52 @@ namespace AlliancesPlugin.Territory_Version_2.SecondaryLogics
                 }
 
                 if (fac.Tag != GridOwnerFacTag) continue;
+                FoundGrids.Add(grid);
+            }
+        }
+
+        public bool SpawnItems(MyDefinitionId id, MyFixedPoint amount)
+        {
+            foreach (var cargo in GetGridInventory())
+            {
+                MyItemType itemType = new MyInventoryItemFilter(id.TypeId + "/" + id.SubtypeName).ItemType;
+                if (cargo.CanItemsBeAdded(amount, itemType))
+                {
+                    cargo.AddItems(amount, (MyObjectBuilder_PhysicalObject)MyObjectBuilderSerializerKeen.CreateNewObject(id));
+                    return true;
+                }
+            }
+
+            return false;
+        }
+        public List<IMyInventory> GetGridInventory()
+        {
+            var foundInvents = new List<IMyInventory>();
+            foreach (var grid in FoundGrids)
+            {
                 if (SpawnInNamedCargo)
                 {
                     var gridTerminalSys = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(grid);
 
-                    var block = gridTerminalSys.GetBlockWithName(NamedCargoTerminalName);
-                    if (block != null)
+                    //     var block = gridTerminalSys.GetBlocks()
+                    var blocks = new List<Sandbox.ModAPI.IMyTerminalBlock>();
+                    gridTerminalSys.GetBlocks(blocks);
+                    foreach (var block in blocks.Where(x => x.CustomName.Trim() == this.NamedCargoTerminalName))
                     {
-                        return block.GetInventory();
+                        foundInvents.Add(block.GetInventory());
                     }
                 }
                 else
                 {
-                    var cargo = grid.GetBlocks().OfType<Sandbox.ModAPI.IMyCargoContainer>();
-                    if (cargo != null && cargo.Any())
+                    var cargo = grid.GetFatBlocks().OfType<MyCargoContainer>();
+                    foreach (var carg in cargo)
                     {
-                        return cargo.First().GetInventory();
+                        foundInvents.Add(carg.GetInventory());
                     }
                 }
             }
 
-            return null;
+            return foundInvents;
         }
 
         public bool CanLoop()
