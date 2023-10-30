@@ -196,7 +196,6 @@
     <Compile Include="TerritoryPlugin.cs" />
     <Compile Include="Territories\Models\ComponentCost.cs" />
     <Compile Include="Territories\SecondaryLogics\GridDamagerLogic.cs" />
-    <Compile Include="Territories\SecondaryLogics\GridPasterLogic.cs" />
     <Compile Include="Territories\SecondaryLogics\ProductionBuffLogic.cs" />
     <Compile Include="Territories\SecondaryLogics\UpkeepLogic.cs" />
     <Compile Include="Territories\SkoTweaksPatch.cs" />
