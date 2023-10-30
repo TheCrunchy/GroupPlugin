@@ -7,7 +7,7 @@ using ProtoBuf;
 using VRage.Game;
 using VRageMath;
 
-namespace AlliancesPlugin.NexusStuff
+namespace Territory.NexusStuff
 {
     public class NexusAPI
     {

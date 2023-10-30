@@ -25,7 +25,7 @@ using VRage.ObjectBuilders;
 using VRage.ObjectBuilders.Private;
 using VRageMath;
 
-namespace AlliancesPlugin
+namespace Territory
 {
 
     //Class from LordTylus ALE Core
@@ -100,7 +100,7 @@ namespace AlliancesPlugin
 
                 foreach (MyObjectBuilder_CubeBlock cubeBlock in cubeGrid.CubeBlocks)
                 {
-                    long ownerID = AlliancePlugin.GetIdentityByNameOrId(newOwner.ToString()).IdentityId;
+                    long ownerID = TerritoryPlugin.GetIdentityByNameOrId(newOwner.ToString()).IdentityId;
                     cubeBlock.Owner = ownerID;
                     cubeBlock.BuiltBy = ownerID;
 
@@ -332,7 +332,7 @@ namespace AlliancesPlugin
                 if (shipBlueprints == null)
                 {
 
-                    AlliancePlugin.Log.Warn("No ShipBlueprints in File '" + path + "'");
+                    TerritoryPlugin.Log.Warn("No ShipBlueprints in File '" + path + "'");
 
                     if (context != null)
                         context.Respond("There arent any Grids in your file to import!");
@@ -346,7 +346,7 @@ namespace AlliancesPlugin
                     if (!LoadShipBlueprint(shipBlueprint, playerPosition, keepOriginalLocation, (long)steamID, name, context, force))
                     {
 
-                        AlliancePlugin.Log.Warn("Error Loading ShipBlueprints from File '" + path + "'");
+                        TerritoryPlugin.Log.Warn("Error Loading ShipBlueprints from File '" + path + "'");
                         return false;
                     }
                 }
@@ -354,7 +354,7 @@ namespace AlliancesPlugin
                 return true;
             }
 
-            AlliancePlugin.Log.Warn("Error Loading File '" + path + "' check Keen Logs.");
+            TerritoryPlugin.Log.Warn("Error Loading File '" + path + "' check Keen Logs.");
 
             return false;
         }
@@ -369,7 +369,7 @@ namespace AlliancesPlugin
             if (grids == null || grids.Length == 0)
             {
 
-                AlliancePlugin.Log.Warn("No grids in blueprint!");
+                TerritoryPlugin.Log.Warn("No grids in blueprint!");
 
                 if (context != null)
                     context.Respond("No grids in blueprint!");
@@ -384,7 +384,7 @@ namespace AlliancesPlugin
                 
                 foreach (MyObjectBuilder_CubeBlock block in grid.CubeBlocks)
                 {
-                    long ownerID = AlliancePlugin.GetIdentityByNameOrId(steamID.ToString()).IdentityId;
+                    long ownerID = TerritoryPlugin.GetIdentityByNameOrId(steamID.ToString()).IdentityId;
                     block.Owner = ownerID;
                     block.BuiltBy = ownerID;
                 }
@@ -400,7 +400,7 @@ namespace AlliancesPlugin
                 if (pos == null)
                 {
 
-                    AlliancePlugin.Log.Warn("No free Space found!");
+                    TerritoryPlugin.Log.Warn("No free Space found!");
 
                     if (context != null)
                         context.Respond("No free space available!");
@@ -413,13 +413,13 @@ namespace AlliancesPlugin
                 /* Update GridsPosition if that doesnt work get out of here. */
                 if (!UpdateGridsPosition(grids, newPosition))
                 {
-                    AlliancePlugin.Log.Warn("The File to be imported does not seem to be compatible with the server!");
+                    TerritoryPlugin.Log.Warn("The File to be imported does not seem to be compatible with the server!");
                     if (context != null)
                         context.Respond("The File to be imported does not seem to be compatible with the server!");
 
                     return false;
                 }
-                Sandbox.Game.Entities.Character.MyCharacter player = MySession.Static.Players.GetPlayerByName(AlliancePlugin.GetIdentityByNameOrId(steamID.ToString()).DisplayName).Character;
+                Sandbox.Game.Entities.Character.MyCharacter player = MySession.Static.Players.GetPlayerByName(TerritoryPlugin.GetIdentityByNameOrId(steamID.ToString()).DisplayName).Character;
                 MyGps gps = CreateGps(pos.Value, Color.LightGreen, 60, Name);
                 MyGpsCollection gpsCollection = (MyGpsCollection)MyAPIGateway.Session?.GPS;
                 MyGps gpsRef = gps;

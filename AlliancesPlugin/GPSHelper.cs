@@ -9,7 +9,7 @@ using Sandbox.Game.Screens.Helpers;
 using VRage.Game;
 using VRageMath;
 
-namespace AlliancesPlugin
+namespace Territory
 {
    public static class GPSHelper
     {

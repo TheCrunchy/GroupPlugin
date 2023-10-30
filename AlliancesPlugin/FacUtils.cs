@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using VRage.Game.ModAPI;
 
 
-namespace AlliancesPlugin
+namespace Territory
 {
     public class FacUtils
     {

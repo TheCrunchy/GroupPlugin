@@ -8,7 +8,7 @@ using VRage.Game.ModAPI;
 using VRage.Groups;
 using VRageMath;
 
-namespace AlliancesPlugin
+namespace Territory
 {
 
     public class GridFinder

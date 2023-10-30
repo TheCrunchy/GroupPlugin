@@ -1,4 +1,4 @@
-﻿namespace AlliancesPlugin
+﻿namespace Territory
 {
 
     using Newtonsoft.Json;
