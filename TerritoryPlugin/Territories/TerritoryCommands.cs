@@ -73,7 +73,7 @@ namespace Territory.Territory_Version_2
                 return;
             }
             var q = from t in Assembly.GetExecutingAssembly().GetTypes()
-                where t.IsClass && t.Namespace == "AlliancesPlugin.Territory_Version_2.CapLogics" && t.Name.Contains("Logic")
+                where t.IsClass && t.Namespace == "Territory.Territory_Version_2.CapLogics" && t.Name.Contains("Logic")
                     select t;
 
 
@@ -117,7 +117,7 @@ namespace Territory.Territory_Version_2
                 return;
             }
             var q = from t in Assembly.GetExecutingAssembly().GetTypes()
-                where t.IsClass && t.Namespace == "AlliancesPlugin.Territory_Version_2.SecondaryLogics" && t.Name.Contains("Logic")
+                where t.IsClass && t.Namespace == "Territory.Territory_Version_2.SecondaryLogics" && t.Name.Contains("Logic")
                     select t; 
 
             if (q.Any(x => x.Name == secondarylogic))
