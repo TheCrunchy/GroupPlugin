@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Sandbox.Game.World;
-using Territory.Territory_Version_2.Interfaces;
+﻿using Sandbox.Game.World;
+using Territory.Territories.Interfaces;
 
-namespace Territory.Territory_Version_2.PointOwners
+namespace Territory.Territories.PointOwners
 {
     public class FactionPointOwner : IPointOwner
     {

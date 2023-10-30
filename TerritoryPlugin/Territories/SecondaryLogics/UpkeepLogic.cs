@@ -4,15 +4,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
-using Territory;
-using Territory.Territory_Version_2.Interfaces;
-using Territory.Territory_Version_2.Models;
+using Territory.Territories.Interfaces;
+using Territory.Territories.Models;
 using VRage;
 using VRage.Game;
 using VRage.Game.ModAPI;
 using VRageMath;
 
-namespace AlliancesPlugin.Territories.SecondaryLogics
+namespace Territory.Territories.SecondaryLogics
 {
     public class UpkeepLogic : ISecondaryLogic
     {
@@ -23,7 +22,7 @@ namespace AlliancesPlugin.Territories.SecondaryLogics
         public string NamedLCD = "[UPKEEP OUTPUT]";
 
         public List<UpkeepItem> UpkeepItems = new List<UpkeepItem>();
-        public Task<bool> DoSecondaryLogic(ICapLogic point, Territory.Territory_Version_2.Models.Territory territory)
+        public Task<bool> DoSecondaryLogic(ICapLogic point, Models.Territory territory)
         {
             if (!Enabled)
             {
@@ -43,7 +42,7 @@ namespace AlliancesPlugin.Territories.SecondaryLogics
             if (inventory == null || !FoundGrids.Any() || !inventory.Any())
             {
                 TerritoryPlugin.Log.Info($"Could not find inventory for grid at position {GridPosition.ToString()}");
-                // AlliancePlugin.Log.Info(inventory.Count);
+                // TerritoryPlugin.Log.Info(inventory.Count);
                 MyAPIGateway.Utilities.InvokeOnGameThread(() =>
                 {
                     LCD?.WriteText("Could not find inventory for grid!", true);
@@ -146,7 +145,7 @@ namespace AlliancesPlugin.Territories.SecondaryLogics
                     {
                         panel?.WriteText($"Upkeep, missing " + needed + " " + c.Key.SubtypeName + $" Item must be inside this grid. at {DateTime.Now:HH-mm}", true);
                     });
-                    //   AlliancePlugin.Log.Info("Not found components");
+                    //   TerritoryPlugin.Log.Info("Not found components");
                     return false;
                 }
             }

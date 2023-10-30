@@ -45,7 +45,7 @@
 //            }
 //            public static void ReturnPCU(ref int __result)
 //            {
-//                //AlliancePlugin.Log.Info("Getting PCU");
+//                //TerritoryPlugin.Log.Info("Getting PCU");
 //               // __result = 5;
 //            }
 

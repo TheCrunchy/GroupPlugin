@@ -5,12 +5,11 @@ using System.Threading.Tasks;
 using Sandbox.Game.Entities;
 using Sandbox.Game.Entities.Blocks;
 using Sandbox.ModAPI;
-using Territory;
-using Territory.Territory_Version_2.Interfaces;
+using Territory.Territories.Interfaces;
 using VRage.Game.ModAPI;
 using VRageMath;
 
-namespace AlliancesPlugin.Territories.SecondaryLogics
+namespace Territory.Territories.SecondaryLogics
 {
     public class GridPrinterLogic : ISecondaryLogic
     {
@@ -41,7 +40,7 @@ namespace AlliancesPlugin.Territories.SecondaryLogics
    
         private List<IMyInventory> FoundInventories = new List<IMyInventory>();
         private bool setup = false;
-        public Task<bool> DoSecondaryLogic(ICapLogic point, Territory.Territory_Version_2.Models.Territory territory)
+        public Task<bool> DoSecondaryLogic(ICapLogic point, Models.Territory territory)
         {
 
             if (!Enabled)
@@ -67,7 +66,7 @@ namespace AlliancesPlugin.Territories.SecondaryLogics
                 if (inventory == null || !FoundGrids.Any() || !inventory.Any())
                 {
                     TerritoryPlugin.Log.Info($"Could not find inventory for grid at position {CentrePosition.ToString()}");
-                    // AlliancePlugin.Log.Info(inventory.Count);
+                    // TerritoryPlugin.Log.Info(inventory.Count);
                     return Task.FromResult(true);
                 }
                 FoundInventories = inventory;
@@ -79,7 +78,7 @@ namespace AlliancesPlugin.Territories.SecondaryLogics
                 try
                 {
                     var grid2 = grid.CubeGrid as MyCubeGrid;
-                    //    AlliancePlugin.Log.Info("1");
+                    //    TerritoryPlugin.Log.Info("1");
                var proj = grid as MyProjectorBase;
                
                     MyAPIGateway.Utilities.InvokeOnGameThread(() =>
@@ -176,7 +175,7 @@ namespace AlliancesPlugin.Territories.SecondaryLogics
                 }
                 if (FoundProjectors.Count < MaximumProjectors && grid.BuildableBlocksCount > 0)
                 {
-                    //      AlliancePlugin.Log.Info("found");
+                    //      TerritoryPlugin.Log.Info("found");
                     FoundProjectors.Add(grid);
                 }
             }

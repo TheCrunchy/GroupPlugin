@@ -1,22 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Text;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Sandbox.Game.Entities;
-using Sandbox.Game.GameSystems;
-using Sandbox.Game.Screens.Helpers;
 using Sandbox.Game.World;
 using Sandbox.ModAPI;
-using Territory.Territory_Version_2.Interfaces;
-using Territory.Territory_Version_2.PointOwners;
-using Territory.Territory_Version_2.Models;
+using Territory.Territories.Interfaces;
+using Territory.Territories.PointOwners;
 using VRage.Game;
 using VRageMath;
 
-namespace Territory.Territory_Version_2.CapLogics
+namespace Territory.Territories.CapLogics
 {
     public class FactionGridCapLogic : ICapLogic
     {

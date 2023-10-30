@@ -2,11 +2,10 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Sandbox.ModAPI;
-using Territory.Territory_Version_2;
-using Territory.Territory_Version_2.Interfaces;
+using Territory.Territories.Interfaces;
 using VRageMath;
 
-namespace AlliancesPlugin.Territories.SecondaryLogics
+namespace Territory.Territories.SecondaryLogics
 {
     public class ProductionBuffLogic : ISecondaryLogic
     {
@@ -17,7 +16,7 @@ namespace AlliancesPlugin.Territories.SecondaryLogics
         public double AssemblerSpeedBuff = 0.1;
         public double RefinerySpeedBuff = 0.1;
         public double RefineryYieldBuff = 0.1;
-        public Task<bool> DoSecondaryLogic(ICapLogic point, Territory.Territory_Version_2.Models.Territory territory)
+        public Task<bool> DoSecondaryLogic(ICapLogic point, Models.Territory territory)
         {
             if (!Enabled)
             {

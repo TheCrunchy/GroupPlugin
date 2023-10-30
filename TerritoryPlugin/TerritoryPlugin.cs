@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using AlliancesPlugin.Territories.SecondaryLogics;
 using NLog;
 using Sandbox.Engine.Multiplayer;
 using Sandbox.Game.Entities;
@@ -16,10 +15,11 @@ using Sandbox.Game.World;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Weapons;
 using Territory.NexusStuff;
-using Territory.Territory_Version_2;
-using Territory.Territory_Version_2.CapLogics;
-using Territory.Territory_Version_2.Interfaces;
-using Territory.Territory_Version_2.Models;
+using Territory.Territories;
+using Territory.Territories.CapLogics;
+using Territory.Territories.Interfaces;
+using Territory.Territories.Models;
+using Territory.Territories.SecondaryLogics;
 using Torch;
 using Torch.API;
 using Torch.API.Managers;
@@ -312,7 +312,7 @@ namespace Territory
 
         //public static bool SendToMQ(string Type, Object SendThis)
         //{
-        //    if (NexusInstalled && AlliancePlugin.config.UsingNexusChat && SendThis is AllianceChatMessage chatMessage)
+        //    if (NexusInstalled && TerritoryPlugin.config.UsingNexusChat && SendThis is AllianceChatMessage chatMessage)
         //    {
         //        var message = MyAPIGateway.Utilities.SerializeToBinary<AllianceChatMessage>(chatMessage);
         //        API.SendMessageToAllServers(message);
@@ -325,7 +325,7 @@ namespace Territory
         //    }
         //    var input = JsonConvert.SerializeObject(SendThis);
         //    var methodInput = new object[] { Type, input };
-        //    AlliancePlugin.SendMessage?.Invoke(AlliancePlugin.MQ, methodInput);
+        //    TerritoryPlugin.SendMessage?.Invoke(TerritoryPlugin.MQ, methodInput);
         //    return true;
         //}
 
@@ -340,7 +340,7 @@ namespace Territory
                 // DiscordStuff.DisconnectDiscord();
                 foreach (var ter in TerritoryPlugin.Territories.Values)
                 {
-                    TerritoryPlugin.utils.WriteToJsonFile<Territory_Version_2.Models.Territory>(TerritoryPlugin.path + "//Territories//" + ter.Name + ".json", ter);
+                    TerritoryPlugin.utils.WriteToJsonFile<Territories.Models.Territory>(TerritoryPlugin.path + "//Territories//" + ter.Name + ".json", ter);
                 }
 
                 TorchState = TorchSessionState.Unloading;
@@ -350,7 +350,7 @@ namespace Territory
     
             if (!File.Exists(path + "//Territories//Example.json"))
             {
-                var example = new Territory_Version_2.Models.Territory();
+                var example = new Territories.Models.Territory();
                 var logic = new FactionGridCapLogic();
 
                 logic.SecondaryLogics = new List<ISecondaryLogic>();
@@ -398,14 +398,12 @@ namespace Territory
                 }
                 });
                 var printer = new GridPrinterLogic();
-                var paster = new GridPasterLogic();
 
                 logic.SecondaryLogics.Add(printer);
-                logic.SecondaryLogics.Add(paster);
                 example.CapturePoints.Add(logic);
                 example.Enabled = false;
 
-                utils.WriteToJsonFile<Territory_Version_2.Models.Territory>(path + "//Territories//Example.json", example, false);
+                utils.WriteToJsonFile<Territories.Models.Territory>(path + "//Territories//Example.json", example, false);
 
 
             }
@@ -488,14 +486,14 @@ namespace Territory
             {
                 try
                 {
-                    var ter = new Territory_Version_2.Models.Territory();
+                    var ter = new Territories.Models.Territory();
                     if (s.EndsWith(".xml"))
                     {
                         continue;
                     }
                     if (s.EndsWith(".json"))
                     {
-                        ter = jsonStuff.ReadFromJsonFile<Territory_Version_2.Models.Territory>(s);
+                        ter = jsonStuff.ReadFromJsonFile<Territories.Models.Territory>(s);
                     }
                     if (!ter.Enabled)
                     {
@@ -559,7 +557,7 @@ namespace Territory
  
         public static bool Paused = false;
 
-        public static Dictionary<Guid, Territory_Version_2.Models.Territory> Territories = new Dictionary<Guid, Territory_Version_2.Models.Territory>();
+        public static Dictionary<Guid, Territories.Models.Territory> Territories = new Dictionary<Guid, Territories.Models.Territory>();
         
 
         public static DateTime chat = DateTime.Now;
@@ -594,7 +592,7 @@ namespace Territory
                         NextSave = DateTime.Now.AddMinutes(5);
                         foreach (var ter in Territories)
                         {
-                            TerritoryPlugin.utils.WriteToJsonFile<Territory_Version_2.Models.Territory>(TerritoryPlugin.path + "//Territories//" + ter.Value.Name + ".json", ter.Value);
+                            TerritoryPlugin.utils.WriteToJsonFile<Territories.Models.Territory>(TerritoryPlugin.path + "//Territories//" + ter.Value.Name + ".json", ter.Value);
                         }
                     }
                 }

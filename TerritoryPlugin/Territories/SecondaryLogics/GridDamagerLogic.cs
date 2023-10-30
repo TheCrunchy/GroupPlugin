@@ -4,12 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
-using Territory;
-using Territory.Territory_Version_2.Interfaces;
+using Territory.Territories.Interfaces;
 using VRage.Game;
 using VRageMath;
 
-namespace AlliancesPlugin.Territories.SecondaryLogics
+namespace Territory.Territories.SecondaryLogics
 {
     public class GridDamagerLogic : ISecondaryLogic
     {
@@ -22,7 +21,7 @@ namespace AlliancesPlugin.Territories.SecondaryLogics
         public bool RequireOwner { get; set; }
         public bool Enabled { get; set; }
         public float Damage = 1000;
-        public Task<bool> DoSecondaryLogic(ICapLogic point, Territory.Territory_Version_2.Models.Territory territory)
+        public Task<bool> DoSecondaryLogic(ICapLogic point, Models.Territory territory)
         {
             if (!Enabled)
             {
@@ -30,7 +29,7 @@ namespace AlliancesPlugin.Territories.SecondaryLogics
             }
 
             if (!CanLoop()) return Task.FromResult(true);
-            //    AlliancePlugin.Log.Info("1");
+            //    TerritoryPlugin.Log.Info("1");
 
             NextLoop = DateTime.Now.AddSeconds(SecondsBetweenLoops);
             if (RequireOwner && point.PointOwner == null)

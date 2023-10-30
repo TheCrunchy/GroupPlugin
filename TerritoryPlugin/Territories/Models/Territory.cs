@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using Territory.Territory_Version_2.Interfaces;
+using Territory.Territories.Interfaces;
 using VRageMath;
 
-namespace Territory.Territory_Version_2.Models
+namespace Territory.Territories.Models
 {
     public class Territory
     {

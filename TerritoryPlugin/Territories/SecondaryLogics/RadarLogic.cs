@@ -6,13 +6,11 @@ using System.Threading.Tasks;
 using Sandbox.Game.Entities;
 using Sandbox.Game.World;
 using Sandbox.ModAPI;
-using Territory;
-using Territory.Territory_Version_2;
-using Territory.Territory_Version_2.Interfaces;
+using Territory.Territories.Interfaces;
 using VRage.Game.ModAPI;
 using VRageMath;
 
-namespace AlliancesPlugin.Territories.SecondaryLogics
+namespace Territory.Territories.SecondaryLogics
 {
     public class RadarLogic : ISecondaryLogic
     {
@@ -22,7 +20,7 @@ namespace AlliancesPlugin.Territories.SecondaryLogics
         public int Distance { get; set; }
         public string IgnoredFactionTags = "SPRT,TAG2";
         private List<MyCubeGrid> FoundGrids = new List<MyCubeGrid>();
-        public Task<bool> DoSecondaryLogic(ICapLogic point, Territory.Territory_Version_2.Models.Territory territory)
+        public Task<bool> DoSecondaryLogic(ICapLogic point, Models.Territory territory)
         {
             if (!Enabled)
             {
@@ -67,12 +65,12 @@ namespace AlliancesPlugin.Territories.SecondaryLogics
             {
                 return true;
             }
-          //  AlliancePlugin.Log.Info("Radar 1");
+          //  TerritoryPlugin.Log.Info("Radar 1");
             switch (pointOwner)
             {
                 case IMyFaction faction:
                     {
-                   //     AlliancePlugin.Log.Info("Radar 3");
+                   //     TerritoryPlugin.Log.Info("Radar 3");
                         if (fac.FactionId != faction.FactionId)
                         {
                             if (!MySession.Static.Factions.AreFactionsFriends(fac.FactionId, faction.FactionId) || !MySession.Static.Factions.AreFactionsNeutrals(fac.FactionId, faction.FactionId))
@@ -100,21 +98,21 @@ namespace AlliancesPlugin.Territories.SecondaryLogics
         public void FindGrids()
         {
             FoundGrids.Clear();
-          //  AlliancePlugin.Log.Info("grid 1");
+          //  TerritoryPlugin.Log.Info("grid 1");
             var sphere = new BoundingSphereD(RadarCentre, Distance * 2);
             foreach (var grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>().Where(x => x.Projector == null && x.BlocksCount >= MinimumBlocksToHit))
             {
-                //       AlliancePlugin.Log.Info("grid 2");
+                //       TerritoryPlugin.Log.Info("grid 2");
                 var owner = FacUtils.GetOwner(grid);
-           //     AlliancePlugin.Log.Info("grid 3");
+           //     TerritoryPlugin.Log.Info("grid 3");
                 var fac = FacUtils.GetPlayersFaction(owner);
-            //    AlliancePlugin.Log.Info("grid 4");
+            //    TerritoryPlugin.Log.Info("grid 4");
                 if ((fac != null && IgnoredFactionTags.Contains(fac.Tag)))
                 {
-            //        AlliancePlugin.Log.Info("grid 5");
+            //        TerritoryPlugin.Log.Info("grid 5");
                     continue;
                 }
-           //     AlliancePlugin.Log.Info("grid 6");
+           //     TerritoryPlugin.Log.Info("grid 6");
 
                 FoundGrids.Add(grid);
             }

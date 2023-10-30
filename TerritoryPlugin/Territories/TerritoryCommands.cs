@@ -4,14 +4,13 @@ using System.Linq;
 using System.Reflection;
 using Sandbox.Engine.Multiplayer;
 using Sandbox.Game.World;
-using Territory.Territory_Version_2.Interfaces;
-using Territory.Territory_Version_2.PointOwners;
-using Territory.Territory_Version_2.Models;
+using Territory.Territories.Interfaces;
+using Territory.Territories.PointOwners;
 using Torch.Commands;
 using Torch.Commands.Permissions;
 using VRage.Game.ModAPI;
 
-namespace Territory.Territory_Version_2
+namespace Territory.Territories
 {
     [Category("territory")]
     public class TerritoryCommands : CommandModule

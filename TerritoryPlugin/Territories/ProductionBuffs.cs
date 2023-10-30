@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Sandbox.Game.Entities.Cube;
 
-namespace Territory.Territory_Version_2
+namespace Territory.Territories
 {
     public static class ProductionBuffs
     {

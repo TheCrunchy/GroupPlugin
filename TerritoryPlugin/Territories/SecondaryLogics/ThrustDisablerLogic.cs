@@ -6,13 +6,11 @@ using System.Threading.Tasks;
 using Sandbox.Common.ObjectBuilders;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
-using Territory;
-using Territory.Territory_Version_2;
-using Territory.Territory_Version_2.Interfaces;
+using Territory.Territories.Interfaces;
 using VRage.Game;
 using VRageMath;
 
-namespace AlliancesPlugin.Territories.SecondaryLogics
+namespace Territory.Territories.SecondaryLogics
 {
     public class ThrustDisablerLogic : ISecondaryLogic
     {
@@ -28,7 +26,7 @@ namespace AlliancesPlugin.Territories.SecondaryLogics
 
         public string DisabledDirections = "UP,DOWN,FORWARD,BACKWARD,LEFT,RIGHT";
 
-        public Task<bool> DoSecondaryLogic(ICapLogic point, Territory.Territory_Version_2.Models.Territory territory)
+        public Task<bool> DoSecondaryLogic(ICapLogic point, Models.Territory territory)
         {
             //this crashes server 
             if (!Enabled)
@@ -37,21 +35,21 @@ namespace AlliancesPlugin.Territories.SecondaryLogics
             }
 
             if (!CanLoop()) return Task.FromResult(true);
-            //    AlliancePlugin.Log.Info("1");
+            //    TerritoryPlugin.Log.Info("1");
             NextLoop = DateTime.Now.AddSeconds(SecondsBetweenLoops);
             if (RequireOwner && point.PointOwner == null)
             {
                 return Task.FromResult(true);
             }
 
-            //         AlliancePlugin.Log.Info("2");
+            //         TerritoryPlugin.Log.Info("2");
             var temp = point.PointOwner ?? territory.Owner;
-            //        AlliancePlugin.Log.Info("3");
+            //        TerritoryPlugin.Log.Info("3");
             var owner = temp.GetOwner();
-            //     AlliancePlugin.Log.Info("4");
+            //     TerritoryPlugin.Log.Info("4");
             StringBuilder builder = new StringBuilder();
             FindGrids();
-            //    AlliancePlugin.Log.Info("5");
+            //    TerritoryPlugin.Log.Info("5");
 
             //    MyAPIGateway.Utilities.InvokeOnGameThread(() =>
             //    {
@@ -59,18 +57,18 @@ namespace AlliancesPlugin.Territories.SecondaryLogics
             {
                 foreach (var grid in FoundGrids.Where(x => x.GridSizeEnum == MyCubeSize.Large))
                 {
-                    //  AlliancePlugin.Log.Info("6");
+                    //  TerritoryPlugin.Log.Info("6");
                     foreach (MyThrust block in grid.GetFatBlocks().Where(x => x.BlockDefinition != null && x.BlockDefinition.Id.TypeId == typeof(MyObjectBuilder_Thrust)))
                     {
-                     //   AlliancePlugin.Log.Info("thruster large");
+                     //   TerritoryPlugin.Log.Info("thruster large");
                         if (block.GridThrustDirection == Vector3I.Backward && !DisabledDirections.Contains("BACKWARD"))
                         {
-                          //  AlliancePlugin.Log.Info("BACKWARD");
+                          //  TerritoryPlugin.Log.Info("BACKWARD");
                             continue;
                         }
                         if (block.GridThrustDirection == Vector3I.Forward && !DisabledDirections.Contains("FORWARD"))
                         {
-                           // AlliancePlugin.Log.Info("FORWARD");
+                           // TerritoryPlugin.Log.Info("FORWARD");
                             continue;
                         }
                         if (block.GridThrustDirection == Vector3I.Left && !DisabledDirections.Contains("LEFT"))
@@ -102,12 +100,12 @@ namespace AlliancesPlugin.Territories.SecondaryLogics
                     {
                         if (block.GridThrustDirection == Vector3I.Backward && !DisabledDirections.Contains("BACKWARD"))
                         {
-                            //  AlliancePlugin.Log.Info("BACKWARD");
+                            //  TerritoryPlugin.Log.Info("BACKWARD");
                             continue;
                         }
                         if (block.GridThrustDirection == Vector3I.Forward && !DisabledDirections.Contains("FORWARD"))
                         {
-                            // AlliancePlugin.Log.Info("FORWARD");
+                            // TerritoryPlugin.Log.Info("FORWARD");
                             continue;
                         }
                         if (block.GridThrustDirection == Vector3I.Left && !DisabledDirections.Contains("LEFT"))

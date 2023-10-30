@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using Sandbox.Game.Entities;
 using Torch.Managers.PatchManager;
 
-namespace Territory.Territory_Version_2
+namespace Territory.Territories
 {
     public static class SkoTweaksPatch
     {

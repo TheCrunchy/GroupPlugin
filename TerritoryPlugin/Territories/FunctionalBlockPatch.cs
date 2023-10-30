@@ -1,16 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using Sandbox.Game.Entities;
 using Sandbox.Game.Entities.Cube;
 using Torch.Managers.PatchManager;
 using VRage.Game;
-using VRage.Game.ObjectBuilders;
 
-namespace Territory.Territory_Version_2
+namespace Territory.Territories
 {
     [PatchShim]
     public static class FunctionalBlockPatch
@@ -103,7 +98,7 @@ namespace Territory.Territory_Version_2
                 {
                     DeleteCount.Add(__instance.EntityId, 1);
                 }
-                //   AlliancePlugin.Log.Info("Disabling");
+                //   TerritoryPlugin.Log.Info("Disabling");
                 __instance.Enabled = false;
                 return false;
             }

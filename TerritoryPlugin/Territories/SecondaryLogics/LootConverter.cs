@@ -6,9 +6,8 @@ using System.Threading.Tasks;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Ingame;
-using Territory;
-using Territory.Territory_Version_2.Interfaces;
-using Territory.Territory_Version_2.Models;
+using Territory.Territories.Interfaces;
+using Territory.Territories.Models;
 using VRage;
 using VRage.Game;
 using VRage.Game.ModAPI.Ingame;
@@ -17,7 +16,7 @@ using VRageMath;
 using IMyInventory = VRage.Game.ModAPI.IMyInventory;
 using IMyTextPanel = Sandbox.ModAPI.IMyTextPanel;
 
-namespace AlliancesPlugin.Territories.SecondaryLogics
+namespace Territory.Territories.SecondaryLogics
 {
     public class LootConverter : ISecondaryLogic
     {
@@ -50,7 +49,7 @@ namespace AlliancesPlugin.Territories.SecondaryLogics
         }
 
         public int Priority { get; set; } = 1;
-        public Task<bool> DoSecondaryLogic(ICapLogic point, Territory.Territory_Version_2.Models.Territory territory)
+        public Task<bool> DoSecondaryLogic(ICapLogic point, Models.Territory territory)
         {
             if (!Enabled)
             {
@@ -71,7 +70,7 @@ namespace AlliancesPlugin.Territories.SecondaryLogics
             if (inventory == null || !FoundGrids.Any() || !inventory.Any())
             {
                 TerritoryPlugin.Log.Info($"Could not find inventory for grid at position {GridPosition.ToString()}");
-               // AlliancePlugin.Log.Info(inventory.Count);
+               // TerritoryPlugin.Log.Info(inventory.Count);
                 return Task.FromResult(true);
             }
             var LCD = GetPanel();
@@ -96,12 +95,12 @@ namespace AlliancesPlugin.Territories.SecondaryLogics
                     }
                 }
 
-             //   AlliancePlugin.Log.Info($"Checking {comps.Count}");
+             //   TerritoryPlugin.Log.Info($"Checking {comps.Count}");
 
                 if (!ConsumeComponents(inventory, comps, LCD)) continue;
-           //     AlliancePlugin.Log.Info("It consumed");
+           //     TerritoryPlugin.Log.Info("It consumed");
                 SpawnItems(id, item.amountPerCraft);
-          //      AlliancePlugin.Log.Info("Checking 2");
+          //      TerritoryPlugin.Log.Info("Checking 2");
                 builder.AppendLine(
                     $"Successfully crafted {item.subtypeid} {item.typeid.Replace("MyObjectBuilder_", "")} at {DateTime.Now:HH-mm}");
                 comps.Clear();
@@ -157,7 +156,7 @@ namespace AlliancesPlugin.Territories.SecondaryLogics
                     {
                         panel?.WriteText($"Crafting error, missing " + needed + " " + c.Key.SubtypeName + $" All components must be inside this grid. at {DateTime.Now:HH-mm}");
                     });
-                 //   AlliancePlugin.Log.Info("Not found components");
+                 //   TerritoryPlugin.Log.Info("Not found components");
                     return false;
                 }
             }

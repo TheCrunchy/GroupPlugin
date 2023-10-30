@@ -5,16 +5,13 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using Sandbox.Game.Screens.Helpers;
 using Sandbox.Game.World;
-using Territory.Territory_Version_2.CapLogics;
-using Territory.Territory_Version_2.Interfaces;
-using Territory.Territory_Version_2.PointOwners;
-using Territory.Territory_Version_2.Models;
+using Territory.Territories.CapLogics;
+using Territory.Territories.Interfaces;
+using Territory.Territories.PointOwners;
 using VRage.Game.ModAPI;
-using VRageMath;
 
-namespace Territory.Territory_Version_2
+namespace Territory.Territories
 {
     public static class CaptureHandler
     {
@@ -57,11 +54,11 @@ namespace Territory.Territory_Version_2
                             {
                                 TerritoriesToRecalc.Add(territory.Value.Id);
                             }
-                            //  AlliancePlugin.Log.Info("Cap did succeed");
+                            //  TerritoryPlugin.Log.Info("Cap did succeed");
                         }
                         else
                         {
-                            // AlliancePlugin.Log.Info("Cap did not succeed");
+                            // TerritoryPlugin.Log.Info("Cap did not succeed");
                         }
                     }
                     catch (Exception e)
@@ -203,7 +200,7 @@ namespace Territory.Territory_Version_2
             //}
             //catch (Exception e)
             //{
-            //    AlliancePlugin.Log.Error($"Alliance Discord webhook error, {e}");
+            //    TerritoryPlugin.Log.Error($"Alliance Discord webhook error, {e}");
             //}
 
         }

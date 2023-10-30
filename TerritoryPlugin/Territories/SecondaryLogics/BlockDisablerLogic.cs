@@ -5,13 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
-using Territory;
-using Territory.Territory_Version_2;
-using Territory.Territory_Version_2.Interfaces;
+using Territory.Territories.Interfaces;
 using VRage.Game;
 using VRageMath;
 
-namespace AlliancesPlugin.Territories.SecondaryLogics
+namespace Territory.Territories.SecondaryLogics
 {
     public class BlockDisablerLogic : ISecondaryLogic
     {
@@ -25,7 +23,7 @@ namespace AlliancesPlugin.Territories.SecondaryLogics
         public bool DisableLargeGrid = true;
         public bool DisableSmallGrid = true;
         public List<String> TargetedSubtypes;
-        public Task<bool> DoSecondaryLogic(ICapLogic point, Territory.Territory_Version_2.Models.Territory territory)
+        public Task<bool> DoSecondaryLogic(ICapLogic point, Models.Territory territory)
         {
             if (!Enabled)
             {

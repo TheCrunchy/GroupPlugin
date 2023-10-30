@@ -35,7 +35,7 @@
 //            int fixedblocks = 0;
 //            long PriceSoFar = 0;
 //            var steamid = (long)MySession.Static.Players.TryGetSteamId(identityId);
-//            //     AlliancePlugin.Log.Info("build 1");
+//            //     TerritoryPlugin.Log.Info("build 1");
 //            HashSet<MySlimBlock> blocks3 = grid.GetBlocks();
 
 //            var converted = new Dictionary<MyDefinitionId, int>();
@@ -48,7 +48,7 @@
 //                    if (PriceSoFar > 0 && requireMoney)
 //                    {
 //                        EconUtils.takeMoney(identityId, PriceSoFar);
-//                        //      AlliancePlugin.Log.Info("pay 1");
+//                        //      TerritoryPlugin.Log.Info("pay 1");
 //                    }
 //                    return;
 //                }
@@ -210,7 +210,7 @@
 
 //                if (Cycle >= 20)
 //                {
-//                    //   AlliancePlugin.Log.Info("Hit 20 cycle");
+//                    //   TerritoryPlugin.Log.Info("Hit 20 cycle");
 //                    if (consumeComponents)
 //                    {
 //                        ShipyardCommands.ConsumeComponents(inventories, removeComps,
@@ -283,7 +283,7 @@
 //                        bool banned = false;
 //                        long tempPrice = 0;
 //                        BannedCount = CalcPriceAndBanned(priceMultiplier, componentCosts, convertedProj, BannedCount, ref banned, ref tempPrice);
-//                        //      AlliancePlugin.Log.Info($"{PriceSoFar}");
+//                        //      TerritoryPlugin.Log.Info($"{PriceSoFar}");
 //                        if (banned)
 //                        {
 //                            continue;

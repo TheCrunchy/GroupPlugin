@@ -5,8 +5,7 @@ using System.Threading.Tasks;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Ingame;
-using Territory;
-using Territory.Territory_Version_2.Interfaces;
+using Territory.Territories.Interfaces;
 using VRage;
 using VRage.Game;
 using VRage.Game.ModAPI.Ingame;
@@ -14,7 +13,7 @@ using VRage.ObjectBuilders.Private;
 using VRageMath;
 using IMyInventory = VRage.Game.ModAPI.IMyInventory;
 
-namespace AlliancesPlugin.Territories.SecondaryLogics
+namespace Territory.Territories.SecondaryLogics
 {
     public class LootLogic : ISecondaryLogic
     {
@@ -40,7 +39,7 @@ namespace AlliancesPlugin.Territories.SecondaryLogics
 
         public bool Enabled { get; set; }
 
-        public Task<bool> DoSecondaryLogic(ICapLogic point, Territory.Territory_Version_2.Models.Territory territory)
+        public Task<bool> DoSecondaryLogic(ICapLogic point, Models.Territory territory)
         {
             if (!Enabled)
             {
