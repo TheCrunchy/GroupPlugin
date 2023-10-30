@@ -6,7 +6,9 @@ namespace Territory.Territory_Version_2
 {
     public static class ProductionBuffs
     {
-
+        //this requires the production plugin to reflect into it, or you can just copy the patch out of that into here
+        //https://torchapi.com/plugins/view/3d3540c3-feca-4ba7-8623-67a2f4308e22
+        //https://github.com/TheCrunchy/PlayerProductionUpgrades/blob/main/PlayerProductionUpgrades/Core.cs
         private static Dictionary<long, double> SpeedBuffs = new Dictionary<long, double>();
         private static Dictionary<long, double> YieldBuffs = new Dictionary<long, double>();
         private static Dictionary<long, DateTime> RemoveAt = new Dictionary<long, DateTime>();
