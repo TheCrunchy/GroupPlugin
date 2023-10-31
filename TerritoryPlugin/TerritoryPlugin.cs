@@ -131,7 +131,7 @@ namespace Territory
                     type2.GetMethod("ApplyPatching", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, new object[]
                     {
                         typeof(NexusAPI),
-                        "Alliances"
+                        "Territory"
                     });
                     API = new NexusAPI(4398);
                     MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(4398, new Action<ushort, byte[], ulong, bool>(HandleNexusMessage));
