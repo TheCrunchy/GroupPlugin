@@ -51,6 +51,7 @@ namespace Territory.Models
         public void RemoveMemberFromGroup(long factionId)
         {
             GroupMembers.Remove(factionId);
+            var newfac = MySession.Static.Factions.TryGetFactionById(factionId);
             foreach (var id in GroupMembers)
             {
 
@@ -60,6 +61,10 @@ namespace Territory.Models
                 {
                     MyFactionCollection.DeclareWar(id, factionId);
                 });
+                foreach (var member in fac.Members)
+                {
+                    TerritoryPlugin.SendChatMessage($"{TerritoryPlugin.PluginName}", $"{newfac.Name} {newfac.Tag} Has left the group!", MySession.Static.Players.TryGetSteamId(member.Value.PlayerId));
+                }
             }
         }
 

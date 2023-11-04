@@ -268,5 +268,52 @@ namespace Territory.Commands
             NexusHandler.RaiseEvent(Event);
             Context.Respond("Left the group.", $"{TerritoryPlugin.PluginName}");
         }
+
+        [Command("kick", "kick from a group")]
+        [Permission(MyPromoteLevel.None)]
+        public void kick(string targetTag)
+        {
+            if (!TerritoryPlugin.config.PlayerGroupsEnabled)
+            {
+                Context.Respond("Player made groups are not enabled.", $"{TerritoryPlugin.PluginName}");
+                return;
+            }
+            var faction = MySession.Static.Factions.TryGetFactionByTag(targetTag);
+            if (faction == null)
+            {
+                Context.Respond("Faction not found", $"{TerritoryPlugin.PluginName}");
+                return;
+            }
+
+            var group = IsInGroup();
+
+            if (group == null)
+            {
+                return;
+            }
+            if (group.GroupLeader != (long)Context.Player.SteamUserId && group.GroupAdmins.Contains((long)Context.Player.SteamUserId))
+            {
+                Context.Respond("You are not the group leader or a group admin.", $"{TerritoryPlugin.PluginName}");
+                return;
+            }
+
+            
+            if (group.GroupMembers.Contains(faction.FactionId))
+            {
+                group.RemoveMemberFromGroup(faction.FactionId);
+            }
+            Storage.StorageHandler.Save(group);
+            GroupHandler.AddGroup(group);
+            var Event = new GroupEvent();
+            var createdEvent = new LeftGroupEvent()
+            {
+                JoinedGroupId = group.GroupId,
+                FactionId = faction.FactionId
+            };
+            Event.EventObject = MyAPIGateway.Utilities.SerializeToBinary(createdEvent);
+            Event.EventType = createdEvent.GetType().Name;
+            NexusHandler.RaiseEvent(Event);
+            Context.Respond("Kicked from the group.", $"{TerritoryPlugin.PluginName}");
+        }
     }
 }
