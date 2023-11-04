@@ -550,6 +550,14 @@ namespace Territory
                 {
                     try
                     {
+                        GroupHandler.DoGroupLoop();
+                    }
+                    catch (Exception e)
+                    {
+                        TerritoryPlugin.Log.Error("Error in group loop", e.ToString());
+                    }
+                    try
+                    {
                         Task.Run(async () => { CaptureHandler.DoCaps(); });
                     }
                     catch (Exception e)

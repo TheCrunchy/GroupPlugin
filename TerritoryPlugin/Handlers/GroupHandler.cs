@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using NLog.LayoutRenderers;
+using Sandbox.Game.World;
 using Sandbox.ModAPI.Ingame;
 using Territory.Models;
 
@@ -13,15 +14,10 @@ namespace Territory.Handlers
     {
         public static Dictionary<Guid, Group> LoadedGroups { get; set; } = new Dictionary<Guid, Group>();
         public static Dictionary<long, Guid> PlayersGroups { get; set; } = new();
-        private static int ticks = 0;
         public static void DoGroupLoop()
         {
-            ticks++;
-            if (ticks % 100 == 0)
-            {
-                ProcessFriendlies();
-                MapPlayers();
-            }
+            ProcessFriendlies();
+            MapPlayers();
         }
 
         public static Group GetGroupByName(string name)
@@ -49,6 +45,13 @@ namespace Territory.Handlers
 
         public static void RemoveGroup(Guid group)
         {
+            var yeet = PlayersGroups.Where(x => x.Value == group).Select(player => player.Key).ToList();
+
+            foreach (var item in yeet)
+            {
+                PlayersGroups.Remove(item);
+            }
+         
             LoadedGroups.Remove(group);
         }
 
@@ -63,12 +66,21 @@ namespace Territory.Handlers
 
         public static Group GetPlayersGroup(long steamId)
         {
-            return null;
+            return PlayersGroups.ContainsKey(steamId) ? LoadedGroups[PlayersGroups[steamId]] : null;
         }
 
         public static void MapPlayers()
         {
-
+            foreach (var player in MySession.Static.Players.GetOnlinePlayers())
+            {
+                var faction = MySession.Static.Factions.TryGetPlayerFaction(player.Identity.IdentityId);
+                if (faction == null) continue;
+                var group = LoadedGroups.FirstOrDefault(x => x.Value.GroupMembers.Contains(faction.FactionId)).Value ?? null;
+                if (group != null)
+                {
+                    PlayersGroups.Add((long)player.Id.SteamId, group.GroupId);
+                }
+            }
         }
     }
 }
