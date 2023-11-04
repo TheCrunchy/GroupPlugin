@@ -14,6 +14,8 @@ using Sandbox.Game.Weapons;
 using Sandbox.Game.World;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Weapons;
+using Territory.Handlers;
+using Territory.Models.Events;
 using Territory.NexusStuff;
 using Territory.Territories;
 using Territory.Territories.CapLogics;
@@ -41,6 +43,7 @@ namespace Territory
     {
         public static List<ComponentCost> repairCost = new List<ComponentCost>();
         public static Dictionary<String, ComponentCost> ComponentCosts = new Dictionary<string, ComponentCost>();
+        public static MethodInfo sendChange;
         public void AddComponentCost(string subtype, long cost, bool banned)
         {
             if (repairCost.Any(x => x.SubTypeId == subtype))
@@ -66,7 +69,7 @@ namespace Territory
             }
         }
 
-        private const string PluginName = "Territory";
+        public const string PluginName = "Groups";
 
         public static Random random = new Random();
    
@@ -111,17 +114,6 @@ namespace Territory
                 SkoTweaksPatch.Patch(Patches.AcquireContext());
             }
 
-            //if (Plugins.Plugins.TryGetValue(Guid.Parse("319afed6-6cf7-4865-81c3-cc207b70811d"), out var MQPlugin))
-            //{
-            //    SendMessage = MQPlugin.GetType().GetMethod("SendMessage", BindingFlags.Public | BindingFlags.Instance, null, new Type[2] { typeof(string), typeof(string) }, null);
-            //    MQ = MQPlugin;
-
-            //    MQPatching.MQPluginPatch.Patch(Patches.AcquireContext());
-            //    Patches.Commit();
-
-            //    MQPluginInstalled = true;
-            //}
-
             if (Plugins.Plugins.TryGetValue(NexusGUID, out ITorchPlugin torchPlugin))
             {
                 Type type = torchPlugin.GetType();
@@ -131,21 +123,20 @@ namespace Territory
                     type2.GetMethod("ApplyPatching", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, new object[]
                     {
                         typeof(NexusAPI),
-                        "Territory"
+                        $"{PluginName}"
                     });
                     API = new NexusAPI(4398);
-                    MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(4398, new Action<ushort, byte[], ulong, bool>(HandleNexusMessage));
+                    MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(2348, new Action<ushort, byte[], ulong, bool>(NexusHandler.HandleNexusMessage));
                     NexusInstalled = true;
                 }
             }
         }
-
-        private static void HandleNexusMessage(ushort handlerId, byte[] data, ulong steamID, bool fromServer)
+        public void SetupFriendMethod()
         {
-         //   var message = MyAPIGateway.Utilities.SerializeFromBinary<AllianceChatMessage>(data);
-         //   AllianceChat.ReceiveChatMessage(message);
+            var FactionCollection = MySession.Static.Factions.GetType().Assembly.GetType("Sandbox.Game.Multiplayer.MyFactionCollection");
+            sendChange = FactionCollection?.GetMethod("SendFactionChange", BindingFlags.NonPublic | BindingFlags.Static);
         }
-
+        
         public static void BackupGridMethod(List<MyObjectBuilder_CubeGrid> Grids, long User)
         {
             try
@@ -205,10 +196,6 @@ namespace Territory
             var folder2 = "";
             Directory.CreateDirectory(folder);
             
-            //if you want to monitor file changes to read new data, use this 
-          //  watcher = new FileSystemWatcher($"{folder}//AllianceData");
-          //  watcher.Created += OnCreated;
-         //   watcher.EnableRaisingEvents = true;
             return folder;
         }
         private static void OnCreated(object sender, FileSystemEventArgs e)
@@ -310,24 +297,6 @@ namespace Territory
         }
         public static Boolean Debug = false;
 
-        //public static bool SendToMQ(string Type, Object SendThis)
-        //{
-        //    if (NexusInstalled && TerritoryPlugin.config.UsingNexusChat && SendThis is AllianceChatMessage chatMessage)
-        //    {
-        //        var message = MyAPIGateway.Utilities.SerializeToBinary<AllianceChatMessage>(chatMessage);
-        //        API.SendMessageToAllServers(message);
-        //        AllianceChat.ReceiveChatMessage(chatMessage);
-        //        return true;
-        //    }
-        //    if (!MQPluginInstalled)
-        //    {
-        //        return false;
-        //    }
-        //    var input = JsonConvert.SerializeObject(SendThis);
-        //    var methodInput = new object[] { Type, input };
-        //    TerritoryPlugin.SendMessage?.Invoke(TerritoryPlugin.MQ, methodInput);
-        //    return true;
-        //}
 
         public static Random rand = new Random();
         private void SessionChanged(ITorchSession session, TorchSessionState state)
@@ -347,7 +316,8 @@ namespace Territory
             }
 
             if (state != TorchSessionState.Loaded) return;
-    
+            SetupFriendMethod();
+            Storage.SetupStorage();
             if (!File.Exists(path + "//Territories//Example.json"))
             {
                 var example = new Territories.Models.Territory();
