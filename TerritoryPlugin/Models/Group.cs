@@ -29,6 +29,15 @@ namespace Territory.Models
         {
             Invites.Remove(factionId);
             GroupMembers.Add(factionId);
+            var newfac = MySession.Static.Factions.TryGetFactionById(factionId);
+            foreach (var fac in GroupMembers)
+            {
+                var faction = MySession.Static.Factions.TryGetFactionById(fac);
+                foreach (var member in faction.Members)
+                {
+                    TerritoryPlugin.SendChatMessage($"{TerritoryPlugin.PluginName}", $"{newfac.Name} {newfac.Tag} Has joined the group!", MySession.Static.Players.TryGetSteamId(member.Value.PlayerId));
+                }
+            }
         }
 
         public void DeleteGroup()
@@ -57,6 +66,11 @@ namespace Territory.Models
         public void AddInvite(long factionId)
         {
             Invites.Add(factionId);
+            var faction = MySession.Static.Factions.TryGetFactionById(factionId);
+            foreach (var member in faction.Members)
+            {
+                TerritoryPlugin.SendChatMessage($"{TerritoryPlugin.PluginName}", $"You were invited to {GroupName} to accept use !group join {GroupTag} or !group join {GroupName}", MySession.Static.Players.TryGetSteamId(member.Value.PlayerId));
+            }
         }
         public void ProcessFriendlies()
         {
