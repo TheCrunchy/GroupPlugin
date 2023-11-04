@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ProtoBuf;
 
 namespace Territory.Models.Events
 {
-    public class NameChangedEvent
+    [ProtoContract]
+    public class GroupChangedEvent
     {
-        public Guid GroupId { get; set; }
-        public string NewName { get; set; }
+        [ProtoMember(1)]
+        public Group Group { get; set; }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Sandbox.Game.World;
 using Sandbox.ModAPI;
 using Territory.Handlers;
@@ -53,6 +54,7 @@ namespace Territory.Commands
 
             return group;
         }
+
         [Command("create", "create a group")]
         [Permission(MyPromoteLevel.None)]
         public void Create(string groupName, string description = "Default description")
@@ -87,7 +89,7 @@ namespace Territory.Commands
             var Event = new GroupEvent();
             var createdEvent = new GroupCreatedEvent()
             {
-                CreatedGroup = group
+                CreatedGroup = JsonConvert.SerializeObject(group)
             };
             Event.EventObject = MyAPIGateway.Utilities.SerializeToBinary(createdEvent);
             Event.EventType = createdEvent.GetType().Name;

@@ -72,7 +72,7 @@ namespace Territory
         public const string PluginName = "Groups";
 
         public static Random random = new Random();
-   
+
         public static TorchSessionState TorchState;
         private TorchSessionManager sessionManager;
         public static Config config;
@@ -136,7 +136,7 @@ namespace Territory
             var FactionCollection = MySession.Static.Factions.GetType().Assembly.GetType("Sandbox.Game.Multiplayer.MyFactionCollection");
             sendChange = FactionCollection?.GetMethod("SendFactionChange", BindingFlags.NonPublic | BindingFlags.Static);
         }
-        
+
         public static void BackupGridMethod(List<MyObjectBuilder_CubeGrid> Grids, long User)
         {
             try
@@ -195,7 +195,7 @@ namespace Territory
             }
             var folder2 = "";
             Directory.CreateDirectory(folder);
-            
+
             return folder;
         }
         private static void OnCreated(object sender, FileSystemEventArgs e)
@@ -318,6 +318,8 @@ namespace Territory
             if (state != TorchSessionState.Loaded) return;
             SetupFriendMethod();
             Storage.SetupStorage();
+            Directory.CreateDirectory($"{path}//Territories//");
+
             if (!File.Exists(path + "//Territories//Example.json"))
             {
                 var example = new Territories.Models.Territory();
@@ -382,14 +384,15 @@ namespace Territory
             {
                 repairCost = utils.ReadFromJsonFile<List<ComponentCost>>($"{path}/ComponentCosts.json");
             }
+            AddComponentCostToDictionary();
             AddComponentCost("AdminKit", 5000000, true);
             AddComponentCost("AdminComponent", 5000000, true);
 
             nextRegister = DateTime.Now;
         }
-      
+
         public static DateTime nextRegister = DateTime.Now.AddSeconds(60);
-     
+
         public int ticks;
         public static MyIdentity TryGetIdentity(string playerNameOrSteamId)
         {
@@ -409,7 +412,7 @@ namespace Territory
             }
             return null;
         }
-      
+
         public static List<string> KnownPaths = new List<string>();
         public static List<IMyIdentity> GetAllIdentitiesByNameOrId(string playerNameOrSteamId)
         {
@@ -493,7 +496,7 @@ namespace Territory
 
         }
         public static string WorldName = "";
-    
+
         public static Boolean SendPlayerNotify(MyPlayer player, int milliseconds, string message, string color)
         {
             var message2 = new NotificationMessage();
@@ -519,20 +522,20 @@ namespace Territory
             }
         }
 
-        
+
         public static Dictionary<long, DateTime> messageCooldowns = new Dictionary<long, DateTime>();
- 
 
 
- 
+
+
         public static bool Paused = false;
 
         public static Dictionary<Guid, Territories.Models.Territory> Territories = new Dictionary<Guid, Territories.Models.Territory>();
-        
+
 
         public static DateTime chat = DateTime.Now;
 
-    
+
         private FileUtils jsonStuff = new FileUtils();
         DateTime NextSave = DateTime.Now;
         public override async void Update()

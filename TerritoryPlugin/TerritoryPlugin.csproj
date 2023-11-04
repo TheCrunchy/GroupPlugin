@@ -199,6 +199,7 @@
     <Reference Include="VRage.Render, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Commands\groupadminCommands.cs" />
     <Compile Include="Commands\GroupCommands.cs" />
     <Compile Include="Handlers\GroupEventHandler.cs" />
     <Compile Include="Handlers\GroupHandler.cs" />
@@ -211,7 +212,7 @@
     <Compile Include="Models\Events\InvitedToGroupEvent.cs" />
     <Compile Include="Models\Events\JoinGroupEvent.cs" />
     <Compile Include="Models\Events\LeftGroupEvent.cs" />
-    <Compile Include="Models\Events\NameChangedEvent.cs" />
+    <Compile Include="Models\Events\GroupChangedEvent.cs" />
     <Compile Include="Models\Group.cs" />
     <Compile Include="NexusStuff\NexusHandler.cs" />
     <Compile Include="TerritoryPlugin.cs" />

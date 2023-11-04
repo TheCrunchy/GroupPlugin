@@ -13,8 +13,16 @@ namespace Territory.NexusStuff
     {
         public static void RaiseEvent(GroupEvent groupEvent)
         {
-            var message = MyAPIGateway.Utilities.SerializeToBinary<GroupEvent>(groupEvent);
-            TerritoryPlugin.API.SendMessageToAllServers(message);
+            if (TerritoryPlugin.NexusInstalled)
+            {
+                var message = MyAPIGateway.Utilities.SerializeToBinary<GroupEvent>(groupEvent);
+                TerritoryPlugin.API.SendMessageToAllServers(message);
+            }
+            else
+            {
+                TerritoryPlugin.Log.Error("Nexus not installed");
+            }
+          
         }
 
         public static void Handle(GroupEvent message)
@@ -54,8 +62,8 @@ namespace Territory.NexusStuff
                     }
                 case "NameChangedEvent":
                     {
-                        var ev = MyAPIGateway.Utilities.SerializeFromBinary<NameChangedEvent>(message.EventObject);
-                        GroupEventHandler.HandleGroupRename(ev);
+                        var ev = MyAPIGateway.Utilities.SerializeFromBinary<GroupChangedEvent>(message.EventObject);
+                        GroupEventHandler.HandleGroupChange(ev);
                         break;
                     }
                 default:

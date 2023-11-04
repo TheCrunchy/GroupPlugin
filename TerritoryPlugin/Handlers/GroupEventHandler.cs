@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Sandbox.Game.World;
+using Territory.Models;
 using Territory.Models.Events;
 
 namespace Territory.Handlers
@@ -26,12 +28,12 @@ namespace Territory.Handlers
                 GroupHandler.LoadedGroups[groupEvent.JoinedGroupId] = group;
             }
         }
-        public static void HandleGroupRename(NameChangedEvent groupEvent)
+        public static void HandleGroupChange(GroupChangedEvent groupEvent)
         {
-            if (GroupHandler.LoadedGroups.TryGetValue(groupEvent.GroupId, out var group))
+            if (GroupHandler.LoadedGroups.TryGetValue(groupEvent.Group.GroupId, out var group))
             {
-                group.GroupName = groupEvent.NewName;
-                GroupHandler.LoadedGroups[groupEvent.GroupId] = group;
+                group = groupEvent.Group;
+                GroupHandler.LoadedGroups[groupEvent.Group.GroupId] = group;
             }
 
         }
@@ -41,7 +43,7 @@ namespace Territory.Handlers
         }
         public static void HandleGroupCreated(GroupCreatedEvent groupEvent)
         {
-            GroupHandler.AddGroup(groupEvent.CreatedGroup);
+            GroupHandler.AddGroup(JsonConvert.DeserializeObject<Group>(groupEvent.CreatedGroup));
         }
 
         public static void HandleGroupInvite(InvitedToGroupEvent groupEvent)
