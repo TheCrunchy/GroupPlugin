@@ -11,6 +11,6 @@ namespace Territory.Models.Events
     public class GroupChangedEvent
     {
         [ProtoMember(1)]
-        public Group Group { get; set; }
+        public string Group { get; set; }
     }
 }

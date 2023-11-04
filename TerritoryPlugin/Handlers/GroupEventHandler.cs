@@ -30,10 +30,11 @@ namespace Territory.Handlers
         }
         public static void HandleGroupChange(GroupChangedEvent groupEvent)
         {
-            if (GroupHandler.LoadedGroups.TryGetValue(groupEvent.Group.GroupId, out var group))
+            var group1 = JsonConvert.DeserializeObject<Group>(groupEvent.Group);
+            if (GroupHandler.LoadedGroups.TryGetValue(group1.GroupId, out var group))
             {
-                group = groupEvent.Group;
-                GroupHandler.LoadedGroups[groupEvent.Group.GroupId] = group;
+                group = group1;
+                GroupHandler.LoadedGroups[group1.GroupId] = group;
             }
 
         }
