@@ -291,13 +291,13 @@ namespace Territory.Commands
             {
                 return;
             }
-            if (group.GroupLeader != (long)Context.Player.SteamUserId && group.GroupAdmins.Contains((long)Context.Player.SteamUserId))
+            // && group.GroupAdmins.Contains((long)Context.Player.SteamUserId)
+            if (group.GroupLeader != (long)Context.Player.SteamUserId)
             {
-                Context.Respond("You are not the group leader or a group admin.", $"{TerritoryPlugin.PluginName}");
+                Context.Respond("You are not the group leader.", $"{TerritoryPlugin.PluginName}");
                 return;
             }
 
-            
             if (group.GroupMembers.Contains(faction.FactionId))
             {
                 group.RemoveMemberFromGroup(faction.FactionId);
