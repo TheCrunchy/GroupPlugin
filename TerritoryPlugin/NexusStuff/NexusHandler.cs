@@ -59,6 +59,7 @@ namespace Territory.NexusStuff
                         break;
                     }
                 default:
+                    TerritoryPlugin.Log.Error($"{message.EventType} not added to the handle switch");
                     break;
             }
         }
