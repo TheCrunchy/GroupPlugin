@@ -16,6 +16,7 @@ namespace Territory.Handlers
         {
             Directory.CreateDirectory($"{TerritoryPlugin.path}/GroupData/");
             Directory.CreateDirectory($"{TerritoryPlugin.path}/Archive/");
+            LoadAll();
         }
 
         private static readonly string groupBase = $"{TerritoryPlugin.path}/GroupData/";
@@ -28,7 +29,10 @@ namespace Territory.Handlers
 
         public void Delete(Group group)
         {
-            File.Move($"{groupBase}/{group.GroupId}.json", $"{groupArchive}/{group.GroupId}.json");
+            if (File.Exists($"{groupBase}/{group.GroupId}.json"))
+            {
+                File.Move($"{groupBase}/{group.GroupId}.json", $"{groupArchive}/{group.GroupId}.json");
+            }
         }
 
         public void Load(Guid groupId)
