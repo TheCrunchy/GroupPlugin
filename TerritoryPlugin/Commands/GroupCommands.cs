@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using CrunchGroup.Handlers;
 using CrunchGroup.Models;
 using CrunchGroup.Models.Events;
@@ -75,8 +76,8 @@ namespace CrunchGroup.Commands
                 GroupId = Guid.NewGuid(),
                 GroupDescription = description,
                 GroupLeader = (long)Context.Player.SteamUserId,
-            }; 
-           
+            };
+
             group.GroupMembers.Add(faction.FactionId);
 
             Storage.StorageHandler.Save(group);
@@ -109,7 +110,7 @@ namespace CrunchGroup.Commands
             {
                 return;
             }
-            if (group.GroupLeader != (long) Context.Player.SteamUserId)
+            if (group.GroupLeader != (long)Context.Player.SteamUserId)
             {
                 Context.Respond("You are not the group leader.", $"{TerritoryPlugin.PluginName}");
                 return;
@@ -153,7 +154,7 @@ namespace CrunchGroup.Commands
             var targetFac = MySession.Static.Factions.TryGetFactionByTag(targetTag);
             if (targetFac == null)
             {
-                Context.Respond("Target faction not found",$"{TerritoryPlugin.PluginName}");
+                Context.Respond("Target faction not found", $"{TerritoryPlugin.PluginName}");
                 return;
             }
 
@@ -193,17 +194,20 @@ namespace CrunchGroup.Commands
                 Context.Respond("Only the founder or leaders can join a group", $"{TerritoryPlugin.PluginName}");
                 return;
             }
-            var group = GroupHandler.GetGroupByTag(groupTag);
-            if (group == null)
-            {
-                group = GroupHandler.GetGroupByName(groupTag);
-            }
 
+            var IsInGroup = GroupHandler.LoadedGroups.Where(x => x.Value.GroupMembers.Contains(faction.FactionId));
+            if (IsInGroup.Any())
+            {
+                Context.Respond($"You are already a member of the group {IsInGroup.First().Value.GroupName}, you must leave that first with !group leave", $"{TerritoryPlugin.PluginName}");
+                return;
+            }
+            var group = GroupHandler.GetGroupByTag(groupTag) ?? GroupHandler.GetGroupByName(groupTag);
             if (group == null)
             {
                 Context.Respond("Target group not found, see all groups with !group list", $"{TerritoryPlugin.PluginName}");
                 return;
             }
+
             if (group.Invites.Contains(faction.FactionId))
             {
                 group.AddMemberToGroup(faction.FactionId);

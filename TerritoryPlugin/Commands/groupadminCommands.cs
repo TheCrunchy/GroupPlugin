@@ -104,9 +104,8 @@ namespace CrunchGroup.Commands
             }
 
             var IsInGroup = GroupHandler.LoadedGroups.Where(x => x.Value.GroupMembers.Contains(faction.FactionId));
-            if (IsInGroup.Any())
+            foreach (var inGroup in IsInGroup)
             {
-                var inGroup = IsInGroup.First();
                 inGroup.Value.RemoveMemberFromGroup(faction.FactionId);
                 var LeaveEvent = new GroupEvent();
                 var LeavecreatedEvent = new LeftGroupEvent()
@@ -120,10 +119,9 @@ namespace CrunchGroup.Commands
                 Storage.StorageHandler.Save(inGroup.Value);
                 GroupHandler.AddGroup(inGroup.Value);
                 Context.Respond($"Faction was in group {inGroup.Value.GroupName} {inGroup.Value.GroupTag}, they have been kicked from it.", $"{TerritoryPlugin.PluginName}");
-                return;
             }
-           
-            Context.Respond("Faction was not a member of a group.", $"{TerritoryPlugin.PluginName}");
+
+            Context.Respond("Removed the faction from any groups they were members of.", $"{TerritoryPlugin.PluginName}");
         }
     }
 }
