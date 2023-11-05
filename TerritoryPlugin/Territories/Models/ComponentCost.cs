@@ -1,4 +1,4 @@
-﻿namespace Territory.Territories.Models
+﻿namespace CrunchGroup.Territories.Models
 {
     public class ComponentCost
     {

@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Territory.Models;
+using CrunchGroup.Handlers.Interfaces;
+using CrunchGroup.Models;
 
-namespace Territory.Handlers
+namespace CrunchGroup.Handlers
 {
     public class JsonStorageHandler : IStorageHandler
     {

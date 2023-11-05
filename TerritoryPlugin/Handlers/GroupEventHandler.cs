@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using CrunchGroup.Models;
+using CrunchGroup.Models.Events;
 using Newtonsoft.Json;
-using Sandbox.Game.World;
-using Territory.Models;
-using Territory.Models.Events;
 
-namespace Territory.Handlers
+namespace CrunchGroup.Handlers
 {
     public static class GroupEventHandler
     {

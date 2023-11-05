@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using CrunchGroup.Territories.Interfaces;
 using Sandbox.Common.ObjectBuilders;
 using Sandbox.Game.Entities;
 using Sandbox.Game.World;
 using Sandbox.ModAPI;
-using Territory.Territories.Interfaces;
 using VRageMath;
 
-namespace Territory.Territories.SecondaryLogics
+namespace CrunchGroup.Territories.SecondaryLogics
 {
     public class SafezoneLogic : ISecondaryLogic
     {

@@ -1,11 +1,7 @@
-﻿using Sandbox.Game.GameSystems.BankingAndCurrency;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
+using Sandbox.Game.GameSystems.BankingAndCurrency;
 
-namespace Territory
+namespace CrunchGroup
 {
    public class EconUtils
     {

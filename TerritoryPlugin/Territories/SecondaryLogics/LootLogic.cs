@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CrunchGroup.Territories.Interfaces;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Ingame;
-using Territory.Territories.Interfaces;
 using VRage;
 using VRage.Game;
 using VRage.Game.ModAPI.Ingame;
@@ -13,7 +13,7 @@ using VRage.ObjectBuilders.Private;
 using VRageMath;
 using IMyInventory = VRage.Game.ModAPI.IMyInventory;
 
-namespace Territory.Territories.SecondaryLogics
+namespace CrunchGroup.Territories.SecondaryLogics
 {
     public class LootLogic : ISecondaryLogic
     {

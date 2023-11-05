@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Territory.Territories.Interfaces
+namespace CrunchGroup.Territories.Interfaces
 {
     public interface IPointOwner
     {

@@ -4,14 +4,14 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using CrunchGroup.Territories.CapLogics;
+using CrunchGroup.Territories.Interfaces;
+using CrunchGroup.Territories.PointOwners;
 using Newtonsoft.Json;
 using Sandbox.Game.World;
-using Territory.Territories.CapLogics;
-using Territory.Territories.Interfaces;
-using Territory.Territories.PointOwners;
 using VRage.Game.ModAPI;
 
-namespace Territory.Territories
+namespace CrunchGroup.Territories
 {
     public static class CaptureHandler
     {

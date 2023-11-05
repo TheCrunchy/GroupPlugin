@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace Territory.Territories.Interfaces
+namespace CrunchGroup.Territories.Interfaces
 {
     public interface ISecondaryLogic
     {

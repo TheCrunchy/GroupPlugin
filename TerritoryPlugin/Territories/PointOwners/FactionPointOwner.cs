@@ -1,7 +1,7 @@
-﻿using Sandbox.Game.World;
-using Territory.Territories.Interfaces;
+﻿using CrunchGroup.Territories.Interfaces;
+using Sandbox.Game.World;
 
-namespace Territory.Territories.PointOwners
+namespace CrunchGroup.Territories.PointOwners
 {
     public class FactionPointOwner : IPointOwner
     {

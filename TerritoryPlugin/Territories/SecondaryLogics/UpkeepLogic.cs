@@ -2,16 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CrunchGroup.Territories.Interfaces;
+using CrunchGroup.Territories.Models;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
-using Territory.Territories.Interfaces;
-using Territory.Territories.Models;
 using VRage;
 using VRage.Game;
 using VRage.Game.ModAPI;
 using VRageMath;
 
-namespace Territory.Territories.SecondaryLogics
+namespace CrunchGroup.Territories.SecondaryLogics
 {
     public class UpkeepLogic : ISecondaryLogic
     {

@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NLog.LayoutRenderers;
+using CrunchGroup.Models;
 using Sandbox.Game.World;
-using Sandbox.ModAPI.Ingame;
-using Territory.Models;
 
-namespace Territory.Handlers
+namespace CrunchGroup.Handlers
 {
     public static class GroupHandler
     {
@@ -28,7 +24,7 @@ namespace Territory.Handlers
 
         public static Group GetGroupByTag(string tag)
         {
-            return LoadedGroups.FirstOrDefault(x => x.Value.GroupTag == tag).Value ?? null;
+            return LoadedGroups.FirstOrDefault(x => x.Value.GroupTag == tag).Value ?? LoadedGroups.FirstOrDefault(x => x.Value.GroupName == tag).Value ?? null;
         }
 
         public static void AddGroup(Group group)

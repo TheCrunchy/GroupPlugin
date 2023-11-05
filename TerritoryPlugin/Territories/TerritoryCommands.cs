@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using CrunchGroup.Territories.Interfaces;
+using CrunchGroup.Territories.PointOwners;
 using Sandbox.Engine.Multiplayer;
 using Sandbox.Game.World;
-using Territory.Territories.Interfaces;
-using Territory.Territories.PointOwners;
 using Torch.Commands;
 using Torch.Commands.Permissions;
 using VRage.Game.ModAPI;
 
-namespace Territory.Territories
+namespace CrunchGroup.Territories
 {
     [Category("territory")]
     public class TerritoryCommands : CommandModule

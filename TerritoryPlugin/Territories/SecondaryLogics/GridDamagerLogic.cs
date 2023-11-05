@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CrunchGroup.Territories.Interfaces;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
-using Territory.Territories.Interfaces;
 using VRage.Game;
 using VRageMath;
 
-namespace Territory.Territories.SecondaryLogics
+namespace CrunchGroup.Territories.SecondaryLogics
 {
     public class GridDamagerLogic : ISecondaryLogic
     {

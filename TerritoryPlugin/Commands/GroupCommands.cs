@@ -1,21 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using CrunchGroup.Handlers;
+using CrunchGroup.Models;
+using CrunchGroup.Models.Events;
+using CrunchGroup.NexusStuff;
 using Newtonsoft.Json;
 using Sandbox.Game.World;
 using Sandbox.ModAPI;
-using Territory.Handlers;
-using Territory.Models;
-using Territory.Models.Events;
-using Territory.NexusStuff;
 using Torch.Commands;
 using Torch.Commands.Permissions;
-using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 
-namespace Territory.Commands
+namespace CrunchGroup.Commands
 {
     [Category("group")]
     public class GroupCommands : CommandModule

@@ -3,7 +3,7 @@ using System.Reflection;
 using Sandbox.Game.Entities;
 using Torch.Managers.PatchManager;
 
-namespace Territory.Territories
+namespace CrunchGroup.Territories
 {
     public static class SkoTweaksPatch
     {

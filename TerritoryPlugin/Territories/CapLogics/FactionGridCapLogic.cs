@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CrunchGroup.Territories.Interfaces;
+using CrunchGroup.Territories.PointOwners;
 using Sandbox.Game.Entities;
 using Sandbox.Game.World;
 using Sandbox.ModAPI;
-using Territory.Territories.Interfaces;
-using Territory.Territories.PointOwners;
 using VRage.Game;
 using VRageMath;
 
-namespace Territory.Territories.CapLogics
+namespace CrunchGroup.Territories.CapLogics
 {
     public class FactionGridCapLogic : ICapLogic
     {

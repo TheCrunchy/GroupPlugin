@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Sandbox.Game.Multiplayer;
 using Sandbox.Game.World;
 using Sandbox.ModAPI;
 using VRage.Game.ModAPI;
 
-namespace Territory.Models
+namespace CrunchGroup.Models
 {
     public class Group
     {

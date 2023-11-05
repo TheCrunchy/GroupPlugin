@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Territory.Territories.Models
+namespace CrunchGroup.Territories.Models
 {
     public class RecipeItem
     {

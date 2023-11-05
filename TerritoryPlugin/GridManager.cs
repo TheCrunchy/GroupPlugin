@@ -1,16 +1,10 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using NLog;
 using Sandbox;
 using Sandbox.Common.ObjectBuilders;
-using Sandbox.Engine.Multiplayer;
 using Sandbox.Game.Entities;
-using Sandbox.Game.Entities.Blocks;
-using Sandbox.Game.Entities.Character;
-using Sandbox.Game.Entities.Cube;
 using Sandbox.Game.Multiplayer;
 using Sandbox.Game.Screens.Helpers;
 using Sandbox.Game.World;
@@ -19,13 +13,11 @@ using Torch.Commands;
 using VRage;
 using VRage.Game;
 using VRage.Game.Entity;
-using VRage.Game.ModAPI.Ingame;
-using VRage.Groups;
 using VRage.ObjectBuilders;
 using VRage.ObjectBuilders.Private;
 using VRageMath;
 
-namespace Territory
+namespace CrunchGroup
 {
 
     //Class from LordTylus ALE Core

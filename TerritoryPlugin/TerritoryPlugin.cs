@@ -4,6 +4,13 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using CrunchGroup.Handlers;
+using CrunchGroup.NexusStuff;
+using CrunchGroup.Territories;
+using CrunchGroup.Territories.CapLogics;
+using CrunchGroup.Territories.Interfaces;
+using CrunchGroup.Territories.Models;
+using CrunchGroup.Territories.SecondaryLogics;
 using NLog;
 using Sandbox.Engine.Multiplayer;
 using Sandbox.Game.Entities;
@@ -14,14 +21,6 @@ using Sandbox.Game.Weapons;
 using Sandbox.Game.World;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Weapons;
-using Territory.Handlers;
-using Territory.Models.Events;
-using Territory.NexusStuff;
-using Territory.Territories;
-using Territory.Territories.CapLogics;
-using Territory.Territories.Interfaces;
-using Territory.Territories.Models;
-using Territory.Territories.SecondaryLogics;
 using Torch;
 using Torch.API;
 using Torch.API.Managers;
@@ -37,7 +36,7 @@ using VRage.Game;
 using VRage.Game.ModAPI;
 using VRageMath;
 
-namespace Territory
+namespace CrunchGroup
 {
     public class TerritoryPlugin : TorchPluginBase
     {

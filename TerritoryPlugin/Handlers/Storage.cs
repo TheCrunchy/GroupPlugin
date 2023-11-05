@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using CrunchGroup.Handlers.Interfaces;
 
-namespace Territory.Handlers
+namespace CrunchGroup.Handlers
 {
     public static class Storage
     {

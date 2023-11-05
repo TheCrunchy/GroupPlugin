@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Sandbox.Game.Screens.Helpers;
 using VRage.Game;
 using VRageMath;
 
-namespace Territory
+namespace CrunchGroup
 {
    public static class GPSHelper
     {

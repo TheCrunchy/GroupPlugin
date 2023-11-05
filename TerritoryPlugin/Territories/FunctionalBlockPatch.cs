@@ -5,7 +5,7 @@ using Sandbox.Game.Entities.Cube;
 using Torch.Managers.PatchManager;
 using VRage.Game;
 
-namespace Territory.Territories
+namespace CrunchGroup.Territories
 {
     [PatchShim]
     public static class FunctionalBlockPatch

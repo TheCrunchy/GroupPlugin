@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Territory.Models;
+using CrunchGroup.Models;
 
-namespace Territory.Handlers
+namespace CrunchGroup.Handlers.Interfaces
 {
     public interface IStorageHandler
     {

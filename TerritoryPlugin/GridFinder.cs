@@ -1,14 +1,14 @@
-﻿using Sandbox.Game.Entities;
-using Sandbox.Game.Entities.Character;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Sandbox.Game.Entities;
+using Sandbox.Game.Entities.Character;
 using VRage.Game.ModAPI;
 using VRage.Groups;
 using VRageMath;
 
-namespace Territory
+namespace CrunchGroup
 {
 
     public class GridFinder

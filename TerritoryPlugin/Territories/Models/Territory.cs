@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using Territory.Territories.Interfaces;
+using CrunchGroup.Territories.Interfaces;
 using VRageMath;
 
-namespace Territory.Territories.Models
+namespace CrunchGroup.Territories.Models
 {
     public class Territory
     {

@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using CrunchGroup.Handlers;
+using CrunchGroup.Models.Events;
 using Sandbox.ModAPI;
-using Territory.Handlers;
-using Territory.Models.Events;
 
-namespace Territory.NexusStuff
+namespace CrunchGroup.NexusStuff
 {
     public static class NexusHandler
     {
@@ -20,6 +16,7 @@ namespace Territory.NexusStuff
             }
             else
             {
+                Handle(groupEvent);
                 TerritoryPlugin.Log.Error("Nexus not installed");
             }
           
