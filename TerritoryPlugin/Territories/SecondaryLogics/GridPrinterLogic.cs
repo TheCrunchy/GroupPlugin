@@ -65,8 +65,8 @@ namespace CrunchGroup.Territories.SecondaryLogics
                 var inventory = GetGridInventory();
                 if (inventory == null || !FoundGrids.Any() || !inventory.Any())
                 {
-                    TerritoryPlugin.Log.Info($"Could not find inventory for grid at position {CentrePosition.ToString()}");
-                    // TerritoryPlugin.Log.Info(inventory.Count);
+                    GroupPlugin.Log.Info($"Could not find inventory for grid at position {CentrePosition.ToString()}");
+                    // GroupPlugin.Log.Info(inventory.Count);
                     return Task.FromResult(true);
                 }
                 FoundInventories = inventory;
@@ -78,14 +78,14 @@ namespace CrunchGroup.Territories.SecondaryLogics
                 try
                 {
                     var grid2 = grid.CubeGrid as MyCubeGrid;
-                    //    TerritoryPlugin.Log.Info("1");
+                    //    GroupPlugin.Log.Info("1");
                var proj = grid as MyProjectorBase;
                
                     MyAPIGateway.Utilities.InvokeOnGameThread(() =>
                         {
-                            TerritoryPlugin.Log.Error("This isnt setup for this version, uncomment the GridRepair class and make that work");
+                            GroupPlugin.Log.Error("This isnt setup for this version, uncomment the GridRepair class and make that work");
                           //  GridRepair.BuildProjected(grid2, grid.OwnerId, RepairsPerCycle, BlocksPerCycle,
-                            //    PrinterPrefix, PriceMultiplier, TerritoryPlugin.ComponentCosts, RequireMoney, RequireComponents, FoundInventories);
+                            //    PrinterPrefix, PriceMultiplier, GroupPlugin.ComponentCosts, RequireMoney, RequireComponents, FoundInventories);
                         }
                     );
                     if (Cooldowns.ContainsKey(grid.EntityId))
@@ -101,7 +101,7 @@ namespace CrunchGroup.Territories.SecondaryLogics
                 }
                 catch (Exception e)
                 {
-                    TerritoryPlugin.Log.Error($"Grid printer error {e}");
+                    GroupPlugin.Log.Error($"Grid printer error {e}");
                     return Task.FromResult(true);
                 }
             }
@@ -175,7 +175,7 @@ namespace CrunchGroup.Territories.SecondaryLogics
                 }
                 if (FoundProjectors.Count < MaximumProjectors && grid.BuildableBlocksCount > 0)
                 {
-                    //      TerritoryPlugin.Log.Info("found");
+                    //      GroupPlugin.Log.Info("found");
                     FoundProjectors.Add(grid);
                 }
             }

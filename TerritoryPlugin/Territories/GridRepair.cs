@@ -35,7 +35,7 @@
 //            int fixedblocks = 0;
 //            long PriceSoFar = 0;
 //            var steamid = (long)MySession.Static.Players.TryGetSteamId(identityId);
-//            //     TerritoryPlugin.Log.Info("build 1");
+//            //     GroupPlugin.Log.Info("build 1");
 //            HashSet<MySlimBlock> blocks3 = grid.GetBlocks();
 
 //            var converted = new Dictionary<MyDefinitionId, int>();
@@ -48,7 +48,7 @@
 //                    if (PriceSoFar > 0 && requireMoney)
 //                    {
 //                        EconUtils.takeMoney(identityId, PriceSoFar);
-//                        //      TerritoryPlugin.Log.Info("pay 1");
+//                        //      GroupPlugin.Log.Info("pay 1");
 //                    }
 //                    return;
 //                }
@@ -210,7 +210,7 @@
 
 //                if (Cycle >= 20)
 //                {
-//                    //   TerritoryPlugin.Log.Info("Hit 20 cycle");
+//                    //   GroupPlugin.Log.Info("Hit 20 cycle");
 //                    if (consumeComponents)
 //                    {
 //                        ShipyardCommands.ConsumeComponents(inventories, removeComps,
@@ -283,7 +283,7 @@
 //                        bool banned = false;
 //                        long tempPrice = 0;
 //                        BannedCount = CalcPriceAndBanned(priceMultiplier, componentCosts, convertedProj, BannedCount, ref banned, ref tempPrice);
-//                        //      TerritoryPlugin.Log.Info($"{PriceSoFar}");
+//                        //      GroupPlugin.Log.Info($"{PriceSoFar}");
 //                        if (banned)
 //                        {
 //                            continue;
@@ -305,7 +305,7 @@
 //                                        }
 //                                        foreach (var item in removeComps)
 //                                        {
-//                                            TerritoryPlugin.Log.Info($"{item.Key} {item.Value}");
+//                                            GroupPlugin.Log.Info($"{item.Key} {item.Value}");
 //                                        }
 //                                        ShipyardCommands.ConsumeComponents(inventories, removeComps,
 //                                            (ulong)steamid);

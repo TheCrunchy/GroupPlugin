@@ -9,15 +9,15 @@ namespace CrunchGroup.NexusStuff
     {
         public static void RaiseEvent(GroupEvent groupEvent)
         {
-            if (TerritoryPlugin.NexusInstalled)
+            if (GroupPlugin.NexusInstalled)
             {
                 var message = MyAPIGateway.Utilities.SerializeToBinary<GroupEvent>(groupEvent);
-                TerritoryPlugin.API.SendMessageToAllServers(message);
+                GroupPlugin.API.SendMessageToAllServers(message);
             }
             else
             {
                 Handle(groupEvent);
-                TerritoryPlugin.Log.Error("Nexus not installed");
+                GroupPlugin.Log.Error("Nexus not installed");
             }
           
         }
@@ -64,14 +64,14 @@ namespace CrunchGroup.NexusStuff
                         break;
                     }
                 default:
-                    TerritoryPlugin.Log.Error($"{message.EventType} not added to the handle switch");
+                    GroupPlugin.Log.Error($"{message.EventType} not added to the handle switch");
                     break;
             }
         }
 
         public static void HandleNexusMessage(ushort handlerId, byte[] data, ulong steamID, bool fromServer)
         {
-            TerritoryPlugin.Log.Info("Recieved a nexus event");
+            GroupPlugin.Log.Info("Recieved a nexus event");
             try
             {
                 var message = MyAPIGateway.Utilities.SerializeFromBinary<GroupEvent>(data);
@@ -79,10 +79,10 @@ namespace CrunchGroup.NexusStuff
             }
             catch (Exception e)
             {
-                TerritoryPlugin.Log.Error($"Errored on nexus event {e}");
+                GroupPlugin.Log.Error($"Errored on nexus event {e}");
                 throw;
             }
-            TerritoryPlugin.Log.Info("Handled a nexus event");
+            GroupPlugin.Log.Info("Handled a nexus event");
         }
     }
 }

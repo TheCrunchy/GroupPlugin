@@ -29,7 +29,7 @@ namespace CrunchGroup.Territories.SecondaryLogics
             }
 
             if (!CanLoop()) return Task.FromResult(true);
-            //    TerritoryPlugin.Log.Info("1");
+            //    GroupPlugin.Log.Info("1");
 
             NextLoop = DateTime.Now.AddSeconds(SecondsBetweenLoops);
             if (RequireOwner && point.PointOwner == null)

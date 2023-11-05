@@ -19,7 +19,7 @@ namespace CrunchGroup.Territories
         [Permission(MyPromoteLevel.Admin)]
         public void Give(string territoryName, string factionTag)
         {
-            var territory = TerritoryPlugin.Territories.First(x => x.Value.Name == territoryName);
+            var territory = GroupPlugin.Territories.First(x => x.Value.Name == territoryName);
             if (territory.Value == null)
             {
                 Context.Respond("Territory Not found.");
@@ -34,16 +34,16 @@ namespace CrunchGroup.Territories
             }
 
             territory.Value.Owner = new FactionPointOwner() { FactionId = faction.FactionId };
-            TerritoryPlugin.Territories[territory.Key] = territory.Value;
-            TerritoryPlugin.utils.WriteToXmlFile<Models.Territory>(TerritoryPlugin.path + "//Territories//" + territory.Value.Name + ".xml", territory.Value);
+            GroupPlugin.Territories[territory.Key] = territory.Value;
+            GroupPlugin.utils.WriteToXmlFile<Models.Territory>(GroupPlugin.path + "//Territories//" + territory.Value.Name + ".xml", territory.Value);
         }
 
         [Command("reload", "reload territories")]
         [Permission(MyPromoteLevel.Admin)]
         public void Load()
         {
-            TerritoryPlugin.LoadAllTerritories();
-            Context.Respond(TerritoryPlugin.Territories.Count.ToString() + " loaded");
+            GroupPlugin.LoadAllTerritories();
+            Context.Respond(GroupPlugin.Territories.Count.ToString() + " loaded");
         }
 
 
@@ -57,7 +57,7 @@ namespace CrunchGroup.Territories
             territory.SecondaryLogics = new List<ISecondaryLogic>();
             territory.CapturePoints = new List<ICapLogic>();
             territory.WorldName = MyMultiplayer.Static.HostName;
-            TerritoryPlugin.utils.WriteToJsonFile<Models.Territory>(TerritoryPlugin.path + "//Territories//" + territory.Name + ".json", territory);
+            GroupPlugin.utils.WriteToJsonFile<Models.Territory>(GroupPlugin.path + "//Territories//" + territory.Name + ".json", territory);
             Context.Respond("Created");
         }
 
@@ -65,7 +65,7 @@ namespace CrunchGroup.Territories
         [Permission(MyPromoteLevel.Admin)]
         public void AddPoint(string name, string pointtype)
         {
-            var territory = TerritoryPlugin.Territories.FirstOrDefault(x => x.Value.Name == name).Value;
+            var territory = GroupPlugin.Territories.FirstOrDefault(x => x.Value.Name == name).Value;
             if (territory == null)
             {
                 Context.Respond($"{name} not found");
@@ -83,7 +83,7 @@ namespace CrunchGroup.Territories
                 var instance = Activator.CreateInstance(point);
                 territory.CapturePoints.Add((ICapLogic)instance);
                 Context.Respond("Added cap logic?");
-                TerritoryPlugin.utils.WriteToJsonFile<Models.Territory>(TerritoryPlugin.path + "//Territories//" + territory.Name + ".json", territory);
+                GroupPlugin.utils.WriteToJsonFile<Models.Territory>(GroupPlugin.path + "//Territories//" + territory.Name + ".json", territory);
             }
             else
             {
@@ -101,7 +101,7 @@ namespace CrunchGroup.Territories
         [Permission(MyPromoteLevel.Admin)]
         public void AddLogic(string name, string pointnameOrbase, string secondarylogic)
         {
-            var territory = TerritoryPlugin.Territories.FirstOrDefault(x => x.Value.Name == name).Value;
+            var territory = GroupPlugin.Territories.FirstOrDefault(x => x.Value.Name == name).Value;
             if (territory == null)
             {
                 Context.Respond($"{name} not found");
@@ -134,7 +134,7 @@ namespace CrunchGroup.Territories
                 }
         
                 Context.Respond("Added secondary logic?");
-                TerritoryPlugin.utils.WriteToJsonFile<Models.Territory>(TerritoryPlugin.path + "//Territories//" + territory.Name + ".json", territory);
+                GroupPlugin.utils.WriteToJsonFile<Models.Territory>(GroupPlugin.path + "//Territories//" + territory.Name + ".json", territory);
             }
             else
             {

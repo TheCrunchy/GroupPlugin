@@ -34,9 +34,9 @@
 //                throw new Exception("Failed to find patch method");
 //            public static void Patch(PatchContext ctx)
 //            {
-//                var HandleMessageMethod = TerritoryPlugin.MQ.GetType().GetMethod("MessageHandler", BindingFlags.Instance | BindingFlags.Public);
+//                var HandleMessageMethod = GroupPlugin.MQ.GetType().GetMethod("MessageHandler", BindingFlags.Instance | BindingFlags.Public);
 //                if (HandleMessageMethod == null) return;
-//                TerritoryPlugin.Log.Info("3");
+//                GroupPlugin.Log.Info("3");
 //                ctx.GetPattern(HandleMessageMethod).Suffixes.Add(HandleMessagePatch);
 
 //                Handlers.Add(AllianceMessage, HandleAllianceChat);
@@ -45,7 +45,7 @@
 //            }
 //            public static void ReturnPCU(ref int __result)
 //            {
-//                //TerritoryPlugin.Log.Info("Getting PCU");
+//                //GroupPlugin.Log.Info("Getting PCU");
 //               // __result = 5;
 //            }
 
@@ -58,7 +58,7 @@
 //                var message = JsonConvert.DeserializeObject<AllianceSendToDiscord>(MessageBody);
 //                if (message.SendToIngame)
 //                {
-//                    TerritoryPlugin.SendChatMessage(message.SenderPrefix, message.MessageText, 0L);
+//                    GroupPlugin.SendChatMessage(message.SenderPrefix, message.MessageText, 0L);
 //                }
 //            }
 
@@ -77,7 +77,7 @@
 //            [Permission(MyPromoteLevel.Admin)]
 //            public void MQTest()
 //            {
-//                if (!TerritoryPlugin.MQPluginInstalled)
+//                if (!GroupPlugin.MQPluginInstalled)
 //                {
 //                    Context.Respond("Plugin not installed");
 //                    return;
@@ -85,7 +85,7 @@
 
 //                var input = JsonConvert.SerializeObject("Alliance Test Message");
 //                var methodInput = new object[] { "Alliance Test", input };
-//                TerritoryPlugin.SendMessage?.Invoke(TerritoryPlugin.MQ, methodInput);
+//                GroupPlugin.SendMessage?.Invoke(GroupPlugin.MQ, methodInput);
 //            }
 //        }
 //    }

@@ -216,7 +216,7 @@
     <Compile Include="Models\Events\GroupChangedEvent.cs" />
     <Compile Include="Models\Group.cs" />
     <Compile Include="NexusStuff\NexusHandler.cs" />
-    <Compile Include="TerritoryPlugin.cs" />
+    <Compile Include="GroupPlugin.cs" />
     <Compile Include="Territories\Models\ComponentCost.cs" />
     <Compile Include="Territories\SecondaryLogics\GridDamagerLogic.cs" />
     <Compile Include="Territories\SecondaryLogics\ProductionBuffLogic.cs" />

@@ -69,8 +69,8 @@ namespace CrunchGroup.Territories.SecondaryLogics
             var inventory = GetGridInventory();
             if (inventory == null || !FoundGrids.Any() || !inventory.Any())
             {
-                TerritoryPlugin.Log.Info($"Could not find inventory for grid at position {GridPosition.ToString()}");
-               // TerritoryPlugin.Log.Info(inventory.Count);
+                GroupPlugin.Log.Info($"Could not find inventory for grid at position {GridPosition.ToString()}");
+               // GroupPlugin.Log.Info(inventory.Count);
                 return Task.FromResult(true);
             }
             var LCD = GetPanel();
@@ -81,7 +81,7 @@ namespace CrunchGroup.Territories.SecondaryLogics
             StringBuilder builder = new StringBuilder();
             foreach (CraftedItem item in this.CraftableItems.Where(x => x.Enabled))
             {
-                double yeet = TerritoryPlugin.rand.NextDouble();
+                double yeet = GroupPlugin.rand.NextDouble();
                 if (!(yeet <= item.chanceToCraft)) continue;
                 var comps = new Dictionary<MyDefinitionId, int>();
 
@@ -95,12 +95,12 @@ namespace CrunchGroup.Territories.SecondaryLogics
                     }
                 }
 
-             //   TerritoryPlugin.Log.Info($"Checking {comps.Count}");
+             //   GroupPlugin.Log.Info($"Checking {comps.Count}");
 
                 if (!ConsumeComponents(inventory, comps, LCD)) continue;
-           //     TerritoryPlugin.Log.Info("It consumed");
+           //     GroupPlugin.Log.Info("It consumed");
                 SpawnItems(id, item.amountPerCraft);
-          //      TerritoryPlugin.Log.Info("Checking 2");
+          //      GroupPlugin.Log.Info("Checking 2");
                 builder.AppendLine(
                     $"Successfully crafted {item.subtypeid} {item.typeid.Replace("MyObjectBuilder_", "")} at {DateTime.Now:HH-mm}");
                 comps.Clear();
@@ -156,7 +156,7 @@ namespace CrunchGroup.Territories.SecondaryLogics
                     {
                         panel?.WriteText($"Crafting error, missing " + needed + " " + c.Key.SubtypeName + $" All components must be inside this grid. at {DateTime.Now:HH-mm}");
                     });
-                 //   TerritoryPlugin.Log.Info("Not found components");
+                 //   GroupPlugin.Log.Info("Not found components");
                     return false;
                 }
             }

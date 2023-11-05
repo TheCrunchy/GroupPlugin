@@ -33,13 +33,13 @@ namespace CrunchGroup.Territories.SecondaryLogics
             {
                 if (DebugMessages)
                 {
-                    TerritoryPlugin.Log.Info($"Safezone Debug {point.PointName} owner is null");
+                    GroupPlugin.Log.Info($"Safezone Debug {point.PointName} owner is null");
                 }
                 if (foundzone != null)
                 {
                     if (DebugMessages)
                     {
-                        TerritoryPlugin.Log.Info($"Safezone Debug {point.PointName} clearing the filters");
+                        GroupPlugin.Log.Info($"Safezone Debug {point.PointName} clearing the filters");
                     }
                     var zone = foundzone as MySafeZone;
                     if (!CaptureHandler.TrackedSafeZoneIds.Contains(zone.EntityId))
@@ -57,7 +57,7 @@ namespace CrunchGroup.Territories.SecondaryLogics
             {
                 if (DebugMessages)
                 {
-                    TerritoryPlugin.Log.Info($"Safezone Debug {point.PointName} Alliance is null");
+                    GroupPlugin.Log.Info($"Safezone Debug {point.PointName} Alliance is null");
                 }
                 return Task.FromResult(true);
             }
@@ -66,7 +66,7 @@ namespace CrunchGroup.Territories.SecondaryLogics
             {
                 if (DebugMessages)
                 {
-                    TerritoryPlugin.Log.Info($"Safezone Debug {point.PointName} Using safezoneid from file, zone isnt null");
+                    GroupPlugin.Log.Info($"Safezone Debug {point.PointName} Using safezoneid from file, zone isnt null");
                 }
                 var zone = foundzone as MySafeZone;
                 if (!CaptureHandler.TrackedSafeZoneIds.Contains(zone.EntityId))
@@ -85,7 +85,7 @@ namespace CrunchGroup.Territories.SecondaryLogics
                 {
                     if (DebugMessages)
                     {
-                        TerritoryPlugin.Log.Info($"Safezone Debug {point.PointName} zone hasnt been found yet, {zone.EntityId} is a zone");
+                        GroupPlugin.Log.Info($"Safezone Debug {point.PointName} zone hasnt been found yet, {zone.EntityId} is a zone");
                     }
                     zone.Factions.Clear();
                     if (!CaptureHandler.TrackedSafeZoneIds.Contains(zone.EntityId))
@@ -103,7 +103,7 @@ namespace CrunchGroup.Territories.SecondaryLogics
 
             if (DebugMessages)
             {
-                TerritoryPlugin.Log.Info($"Safezone Debug {point.PointName} zone logic cycle done");
+                GroupPlugin.Log.Info($"Safezone Debug {point.PointName} zone logic cycle done");
             }
             return Task.FromResult(true);
         }

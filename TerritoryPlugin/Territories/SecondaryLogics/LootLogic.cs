@@ -58,7 +58,7 @@ namespace CrunchGroup.Territories.SecondaryLogics
             var inventory = GetGridInventory();
             if (inventory == null)
             {
-                TerritoryPlugin.Log.Info($"Could not find inventory for grid at position {GridPosition.ToString()}");
+                GroupPlugin.Log.Info($"Could not find inventory for grid at position {GridPosition.ToString()}");
                 return Task.FromResult(true);
             }
 
@@ -67,7 +67,7 @@ namespace CrunchGroup.Territories.SecondaryLogics
                 if (!MyDefinitionId.TryParse("MyObjectBuilder_" + item.TypeId + "/" + item.SubtypeId, out var id))
                     continue;
                     
-                var amount = TerritoryPlugin.random.NextDouble() * (item.MaxAmount - item.MinAmount) + item.MaxAmount;
+                var amount = GroupPlugin.random.NextDouble() * (item.MaxAmount - item.MinAmount) + item.MaxAmount;
                 if (MultiplyLootAmountByOwnershipPercentage)
                 {
                     amount *= territory.PercentOwned;

@@ -47,7 +47,7 @@ namespace CrunchGroup.Territories.SecondaryLogics
                 var gps = GPSHelper.CreateGps(grid.PositionComp.GetPosition(), Color.Cyan, $"Radar Hit", $"Radar {grid.DisplayName} at {DateTime.Now:HH:mm:ss zz}");
                 if (owner is MyFaction fac)
                 {
-                    TerritoryPlugin.Log.Error("This isnt setup for factions");
+                    GroupPlugin.Log.Error("This isnt setup for factions");
                     //not setup here
                 }
                 builder.AppendLine(gps.ToString());
@@ -65,12 +65,12 @@ namespace CrunchGroup.Territories.SecondaryLogics
             {
                 return true;
             }
-          //  TerritoryPlugin.Log.Info("Radar 1");
+          //  GroupPlugin.Log.Info("Radar 1");
             switch (pointOwner)
             {
                 case IMyFaction faction:
                     {
-                   //     TerritoryPlugin.Log.Info("Radar 3");
+                   //     GroupPlugin.Log.Info("Radar 3");
                         if (fac.FactionId != faction.FactionId)
                         {
                             if (!MySession.Static.Factions.AreFactionsFriends(fac.FactionId, faction.FactionId) || !MySession.Static.Factions.AreFactionsNeutrals(fac.FactionId, faction.FactionId))
@@ -98,21 +98,21 @@ namespace CrunchGroup.Territories.SecondaryLogics
         public void FindGrids()
         {
             FoundGrids.Clear();
-          //  TerritoryPlugin.Log.Info("grid 1");
+          //  GroupPlugin.Log.Info("grid 1");
             var sphere = new BoundingSphereD(RadarCentre, Distance * 2);
             foreach (var grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>().Where(x => x.Projector == null && x.BlocksCount >= MinimumBlocksToHit))
             {
-                //       TerritoryPlugin.Log.Info("grid 2");
+                //       GroupPlugin.Log.Info("grid 2");
                 var owner = FacUtils.GetOwner(grid);
-           //     TerritoryPlugin.Log.Info("grid 3");
+           //     GroupPlugin.Log.Info("grid 3");
                 var fac = FacUtils.GetPlayersFaction(owner);
-            //    TerritoryPlugin.Log.Info("grid 4");
+            //    GroupPlugin.Log.Info("grid 4");
                 if ((fac != null && IgnoredFactionTags.Contains(fac.Tag)))
                 {
-            //        TerritoryPlugin.Log.Info("grid 5");
+            //        GroupPlugin.Log.Info("grid 5");
                     continue;
                 }
-           //     TerritoryPlugin.Log.Info("grid 6");
+           //     GroupPlugin.Log.Info("grid 6");
 
                 FoundGrids.Add(grid);
             }

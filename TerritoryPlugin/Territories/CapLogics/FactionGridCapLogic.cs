@@ -51,7 +51,7 @@ namespace CrunchGroup.Territories.CapLogics
                 var gpspoint = GPSofPoint;
                 if (gpspoint == new Vector3())
                 {
-                    TerritoryPlugin.Log.Info($"GPS for point {PointName} is not set");
+                    GroupPlugin.Log.Info($"GPS for point {PointName} is not set");
                     return Task.FromResult(Tuple.Create<bool, IPointOwner>(false, null));
                 }
                 var sphere = new BoundingSphereD(gpspoint, CaptureRadius * 2);

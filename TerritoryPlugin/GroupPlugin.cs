@@ -38,7 +38,7 @@ using VRageMath;
 
 namespace CrunchGroup
 {
-    public class TerritoryPlugin : TorchPluginBase
+    public class GroupPlugin : TorchPluginBase
     {
         public static List<ComponentCost> repairCost = new List<ComponentCost>();
         public static Dictionary<String, ComponentCost> ComponentCosts = new Dictionary<string, ComponentCost>();
@@ -306,9 +306,9 @@ namespace CrunchGroup
             {
 
                 // DiscordStuff.DisconnectDiscord();
-                foreach (var ter in TerritoryPlugin.Territories.Values)
+                foreach (var ter in GroupPlugin.Territories.Values)
                 {
-                    TerritoryPlugin.utils.WriteToJsonFile<Territories.Models.Territory>(TerritoryPlugin.path + "//Territories//" + ter.Name + ".json", ter);
+                    GroupPlugin.utils.WriteToJsonFile<Territories.Models.Territory>(GroupPlugin.path + "//Territories//" + ter.Name + ".json", ter);
                 }
 
                 TorchState = TorchSessionState.Unloading;
@@ -556,7 +556,7 @@ namespace CrunchGroup
                     }
                     catch (Exception e)
                     {
-                        TerritoryPlugin.Log.Error("Error in group loop", e.ToString());
+                        GroupPlugin.Log.Error("Error in group loop", e.ToString());
                     }
                     try
                     {
@@ -564,7 +564,7 @@ namespace CrunchGroup
                     }
                     catch (Exception e)
                     {
-                        TerritoryPlugin.Log.Error("Error in territory cap logic", e.ToString());
+                        GroupPlugin.Log.Error("Error in territory cap logic", e.ToString());
                     }
 
                     if (DateTime.Now > NextSave)
@@ -572,7 +572,7 @@ namespace CrunchGroup
                         NextSave = DateTime.Now.AddMinutes(5);
                         foreach (var ter in Territories)
                         {
-                            TerritoryPlugin.utils.WriteToJsonFile<Territories.Models.Territory>(TerritoryPlugin.path + "//Territories//" + ter.Value.Name + ".json", ter.Value);
+                            GroupPlugin.utils.WriteToJsonFile<Territories.Models.Territory>(GroupPlugin.path + "//Territories//" + ter.Value.Name + ".json", ter.Value);
                         }
                     }
                 }

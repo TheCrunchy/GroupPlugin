@@ -35,21 +35,21 @@ namespace CrunchGroup.Territories.SecondaryLogics
             }
 
             if (!CanLoop()) return Task.FromResult(true);
-            //    TerritoryPlugin.Log.Info("1");
+            //    GroupPlugin.Log.Info("1");
             NextLoop = DateTime.Now.AddSeconds(SecondsBetweenLoops);
             if (RequireOwner && point.PointOwner == null)
             {
                 return Task.FromResult(true);
             }
 
-            //         TerritoryPlugin.Log.Info("2");
+            //         GroupPlugin.Log.Info("2");
             var temp = point.PointOwner ?? territory.Owner;
-            //        TerritoryPlugin.Log.Info("3");
+            //        GroupPlugin.Log.Info("3");
             var owner = temp.GetOwner();
-            //     TerritoryPlugin.Log.Info("4");
+            //     GroupPlugin.Log.Info("4");
             StringBuilder builder = new StringBuilder();
             FindGrids();
-            //    TerritoryPlugin.Log.Info("5");
+            //    GroupPlugin.Log.Info("5");
 
             //    MyAPIGateway.Utilities.InvokeOnGameThread(() =>
             //    {
@@ -57,18 +57,18 @@ namespace CrunchGroup.Territories.SecondaryLogics
             {
                 foreach (var grid in FoundGrids.Where(x => x.GridSizeEnum == MyCubeSize.Large))
                 {
-                    //  TerritoryPlugin.Log.Info("6");
+                    //  GroupPlugin.Log.Info("6");
                     foreach (MyThrust block in grid.GetFatBlocks().Where(x => x.BlockDefinition != null && x.BlockDefinition.Id.TypeId == typeof(MyObjectBuilder_Thrust)))
                     {
-                     //   TerritoryPlugin.Log.Info("thruster large");
+                     //   GroupPlugin.Log.Info("thruster large");
                         if (block.GridThrustDirection == Vector3I.Backward && !DisabledDirections.Contains("BACKWARD"))
                         {
-                          //  TerritoryPlugin.Log.Info("BACKWARD");
+                          //  GroupPlugin.Log.Info("BACKWARD");
                             continue;
                         }
                         if (block.GridThrustDirection == Vector3I.Forward && !DisabledDirections.Contains("FORWARD"))
                         {
-                           // TerritoryPlugin.Log.Info("FORWARD");
+                           // GroupPlugin.Log.Info("FORWARD");
                             continue;
                         }
                         if (block.GridThrustDirection == Vector3I.Left && !DisabledDirections.Contains("LEFT"))
@@ -100,12 +100,12 @@ namespace CrunchGroup.Territories.SecondaryLogics
                     {
                         if (block.GridThrustDirection == Vector3I.Backward && !DisabledDirections.Contains("BACKWARD"))
                         {
-                            //  TerritoryPlugin.Log.Info("BACKWARD");
+                            //  GroupPlugin.Log.Info("BACKWARD");
                             continue;
                         }
                         if (block.GridThrustDirection == Vector3I.Forward && !DisabledDirections.Contains("FORWARD"))
                         {
-                            // TerritoryPlugin.Log.Info("FORWARD");
+                            // GroupPlugin.Log.Info("FORWARD");
                             continue;
                         }
                         if (block.GridThrustDirection == Vector3I.Left && !DisabledDirections.Contains("LEFT"))

@@ -98,7 +98,7 @@ namespace CrunchGroup.Territories
                 {
                     DeleteCount.Add(__instance.EntityId, 1);
                 }
-                //   TerritoryPlugin.Log.Info("Disabling");
+                //   GroupPlugin.Log.Info("Disabling");
                 __instance.Enabled = false;
                 return false;
             }

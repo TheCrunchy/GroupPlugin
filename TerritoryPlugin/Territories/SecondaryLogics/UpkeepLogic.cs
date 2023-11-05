@@ -41,8 +41,8 @@ namespace CrunchGroup.Territories.SecondaryLogics
             });
             if (inventory == null || !FoundGrids.Any() || !inventory.Any())
             {
-                TerritoryPlugin.Log.Info($"Could not find inventory for grid at position {GridPosition.ToString()}");
-                // TerritoryPlugin.Log.Info(inventory.Count);
+                GroupPlugin.Log.Info($"Could not find inventory for grid at position {GridPosition.ToString()}");
+                // GroupPlugin.Log.Info(inventory.Count);
                 MyAPIGateway.Utilities.InvokeOnGameThread(() =>
                 {
                     LCD?.WriteText("Could not find inventory for grid!", true);
@@ -145,7 +145,7 @@ namespace CrunchGroup.Territories.SecondaryLogics
                     {
                         panel?.WriteText($"Upkeep, missing " + needed + " " + c.Key.SubtypeName + $" Item must be inside this grid. at {DateTime.Now:HH-mm}", true);
                     });
-                    //   TerritoryPlugin.Log.Info("Not found components");
+                    //   GroupPlugin.Log.Info("Not found components");
                     return false;
                 }
             }

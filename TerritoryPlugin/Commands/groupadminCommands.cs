@@ -37,7 +37,7 @@ namespace CrunchGroup.Commands
             Event.EventObject = MyAPIGateway.Utilities.SerializeToBinary(createdEvent);
             Event.EventType = createdEvent.GetType().Name;
             NexusHandler.RaiseEvent(Event);
-            Context.Respond("Group deleted.", $"{TerritoryPlugin.PluginName}");
+            Context.Respond("Group deleted.", $"{GroupPlugin.PluginName}");
         }
 
         [Command("add", "add to a group")]
@@ -47,14 +47,14 @@ namespace CrunchGroup.Commands
             var group = GroupHandler.GetGroupByTag(groupTag);
             if (group == null)
             {
-                Context.Respond("Group not found", $"{TerritoryPlugin.PluginName}");
+                Context.Respond("Group not found", $"{GroupPlugin.PluginName}");
                 return;
             }
 
             var faction = MySession.Static.Factions.TryGetFactionByTag(factionTag);
             if (faction == null)
             {
-                Context.Respond("Faction not found", $"{TerritoryPlugin.PluginName}");
+                Context.Respond("Faction not found", $"{GroupPlugin.PluginName}");
                 return;
             }
 
@@ -74,7 +74,7 @@ namespace CrunchGroup.Commands
                 Storage.StorageHandler.Save(inGroup.Value);
                 GroupHandler.AddGroup(inGroup.Value);
                 NexusHandler.RaiseEvent(LeaveEvent);
-                Context.Respond($"Faction was in group {inGroup.Value.GroupName} {inGroup.Value.GroupTag}, they have been kicked from it.", $"{TerritoryPlugin.PluginName}");
+                Context.Respond($"Faction was in group {inGroup.Value.GroupName} {inGroup.Value.GroupTag}, they have been kicked from it.", $"{GroupPlugin.PluginName}");
             }
             group.AddMemberToGroup(faction.FactionId);
             Storage.StorageHandler.Save(group);
@@ -89,7 +89,7 @@ namespace CrunchGroup.Commands
             Event.EventType = createdEvent.GetType().Name;
             NexusHandler.RaiseEvent(Event);
 
-            Context.Respond("Group member added.", $"{TerritoryPlugin.PluginName}");
+            Context.Respond("Group member added.", $"{GroupPlugin.PluginName}");
         }
 
         [Command("add", "add to a group")]
@@ -99,7 +99,7 @@ namespace CrunchGroup.Commands
             var faction = MySession.Static.Factions.TryGetFactionByTag(factionTag);
             if (faction == null)
             {
-                Context.Respond("Faction not found", $"{TerritoryPlugin.PluginName}");
+                Context.Respond("Faction not found", $"{GroupPlugin.PluginName}");
                 return;
             }
 
@@ -118,10 +118,61 @@ namespace CrunchGroup.Commands
                 NexusHandler.RaiseEvent(LeaveEvent);
                 Storage.StorageHandler.Save(inGroup.Value);
                 GroupHandler.AddGroup(inGroup.Value);
-                Context.Respond($"Faction was in group {inGroup.Value.GroupName} {inGroup.Value.GroupTag}, they have been kicked from it.", $"{TerritoryPlugin.PluginName}");
+                Context.Respond($"Faction was in group {inGroup.Value.GroupName} {inGroup.Value.GroupTag}, they have been kicked from it.", $"{GroupPlugin.PluginName}");
             }
 
-            Context.Respond("Removed the faction from any groups they were members of.", $"{TerritoryPlugin.PluginName}");
+            Context.Respond("Removed the faction from any groups they were members of.", $"{GroupPlugin.PluginName}");
+        }
+
+        [Command("edit", "edit a group")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void Edit(string groupNameOrTag, string fieldType, string newValue)
+        {
+            var group = GroupHandler.GetGroupByTag(groupNameOrTag);
+
+            if (group == null)
+            {
+                Context.Respond("Group not found", $"{GroupPlugin.PluginName}");
+                return;
+            }
+
+
+            switch (fieldType.ToLower())
+            {
+                case "name":
+                    group.GroupName = newValue;
+                    break;
+                case "tag":
+                    group.GroupTag = newValue;
+                    break;
+                case "description":
+                    group.GroupDescription = newValue;
+                    break;
+                case "leader":
+                    MyIdentity id = GroupPlugin.TryGetIdentity(newValue);
+                    if (id == null)
+                    {
+                        Context.Respond("Could not find that player");
+                        return;
+                    }
+                    group.GroupLeader = (long)MySession.Static.Players.TryGetSteamId(id.IdentityId);
+                    break;
+                default:
+                    Context.Respond("Valid editable fields are Name, Tag, Description, Leader");
+                    return;
+            }
+
+            Storage.StorageHandler.Save(group);
+            GroupHandler.AddGroup(group);
+            var Event = new GroupEvent();
+            var createdEvent = new GroupChangedEvent()
+            {
+                Group = JsonConvert.SerializeObject(group)
+            };
+            Event.EventObject = MyAPIGateway.Utilities.SerializeToBinary(createdEvent);
+            Event.EventType = createdEvent.GetType().Name;
+            NexusHandler.RaiseEvent(Event);
+            Context.Respond("Group edited.", $"{GroupPlugin.PluginName}");
         }
     }
 }

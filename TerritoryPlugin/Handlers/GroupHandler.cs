@@ -16,12 +16,6 @@ namespace CrunchGroup.Handlers
             MapPlayers();
         }
 
-        public static Group GetGroupByName(string name)
-        {
-            return LoadedGroups.FirstOrDefault(x => x.Value.GroupName == name).Value ?? null;
-        }
-
-
         public static Group GetGroupByTag(string tag)
         {
             return LoadedGroups.FirstOrDefault(x => x.Value.GroupTag == tag).Value ?? LoadedGroups.FirstOrDefault(x => x.Value.GroupName == tag).Value ?? null;
