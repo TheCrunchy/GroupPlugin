@@ -217,7 +217,9 @@
     <Compile Include="Models\Group.cs" />
     <Compile Include="NexusStuff\NexusHandler.cs" />
     <Compile Include="GroupPlugin.cs" />
+    <Compile Include="Territories\CapLogics\GroupGridCapLogic.cs" />
     <Compile Include="Territories\Models\ComponentCost.cs" />
+    <Compile Include="Territories\PointOwners\GroupPointOwner.cs" />
     <Compile Include="Territories\SecondaryLogics\GridDamagerLogic.cs" />
     <Compile Include="Territories\SecondaryLogics\ProductionBuffLogic.cs" />
     <Compile Include="Territories\SecondaryLogics\UpkeepLogic.cs" />

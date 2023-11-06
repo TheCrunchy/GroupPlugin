@@ -20,6 +20,14 @@ namespace CrunchGroup.Handlers
         {
             return LoadedGroups.FirstOrDefault(x => x.Value.GroupTag == tag).Value ?? LoadedGroups.FirstOrDefault(x => x.Value.GroupName == tag).Value ?? null;
         }
+        public static Group GetGroupById(Guid id)
+        {
+            return LoadedGroups.FirstOrDefault(x => x.Value.GroupId == id).Value ?? null;
+        }
+        public static Group GetFactionsGroup(long factionId)
+        {
+            return LoadedGroups.FirstOrDefault(x => x.Value.GroupMembers.Contains(factionId)).Value ?? null;
+        }
 
         public static void AddGroup(Group group)
         {
