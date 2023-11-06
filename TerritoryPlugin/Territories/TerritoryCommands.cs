@@ -72,7 +72,7 @@ namespace CrunchGroup.Territories
                 return;
             }
             var q = from t in Assembly.GetExecutingAssembly().GetTypes()
-                where t.IsClass && t.Namespace == "Territory.Territories.CapLogics" && t.Name.Contains("Logic")
+                where t.IsClass && t.Namespace == "CrunchGroup.Territories.CapLogics" && t.Name.Contains("Logic")
                     select t;
 
 
@@ -116,7 +116,7 @@ namespace CrunchGroup.Territories
                 return;
             }
             var q = from t in Assembly.GetExecutingAssembly().GetTypes()
-                where t.IsClass && t.Namespace == "Territory.Territories.SecondaryLogics" && t.Name.Contains("Logic")
+                where t.IsClass && t.Namespace == "CrunchGroup.Territories.SecondaryLogics" && t.Name.Contains("Logic")
                     select t; 
 
             if (q.Any(x => x.Name == secondarylogic))
