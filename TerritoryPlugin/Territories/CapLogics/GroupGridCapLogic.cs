@@ -16,6 +16,7 @@ namespace CrunchGroup.Territories.CapLogics
 {
     public class GroupGridCapLogic : ICapLogic
     {
+
         public string PointName { get; set; } = "Example name";
         public void AddSecondaryLogic(ISecondaryLogic logic)
         {

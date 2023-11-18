@@ -253,6 +253,7 @@
     <Compile Include="Territories\SecondaryLogics\LootLogic.cs" />
     <Compile Include="Territories\SecondaryLogics\RadarLogic.cs" />
     <Compile Include="Territories\SecondaryLogics\SafezoneLogic.cs" />
+    <Compile Include="testing.cs" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Connected Services\" />

@@ -125,7 +125,7 @@ namespace CrunchGroup
                         $"{PluginName}"
                     });
                     API = new NexusAPI(4398);
-                    MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(2348, new Action<ushort, byte[], ulong, bool>(NexusHandler.HandleNexusMessage));
+                    MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(4398, new Action<ushort, byte[], ulong, bool>(NexusHandler.HandleNexusMessage));
                     NexusInstalled = true;
                 }
             }
