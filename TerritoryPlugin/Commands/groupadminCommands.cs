@@ -37,7 +37,8 @@ namespace CrunchGroup.Commands
             Event.EventObject = MyAPIGateway.Utilities.SerializeToBinary(createdEvent);
             Event.EventType = createdEvent.GetType().Name;
             NexusHandler.RaiseEvent(Event);
-            Context.Respond("Group deleted.", $"{GroupPlugin.PluginName}");
+            Context.Respond("Group created.", $"{GroupPlugin.PluginName}");
+            GroupHandler.MapPlayers();
         }
 
         [Command("add", "add to a group")]
@@ -90,9 +91,10 @@ namespace CrunchGroup.Commands
             NexusHandler.RaiseEvent(Event);
 
             Context.Respond("Group member added.", $"{GroupPlugin.PluginName}");
+            GroupHandler.MapPlayers();
         }
 
-        [Command("add", "add to a group")]
+        [Command("remove", "add to a group")]
         [Permission(MyPromoteLevel.Admin)]
         public void RemoveMember(string factionTag)
         {
@@ -122,6 +124,7 @@ namespace CrunchGroup.Commands
             }
 
             Context.Respond("Removed the faction from any groups they were members of.", $"{GroupPlugin.PluginName}");
+            GroupHandler.MapPlayers();
         }
 
         [Command("edit", "edit a group")]
@@ -173,6 +176,7 @@ namespace CrunchGroup.Commands
             Event.EventType = createdEvent.GetType().Name;
             NexusHandler.RaiseEvent(Event);
             Context.Respond("Group edited.", $"{GroupPlugin.PluginName}");
+
         }
     }
 }

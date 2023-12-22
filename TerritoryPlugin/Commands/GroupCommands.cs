@@ -177,6 +177,7 @@ namespace CrunchGroup.Commands
             Event.EventType = createdEvent.GetType().Name;
             NexusHandler.RaiseEvent(Event);
             Context.Respond("Group created.", $"{GroupPlugin.PluginName}");
+            GroupHandler.MapPlayers();
         }
 
         [Command("edit", "edit a group")]
@@ -274,6 +275,7 @@ namespace CrunchGroup.Commands
             Event.EventType = createdEvent.GetType().Name;
             NexusHandler.RaiseEvent(Event);
             Context.Respond("Group deleted and moved to archive.", $"{GroupPlugin.PluginName}");
+            GroupHandler.MapPlayers();
         }
 
         [Command("invite", "invite to group")]
@@ -370,6 +372,7 @@ namespace CrunchGroup.Commands
             Event.EventObject = MyAPIGateway.Utilities.SerializeToBinary(createdEvent);
             Event.EventType = createdEvent.GetType().Name;
             NexusHandler.RaiseEvent(Event);
+            GroupHandler.MapPlayers();
         }
 
         [Command("leave", "leave a group")]
@@ -415,6 +418,7 @@ namespace CrunchGroup.Commands
             Event.EventType = createdEvent.GetType().Name;
             NexusHandler.RaiseEvent(Event);
             Context.Respond("Left the group.", $"{GroupPlugin.PluginName}");
+            GroupHandler.MapPlayers();
         }
 
         [Command("kick", "kick from a group")]
@@ -462,6 +466,7 @@ namespace CrunchGroup.Commands
             Event.EventType = createdEvent.GetType().Name;
             NexusHandler.RaiseEvent(Event);
             Context.Respond("Kicked from the group.", $"{GroupPlugin.PluginName}");
+            GroupHandler.MapPlayers();
         }
     }
 }

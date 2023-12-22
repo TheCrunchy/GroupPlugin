@@ -78,6 +78,10 @@ namespace CrunchGroup.Handlers
                 {
                     PlayersGroups.Add((long)player.Id.SteamId, group.GroupId);
                 }
+                else
+                {
+                    PlayersGroups.Remove((long)player.Id.SteamId);
+                }
             }
         }
     }
