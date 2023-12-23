@@ -76,6 +76,7 @@ namespace CrunchGroup.Handlers
                 var group = LoadedGroups.FirstOrDefault(x => x.Value.GroupMembers.Contains(faction.FactionId)).Value ?? null;
                 if (group != null)
                 {
+                    PlayersGroups.Remove((long)player.Id.SteamId);
                     PlayersGroups.Add((long)player.Id.SteamId, group.GroupId);
                 }
                 else

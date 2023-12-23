@@ -17,7 +17,7 @@ namespace CrunchGroup.NexusStuff
             else
             {
                 Handle(groupEvent);
-                GroupPlugin.Log.Error("Nexus not installed");
+               // GroupPlugin.Log.Error("Nexus not installed");
             }
           
         }
@@ -71,7 +71,7 @@ namespace CrunchGroup.NexusStuff
 
         public static void HandleNexusMessage(ushort handlerId, byte[] data, ulong steamID, bool fromServer)
         {
-            GroupPlugin.Log.Info("Recieved a nexus event");
+         //   GroupPlugin.Log.Info("Recieved a nexus event");
             try
             {
                 var message = MyAPIGateway.Utilities.SerializeFromBinary<GroupEvent>(data);
@@ -82,7 +82,7 @@ namespace CrunchGroup.NexusStuff
                 GroupPlugin.Log.Error($"Errored on nexus event {e}");
                 throw;
             }
-            GroupPlugin.Log.Info("Handled a nexus event");
+           // GroupPlugin.Log.Info("Handled a nexus event");
         }
     }
 }

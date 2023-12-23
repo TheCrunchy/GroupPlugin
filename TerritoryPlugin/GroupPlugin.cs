@@ -556,7 +556,7 @@ namespace CrunchGroup
                     }
                     catch (Exception e)
                     {
-                        GroupPlugin.Log.Error("Error in group loop", e.ToString());
+                        GroupPlugin.Log.Error($"Error in group loop { e.ToString()}");
                     }
                     try
                     {
@@ -564,7 +564,7 @@ namespace CrunchGroup
                     }
                     catch (Exception e)
                     {
-                        GroupPlugin.Log.Error("Error in territory cap logic", e.ToString());
+                        GroupPlugin.Log.Error($"Error in territory cap logic {e.ToString()}");
                     }
 
                     if (DateTime.Now > NextSave)

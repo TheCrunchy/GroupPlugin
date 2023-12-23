@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Sandbox.Game.Multiplayer;
 using Sandbox.Game.World;
 using Sandbox.ModAPI;
@@ -24,15 +25,20 @@ namespace CrunchGroup.Models
         public List<long> Invites { get; set; } = new();
         public void AddMemberToGroup(long factionId)
         {
+            if (GroupMembers.Contains(factionId))
+            {
+                return;
+            }
+
             Invites.Remove(factionId);
             GroupMembers.Add(factionId);
             var newfac = MySession.Static.Factions.TryGetFactionById(factionId);
             foreach (var fac in GroupMembers)
             {
                 var faction = MySession.Static.Factions.TryGetFactionById(fac);
-                foreach (var member in faction.Members)
+                foreach (var member in faction.Members.Values.Select(x => x.PlayerId).Distinct())
                 {
-                    GroupPlugin.SendChatMessage($"{GroupPlugin.PluginName}", $"{newfac.Name} {newfac.Tag} Has joined the group!", MySession.Static.Players.TryGetSteamId(member.Value.PlayerId));
+                    GroupPlugin.SendChatMessage($"{GroupPlugin.PluginName}", $"{newfac.Name} {newfac.Tag} Has joined the group!", MySession.Static.Players.TryGetSteamId(member));
                 }
             }
         }
@@ -43,26 +49,28 @@ namespace CrunchGroup.Models
             {
                 RemoveMemberFromGroup(member);
             }
+
+            GroupMembers = new List<long>();
         }
 
         public void RemoveMemberFromGroup(long factionId)
         {
-            GroupMembers.Remove(factionId);
             var newfac = MySession.Static.Factions.TryGetFactionById(factionId);
             foreach (var id in GroupMembers)
             {
-
                 var fac = MySession.Static.Factions.TryGetFactionById(id);
                 if (fac == null) continue;
                 MyAPIGateway.Utilities.InvokeOnGameThread(() =>
                 {
                     MyFactionCollection.DeclareWar(id, factionId);
                 });
-                foreach (var member in fac.Members)
+                foreach (var member in fac.Members.Values.Select(x => x.PlayerId).Distinct())
                 {
-                    GroupPlugin.SendChatMessage($"{GroupPlugin.PluginName}", $"{newfac.Name} {newfac.Tag} Has left the group!", MySession.Static.Players.TryGetSteamId(member.Value.PlayerId));
+                    GroupPlugin.SendChatMessage($"{GroupPlugin.PluginName}", $"{newfac.Name} {newfac.Tag} Has left the group!", MySession.Static.Players.TryGetSteamId(member));
                 }
             }
+
+            GroupMembers.Remove(factionId);
         }
 
         public void AddInvite(long factionId)

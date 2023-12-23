@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using CrunchGroup.Handlers.Interfaces;
 using CrunchGroup.Models;
 
@@ -39,6 +40,7 @@ namespace CrunchGroup.Handlers
             try
             {
                 var group = utils.ReadFromJsonFile<Group>(path);
+                group.GroupMembers = group.GroupMembers.Distinct().ToList();
                 GroupHandler.AddGroup(group);
             }
             catch (Exception e)

@@ -99,19 +99,23 @@ namespace CrunchGroup.Commands
 
         [Command("info", "info on a group")]
         [Permission(MyPromoteLevel.None)]
-        public void info(string groupNameOrTag)
+        public void info(string groupNameOrTag = "")
         {
             var group = GroupHandler.GetGroupByTag(groupNameOrTag);
             if (group == null)
             {
-                Context.Respond("Group not found.",$"{GroupPlugin.PluginName}");
-                return;
+                group = GroupHandler.GetPlayersGroup((long)Context.Player.SteamUserId);
+                if (group == null)
+                {
+                    Context.Respond("Group not found.", $"{GroupPlugin.PluginName}");
+                    return;
+                }
             }
             StringBuilder sb = new StringBuilder();
 
             sb.AppendLine($"Name: {group.GroupName}");
             sb.AppendLine($"Tag: {group.GroupTag}");
-            sb.AppendLine($"Description: {group.GroupTag}");
+            sb.AppendLine($"Description: {group.GroupDescription}");
             sb.AppendLine($"Leader: {MySession.Static.Players.TryGetIdentityNameFromSteamId((ulong)group.GroupLeader)}");
             sb.AppendLine("");
 
