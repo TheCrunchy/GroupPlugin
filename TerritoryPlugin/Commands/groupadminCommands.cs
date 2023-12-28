@@ -94,7 +94,7 @@ namespace CrunchGroup.Commands
             GroupHandler.MapPlayers();
         }
 
-        [Command("remove", "add to a group")]
+        [Command("remove", "remove from a group")]
         [Permission(MyPromoteLevel.Admin)]
         public void RemoveMember(string factionTag)
         {
@@ -106,7 +106,7 @@ namespace CrunchGroup.Commands
             }
 
             var IsInGroup = GroupHandler.LoadedGroups.Where(x => x.Value.GroupMembers.Contains(faction.FactionId));
-            foreach (var inGroup in IsInGroup)
+            foreach (var inGroup in IsInGroup.ToList())
             {
                 inGroup.Value.RemoveMemberFromGroup(faction.FactionId);
                 var LeaveEvent = new GroupEvent();
@@ -124,6 +124,32 @@ namespace CrunchGroup.Commands
             }
 
             Context.Respond("Removed the faction from any groups they were members of.", $"{Core.PluginName}");
+            GroupHandler.MapPlayers();
+        }
+
+        [Command("delete", "delete a group")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void Delete(string groupNameOrTag)
+        {
+            var group = GroupHandler.GetGroupByTag(groupNameOrTag);
+
+            if (group == null)
+            {
+                Context.Respond("Group not found", $"{Core.PluginName}");
+                return;
+            }
+            group.DeleteGroup();
+            Storage.StorageHandler.Delete(group);
+            GroupHandler.RemoveGroup(group.GroupId);
+            var Event = new GroupEvent();
+            var createdEvent = new GroupDeletedEvent()
+            {
+                GroupId = group.GroupId
+            };
+            Event.EventObject = MyAPIGateway.Utilities.SerializeToBinary(createdEvent);
+            Event.EventType = createdEvent.GetType().Name;
+            NexusHandler.RaiseEvent(Event);
+            Context.Respond("Group deleted and moved to archive.", $"{Core.PluginName}");
             GroupHandler.MapPlayers();
         }
 

@@ -65,6 +65,12 @@ namespace CrunchGroup.NexusStuff
                         GroupEventHandler.HandleGroupChange(ev);
                         break;
                     }
+                case "GroupChangedEvent ":
+                {
+                    var ev = MyAPIGateway.Utilities.SerializeFromBinary<GroupChangedEvent>(message.EventObject);
+                    GroupEventHandler.HandleGroupChange(ev);
+                    break;
+                }
                 default:
                     Core.Log.Error($"{message.EventType} not added to the handle switch");
                     break;
