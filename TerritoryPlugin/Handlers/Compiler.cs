@@ -8,6 +8,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Sandbox.ModAPI;
+using Torch.API.Managers;
+using Torch.Commands;
 
 namespace CrunchGroup.Handlers
 {
@@ -29,7 +32,7 @@ namespace CrunchGroup.Handlers
                     metadataReferenceList.Add((MetadataReference)MetadataReference.CreateFromFile(assembly.Location));
             }
 
-            ///  metadataReferenceList.Add(MetadataReference.CreateFromFile(@$"{Core.path}\CrunchEconV3.dll"));
+            metadataReferenceList.Add(MetadataReference.CreateFromFile(@$"{Core.path}\CrunchGroupPlugin.dll"));
             return metadataReferenceList.ToArray();
         }
         private static bool CompileFromFile(string file)
@@ -51,6 +54,10 @@ namespace CrunchGroup.Handlers
                     Assembly assembly = Assembly.Load(memoryStream.ToArray());
                     Core.Log.Error("Compilation successful!");
                     Core.myAssemblies.Add(assembly);
+
+                    var commands = Core.session.Managers.GetManager<CommandManager>();
+                    commands.RegisterCommandModule(assembly.GetType(), null);
+                    //    Core.TorchBase.Managers.GetManager(CommandManager);
                     // Use the compiled assembly as needed
                 }
                 else

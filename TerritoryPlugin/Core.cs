@@ -44,6 +44,7 @@ namespace CrunchGroup
         public static List<ComponentCost> repairCost = new List<ComponentCost>();
         public static Dictionary<String, ComponentCost> ComponentCosts = new Dictionary<string, ComponentCost>();
         public static MethodInfo sendChange;
+        public static ITorchSession session;
         public void AddComponentCost(string subtype, long cost, bool banned)
         {
             if (repairCost.Any(x => x.SubTypeId == subtype))
@@ -302,6 +303,7 @@ namespace CrunchGroup
         private void SessionChanged(ITorchSession session, TorchSessionState state)
         {
 
+            this.session = session;
 
             if (state == TorchSessionState.Unloading)
             {

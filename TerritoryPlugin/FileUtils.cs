@@ -1,6 +1,9 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using System.Linq;
 using System.Xml.Serialization;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace CrunchGroup
 {
@@ -15,6 +18,7 @@ namespace CrunchGroup
                 var contentsToWriteToFile = JsonConvert.SerializeObject(objectToWrite, new JsonSerializerSettings()
                 {
                     TypeNameHandling = TypeNameHandling.Auto,
+                    Binder = new MySerializationBinder(),
                     Formatting = Newtonsoft.Json.Formatting.Indented
                 });
                 writer = new StreamWriter(filePath, append);
@@ -29,23 +33,33 @@ namespace CrunchGroup
 
         public T ReadFromJsonFile<T>(string filePath) where T : new()
         {
-            TextReader reader = null;
             try
             {
-                reader = new StreamReader(filePath);
-                var fileContents = reader.ReadToEnd();
-                return JsonConvert.DeserializeObject<T>(fileContents, new JsonSerializerSettings()
+                using (var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                using (var reader = new StreamReader(fs))
                 {
-                    TypeNameHandling = TypeNameHandling.Auto,
-                    Formatting = Newtonsoft.Json.Formatting.Indented
-                });
+                    var fileContents = reader.ReadToEnd();
+                    return JsonConvert.DeserializeObject<T>(fileContents, new JsonSerializerSettings()
+                    {
+                        TypeNameHandling = TypeNameHandling.Auto,
+                        Binder = new MySerializationBinder(),
+                        Formatting = Newtonsoft.Json.Formatting.Indented
+                    });
+                }
             }
-            finally
+            catch (Exception e)
             {
-                if (reader != null)
-                    reader.Close();
+                Core.Log.Error($"Error reading file, moved to backups");
+                Core.Log.Error($"Error reading file {filePath} {e}");
+
+                Directory.CreateDirectory($"{Core.path}/ErroredFileBackups/");
+                File.Move(filePath, $"{Core.path}/ErroredFileBackups/{Path.GetFileNameWithoutExtension(filePath)}-{DateTime.Today:hh-mm-ss-dd-MM-yyyy}.json");
+
+                return new T();
             }
+
         }
+
 
         public void WriteToXmlFile<T>(string filePath, T objectToWrite, bool append = false) where T : new()
         {
@@ -77,6 +91,16 @@ namespace CrunchGroup
                 if (reader != null)
                     reader.Close();
             }
+        }
+    }
+    class MySerializationBinder : DefaultSerializationBinder
+    {
+        public override Type BindToType(string assemblyName, string typeName)
+        {
+            var t = Core.myAssemblies.Select(x => x)
+                .SelectMany(x => x.GetTypes()).FirstOrDefault(x => x.FullName == typeName);
+
+            return t;
         }
     }
 }
