@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using CrunchGroup.Territories.Interfaces;
@@ -60,7 +61,41 @@ namespace CrunchGroup.Territories
             Core.utils.WriteToJsonFile<Models.Territory>(Core.path + "//Territories//" + territory.Name + ".json", territory);
             Context.Respond("Created");
         }
+        [Command("list", "list all valid names from scripts")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void List()
+        {
+            var configs = new List<Type>();
+            var configs2 = new List<Type>();
 
+            configs.AddRange(from t in Core.myAssemblies.Select(x => x)
+                    .SelectMany(x => x.GetTypes())
+                          where t.IsClass && t.GetInterfaces().Contains(typeof(ICapLogic))
+                          select t);
+            configs.AddRange(from t in Assembly.GetExecutingAssembly().GetTypes()
+                                      where t.IsClass && t.GetInterfaces().Contains(typeof(ICapLogic))
+                                      select t);
+
+            configs2.AddRange(from t in Core.myAssemblies.Select(x => x)
+                    .SelectMany(x => x.GetTypes())
+                           where t.IsClass && t.GetInterfaces().Contains(typeof(ISecondaryLogic))
+                           select t);
+            configs2.AddRange(from t in Assembly.GetExecutingAssembly().GetTypes()
+                                       where t.IsClass && t.GetInterfaces().Contains(typeof(ISecondaryLogic))
+                                       select t);
+
+            foreach (var config in configs)
+            {
+                Context.Respond($"CapLogic {config.Name}");
+            }
+
+            foreach (var config in configs2)
+            {
+                Context.Respond($"SecondaryLogic {config.Name}");
+            }
+
+
+        }
         [Command("addpoint", "add a point to a territory")]
         [Permission(MyPromoteLevel.Admin)]
         public void AddPoint(string name, string pointtype)
@@ -71,15 +106,18 @@ namespace CrunchGroup.Territories
                 Context.Respond($"{name} not found");
                 return;
             }
-            var q = from t in Assembly.GetExecutingAssembly().GetTypes()
-                where t.IsClass && t.Namespace == "CrunchGroup.Territories.CapLogics" && t.Name.Contains("Logic")
-                    select t;
+            var configs = from t in Core.myAssemblies.Select(x => x)
+                    .SelectMany(x => x.GetTypes())
+                where t.IsClass && t.GetInterfaces().Contains(typeof(ICapLogic))
+                select t;
+            configs.ToList().AddRange(from t in Assembly.GetExecutingAssembly().GetTypes()
+                where t.IsClass && t.GetInterfaces().Contains(typeof(ICapLogic))
+                select t);
 
-
-            if (q.Any(x => x.Name == pointtype))
+            if (configs.Any(x => x.Name == pointtype))
             {
-                Type point = q.FirstOrDefault(x => x.Name == pointtype);
-                
+                Type point = configs.FirstOrDefault(x => x.Name == pointtype);
+
                 var instance = Activator.CreateInstance(point);
                 territory.CapturePoints.Add((ICapLogic)instance);
                 Context.Respond("Added cap logic?");
@@ -88,7 +126,7 @@ namespace CrunchGroup.Territories
             else
             {
                 Context.Respond("Point type not found, available are");
-                foreach (var type in q)
+                foreach (var type in configs)
                 {
                     Context.Respond(type.Name);
                 }
@@ -115,13 +153,16 @@ namespace CrunchGroup.Territories
                 Context.Respond($"{pointnameOrbase} not found");
                 return;
             }
-            var q = from t in Assembly.GetExecutingAssembly().GetTypes()
-                where t.IsClass && t.Namespace == "CrunchGroup.Territories.SecondaryLogics" && t.Name.Contains("Logic")
-                    select t; 
-
-            if (q.Any(x => x.Name == secondarylogic))
+            var configs2 = from t in Core.myAssemblies.Select(x => x)
+                    .SelectMany(x => x.GetTypes())
+                where t.IsClass && t.GetInterfaces().Contains(typeof(ISecondaryLogic))
+                select t;
+            configs2.ToList().AddRange(from t in Assembly.GetExecutingAssembly().GetTypes()
+                where t.IsClass && t.GetInterfaces().Contains(typeof(ISecondaryLogic))
+                select t);
+            if (configs2.Any(x => x.Name == secondarylogic))
             {
-                Type point = q.FirstOrDefault(x => x.Name == secondarylogic);
+                Type point = configs2.FirstOrDefault(x => x.Name == secondarylogic);
 
                 var instance = Activator.CreateInstance(point);
                 if (foundpoint != null)
@@ -132,14 +173,14 @@ namespace CrunchGroup.Territories
                 {
                     territory.SecondaryLogics.Add((ISecondaryLogic)instance);
                 }
-        
+
                 Context.Respond("Added secondary logic?");
                 Core.utils.WriteToJsonFile<Models.Territory>(Core.path + "//Territories//" + territory.Name + ".json", territory);
             }
             else
             {
                 Context.Respond("Logic type not found, available are");
-                foreach (var type in q)
+                foreach (var type in configs2)
                 {
                     Context.Respond(type.Name);
                 }

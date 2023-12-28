@@ -11,6 +11,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Sandbox.ModAPI;
 using Torch.API.Managers;
 using Torch.Commands;
+using Torch.Managers.PatchManager;
 
 namespace CrunchGroup.Handlers
 {
@@ -32,11 +33,17 @@ namespace CrunchGroup.Handlers
                     metadataReferenceList.Add((MetadataReference)MetadataReference.CreateFromFile(assembly.Location));
             }
 
-            metadataReferenceList.Add(MetadataReference.CreateFromFile(@$"{Core.path}\CrunchGroupPlugin.dll"));
+            foreach (var item in Directory.GetFiles(Core.path).Where(x => x.Contains(".dll")))
+            {
+                metadataReferenceList.Add(MetadataReference.CreateFromFile(item));
+            }
+
             return metadataReferenceList.ToArray();
         }
         private static bool CompileFromFile(string file)
         {
+            var patches = Core.Session.Managers.GetManager<PatchManager>();
+            var commands = Core.Session.Managers.GetManager<CommandManager>();
             var text = File.ReadAllText(file);
             SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(text);
 
@@ -55,10 +62,35 @@ namespace CrunchGroup.Handlers
                     Core.Log.Error("Compilation successful!");
                     Core.myAssemblies.Add(assembly);
 
-                    var commands = Core.session.Managers.GetManager<CommandManager>();
-                    commands.RegisterCommandModule(assembly.GetType(), null);
-                    //    Core.TorchBase.Managers.GetManager(CommandManager);
-                    // Use the compiled assembly as needed
+                    try
+                    {
+                        foreach (var type in assembly.GetTypes())
+                        {
+                            MethodInfo method = type.GetMethod("Patch", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static);
+                            if (method == null)
+                            {
+                                continue;
+                            }
+                            ParameterInfo[] ps = method.GetParameters();
+                            if (ps.Length != 1 || ps[0].IsOut || ps[0].IsOptional || ps[0].ParameterType.IsByRef ||
+                                ps[0].ParameterType != typeof(PatchContext) || method.ReturnType != typeof(void))
+                            {
+                                continue;
+                            }
+                            var context = patches.AcquireContext();
+                            method.Invoke(null, new object[] { context });
+                        }
+                        patches.Commit();
+                        foreach (var obj in assembly.GetTypes())
+                        {
+                            commands.RegisterCommandModule(obj);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Core.Log.Error($"{e}");
+                        throw;
+                    }
                 }
                 else
                 {

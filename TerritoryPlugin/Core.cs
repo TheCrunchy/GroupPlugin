@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -26,6 +27,7 @@ using Torch.API;
 using Torch.API.Managers;
 using Torch.API.Plugins;
 using Torch.API.Session;
+using Torch.Commands;
 using Torch.Managers;
 using Torch.Managers.ChatManager;
 using Torch.Managers.PatchManager;
@@ -44,7 +46,7 @@ namespace CrunchGroup
         public static List<ComponentCost> repairCost = new List<ComponentCost>();
         public static Dictionary<String, ComponentCost> ComponentCosts = new Dictionary<string, ComponentCost>();
         public static MethodInfo sendChange;
-        public static ITorchSession session;
+        public static ITorchSession Session;
         public void AddComponentCost(string subtype, long cost, bool banned)
         {
             if (repairCost.Any(x => x.SubTypeId == subtype))
@@ -162,7 +164,6 @@ namespace CrunchGroup
             SetupConfig();
             path = CreatePath();
 
-            Directory.CreateDirectory(path + $"//{PluginName}//");
             TorchBase = Torch;
         }
 
@@ -303,7 +304,7 @@ namespace CrunchGroup
         private void SessionChanged(ITorchSession session, TorchSessionState state)
         {
 
-            this.session = session;
+            Session = session;
 
             if (state == TorchSessionState.Unloading)
             {
@@ -389,8 +390,40 @@ namespace CrunchGroup
             AddComponentCostToDictionary();
             AddComponentCost("AdminKit", 5000000, true);
             AddComponentCost("AdminComponent", 5000000, true);
-
+            Directory.CreateDirectory($"{Core.path}/Scripts/");
             nextRegister = DateTime.Now;
+            var tempfolder = StoragePath + "/GROUPTEMP/";
+
+            if (Directory.Exists(tempfolder))
+            {
+                Directory.Delete(tempfolder, true);
+            }
+            Directory.CreateDirectory(tempfolder);
+            var folder = StoragePath.Replace(@"\Instance", "");
+            var plugins = $"{folder}/plugins/CrunchGroupPlugin.zip";
+
+            ZipFile.ExtractToDirectory(plugins, tempfolder);
+            Directory.CreateDirectory($"{path}/Scripts/");
+
+            foreach (var item in Directory.GetFiles(tempfolder).Where(x => x.Contains("Crunch")))
+            {
+
+                File.Copy(item, $"{path}/{Path.GetFileName(item)}", true);
+
+            }
+            try
+            {
+                foreach (var item in Directory.GetFiles($"{Core.path}/Scripts/", "*", SearchOption.AllDirectories).Where(x => x.EndsWith(".cs")))
+                {
+                    Compiler.Compile(item);
+                }
+            }
+
+            catch (Exception e)
+            {
+                Core.Log.Error($"compile error {e}");
+            }
+            Directory.Delete(tempfolder, true);
         }
 
         public static DateTime nextRegister = DateTime.Now.AddSeconds(60);
