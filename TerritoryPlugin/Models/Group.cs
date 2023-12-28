@@ -45,7 +45,7 @@ namespace CrunchGroup.Models
 
         public void DeleteGroup()
         {
-            foreach (var member in GroupMembers)
+            foreach (var member in GroupMembers.ToList())
             {
                 RemoveMemberFromGroup(member);
             }
