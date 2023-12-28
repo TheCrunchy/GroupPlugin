@@ -37,7 +37,7 @@ namespace CrunchGroup.Commands
             Event.EventObject = MyAPIGateway.Utilities.SerializeToBinary(createdEvent);
             Event.EventType = createdEvent.GetType().Name;
             NexusHandler.RaiseEvent(Event);
-            Context.Respond("Group created.", $"{GroupPlugin.PluginName}");
+            Context.Respond("Group created.", $"{Core.PluginName}");
             GroupHandler.MapPlayers();
         }
 
@@ -48,14 +48,14 @@ namespace CrunchGroup.Commands
             var group = GroupHandler.GetGroupByTag(groupTag);
             if (group == null)
             {
-                Context.Respond("Group not found", $"{GroupPlugin.PluginName}");
+                Context.Respond("Group not found", $"{Core.PluginName}");
                 return;
             }
 
             var faction = MySession.Static.Factions.TryGetFactionByTag(factionTag);
             if (faction == null)
             {
-                Context.Respond("Faction not found", $"{GroupPlugin.PluginName}");
+                Context.Respond("Faction not found", $"{Core.PluginName}");
                 return;
             }
 
@@ -75,7 +75,7 @@ namespace CrunchGroup.Commands
                 Storage.StorageHandler.Save(inGroup.Value);
                 GroupHandler.AddGroup(inGroup.Value);
                 NexusHandler.RaiseEvent(LeaveEvent);
-                Context.Respond($"Faction was in group {inGroup.Value.GroupName} {inGroup.Value.GroupTag}, they have been kicked from it.", $"{GroupPlugin.PluginName}");
+                Context.Respond($"Faction was in group {inGroup.Value.GroupName} {inGroup.Value.GroupTag}, they have been kicked from it.", $"{Core.PluginName}");
             }
             group.AddMemberToGroup(faction.FactionId);
             Storage.StorageHandler.Save(group);
@@ -90,7 +90,7 @@ namespace CrunchGroup.Commands
             Event.EventType = createdEvent.GetType().Name;
             NexusHandler.RaiseEvent(Event);
 
-            Context.Respond("Group member added.", $"{GroupPlugin.PluginName}");
+            Context.Respond("Group member added.", $"{Core.PluginName}");
             GroupHandler.MapPlayers();
         }
 
@@ -101,7 +101,7 @@ namespace CrunchGroup.Commands
             var faction = MySession.Static.Factions.TryGetFactionByTag(factionTag);
             if (faction == null)
             {
-                Context.Respond("Faction not found", $"{GroupPlugin.PluginName}");
+                Context.Respond("Faction not found", $"{Core.PluginName}");
                 return;
             }
 
@@ -120,10 +120,10 @@ namespace CrunchGroup.Commands
                 NexusHandler.RaiseEvent(LeaveEvent);
                 Storage.StorageHandler.Save(inGroup.Value);
                 GroupHandler.AddGroup(inGroup.Value);
-                Context.Respond($"Faction was in group {inGroup.Value.GroupName} {inGroup.Value.GroupTag}, they have been kicked from it.", $"{GroupPlugin.PluginName}");
+                Context.Respond($"Faction was in group {inGroup.Value.GroupName} {inGroup.Value.GroupTag}, they have been kicked from it.", $"{Core.PluginName}");
             }
 
-            Context.Respond("Removed the faction from any groups they were members of.", $"{GroupPlugin.PluginName}");
+            Context.Respond("Removed the faction from any groups they were members of.", $"{Core.PluginName}");
             GroupHandler.MapPlayers();
         }
 
@@ -135,7 +135,7 @@ namespace CrunchGroup.Commands
 
             if (group == null)
             {
-                Context.Respond("Group not found", $"{GroupPlugin.PluginName}");
+                Context.Respond("Group not found", $"{Core.PluginName}");
                 return;
             }
 
@@ -152,7 +152,7 @@ namespace CrunchGroup.Commands
                     group.GroupDescription = newValue;
                     break;
                 case "leader":
-                    MyIdentity id = GroupPlugin.TryGetIdentity(newValue);
+                    MyIdentity id = Core.TryGetIdentity(newValue);
                     if (id == null)
                     {
                         Context.Respond("Could not find that player");
@@ -175,7 +175,7 @@ namespace CrunchGroup.Commands
             Event.EventObject = MyAPIGateway.Utilities.SerializeToBinary(createdEvent);
             Event.EventType = createdEvent.GetType().Name;
             NexusHandler.RaiseEvent(Event);
-            Context.Respond("Group edited.", $"{GroupPlugin.PluginName}");
+            Context.Respond("Group edited.", $"{Core.PluginName}");
 
         }
     }

@@ -69,7 +69,7 @@ namespace CrunchGroup.Territories.SecondaryLogics
             var inventory = GetGridInventory();
             if (inventory == null || !FoundGrids.Any() || !inventory.Any())
             {
-                GroupPlugin.Log.Info($"Could not find inventory for grid at position {GridPosition.ToString()}");
+                Core.Log.Info($"Could not find inventory for grid at position {GridPosition.ToString()}");
                // GroupPlugin.Log.Info(inventory.Count);
                 return Task.FromResult(true);
             }
@@ -81,7 +81,7 @@ namespace CrunchGroup.Territories.SecondaryLogics
             StringBuilder builder = new StringBuilder();
             foreach (CraftedItem item in this.CraftableItems.Where(x => x.Enabled))
             {
-                double yeet = GroupPlugin.rand.NextDouble();
+                double yeet = Core.rand.NextDouble();
                 if (!(yeet <= item.chanceToCraft)) continue;
                 var comps = new Dictionary<MyDefinitionId, int>();
 

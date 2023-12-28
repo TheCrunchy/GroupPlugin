@@ -65,7 +65,7 @@ namespace CrunchGroup.Territories.SecondaryLogics
                 var inventory = GetGridInventory();
                 if (inventory == null || !FoundGrids.Any() || !inventory.Any())
                 {
-                    GroupPlugin.Log.Info($"Could not find inventory for grid at position {CentrePosition.ToString()}");
+                    Core.Log.Info($"Could not find inventory for grid at position {CentrePosition.ToString()}");
                     // GroupPlugin.Log.Info(inventory.Count);
                     return Task.FromResult(true);
                 }
@@ -83,7 +83,7 @@ namespace CrunchGroup.Territories.SecondaryLogics
                
                     MyAPIGateway.Utilities.InvokeOnGameThread(() =>
                         {
-                            GroupPlugin.Log.Error("This isnt setup for this version, uncomment the GridRepair class and make that work");
+                            Core.Log.Error("This isnt setup for this version, uncomment the GridRepair class and make that work");
                           //  GridRepair.BuildProjected(grid2, grid.OwnerId, RepairsPerCycle, BlocksPerCycle,
                             //    PrinterPrefix, PriceMultiplier, GroupPlugin.ComponentCosts, RequireMoney, RequireComponents, FoundInventories);
                         }
@@ -101,7 +101,7 @@ namespace CrunchGroup.Territories.SecondaryLogics
                 }
                 catch (Exception e)
                 {
-                    GroupPlugin.Log.Error($"Grid printer error {e}");
+                    Core.Log.Error($"Grid printer error {e}");
                     return Task.FromResult(true);
                 }
             }

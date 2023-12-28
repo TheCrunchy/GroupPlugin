@@ -108,6 +108,14 @@
     <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=5.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.5.0.0\lib\net461\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.CodeAnalysis, Version=2.9.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\4 Torch Server\DedicatedServer64\Microsoft.CodeAnalysis.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CodeAnalysis.CSharp, Version=2.9.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\4 Torch Server\DedicatedServer64\Microsoft.CodeAnalysis.CSharp.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\NationCommands\NationsPlugin\bin\Debug\Newtonsoft.Json.dll</HintPath>
@@ -148,6 +156,10 @@
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Collections.Immutable, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\4 Torch Server\DedicatedServer64\System.Collections.Immutable.dll</HintPath>
     </Reference>
     <Reference Include="System.ComponentModel" />
     <Reference Include="System.Core" />
@@ -202,6 +214,7 @@
   <ItemGroup>
     <Compile Include="Commands\groupadminCommands.cs" />
     <Compile Include="Commands\GroupCommands.cs" />
+    <Compile Include="Handlers\Compiler.cs" />
     <Compile Include="Handlers\GroupEventHandler.cs" />
     <Compile Include="Handlers\GroupHandler.cs" />
     <Compile Include="Handlers\Interfaces\IStorageHandler.cs" />
@@ -216,7 +229,7 @@
     <Compile Include="Models\Events\GroupChangedEvent.cs" />
     <Compile Include="Models\Group.cs" />
     <Compile Include="NexusStuff\NexusHandler.cs" />
-    <Compile Include="GroupPlugin.cs" />
+    <Compile Include="Core.cs" />
     <Compile Include="Territories\CapLogics\GroupGridCapLogic.cs" />
     <Compile Include="Territories\Models\ComponentCost.cs" />
     <Compile Include="Territories\PointOwners\GroupPointOwner.cs" />

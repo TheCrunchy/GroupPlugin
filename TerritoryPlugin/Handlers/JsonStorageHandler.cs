@@ -12,13 +12,13 @@ namespace CrunchGroup.Handlers
 
         public JsonStorageHandler()
         {
-            Directory.CreateDirectory($"{GroupPlugin.path}/GroupData/");
-            Directory.CreateDirectory($"{GroupPlugin.path}/Archive/");
+            Directory.CreateDirectory($"{Core.path}/GroupData/");
+            Directory.CreateDirectory($"{Core.path}/Archive/");
             LoadAll();
         }
 
-        private static readonly string groupBase = $"{GroupPlugin.path}/GroupData/";
-        private static readonly string groupArchive = $"{GroupPlugin.path}/Archive/";
+        private static readonly string groupBase = $"{Core.path}/GroupData/";
+        private static readonly string groupArchive = $"{Core.path}/Archive/";
 
         public void Save(Group group)
         {
@@ -45,7 +45,7 @@ namespace CrunchGroup.Handlers
             }
             catch (Exception e)
             {
-                GroupPlugin.Log.Error($"Error loading file {path} {e}");
+                Core.Log.Error($"Error loading file {path} {e}");
             }
         }
         public void Load(string path)
@@ -58,7 +58,7 @@ namespace CrunchGroup.Handlers
             }
             catch (Exception e)
             {
-                GroupPlugin.Log.Error($"Error loading file {path} {e}");
+                Core.Log.Error($"Error loading file {path} {e}");
             }
         }
 

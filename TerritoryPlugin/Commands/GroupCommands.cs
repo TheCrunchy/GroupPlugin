@@ -24,13 +24,13 @@ namespace CrunchGroup.Commands
             var faction = MySession.Static.Factions.TryGetPlayerFaction(Context.Player.IdentityId);
             if (faction == null)
             {
-                Context.Respond("Only factions can create groups", $"{GroupPlugin.PluginName}");
+                Context.Respond("Only factions can create groups", $"{Core.PluginName}");
                 return true;
             }
             var group = GroupHandler.GetPlayersGroup((long)Context.Player.SteamUserId);
             if (group != null)
             {
-                Context.Respond("You are already a member of a group! you must leave it first with !group leave", $"{GroupPlugin.PluginName}");
+                Context.Respond("You are already a member of a group! you must leave it first with !group leave", $"{Core.PluginName}");
                 return true;
             }
 
@@ -41,13 +41,13 @@ namespace CrunchGroup.Commands
             var faction = MySession.Static.Factions.TryGetPlayerFaction(Context.Player.IdentityId);
             if (faction == null)
             {
-                Context.Respond("You are not a group member.", $"{GroupPlugin.PluginName}");
+                Context.Respond("You are not a group member.", $"{Core.PluginName}");
                 return null;
             }
             var group = GroupHandler.GetPlayersGroup((long)Context.Player.SteamUserId);
             if (group == null)
             {
-                Context.Respond("You are not a group member.", $"{GroupPlugin.PluginName}");
+                Context.Respond("You are not a group member.", $"{Core.PluginName}");
                 return null;
             }
 
@@ -83,7 +83,7 @@ namespace CrunchGroup.Commands
             var faction = MySession.Static.Factions.TryGetFactionByTag(factionTag);
             if (faction == null)
             {
-                Context.Respond("Faction not found", $"{GroupPlugin.PluginName}");
+                Context.Respond("Faction not found", $"{Core.PluginName}");
                 return;
             }
 
@@ -91,10 +91,10 @@ namespace CrunchGroup.Commands
             if (IsInGroup.Any())
             {
                 var inGroup = IsInGroup.First();
-                Context.Respond($"{inGroup.Value.GroupName} {inGroup.Value.GroupTag}", $"{GroupPlugin.PluginName}");
+                Context.Respond($"{inGroup.Value.GroupName} {inGroup.Value.GroupTag}", $"{Core.PluginName}");
                 return;
             }
-            Context.Respond($"Target faction not a member of a group.", $"{GroupPlugin.PluginName}");
+            Context.Respond($"Target faction not a member of a group.", $"{Core.PluginName}");
         }
 
         [Command("info", "info on a group")]
@@ -107,7 +107,7 @@ namespace CrunchGroup.Commands
                 group = GroupHandler.GetPlayersGroup((long)Context.Player.SteamUserId);
                 if (group == null)
                 {
-                    Context.Respond("Group not found.", $"{GroupPlugin.PluginName}");
+                    Context.Respond("Group not found.", $"{Core.PluginName}");
                     return;
                 }
             }
@@ -145,9 +145,9 @@ namespace CrunchGroup.Commands
         [Permission(MyPromoteLevel.None)]
         public void Create(string groupName, string description = "Default description")
         {
-            if (!GroupPlugin.config.PlayerGroupsEnabled)
+            if (!Core.config.PlayerGroupsEnabled)
             {
-                Context.Respond("Player made groups are not enabled.", $"{GroupPlugin.PluginName}");
+                Context.Respond("Player made groups are not enabled.", $"{Core.PluginName}");
                 return;
             }
             if (FailsGroupChecks())
@@ -157,7 +157,7 @@ namespace CrunchGroup.Commands
             var faction = MySession.Static.Factions.TryGetPlayerFaction(Context.Player.IdentityId);
             if (!faction.IsFounder(Context.Player.IdentityId))
             {
-                Context.Respond("Only the founder can create a group", $"{GroupPlugin.PluginName}");
+                Context.Respond("Only the founder can create a group", $"{Core.PluginName}");
                 return;
             }
             var group = new Group()
@@ -180,7 +180,7 @@ namespace CrunchGroup.Commands
             Event.EventObject = MyAPIGateway.Utilities.SerializeToBinary(createdEvent);
             Event.EventType = createdEvent.GetType().Name;
             NexusHandler.RaiseEvent(Event);
-            Context.Respond("Group created.", $"{GroupPlugin.PluginName}");
+            Context.Respond("Group created.", $"{Core.PluginName}");
             GroupHandler.MapPlayers();
         }
 
@@ -188,9 +188,9 @@ namespace CrunchGroup.Commands
         [Permission(MyPromoteLevel.None)]
         public void Edit(string fieldType, string newValue)
         {
-            if (!GroupPlugin.config.PlayerGroupsEnabled)
+            if (!Core.config.PlayerGroupsEnabled)
             {
-                Context.Respond("Player made groups are not enabled.", $"{GroupPlugin.PluginName}");
+                Context.Respond("Player made groups are not enabled.", $"{Core.PluginName}");
                 return;
             }
 
@@ -198,12 +198,12 @@ namespace CrunchGroup.Commands
 
             if (group == null)
             {
-                Context.Respond("You are not a member of a group", $"{GroupPlugin.PluginName}");
+                Context.Respond("You are not a member of a group", $"{Core.PluginName}");
                 return;
             }
             if (group.GroupLeader != (long)Context.Player.SteamUserId)
             {
-                Context.Respond("You are not the group leader.", $"{GroupPlugin.PluginName}");
+                Context.Respond("You are not the group leader.", $"{Core.PluginName}");
                 return;
             }
 
@@ -219,7 +219,7 @@ namespace CrunchGroup.Commands
                     group.GroupDescription = newValue;
                     break;
                 case "leader":
-                    MyIdentity id = GroupPlugin.TryGetIdentity(newValue);
+                    MyIdentity id = Core.TryGetIdentity(newValue);
                     if (id == null)
                     {
                         Context.Respond("Could not find that player");
@@ -242,7 +242,7 @@ namespace CrunchGroup.Commands
             Event.EventObject = MyAPIGateway.Utilities.SerializeToBinary(createdEvent);
             Event.EventType = createdEvent.GetType().Name;
             NexusHandler.RaiseEvent(Event);
-            Context.Respond("Group edited.", $"{GroupPlugin.PluginName}");
+            Context.Respond("Group edited.", $"{Core.PluginName}");
         }
 
 
@@ -250,21 +250,21 @@ namespace CrunchGroup.Commands
         [Permission(MyPromoteLevel.None)]
         public void Delete()
         {
-            if (!GroupPlugin.config.PlayerGroupsEnabled)
+            if (!Core.config.PlayerGroupsEnabled)
             {
-                Context.Respond("Player made groups are not enabled.", $"{GroupPlugin.PluginName}");
+                Context.Respond("Player made groups are not enabled.", $"{Core.PluginName}");
                 return;
             }
 
             var group = IsInGroup();
             if (group == null)
             {
-                Context.Respond("You are not a member of a group", $"{GroupPlugin.PluginName}");
+                Context.Respond("You are not a member of a group", $"{Core.PluginName}");
                 return;
             }
             if (group.GroupLeader != (long)Context.Player.SteamUserId)
             {
-                Context.Respond("You are not the group leader.", $"{GroupPlugin.PluginName}");
+                Context.Respond("You are not the group leader.", $"{Core.PluginName}");
                 return;
             }
             group.DeleteGroup();
@@ -278,7 +278,7 @@ namespace CrunchGroup.Commands
             Event.EventObject = MyAPIGateway.Utilities.SerializeToBinary(createdEvent);
             Event.EventType = createdEvent.GetType().Name;
             NexusHandler.RaiseEvent(Event);
-            Context.Respond("Group deleted and moved to archive.", $"{GroupPlugin.PluginName}");
+            Context.Respond("Group deleted and moved to archive.", $"{Core.PluginName}");
             GroupHandler.MapPlayers();
         }
 
@@ -286,9 +286,9 @@ namespace CrunchGroup.Commands
         [Permission(MyPromoteLevel.None)]
         public void invite(string targetTag)
         {
-            if (!GroupPlugin.config.PlayerGroupsEnabled)
+            if (!Core.config.PlayerGroupsEnabled)
             {
-                Context.Respond("Player made groups are not enabled.", $"{GroupPlugin.PluginName}");
+                Context.Respond("Player made groups are not enabled.", $"{Core.PluginName}");
                 return;
             }
 
@@ -300,14 +300,14 @@ namespace CrunchGroup.Commands
             }
             if (group.GroupLeader != (long)Context.Player.SteamUserId && group.GroupAdmins.Contains((long)Context.Player.SteamUserId))
             {
-                Context.Respond("You are not the group leader or a group admin.", $"{GroupPlugin.PluginName}");
+                Context.Respond("You are not the group leader or a group admin.", $"{Core.PluginName}");
                 return;
             }
 
             var targetFac = MySession.Static.Factions.TryGetFactionByTag(targetTag);
             if (targetFac == null)
             {
-                Context.Respond("Target faction not found", $"{GroupPlugin.PluginName}");
+                Context.Respond("Target faction not found", $"{Core.PluginName}");
                 return;
             }
 
@@ -324,40 +324,40 @@ namespace CrunchGroup.Commands
             Event.EventType = createdEvent.GetType().Name;
             NexusHandler.RaiseEvent(Event);
 
-            Context.Respond("Invite sent.", $"{GroupPlugin.PluginName}");
+            Context.Respond("Invite sent.", $"{Core.PluginName}");
         }
 
         [Command("join", "join a group")]
         [Permission(MyPromoteLevel.None)]
         public void join(string groupTag)
         {
-            if (!GroupPlugin.config.PlayerGroupsEnabled)
+            if (!Core.config.PlayerGroupsEnabled)
             {
-                Context.Respond("Player made groups are not enabled.", $"{GroupPlugin.PluginName}");
+                Context.Respond("Player made groups are not enabled.", $"{Core.PluginName}");
                 return;
             }
             var faction = MySession.Static.Factions.TryGetPlayerFaction(Context.Player.IdentityId);
             if (faction == null)
             {
-                Context.Respond("Only factions can join groups", $"{GroupPlugin.PluginName}");
+                Context.Respond("Only factions can join groups", $"{Core.PluginName}");
                 return;
             }
             if (!faction.IsFounder(Context.Player.IdentityId) && !faction.IsLeader(Context.Player.IdentityId))
             {
-                Context.Respond("Only the founder or leaders can join a group", $"{GroupPlugin.PluginName}");
+                Context.Respond("Only the founder or leaders can join a group", $"{Core.PluginName}");
                 return;
             }
 
             var IsInGroup = GroupHandler.LoadedGroups.Where(x => x.Value.GroupMembers.Contains(faction.FactionId));
             if (IsInGroup.Any())
             {
-                Context.Respond($"You are already a member of the group {IsInGroup.First().Value.GroupName}, you must leave that first with !group leave", $"{GroupPlugin.PluginName}");
+                Context.Respond($"You are already a member of the group {IsInGroup.First().Value.GroupName}, you must leave that first with !group leave", $"{Core.PluginName}");
                 return;
             }
             var group = GroupHandler.GetGroupByTag(groupTag) ?? GroupHandler.GetGroupByTag(groupTag);
             if (group == null)
             {
-                Context.Respond("Target group not found, see all groups with !group list", $"{GroupPlugin.PluginName}");
+                Context.Respond("Target group not found, see all groups with !group list", $"{Core.PluginName}");
                 return;
             }
 
@@ -383,27 +383,27 @@ namespace CrunchGroup.Commands
         [Permission(MyPromoteLevel.None)]
         public void leave()
         {
-            if (!GroupPlugin.config.PlayerGroupsEnabled)
+            if (!Core.config.PlayerGroupsEnabled)
             {
-                Context.Respond("Player made groups are not enabled.", $"{GroupPlugin.PluginName}");
+                Context.Respond("Player made groups are not enabled.", $"{Core.PluginName}");
                 return;
             }
             var faction = MySession.Static.Factions.TryGetPlayerFaction(Context.Player.IdentityId);
             if (faction == null)
             {
-                Context.Respond("Only factions can join groups", $"{GroupPlugin.PluginName}");
+                Context.Respond("Only factions can join groups", $"{Core.PluginName}");
                 return;
             }
             if (!faction.IsFounder(Context.Player.IdentityId))
             {
-                Context.Respond("Only the founder can leave a group", $"{GroupPlugin.PluginName}");
+                Context.Respond("Only the founder can leave a group", $"{Core.PluginName}");
                 return;
             }
 
             var group = GroupHandler.GetPlayersGroup((long)Context.Player.SteamUserId);
             if (group == null)
             {
-                Context.Respond("Could not find group, are you sure you are a member of one?", $"{GroupPlugin.PluginName}");
+                Context.Respond("Could not find group, are you sure you are a member of one?", $"{Core.PluginName}");
                 return;
             }
             if (group.GroupMembers.Contains(faction.FactionId))
@@ -421,7 +421,7 @@ namespace CrunchGroup.Commands
             Event.EventObject = MyAPIGateway.Utilities.SerializeToBinary(createdEvent);
             Event.EventType = createdEvent.GetType().Name;
             NexusHandler.RaiseEvent(Event);
-            Context.Respond("Left the group.", $"{GroupPlugin.PluginName}");
+            Context.Respond("Left the group.", $"{Core.PluginName}");
             GroupHandler.MapPlayers();
         }
 
@@ -429,15 +429,15 @@ namespace CrunchGroup.Commands
         [Permission(MyPromoteLevel.None)]
         public void kick(string targetTag)
         {
-            if (!GroupPlugin.config.PlayerGroupsEnabled)
+            if (!Core.config.PlayerGroupsEnabled)
             {
-                Context.Respond("Player made groups are not enabled.", $"{GroupPlugin.PluginName}");
+                Context.Respond("Player made groups are not enabled.", $"{Core.PluginName}");
                 return;
             }
             var faction = MySession.Static.Factions.TryGetFactionByTag(targetTag);
             if (faction == null)
             {
-                Context.Respond("Faction not found", $"{GroupPlugin.PluginName}");
+                Context.Respond("Faction not found", $"{Core.PluginName}");
                 return;
             }
 
@@ -450,7 +450,7 @@ namespace CrunchGroup.Commands
             // && group.GroupAdmins.Contains((long)Context.Player.SteamUserId)
             if (group.GroupLeader != (long)Context.Player.SteamUserId)
             {
-                Context.Respond("You are not the group leader.", $"{GroupPlugin.PluginName}");
+                Context.Respond("You are not the group leader.", $"{Core.PluginName}");
                 return;
             }
 
@@ -469,7 +469,7 @@ namespace CrunchGroup.Commands
             Event.EventObject = MyAPIGateway.Utilities.SerializeToBinary(createdEvent);
             Event.EventType = createdEvent.GetType().Name;
             NexusHandler.RaiseEvent(Event);
-            Context.Respond("Kicked from the group.", $"{GroupPlugin.PluginName}");
+            Context.Respond("Kicked from the group.", $"{Core.PluginName}");
             GroupHandler.MapPlayers();
         }
     }

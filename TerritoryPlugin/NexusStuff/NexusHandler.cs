@@ -2,6 +2,7 @@
 using CrunchGroup.Handlers;
 using CrunchGroup.Models.Events;
 using Sandbox.ModAPI;
+using Torch.API.Managers;
 
 namespace CrunchGroup.NexusStuff
 {
@@ -9,10 +10,10 @@ namespace CrunchGroup.NexusStuff
     {
         public static void RaiseEvent(GroupEvent groupEvent)
         {
-            if (GroupPlugin.NexusInstalled)
+            if (Core.NexusInstalled)
             {
                 var message = MyAPIGateway.Utilities.SerializeToBinary<GroupEvent>(groupEvent);
-                GroupPlugin.API.SendMessageToAllServers(message);
+                Core.API.SendMessageToAllServers(message);
             }
             else
             {
@@ -45,6 +46,7 @@ namespace CrunchGroup.NexusStuff
                         GroupEventHandler.HandleGroupJoin(ev);
                         break;
                     }
+                
                 case "LeftGroupEvent":
                     {
                         var ev = MyAPIGateway.Utilities.SerializeFromBinary<LeftGroupEvent>(message.EventObject);
@@ -64,7 +66,7 @@ namespace CrunchGroup.NexusStuff
                         break;
                     }
                 default:
-                    GroupPlugin.Log.Error($"{message.EventType} not added to the handle switch");
+                    Core.Log.Error($"{message.EventType} not added to the handle switch");
                     break;
             }
         }
@@ -79,7 +81,7 @@ namespace CrunchGroup.NexusStuff
             }
             catch (Exception e)
             {
-                GroupPlugin.Log.Error($"Errored on nexus event {e}");
+                Core.Log.Error($"Errored on nexus event {e}");
                 throw;
             }
            // GroupPlugin.Log.Info("Handled a nexus event");

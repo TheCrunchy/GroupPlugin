@@ -19,7 +19,7 @@ namespace CrunchGroup.Territories
         public static async Task DoCaps()
         {
             List<Guid> TerritoriesToRecalc = new List<Guid>();
-            foreach (var territory in GroupPlugin.Territories)
+            foreach (var territory in Core.Territories)
             {
                 if (territory.Value.SecondaryLogics.Any())
                 {
@@ -35,7 +35,7 @@ namespace CrunchGroup.Territories
                         }
                         catch (Exception e)
                         {
-                            GroupPlugin.Log.Error($"Error on secondary logic loop of type {item.GetType()} { e.ToString()}");
+                            Core.Log.Error($"Error on secondary logic loop of type {item.GetType()} { e.ToString()}");
                         }
                     }
                 }
@@ -63,7 +63,7 @@ namespace CrunchGroup.Territories
                     }
                     catch (Exception e)
                     {
-                        GroupPlugin.Log.Error($"Error on capture logic loop of type {CapLogic.GetType()}, { e.ToString()}");
+                        Core.Log.Error($"Error on capture logic loop of type {CapLogic.GetType()}, { e.ToString()}");
                     }
                     //mostly testing, i dont intend to do anything here if a cap is or isnt successful, other than change the territory owner if % is high enough 
 
@@ -81,14 +81,14 @@ namespace CrunchGroup.Territories
                         }
                         catch (Exception e)
                         {
-                            GroupPlugin.Log.Error($"Error on secondary logic loop of type {item.GetType()} { e.ToString()}");
+                            Core.Log.Error($"Error on secondary logic loop of type {item.GetType()} { e.ToString()}");
                         }
                     }
 
                 }
             }
 
-            foreach (var ter in GroupPlugin.Territories.Where(x => TerritoriesToRecalc.Contains(x.Value.Id)).Select(x => x.Value))
+            foreach (var ter in Core.Territories.Where(x => TerritoriesToRecalc.Contains(x.Value.Id)).Select(x => x.Value))
             {
                 var temp = new Dictionary<Object, int>();
                 foreach (var point in ter.CapturePoints)
@@ -135,7 +135,7 @@ namespace CrunchGroup.Territories
             {
                 FactionId = factionId
             };
-            GroupPlugin.utils.WriteToJsonFile<Models.Territory>(GroupPlugin.path + "//Territories//" + ter.Name + ".json", ter);
+            Core.utils.WriteToJsonFile<Models.Territory>(Core.path + "//Territories//" + ter.Name + ".json", ter);
         }
 
         public static void SendRadarMessage(Object owner, String message)
@@ -144,7 +144,7 @@ namespace CrunchGroup.Territories
             {
                 case IMyFaction faction:
                     {
-                        GroupPlugin.Log.Error($"Radar not implemented for factions");
+                        Core.Log.Error($"Radar not implemented for factions");
                     }
                     break;
             }
@@ -152,7 +152,7 @@ namespace CrunchGroup.Territories
 
         public static void SendMessage(string author, string message, Models.Territory ter, IPointOwner owner)
         {
-            GroupPlugin.SendChatMessage(author, message,  0l);
+            Core.SendChatMessage(author, message,  0l);
           
             var client = new WebClient();
             client.Headers.Add("Content-Type", "application/json");
@@ -181,7 +181,7 @@ namespace CrunchGroup.Territories
             }
             catch (Exception e)
             {
-                GroupPlugin.Log.Error($"Grid Cap Discord webhook error, {e}");
+                Core.Log.Error($"Grid Cap Discord webhook error, {e}");
             }
 
             if (owner == null) return;

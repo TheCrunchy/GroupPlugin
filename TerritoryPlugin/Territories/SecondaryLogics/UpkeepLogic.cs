@@ -41,7 +41,7 @@ namespace CrunchGroup.Territories.SecondaryLogics
             });
             if (inventory == null || !FoundGrids.Any() || !inventory.Any())
             {
-                GroupPlugin.Log.Info($"Could not find inventory for grid at position {GridPosition.ToString()}");
+                Core.Log.Info($"Could not find inventory for grid at position {GridPosition.ToString()}");
                 // GroupPlugin.Log.Info(inventory.Count);
                 MyAPIGateway.Utilities.InvokeOnGameThread(() =>
                 {

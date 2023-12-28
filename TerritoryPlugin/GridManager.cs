@@ -92,7 +92,7 @@ namespace CrunchGroup
 
                 foreach (MyObjectBuilder_CubeBlock cubeBlock in cubeGrid.CubeBlocks)
                 {
-                    long ownerID = GroupPlugin.GetIdentityByNameOrId(newOwner.ToString()).IdentityId;
+                    long ownerID = Core.GetIdentityByNameOrId(newOwner.ToString()).IdentityId;
                     cubeBlock.Owner = ownerID;
                     cubeBlock.BuiltBy = ownerID;
 
@@ -324,7 +324,7 @@ namespace CrunchGroup
                 if (shipBlueprints == null)
                 {
 
-                    GroupPlugin.Log.Warn("No ShipBlueprints in File '" + path + "'");
+                    Core.Log.Warn("No ShipBlueprints in File '" + path + "'");
 
                     if (context != null)
                         context.Respond("There arent any Grids in your file to import!");
@@ -338,7 +338,7 @@ namespace CrunchGroup
                     if (!LoadShipBlueprint(shipBlueprint, playerPosition, keepOriginalLocation, (long)steamID, name, context, force))
                     {
 
-                        GroupPlugin.Log.Warn("Error Loading ShipBlueprints from File '" + path + "'");
+                        Core.Log.Warn("Error Loading ShipBlueprints from File '" + path + "'");
                         return false;
                     }
                 }
@@ -346,7 +346,7 @@ namespace CrunchGroup
                 return true;
             }
 
-            GroupPlugin.Log.Warn("Error Loading File '" + path + "' check Keen Logs.");
+            Core.Log.Warn("Error Loading File '" + path + "' check Keen Logs.");
 
             return false;
         }
@@ -361,7 +361,7 @@ namespace CrunchGroup
             if (grids == null || grids.Length == 0)
             {
 
-                GroupPlugin.Log.Warn("No grids in blueprint!");
+                Core.Log.Warn("No grids in blueprint!");
 
                 if (context != null)
                     context.Respond("No grids in blueprint!");
@@ -376,7 +376,7 @@ namespace CrunchGroup
                 
                 foreach (MyObjectBuilder_CubeBlock block in grid.CubeBlocks)
                 {
-                    long ownerID = GroupPlugin.GetIdentityByNameOrId(steamID.ToString()).IdentityId;
+                    long ownerID = Core.GetIdentityByNameOrId(steamID.ToString()).IdentityId;
                     block.Owner = ownerID;
                     block.BuiltBy = ownerID;
                 }
@@ -392,7 +392,7 @@ namespace CrunchGroup
                 if (pos == null)
                 {
 
-                    GroupPlugin.Log.Warn("No free Space found!");
+                    Core.Log.Warn("No free Space found!");
 
                     if (context != null)
                         context.Respond("No free space available!");
@@ -405,13 +405,13 @@ namespace CrunchGroup
                 /* Update GridsPosition if that doesnt work get out of here. */
                 if (!UpdateGridsPosition(grids, newPosition))
                 {
-                    GroupPlugin.Log.Warn("The File to be imported does not seem to be compatible with the server!");
+                    Core.Log.Warn("The File to be imported does not seem to be compatible with the server!");
                     if (context != null)
                         context.Respond("The File to be imported does not seem to be compatible with the server!");
 
                     return false;
                 }
-                Sandbox.Game.Entities.Character.MyCharacter player = MySession.Static.Players.GetPlayerByName(GroupPlugin.GetIdentityByNameOrId(steamID.ToString()).DisplayName).Character;
+                Sandbox.Game.Entities.Character.MyCharacter player = MySession.Static.Players.GetPlayerByName(Core.GetIdentityByNameOrId(steamID.ToString()).DisplayName).Character;
                 MyGps gps = CreateGps(pos.Value, Color.LightGreen, 60, Name);
                 MyGpsCollection gpsCollection = (MyGpsCollection)MyAPIGateway.Session?.GPS;
                 MyGps gpsRef = gps;

@@ -11,14 +11,14 @@ namespace CrunchGroup.Territories
                                                                  throw new Exception("Failed to find patch method");
         public static void Patch(PatchContext ctx)
         {
-            var HandleMessageMethod = GroupPlugin.SKO.GetType().Assembly.GetType("SKO.Torch.Plugins.Tweaks.Modules.SafeZoneModule").GetMethod("IsEmptySafeZone", BindingFlags.Instance | BindingFlags.NonPublic);
+            var HandleMessageMethod = Core.SKO.GetType().Assembly.GetType("SKO.Torch.Plugins.Tweaks.Modules.SafeZoneModule").GetMethod("IsEmptySafeZone", BindingFlags.Instance | BindingFlags.NonPublic);
             if (HandleMessageMethod == null)
             {
-                GroupPlugin.Log.Info("SKO NULL");
+                Core.Log.Info("SKO NULL");
                 return;
             }
 
-            GroupPlugin.Log.Info("Patched SKO");
+            Core.Log.Info("Patched SKO");
             ctx.GetPattern(HandleMessageMethod).Suffixes.Add(HandleMessagePatch);
         }
 

@@ -47,7 +47,7 @@ namespace CrunchGroup.Territories.SecondaryLogics
                 var gps = GPSHelper.CreateGps(grid.PositionComp.GetPosition(), Color.Cyan, $"Radar Hit", $"Radar {grid.DisplayName} at {DateTime.Now:HH:mm:ss zz}");
                 if (owner is MyFaction fac)
                 {
-                    GroupPlugin.Log.Error("This isnt setup for factions");
+                    Core.Log.Error("This isnt setup for factions");
                     //not setup here
                 }
                 builder.AppendLine(gps.ToString());

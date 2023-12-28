@@ -38,7 +38,7 @@ namespace CrunchGroup.Models
                 var faction = MySession.Static.Factions.TryGetFactionById(fac);
                 foreach (var member in faction.Members.Values.Select(x => x.PlayerId).Distinct())
                 {
-                    GroupPlugin.SendChatMessage($"{GroupPlugin.PluginName}", $"{newfac.Name} {newfac.Tag} Has joined the group!", MySession.Static.Players.TryGetSteamId(member));
+                    Core.SendChatMessage($"{Core.PluginName}", $"{newfac.Name} {newfac.Tag} Has joined the group!", MySession.Static.Players.TryGetSteamId(member));
                 }
             }
         }
@@ -66,7 +66,7 @@ namespace CrunchGroup.Models
                 });
                 foreach (var member in fac.Members.Values.Select(x => x.PlayerId).Distinct())
                 {
-                    GroupPlugin.SendChatMessage($"{GroupPlugin.PluginName}", $"{newfac.Name} {newfac.Tag} Has left the group!", MySession.Static.Players.TryGetSteamId(member));
+                    Core.SendChatMessage($"{Core.PluginName}", $"{newfac.Name} {newfac.Tag} Has left the group!", MySession.Static.Players.TryGetSteamId(member));
                 }
             }
 
@@ -79,7 +79,7 @@ namespace CrunchGroup.Models
             var faction = MySession.Static.Factions.TryGetFactionById(factionId);
             foreach (var member in faction.Members)
             {
-                GroupPlugin.SendChatMessage($"{GroupPlugin.PluginName}", $"You were invited to {GroupName} to accept use !group join {GroupTag} or !group join {GroupName}", MySession.Static.Players.TryGetSteamId(member.Value.PlayerId));
+                Core.SendChatMessage($"{Core.PluginName}", $"You were invited to {GroupName} to accept use !group join {GroupTag} or !group join {GroupName}", MySession.Static.Players.TryGetSteamId(member.Value.PlayerId));
             }
         }
         public void ProcessFriendlies()
@@ -119,9 +119,9 @@ namespace CrunchGroup.Models
             MyFactionStateChange change2 = MyFactionStateChange.AcceptFriendRequest;
             List<object[]> Input = new List<object[]>();
             object[] MethodInput = new object[] { change, firstId, SecondId, 0L };
-            GroupPlugin.sendChange?.Invoke(null, MethodInput);
+            Core.sendChange?.Invoke(null, MethodInput);
             object[] MethodInput2 = new object[] { change2, SecondId, firstId, 0L };
-            GroupPlugin.sendChange?.Invoke(null, MethodInput2);
+            Core.sendChange?.Invoke(null, MethodInput2);
 
         }
     }
