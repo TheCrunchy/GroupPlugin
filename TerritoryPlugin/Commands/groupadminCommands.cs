@@ -143,9 +143,21 @@ namespace CrunchGroup.Commands
             switch (fieldType.ToLower())
             {
                 case "name":
+                    if (GroupHandler.LoadedGroups.Any(x =>
+                            x.Value.GroupName != null && x.Value.GroupName.ToLower() == newValue.ToLower()))
+                    {
+                        Context.Respond("Group with that name already exists");
+                        return;
+                    }
                     group.GroupName = newValue;
                     break;
                 case "tag":
+                    if (GroupHandler.LoadedGroups.Any(x =>
+                            x.Value.GroupTag != null && x.Value.GroupTag.ToLower() == newValue.ToLower()))
+                    {
+                        Context.Respond("Group with that tag already exists");
+                        return;
+                    }
                     group.GroupTag = newValue;
                     break;
                 case "description":
