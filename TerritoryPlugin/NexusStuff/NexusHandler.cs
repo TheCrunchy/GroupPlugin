@@ -8,6 +8,8 @@ namespace CrunchGroup.NexusStuff
 {
     public static class NexusHandler
     {
+        public static Action<GroupEvent> NexusMessage { get; set; }
+
         public static void RaiseEvent(GroupEvent groupEvent)
         {
             if (Core.NexusInstalled)
@@ -65,14 +67,15 @@ namespace CrunchGroup.NexusStuff
                         GroupEventHandler.HandleGroupChange(ev);
                         break;
                     }
-                case "GroupChangedEvent ":
+                case "GroupChangedEvent":
                 {
                     var ev = MyAPIGateway.Utilities.SerializeFromBinary<GroupChangedEvent>(message.EventObject);
                     GroupEventHandler.HandleGroupChange(ev);
                     break;
                 }
                 default:
-                    Core.Log.Error($"{message.EventType} not added to the handle switch");
+                    NexusMessage?.Invoke(message);
+                    Core.Log.Error($"{message.EventType} not added to the handle switch, sent to scripts if necessary");
                     break;
             }
         }
