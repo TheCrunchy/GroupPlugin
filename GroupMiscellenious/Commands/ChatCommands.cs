@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using CrunchGroup;
 using CrunchGroup.Handlers;
+using CrunchGroup.Models.Events;
+using CrunchGroup.NexusStuff;
 using Torch.API;
 using Torch.API.Managers;
 using Torch.Commands;
@@ -23,6 +25,7 @@ namespace GroupMiscellenious.Commands
 
             Core.Session.Managers.GetManager<IMultiplayerManagerBase>().PlayerJoined += LoadLogin;
             Core.Session.Managers.GetManager<ChatManagerServer>().MessageProcessing += DoChatMessage;
+            NexusHandler.NexusMessage += NexusMessage;
         }
 
         public static void DoChatMessage(TorchChatMessage msg, ref bool consumed)
@@ -62,9 +65,19 @@ namespace GroupMiscellenious.Commands
             }
         }
 
+
+
         public static void LoadLogin(IPlayer player)
         {
             //load the player to see if they are in chat 
+        }
+
+        public static void NexusMessage(GroupEvent message)
+        {
+            if (message.EventType is "GroupChatMessage")
+            {
+
+            }
         }
 
         private static Dictionary<ulong, bool> InGroupChat = new Dictionary<ulong, bool>();
