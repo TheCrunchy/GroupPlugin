@@ -123,10 +123,6 @@
     <Reference Include="NLog">
       <HintPath>..\..\FixPlayerCommand\FixPlayerCommand\bin\Debug\NLog.dll</HintPath>
     </Reference>
-    <Reference Include="ProtoBuf.Net, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\4 Torch Server\DedicatedServer64\ProtoBuf.Net.dll</HintPath>
-    </Reference>
     <Reference Include="ProtoBuf.Net.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\4 Torch Server\DedicatedServer64\ProtoBuf.Net.Core.dll</HintPath>

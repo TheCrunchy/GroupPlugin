@@ -47,6 +47,8 @@ namespace CrunchGroup
         public static Dictionary<String, ComponentCost> ComponentCosts = new Dictionary<string, ComponentCost>();
         public static MethodInfo sendChange;
         public static ITorchSession Session;
+
+
         public void AddComponentCost(string subtype, long cost, bool banned)
         {
             if (repairCost.Any(x => x.SubTypeId == subtype))
@@ -72,7 +74,7 @@ namespace CrunchGroup
             }
         }
 
-        public const string PluginName = "Groups";
+        public static string PluginName = "Groups";
 
         public static Random random = new Random();
 
@@ -133,6 +135,8 @@ namespace CrunchGroup
                     NexusInstalled = true;
                 }
             }
+
+
         }
         public void SetupFriendMethod()
         {
@@ -413,10 +417,7 @@ namespace CrunchGroup
             }
             try
             {
-                foreach (var item in Directory.GetFiles($"{Core.path}/Scripts/", "*", SearchOption.AllDirectories).Where(x => x.EndsWith(".cs")))
-                {
-                    Compiler.Compile(item);
-                }
+                Compiler.Compile($"{Core.path}/Scripts/");
             }
 
             catch (Exception e)
@@ -618,14 +619,18 @@ namespace CrunchGroup
             }
         }
 
-        public static void SendChatMessage(String prefix, String message, ulong steamID = 0)
+        public static void SendChatMessage(String prefix, String message, ulong steamID = 0, Color color = default)
         {
+            if (color == default)
+            {
+                color = Color.OrangeRed;
+            }
             var _chatLog = LogManager.GetLogger("Chat");
             var scriptedChatMsg1 = new ScriptedChatMsg();
             scriptedChatMsg1.Author = prefix;
             scriptedChatMsg1.Text = message;
             scriptedChatMsg1.Font = "White";
-            scriptedChatMsg1.Color = Color.OrangeRed;
+            scriptedChatMsg1.Color = color;
             scriptedChatMsg1.Target = Sync.Players.TryGetIdentityId(steamID);
             var scriptedChatMsg2 = scriptedChatMsg1;
             MyMultiplayerBase.SendScriptedChatMessage(ref scriptedChatMsg2);

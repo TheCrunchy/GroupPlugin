@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Sandbox.Game.Multiplayer;
+using Sandbox.Game.Screens.Helpers;
 using Sandbox.Game.World;
 using Sandbox.ModAPI;
 using VRage.Game.ModAPI;
+using VRageMath;
 
 namespace CrunchGroup.Models
 {
@@ -51,6 +54,44 @@ namespace CrunchGroup.Models
             }
 
             GroupMembers = new List<long>();
+        }
+        public void SendGroupMessage(ulong excludeThisPerson, string author, string message)
+        {
+            foreach (var id in GroupMembers)
+            {
+                var fac = MySession.Static.Factions.TryGetFactionById(id);
+                if (fac == null) continue;
+                foreach (var member in fac.Members.Values.Select(x => x.PlayerId).Distinct())
+                {
+                    if (MySession.Static.Players.TryGetSteamId(member) == excludeThisPerson)
+                    {
+                        continue;
+                    }
+                    Core.SendChatMessage($"{author}", $"{message}", MySession.Static.Players.TryGetSteamId(member), Color.Yellow);
+                }
+            }
+        }
+        public void SendGroupSignal(Vector3 Position)
+        {
+            MyGpsCollection gpscol = (MyGpsCollection)MyAPIGateway.Session?.GPS;
+            StringBuilder sb = new StringBuilder();
+            MyGps gpsRef = new MyGps();
+            gpsRef.Coords = Position;
+            gpsRef.Name = $"Distress Signal {DateTime.Now:HH-mm-tt}";
+            gpsRef.GPSColor = Color.Yellow;
+            gpsRef.ShowOnHud = true;
+            gpsRef.AlwaysVisible = true;
+            gpsRef.DiscardAt = TimeSpan.FromSeconds(180);
+
+            foreach (var id in GroupMembers)
+            {
+                var fac = MySession.Static.Factions.TryGetFactionById(id);
+                if (fac == null) continue;
+                foreach (var member in fac.Members.Values.Select(x => x.PlayerId).Distinct())
+                {
+                    gpscol.SendAddGpsRequest(member, ref gpsRef);
+                }
+            }
         }
 
         public void RemoveMemberFromGroup(long factionId)

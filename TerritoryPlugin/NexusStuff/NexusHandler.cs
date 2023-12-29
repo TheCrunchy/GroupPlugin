@@ -75,7 +75,10 @@ namespace CrunchGroup.NexusStuff
                 }
                 default:
                     NexusMessage?.Invoke(message);
-                    Core.Log.Error($"{message.EventType} not added to the handle switch, sent to scripts if necessary");
+                    if (Core.config.DebugMode)
+                    {
+                        Core.Log.Error($"{message.EventType} not added to the handle switch, sent to scripts if necessary");
+                    }
                     break;
             }
         }
