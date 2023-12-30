@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Odbc;
 using System.Linq;
 using CrunchGroup;
 using CrunchGroup.Handlers;
@@ -100,7 +101,14 @@ namespace GroupMiscellenious.Commands
             public string Message { get; set; }
         }
 
-
+        [ProtoContract]
+        public class ToggleGroupChatEvent
+        {
+            [ProtoMember(1)]
+            public ulong SenderId { get; set; }
+            [ProtoMember(2)]
+            public bool InChat { get; set; }
+        }
         [ProtoContract]
         public class GroupDistressEvent
         {
@@ -124,25 +132,31 @@ namespace GroupMiscellenious.Commands
             switch (message.EventType)
             {
                 case "GroupChatEvent":
-                {
-                    var ev = MyAPIGateway.Utilities.SerializeFromBinary<GroupChatEvent>(message.EventObject);
-                    var group = GroupHandler.LoadedGroups.FirstOrDefault(x => x.Key == ev.GroupId).Value ?? null;
-                    if (group == null)
                     {
-                        return;
+                        var ev = MyAPIGateway.Utilities.SerializeFromBinary<GroupChatEvent>(message.EventObject);
+                        var group = GroupHandler.LoadedGroups.FirstOrDefault(x => x.Key == ev.GroupId).Value ?? null;
+                        if (group == null)
+                        {
+                            return;
+                        }
+                        group.SendGroupMessage(ev.SenderId, ev.SenderName, ev.Message);
+                        break;
                     }
-                    group.SendGroupMessage(ev.SenderId, ev.SenderName, ev.Message);
-                    break;
-                }
                 case "GroupDistressEvent":
-                {
-                    var ev = MyAPIGateway.Utilities.SerializeFromBinary<GroupDistressEvent>(message.EventObject);
-                    var group = GroupHandler.LoadedGroups.FirstOrDefault(x => x.Key == ev.GroupId).Value ?? null;
-                    if (group == null)
                     {
-                        return;
+                        var ev = MyAPIGateway.Utilities.SerializeFromBinary<GroupDistressEvent>(message.EventObject);
+                        var group = GroupHandler.LoadedGroups.FirstOrDefault(x => x.Key == ev.GroupId).Value ?? null;
+                        if (group == null)
+                        {
+                            return;
+                        }
+                        group.SendGroupSignal(ev.Position);
+                        break;
                     }
-                    group.SendGroupSignal(ev.Position);
+                case "ToggleGroupChatEvent":
+                {
+                    var ev = MyAPIGateway.Utilities.SerializeFromBinary<ToggleGroupChatEvent>(message.EventObject);
+                    InGroupChat[ev.SenderId] = ev.InChat;
                     break;
                 }
             }
@@ -155,22 +169,63 @@ namespace GroupMiscellenious.Commands
         [Permission(MyPromoteLevel.None)]
         public void Chat()
         {
+            var Event = new GroupEvent();
+            var createdEvent = new ToggleGroupChatEvent();
             var group = GroupHandler.GetPlayersGroup((long)Context.Player.SteamUserId);
             if (group == null)
             {
                 Context.Respond("Group not found.", $"{Core.PluginName}");
-                InGroupChat.Remove(Context.Player.SteamUserId);
+                Event = new GroupEvent();
+                createdEvent = new ToggleGroupChatEvent()
+                {
+                    SenderId = (ulong)Context.Player.SteamUserId,
+                    InChat = false,
+                };
+                Event.EventObject = MyAPIGateway.Utilities.SerializeToBinary(createdEvent);
+                Event.EventType = createdEvent.GetType().Name;
+                NexusHandler.RaiseEvent(Event);
+
+                if (Core.NexusInstalled)
+                {
+                    NexusHandler.NexusMessage?.Invoke(Event);
+                }
                 return;
             }
 
             if (InGroupChat.ContainsKey(Context.Player.SteamUserId))
             {
-                Context.Respond("Leaving group chat");
-                InGroupChat[Context.Player.SteamUserId] = false;
+                Context.Respond("Leaving group chat", $"{Core.PluginName}");
+                Event = new GroupEvent();
+                createdEvent = new ToggleGroupChatEvent()
+                {
+                    SenderId = (ulong)Context.Player.SteamUserId,
+                    InChat = false,
+                };
+                Event.EventObject = MyAPIGateway.Utilities.SerializeToBinary(createdEvent);
+                Event.EventType = createdEvent.GetType().Name;
+                NexusHandler.RaiseEvent(Event);
+
+                if (Core.NexusInstalled)
+                {
+                    NexusHandler.NexusMessage?.Invoke(Event);
+                }
                 return;
             }
-            Context.Respond("Entering group chat");
-            InGroupChat[Context.Player.SteamUserId] = true;
+            Context.Respond("Entering group chat", $"{Core.PluginName}");
+            Event = new GroupEvent();
+            createdEvent = new ToggleGroupChatEvent()
+            {
+                SenderId = (ulong)Context.Player.SteamUserId,
+                InChat = true,
+            };
+            Event.EventObject = MyAPIGateway.Utilities.SerializeToBinary(createdEvent);
+            Event.EventType = createdEvent.GetType().Name;
+            NexusHandler.RaiseEvent(Event);
+
+            if (Core.NexusInstalled)
+            {
+                NexusHandler.NexusMessage?.Invoke(Event);
+            }
         }
 
 

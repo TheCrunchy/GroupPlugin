@@ -47,7 +47,7 @@ namespace CrunchGroup
         public static Dictionary<String, ComponentCost> ComponentCosts = new Dictionary<string, ComponentCost>();
         public static MethodInfo sendChange;
         public static ITorchSession Session;
-
+        public static Action UpdateCycle;
 
         public void AddComponentCost(string subtype, long cost, bool banned)
         {
@@ -577,8 +577,11 @@ namespace CrunchGroup
         public override async void Update()
         {
             ticks++;
+
             try
             {
+                UpdateCycle?.Invoke();
+
                 if (!InitPlugins)
                 {
                     InitPlugins = true;
