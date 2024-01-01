@@ -395,36 +395,40 @@ namespace CrunchGroup
             AddComponentCost("AdminKit", 5000000, true);
             AddComponentCost("AdminComponent", 5000000, true);
             Directory.CreateDirectory($"{Core.path}/Scripts/");
-            nextRegister = DateTime.Now;
-            var tempfolder = StoragePath + "/GROUPTEMP/";
-
-            if (Directory.Exists(tempfolder))
-            {
-                Directory.Delete(tempfolder, true);
-            }
-            Directory.CreateDirectory(tempfolder);
-            var folder = StoragePath.Replace(@"\Instance", "");
-            var plugins = $"{folder}/plugins/CrunchGroupPlugin.zip";
-
-            ZipFile.ExtractToDirectory(plugins, tempfolder);
-            Directory.CreateDirectory($"{path}/Scripts/");
-
-            foreach (var item in Directory.GetFiles(tempfolder).Where(x => x.Contains("Crunch")))
-            {
-
-                File.Copy(item, $"{path}/{Path.GetFileName(item)}", true);
-
-            }
             try
             {
-                Compiler.Compile($"{Core.path}/Scripts/");
-            }
+                nextRegister = DateTime.Now;
+                var tempfolder = StoragePath + "/GROUPTEMP/";
 
+                if (Directory.Exists(tempfolder))
+                {
+                    Directory.Delete(tempfolder, true);
+                }
+                Directory.CreateDirectory(tempfolder);
+                var folder = StoragePath.Replace(@"\Instance", "");
+                var plugins = $"{folder}/plugins/CrunchGroupPlugin.zip";
+
+                ZipFile.ExtractToDirectory(plugins, tempfolder);
+ 
+                foreach (var item in Directory.GetFiles(tempfolder).Where(x => x.Contains("Crunch")))
+                {
+
+                    File.Copy(item, $"{basePath}/{PluginName}/{Path.GetFileName(item)}", true);
+                }
+                try
+                {
+                    Compiler.Compile($"{Core.path}/Scripts/");
+                }
+
+                catch (Exception e)
+                {
+                    Core.Log.Error($"compile error {e}");
+                }
+                Directory.Delete(tempfolder, true);
+            }
             catch (Exception e)
             {
-                Core.Log.Error($"compile error {e}");
             }
-            Directory.Delete(tempfolder, true);
         }
 
         public static DateTime nextRegister = DateTime.Now.AddSeconds(60);

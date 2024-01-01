@@ -35,7 +35,7 @@ namespace CrunchGroup
         {
             try
             {
-                using (var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                using (var fs = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite))
                 using (var reader = new StreamReader(fs))
                 {
                     var fileContents = reader.ReadToEnd();

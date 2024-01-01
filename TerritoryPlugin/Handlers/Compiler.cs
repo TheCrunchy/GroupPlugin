@@ -38,11 +38,21 @@ namespace CrunchGroup.Handlers
                 }
             }
 
-            foreach (var item in Directory.GetFiles(Core.path).Where(x => x.Contains(".dll")))
+            foreach (var filePath in Directory.GetFiles($"{Core.basePath}/{Core.PluginName}/").Where(x => x.Contains(".dll")))
             {
-                metadataReferenceList.Add(MetadataReference.CreateFromFile(item));
+                using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                {
+                    metadataReferenceList.Add(MetadataReference.CreateFromStream(fileStream));
+                }
             }
 
+            foreach (var filePath in Directory.GetFiles(Core.path).Where(x => x.Contains(".dll")))
+            {
+                using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                {
+                    metadataReferenceList.Add(MetadataReference.CreateFromStream(fileStream));
+                }
+            }
             return metadataReferenceList.ToArray();
         }
         private static bool CompileFromFile(string folder)
@@ -51,15 +61,27 @@ namespace CrunchGroup.Handlers
             var commands = Core.Session.Managers.GetManager<CommandManager>();
             List<SyntaxTree> trees = new List<SyntaxTree>();
 
-
-            foreach (var item in Directory.GetFiles(folder, "*", SearchOption.AllDirectories).Where(x => x.EndsWith(".cs")))
+            try
             {
-                var text = File.ReadAllText(item);
-                SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(text);
-                trees.Add(syntaxTree);
-
+                foreach (var filePath in Directory.GetFiles(folder, "*", SearchOption.AllDirectories)
+                             .Where(x => x.EndsWith(".cs")))
+                {
+                    using (FileStream fileStream =
+                           new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                    {
+                        using (StreamReader streamReader = new StreamReader(fileStream))
+                        {
+                            string text = streamReader.ReadToEnd();
+                            SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(text);
+                            trees.Add(syntaxTree);
+                        }
+                    }
+                }
             }
-
+            catch (Exception e)
+            {
+                Core.Log.Error($"Compiler file error {e}");
+            }
 
             var compilation = CSharpCompilation.Create("MyAssembly")
                 .WithOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
