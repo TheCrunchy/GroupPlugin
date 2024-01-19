@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using VRageMath;
 
 namespace CrunchGroup.Territories.Interfaces
 {
@@ -15,5 +16,7 @@ namespace CrunchGroup.Territories.Interfaces
         IPointOwner PointOwner { get; set; }
         string PointName { get; set; }
         void AddSecondaryLogic(ISecondaryLogic logic);
+
+        public Vector3 GetPointsLocationIfSet();
     }
 }

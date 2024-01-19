@@ -100,17 +100,20 @@ namespace CrunchGroup.Territories
         [Permission(MyPromoteLevel.Admin)]
         public void AddPoint(string name, string pointtype)
         {
+            var configs = new List<Type>();
+      
+
             var territory = Core.Territories.FirstOrDefault(x => x.Value.Name == name).Value;
             if (territory == null)
             {
                 Context.Respond($"{name} not found");
                 return;
             }
-            var configs = from t in Core.myAssemblies.Select(x => x)
+            configs.AddRange(from t in Core.myAssemblies.Select(x => x)
                     .SelectMany(x => x.GetTypes())
                 where t.IsClass && t.GetInterfaces().Contains(typeof(ICapLogic))
-                select t;
-            configs.ToList().AddRange(from t in Assembly.GetExecutingAssembly().GetTypes()
+                select t);
+            configs.AddRange(from t in Assembly.GetExecutingAssembly().GetTypes()
                 where t.IsClass && t.GetInterfaces().Contains(typeof(ICapLogic))
                 select t);
 
@@ -139,6 +142,7 @@ namespace CrunchGroup.Territories
         [Permission(MyPromoteLevel.Admin)]
         public void AddLogic(string name, string pointnameOrbase, string secondarylogic)
         {
+            var configs2 = new List<Type>();
             var territory = Core.Territories.FirstOrDefault(x => x.Value.Name == name).Value;
             if (territory == null)
             {
@@ -153,13 +157,14 @@ namespace CrunchGroup.Territories
                 Context.Respond($"{pointnameOrbase} not found");
                 return;
             }
-            var configs2 = from t in Core.myAssemblies.Select(x => x)
+            configs2.AddRange(from t in Core.myAssemblies.Select(x => x)
                     .SelectMany(x => x.GetTypes())
                 where t.IsClass && t.GetInterfaces().Contains(typeof(ISecondaryLogic))
-                select t;
-            configs2.ToList().AddRange(from t in Assembly.GetExecutingAssembly().GetTypes()
+                select t);
+            configs2.AddRange(from t in Assembly.GetExecutingAssembly().GetTypes()
                 where t.IsClass && t.GetInterfaces().Contains(typeof(ISecondaryLogic))
                 select t);
+
             if (configs2.Any(x => x.Name == secondarylogic))
             {
                 Type point = configs2.FirstOrDefault(x => x.Name == secondarylogic);

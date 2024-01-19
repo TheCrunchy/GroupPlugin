@@ -27,6 +27,11 @@ namespace CrunchGroup.Territories.CapLogics
             SecondaryLogics.Add(logic);
         }
 
+        public Vector3 GetPointsLocationIfSet()
+        {
+            return GPSofPoint;
+        }
+
         public Vector3 GPSofPoint;
         public string GridOwnerTag = "SPRT";
 

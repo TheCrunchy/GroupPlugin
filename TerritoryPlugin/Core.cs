@@ -429,6 +429,8 @@ namespace CrunchGroup
             catch (Exception e)
             {
             }
+
+            LoadAllTerritories();
         }
 
         public static DateTime nextRegister = DateTime.Now.AddSeconds(60);

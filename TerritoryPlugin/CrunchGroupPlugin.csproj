@@ -230,6 +230,8 @@
     <Compile Include="Territories\CapLogics\GroupGridCapLogic.cs" />
     <Compile Include="Territories\Models\ComponentCost.cs" />
     <Compile Include="Territories\PointOwners\GroupPointOwner.cs" />
+    <Compile Include="Territories\SecondaryLogics\Dark\SafezoneEnemyFinderLogic.cs" />
+    <Compile Include="Territories\SecondaryLogics\Dark\SafezoneSpawnerLogic.cs" />
     <Compile Include="Territories\SecondaryLogics\GridDamagerLogic.cs" />
     <Compile Include="Territories\SecondaryLogics\ProductionBuffLogic.cs" />
     <Compile Include="Territories\SecondaryLogics\UpkeepLogic.cs" />
