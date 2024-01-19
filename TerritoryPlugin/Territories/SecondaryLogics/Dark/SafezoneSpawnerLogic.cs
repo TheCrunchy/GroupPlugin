@@ -122,7 +122,7 @@ namespace CrunchGroup.Territories.SecondaryLogics
                 objectBuilderSafeZone.Enabled = true;
                 objectBuilderSafeZone.DisplayName = $"{point.PointName} Safezone";
                 objectBuilderSafeZone.ModelColor = Color.Green.ToVector3();
-                objectBuilderSafeZone.AllowedActions = MySafeZoneAction.Drilling | MySafeZoneAction.Building  | MySafeZoneAction.Grinding | MySafeZoneAction.Welding | MySafeZoneAction.LandingGearLock;
+                objectBuilderSafeZone.AllowedActions = MySafeZoneAction.Drilling | MySafeZoneAction.Building  | MySafeZoneAction.Grinding | MySafeZoneAction.Welding | MySafeZoneAction.LandingGearLock | MySafeZoneAction.BuildingProjections;
                 objectBuilderSafeZone.AccessTypeGrids = MySafeZoneAccess.Blacklist;
                 objectBuilderSafeZone.AccessTypeFloatingObjects = MySafeZoneAccess.Blacklist;
                 objectBuilderSafeZone.AccessTypeFactions = MySafeZoneAccess.Whitelist;
