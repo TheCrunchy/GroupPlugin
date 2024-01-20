@@ -56,7 +56,7 @@ namespace CrunchGroup.Territories.SecondaryLogics
             }
             NextLoop = DateTime.Now.AddSeconds(SecondsBetweenLoops);
             
-            IPointOwner temp = point.PointOwner ?? territory.Owner;
+            IPointOwner temp = point.PointOwner;
             BoundingSphereD sphere = new BoundingSphereD(point.GetPointsLocationIfSet(), 5000);
             var foundzone = Safezone;
             if (temp == null)
@@ -69,6 +69,18 @@ namespace CrunchGroup.Territories.SecondaryLogics
                 {
                     var zone = foundzone;
                     zone?.Close();
+                }
+                else
+                {
+                    foreach (MySafeZone zone in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MySafeZone>())
+                    {
+                        if (DebugMessages)
+                        {
+                            Core.Log.Info($"Safezone Debug {point.PointName} closing zones of unowned point");
+                        }
+
+                        zone.Close();
+                    }
                 }
                 return Task.FromResult(true);
             }
@@ -112,7 +124,7 @@ namespace CrunchGroup.Territories.SecondaryLogics
                 }
             }
 
-            if (Safezone == null)
+            if (Safezone == null || Safezone.Closed)
             {
                 MyObjectBuilder_SafeZone objectBuilderSafeZone = new MyObjectBuilder_SafeZone();
                 objectBuilderSafeZone.PositionAndOrientation = new MyPositionAndOrientation?(new MyPositionAndOrientation(point.GetPointsLocationIfSet(), Vector3.Forward, Vector3.Up));

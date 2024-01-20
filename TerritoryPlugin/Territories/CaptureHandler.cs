@@ -48,7 +48,7 @@ namespace CrunchGroup.Territories
                     try
                     {
                         var capResult = await CapLogic.ProcessCap(point, territory.Value);
-                        if (capResult.Item1 && capResult.Item2 != null)
+                        if (capResult.Item1)
                         {
                             if (!TerritoriesToRecalc.Contains(territory.Value.Id))
                             {
@@ -121,6 +121,10 @@ namespace CrunchGroup.Territories
                             await TransferOwnershipToFaction(facId, ter);
                             break;
                     }
+                }
+                else
+                {
+                    ter.Owner = null;
                 }
 
                 //recalc ownership here

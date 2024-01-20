@@ -65,6 +65,16 @@ namespace CrunchGroup.Territories.CapLogics
                 var contested = foundAlliances.Count > 1;
                 if (!foundAlliances.Any())
                 {
+                    if (PointOwner != null)
+                    {
+                        var currentPointOwner = PointOwner.GetOwner() as MyFaction;
+                        if (currentPointOwner != null)
+                        {
+                            PointOwner = null;
+                            CaptureHandler.SendMessage($"Territory Capture {PointName}", $"Capture point reset, No longer owned by {currentPointOwner.Name}.", territory, point.PointOwner ?? null);
+                            return Task.FromResult(Tuple.Create<bool, IPointOwner>(true, null));
+                        }
+                    }
                     return Task.FromResult(Tuple.Create<bool, IPointOwner>(false, null));
                 }
 

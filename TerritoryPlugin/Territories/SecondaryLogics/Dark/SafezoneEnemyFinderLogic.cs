@@ -18,14 +18,17 @@ namespace CrunchGroup.Territories.SecondaryLogics.Dark
     public class SafezoneEnemyFinderLogic : ISecondaryLogic
     {
         public bool Enabled { get; set; }
-        public Vector3 SafezonePosition { get; set; }
-
         public bool HasBeenSieged { get; set; }
         public DateTime SafezoneUpAtThisTime { get; set; }
         public DateTime SafezoneDownAtThisTime { get; set; }
 
         public DateTime AttackerLastFound { get; set; }
+        public DateTime CooldownUntil { get; set; }
 
+        public int WarmupMinutes { get; set; } = 5;
+        public int SafezoneDownForMinutes { get; set; } = 120;
+        public int CooldownMinutes { get; set; } = 120;
+        public int EnemySearchDistance { get; set; } = 10000;
         public Task<bool> DoSecondaryLogic(ICapLogic point, Models.Territory territory)
         {
             if (!Enabled)
@@ -33,18 +36,22 @@ namespace CrunchGroup.Territories.SecondaryLogics.Dark
                 return Task.FromResult(true);
             }
 
-            if (!CanLoop()) return Task.FromResult(true);
+            if (!CanLoop()) return Task.FromResult(false);
 
             NextLoop = DateTime.Now.AddSeconds(SecondsBetweenLoops);
+            if (DateTime.Now < CooldownUntil && !HasBeenSieged)
+            {
+                return Task.FromResult(true);
+            }
 
-            IPointOwner temp = point.PointOwner ?? territory.Owner;
-            BoundingSphereD sphere = new BoundingSphereD(SafezonePosition, 10000);
+            IPointOwner temp = point.PointOwner;
+            BoundingSphereD sphere = new BoundingSphereD(point.GetPointsLocationIfSet(), EnemySearchDistance);
         
             if (temp == null)
             {
                 if (DebugMessages)
                 {
-                    Core.Log.Info($"Safezone Debug {point.PointName} owner is null");
+                    Core.Log.Info($"Safezone Enemy Debug {point.PointName} owner is null");
                 }
                 return Task.FromResult(false);
             }
@@ -54,16 +61,30 @@ namespace CrunchGroup.Territories.SecondaryLogics.Dark
             {
                 if (DebugMessages)
                 {
-                    Core.Log.Info($"Safezone Debug {point.PointName} faction is null");
+                    Core.Log.Info($"Safezone Enemy Debug {point.PointName} faction is null");
                 }
                 return Task.FromResult(false);
             }
 
+            //find some online members 
+            var defenders = MySession.Static.Players.GetOnlinePlayers()
+                .Where(x => MySession.Static.Factions.TryGetPlayerFaction(x.Identity.IdentityId) != null
+                            && MySession.Static.Factions.TryGetPlayerFaction(x.Identity.IdentityId).FactionId ==
+                            faction.FactionId);
+
+            if (!defenders.Any())
+            {
+                if (DebugMessages)
+                {
+                    Core.Log.Info($"Safezone Enemy Debug {point.PointName} no online defenders in instance");
+                }
+                return Task.FromResult(false);
+            }
             //check if defenders are online 
 
             if (DebugMessages)
             {
-                Core.Log.Info($"Safezone Debug {point.PointName} zone logic cycle done");
+                Core.Log.Info($"Safezone enemy Debug {point.PointName} zone logic cycle done");
             }
             
             if (HasBeenSieged)
@@ -77,12 +98,17 @@ namespace CrunchGroup.Territories.SecondaryLogics.Dark
                         {
                             Core.Log.Info($"Deleting Zone");
                         }
+                        SafezoneUpAtThisTime = DateTime.Now.AddMinutes(SafezoneDownForMinutes);
+      
                         zone.Close();
+                        CaptureHandler.SendMessage($"{point.PointName}", $"Safezone has dropped, siege will last for {SafezoneDownForMinutes} minutes.", territory, temp);
                     }
                 }
             }
-            if (HasBeenSieged && (DateTime.Now - AttackerLastFound).TotalMinutes >= 10 || DateTime.Now >= SafezoneUpAtThisTime)
+            if (HasBeenSieged && DateTime.Now >= SafezoneUpAtThisTime)
             {
+                CaptureHandler.SendMessage($"{point.PointName}", $"Siege is ended, safezone will return shortly, siege cooldown for {CooldownMinutes} minutes.", territory, temp);
+                CooldownUntil = DateTime.Now.AddMinutes(CooldownMinutes);
                 HasBeenSieged = false;
                 return Task.FromResult(true);
             }
@@ -94,14 +120,16 @@ namespace CrunchGroup.Territories.SecondaryLogics.Dark
                 if (attackers.Count > 0)
                 {
                     AttackerLastFound = DateTime.Now;
-                    return Task.FromResult(false);
                 }
 
                 if ((DateTime.Now - AttackerLastFound).TotalMinutes >= 10)
                 {
+                    CaptureHandler.SendMessage($"{point.PointName}", $"Attackers abandoned siege, siege is ended. Siege cooldown for {CooldownMinutes} minutes.", territory, temp);
+                    CooldownUntil = DateTime.Now.AddMinutes(CooldownMinutes);
                     HasBeenSieged = false;
                     return Task.FromResult(true);
                 }
+                return Task.FromResult(false);
             }
 
             if (attackers.Count > 0)
@@ -109,10 +137,12 @@ namespace CrunchGroup.Territories.SecondaryLogics.Dark
                 //do stuff
                 if (!HasBeenSieged)
                 {
-                    SafezoneUpAtThisTime = DateTime.Now.AddHours(2);
-                    SafezoneDownAtThisTime = DateTime.Now.AddMinutes(5);
+           
+                    SafezoneDownAtThisTime = DateTime.Now.AddMinutes(WarmupMinutes);
                     AttackerLastFound = DateTime.Now;
+                    SafezoneUpAtThisTime = DateTime.Now.AddMinutes(SafezoneDownForMinutes);
                     HasBeenSieged = true;
+                    CaptureHandler.SendMessage($"{point.PointName}", $"Safezone will drop in {WarmupMinutes} minutes, attacked by {string.Join(", ", attackers.Select(x => x.Name))}", territory, temp);
                     return Task.FromResult(false);
                 }
             }
