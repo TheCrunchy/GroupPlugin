@@ -217,6 +217,7 @@
     <Compile Include="Handlers\Interfaces\IStorageHandler.cs" />
     <Compile Include="Handlers\JsonStorageHandler.cs" />
     <Compile Include="Handlers\Storage.cs" />
+    <Compile Include="Models\Events\GlobalChatEvent.cs" />
     <Compile Include="Models\Events\GroupCreatedEvent.cs" />
     <Compile Include="Models\Events\GroupDeletedEvent.cs" />
     <Compile Include="Models\Events\GroupEvent.cs" />

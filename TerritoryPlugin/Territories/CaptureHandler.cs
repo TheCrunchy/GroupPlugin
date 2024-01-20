@@ -4,11 +4,14 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using CrunchGroup.Models.Events;
+using CrunchGroup.NexusStuff;
 using CrunchGroup.Territories.CapLogics;
 using CrunchGroup.Territories.Interfaces;
 using CrunchGroup.Territories.PointOwners;
 using Newtonsoft.Json;
 using Sandbox.Game.World;
+using Sandbox.ModAPI;
 using VRage.Game.ModAPI;
 
 namespace CrunchGroup.Territories
@@ -157,7 +160,19 @@ namespace CrunchGroup.Territories
         public static void SendMessage(string author, string message, Models.Territory ter, IPointOwner owner)
         {
             Core.SendChatMessage(author, message,  0l);
-          
+            if (Core.NexusInstalled)
+            {
+                var Event = new GroupEvent();
+                var createdEvent = new GlobalChatEvent()
+                {
+                    Author = author,
+                    Message = message
+                };
+                Event.EventObject = MyAPIGateway.Utilities.SerializeToBinary(createdEvent);
+                Event.EventType = createdEvent.GetType().Name;
+                NexusHandler.RaiseEvent(Event);
+            }
+
             var client = new WebClient();
             client.Headers.Add("Content-Type", "application/json");
             //send to ingame and nexus 

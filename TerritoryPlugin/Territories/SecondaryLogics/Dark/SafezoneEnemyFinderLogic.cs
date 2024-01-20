@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CrunchGroup.NexusStuff;
 using CrunchGroup.Territories.Interfaces;
 using Sandbox.Common.ObjectBuilders;
 using Sandbox.Game.Entities;
@@ -29,6 +30,9 @@ namespace CrunchGroup.Territories.SecondaryLogics.Dark
         public int SafezoneDownForMinutes { get; set; } = 120;
         public int CooldownMinutes { get; set; } = 120;
         public int EnemySearchDistance { get; set; } = 10000;
+
+        public string IgnoredGridOwnerTag = "SPRT";
+
         public Task<bool> DoSecondaryLogic(ICapLogic point, Models.Territory territory)
         {
             if (!Enabled)
@@ -67,18 +71,30 @@ namespace CrunchGroup.Territories.SecondaryLogics.Dark
             }
 
             //find some online members 
-            var defenders = MySession.Static.Players.GetOnlinePlayers()
-                .Where(x => MySession.Static.Factions.TryGetPlayerFaction(x.Identity.IdentityId) != null
-                            && MySession.Static.Factions.TryGetPlayerFaction(x.Identity.IdentityId).FactionId ==
-                            faction.FactionId);
-
+            var defenders = new List<long>();
+   
+            if (Core.NexusInstalled)
+            {
+                var members = NexusAPI.GetAllOnlinePlayers();
+                defenders.AddRange(members
+                    .Where(x => MySession.Static.Factions.TryGetPlayerFaction(x.IdentityID) != null
+                                && MySession.Static.Factions.TryGetPlayerFaction(x.IdentityID).FactionId ==
+                                faction.FactionId).Select(x => x.IdentityID));
+            }
+            else
+            {
+                defenders.AddRange(MySession.Static.Players.GetOnlinePlayers()
+                    .Where(x => MySession.Static.Factions.TryGetPlayerFaction(x.Identity.IdentityId) != null
+                                && MySession.Static.Factions.TryGetPlayerFaction(x.Identity.IdentityId).FactionId ==
+                                faction.FactionId).Select(x => x.Identity.IdentityId));
+            }
             if (!defenders.Any())
             {
                 if (DebugMessages)
                 {
                     Core.Log.Info($"Safezone Enemy Debug {point.PointName} no online defenders in instance");
                 }
-                return Task.FromResult(false);
+                return Task.FromResult(HasBeenSieged);
             }
             //check if defenders are online 
 
@@ -101,13 +117,13 @@ namespace CrunchGroup.Territories.SecondaryLogics.Dark
                         SafezoneUpAtThisTime = DateTime.Now.AddMinutes(SafezoneDownForMinutes);
       
                         zone.Close();
-                        CaptureHandler.SendMessage($"{point.PointName}", $"Safezone has dropped, siege will last for {SafezoneDownForMinutes} minutes.", territory, temp);
+                        CaptureHandler.SendMessage($"{point.PointName}", $"{point.PointName} Safezone has dropped, siege will last for {SafezoneDownForMinutes} minutes.", territory, temp);
                     }
                 }
             }
             if (HasBeenSieged && DateTime.Now >= SafezoneUpAtThisTime)
             {
-                CaptureHandler.SendMessage($"{point.PointName}", $"Siege is ended, safezone will return shortly, siege cooldown for {CooldownMinutes} minutes.", territory, temp);
+                CaptureHandler.SendMessage($"{point.PointName}", $"{point.PointName} Siege is ended, safezone will return shortly, siege cooldown for {CooldownMinutes} minutes.", territory, temp);
                 CooldownUntil = DateTime.Now.AddMinutes(CooldownMinutes);
                 HasBeenSieged = false;
                 return Task.FromResult(true);
@@ -124,7 +140,7 @@ namespace CrunchGroup.Territories.SecondaryLogics.Dark
 
                 if ((DateTime.Now - AttackerLastFound).TotalMinutes >= 10)
                 {
-                    CaptureHandler.SendMessage($"{point.PointName}", $"Attackers abandoned siege, siege is ended. Siege cooldown for {CooldownMinutes} minutes.", territory, temp);
+                    CaptureHandler.SendMessage($"{point.PointName}", $"{point.PointName} Attackers abandoned siege, siege is ended. Siege cooldown for {CooldownMinutes} minutes.", territory, temp);
                     CooldownUntil = DateTime.Now.AddMinutes(CooldownMinutes);
                     HasBeenSieged = false;
                     return Task.FromResult(true);
@@ -142,7 +158,7 @@ namespace CrunchGroup.Territories.SecondaryLogics.Dark
                     AttackerLastFound = DateTime.Now;
                     SafezoneUpAtThisTime = DateTime.Now.AddMinutes(SafezoneDownForMinutes);
                     HasBeenSieged = true;
-                    CaptureHandler.SendMessage($"{point.PointName}", $"Safezone will drop in {WarmupMinutes} minutes, attacked by {string.Join(", ", attackers.Select(x => x.Name))}", territory, temp);
+                    CaptureHandler.SendMessage($"{point.PointName}", $"{point.PointName} {faction.Name} Safezone will drop in {WarmupMinutes} minutes, attacked by {string.Join(", ", attackers.Select(x => x.Name))}", territory, temp);
                     return Task.FromResult(false);
                 }
             }
@@ -163,6 +179,10 @@ namespace CrunchGroup.Territories.SecondaryLogics.Dark
                     continue;
                 }
 
+                if (IgnoredGridOwnerTag.Contains(fac.Tag))
+                {
+                    continue;
+                }
                 if (!foundAlliances.Contains(fac))
                 {
                     foundAlliances.Add(fac as MyFaction);

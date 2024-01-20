@@ -29,6 +29,12 @@ namespace CrunchGroup.NexusStuff
         {
             switch (message.EventType)
             {
+                case "GlobalChatEvent":
+                {
+                    var ev = MyAPIGateway.Utilities.SerializeFromBinary<GlobalChatEvent>(message.EventObject);
+                    Core.SendChatMessage(ev.Author, ev.Message, 0l);
+                    break;
+                }
                 case "GroupCreatedEvent":
                     {
                         var ev = MyAPIGateway.Utilities.SerializeFromBinary<GroupCreatedEvent>(message.EventObject);
