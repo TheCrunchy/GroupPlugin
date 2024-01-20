@@ -72,6 +72,7 @@ namespace CrunchGroup.Territories.CapLogics
                         {
                             PointOwner = null;
                             CaptureHandler.SendMessage($"Territory Capture {PointName}", $"Capture point reset, No longer owned by {currentPointOwner.Name}.", territory, point.PointOwner ?? null);
+                            Points.Clear();
                             return Task.FromResult(Tuple.Create<bool, IPointOwner>(true, null));
                         }
                     }
@@ -112,6 +113,7 @@ namespace CrunchGroup.Territories.CapLogics
 
                 CaptureHandler.SendMessage($"Territory Capture {PointName}", $"Captured by {owner.Name}, locking for {SuccessfulCapLockoutTimeSeconds / 60} Minutes", territory, point.PointOwner);
                 this.PointOwner = pointOwner;
+                Points.Clear();
                 return Task.FromResult(Tuple.Create<bool, IPointOwner>(true, pointOwner));
             }
 
