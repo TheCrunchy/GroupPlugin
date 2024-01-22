@@ -25,7 +25,6 @@ namespace GroupMiscellenious.Commands
     {
         public static void Patch(PatchContext ctx)
         {
-
             Core.Session.Managers.GetManager<IMultiplayerManagerBase>().PlayerJoined += LoadLogin;
             Core.Session.Managers.GetManager<ChatManagerServer>().MessageProcessing += DoChatMessage;
             NexusHandler.NexusMessage += NexusMessage;
