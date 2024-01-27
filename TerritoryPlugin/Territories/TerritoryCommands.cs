@@ -70,19 +70,19 @@ namespace CrunchGroup.Territories
 
             configs.AddRange(from t in Core.myAssemblies.Select(x => x)
                     .SelectMany(x => x.GetTypes())
-                          where t.IsClass && t.GetInterfaces().Contains(typeof(ICapLogic))
-                          select t);
+                             where t.IsClass && t.GetInterfaces().Contains(typeof(ICapLogic))
+                             select t);
             configs.AddRange(from t in Assembly.GetExecutingAssembly().GetTypes()
-                                      where t.IsClass && t.GetInterfaces().Contains(typeof(ICapLogic))
-                                      select t);
+                             where t.IsClass && t.GetInterfaces().Contains(typeof(ICapLogic))
+                             select t);
 
             configs2.AddRange(from t in Core.myAssemblies.Select(x => x)
                     .SelectMany(x => x.GetTypes())
-                           where t.IsClass && t.GetInterfaces().Contains(typeof(ISecondaryLogic))
-                           select t);
+                              where t.IsClass && t.GetInterfaces().Contains(typeof(ISecondaryLogic))
+                              select t);
             configs2.AddRange(from t in Assembly.GetExecutingAssembly().GetTypes()
-                                       where t.IsClass && t.GetInterfaces().Contains(typeof(ISecondaryLogic))
-                                       select t);
+                              where t.IsClass && t.GetInterfaces().Contains(typeof(ISecondaryLogic))
+                              select t);
 
             foreach (var config in configs)
             {
@@ -101,7 +101,7 @@ namespace CrunchGroup.Territories
         public void AddPoint(string name, string pointtype)
         {
             var configs = new List<Type>();
-      
+
 
             var territory = Core.Territories.FirstOrDefault(x => x.Value.Name == name).Value;
             if (territory == null)
@@ -111,11 +111,11 @@ namespace CrunchGroup.Territories
             }
             configs.AddRange(from t in Core.myAssemblies.Select(x => x)
                     .SelectMany(x => x.GetTypes())
-                where t.IsClass && t.GetInterfaces().Contains(typeof(ICapLogic))
-                select t);
+                             where t.IsClass && t.GetInterfaces().Contains(typeof(ICapLogic))
+                             select t);
             configs.AddRange(from t in Assembly.GetExecutingAssembly().GetTypes()
-                where t.IsClass && t.GetInterfaces().Contains(typeof(ICapLogic))
-                select t);
+                             where t.IsClass && t.GetInterfaces().Contains(typeof(ICapLogic))
+                             select t);
 
             if (configs.Any(x => x.Name == pointtype))
             {
@@ -138,6 +138,52 @@ namespace CrunchGroup.Territories
 
         }
 
+        [Command("reset", "reset ownership of a territory")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void AddPoint(string name)
+        {
+            try
+            {
+                var territory = Core.Territories.FirstOrDefault(x => x.Value.Name == name).Value ?? null;
+                if (territory == null)
+                {
+                    Context.Respond("Territory not found");
+                    return;
+                }
+
+                territory.Owner = null;
+                foreach (var point in territory.CapturePoints)
+                {
+                    point.PointOwner = null;
+                }
+
+                Core.utils.WriteToJsonFile<Territories.Models.Territory>(Core.path + "//Territories//" + territory.Name + ".json", territory);
+            }
+            catch (Exception e)
+            {
+                Context.Respond("Territory not found");
+                return;
+            }
+
+        }
+
+        [Command("resetall", "reset ownership of all territories")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void AddPoint()
+        {
+            foreach (var territory in Core.Territories.Values)
+            {
+                territory.Owner = null;
+                foreach (var point in territory.CapturePoints)
+                {
+                    point.PointOwner = null;
+                }
+
+                Core.utils.WriteToJsonFile<Territories.Models.Territory>(Core.path + "//Territories//" + territory.Name + ".json", territory);
+            }
+        }
+
+
         [Command("addlogic", "add a point to a territory")]
         [Permission(MyPromoteLevel.Admin)]
         public void AddLogic(string name, string pointnameOrbase, string secondarylogic)
@@ -159,11 +205,11 @@ namespace CrunchGroup.Territories
             }
             configs2.AddRange(from t in Core.myAssemblies.Select(x => x)
                     .SelectMany(x => x.GetTypes())
-                where t.IsClass && t.GetInterfaces().Contains(typeof(ISecondaryLogic))
-                select t);
+                              where t.IsClass && t.GetInterfaces().Contains(typeof(ISecondaryLogic))
+                              select t);
             configs2.AddRange(from t in Assembly.GetExecutingAssembly().GetTypes()
-                where t.IsClass && t.GetInterfaces().Contains(typeof(ISecondaryLogic))
-                select t);
+                              where t.IsClass && t.GetInterfaces().Contains(typeof(ISecondaryLogic))
+                              select t);
 
             if (configs2.Any(x => x.Name == secondarylogic))
             {

@@ -56,15 +56,23 @@ namespace GroupMiscellenious.Scripts
                     var charge = grid.Value.BatteryBlock.CurrentStoredPower / grid.Value.BatteryBlock.MaxStoredPower *
                                  100;
                     var current = grid.Value.MainGrid.GridGeneralDamageModifier.Value;
+                    if (charge <= 10)
+                    {
+                        return;
+                    }
+
                     if (charge <= 25)
                     {
                         if (current != 0.9f)
                         {
                             grid.Value.MainGrid.GridGeneralDamageModifier.ValidateAndSet(0.9f);
-                            Core.Log.Info("Changing");
+                            var pilot = grid.Value.MainGrid.GetFatBlocks().OfType<MyCockpit>().Where(x => x.Pilot != null);
+                            foreach (var character in pilot)
+                            {
+                                Core.SendChatMessage("Shields", "Shields set to 10% resistance", character.Pilot.ControlSteamId);
+                            }
                         }
 
-                        Core.Log.Info("0.9f");
                         continue;
                     }
 
@@ -73,10 +81,12 @@ namespace GroupMiscellenious.Scripts
                         if (current != 0.85f)
                         {
                             grid.Value.MainGrid.GridGeneralDamageModifier.ValidateAndSet(0.85f);
-                            Core.Log.Info("Changing");
+                            var pilot = grid.Value.MainGrid.GetFatBlocks().OfType<MyCockpit>().Where(x => x.Pilot != null);
+                            foreach (var character in pilot)
+                            {
+                                Core.SendChatMessage("Shields", "Shields set to 15% resistance", character.Pilot.ControlSteamId);
+                            }
                         }
-
-                        Core.Log.Info("0.85f");
                         continue;
                     }
 
@@ -85,22 +95,26 @@ namespace GroupMiscellenious.Scripts
                         if (current != 0.75f)
                         {
                             grid.Value.MainGrid.GridGeneralDamageModifier.ValidateAndSet(0.75f);
-                            Core.Log.Info("Changing");
+                            var pilot = grid.Value.MainGrid.GetFatBlocks().OfType<MyCockpit>().Where(x => x.Pilot != null);
+                            foreach (var character in pilot)
+                            {
+                                Core.SendChatMessage("Shields", "Shields set to 15% resistance", character.Pilot.ControlSteamId);
+                            }
                         }
-
-                        Core.Log.Info("0.75f");
                         continue;
                     }
 
                     if (charge <= 100)
                     {
-                        if (current != 0.5f)
+                        if (current != 0.1f)
                         {
-                            grid.Value.MainGrid.GridGeneralDamageModifier.ValidateAndSet(0.5f);
-                            Core.Log.Info("Changing");
+                            grid.Value.MainGrid.GridGeneralDamageModifier.ValidateAndSet(0.1f);
+                            var pilot = grid.Value.MainGrid.GetFatBlocks().OfType<MyCockpit>().Where(x => x.Pilot != null);
+                            foreach (var character in pilot)
+                            {
+                                Core.SendChatMessage("Shields", "Shields set to 90% resistance", character.Pilot.ControlSteamId);
+                            }
                         }
-
-                        Core.Log.Info("0.5f");
                         continue;
                     }
                 }
@@ -182,7 +196,7 @@ namespace GroupMiscellenious.Scripts
                 {
                     MainGrid = grid
                 };
-                GridsWithShields.Add(grid.EntityId, GridClass);
+                GridsWithShields[grid.EntityId] = GridClass;
             }
         }
     }
