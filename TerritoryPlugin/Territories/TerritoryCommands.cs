@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using CrunchGroup.Handlers;
 using CrunchGroup.Territories.Interfaces;
 using CrunchGroup.Territories.PointOwners;
 using Sandbox.Engine.Multiplayer;
@@ -133,6 +134,24 @@ namespace CrunchGroup.Territories
                 {
                     Context.Respond(type.Name);
                 }
+                return;
+            }
+
+        }
+        [Command("compile", "recompile, do not run on live server")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void Recompile()
+        {
+            try
+            {
+                Compiler.Compile($"{Core.path}/Scripts/");
+                Core.LoadAllTerritories();
+                Core.LoadConfig();
+                Context.Respond("Compiling done, dont do this on live server.");
+            }
+            catch (Exception e)
+            {
+                Context.Respond("Territory not found");
                 return;
             }
 
