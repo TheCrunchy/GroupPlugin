@@ -2,6 +2,7 @@
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -12,6 +13,7 @@ using Sandbox.ModAPI;
 using Torch.API.Managers;
 using Torch.Commands;
 using Torch.Managers.PatchManager;
+using Torch.Utils;
 
 namespace CrunchGroup.Handlers
 {
@@ -38,11 +40,28 @@ namespace CrunchGroup.Handlers
                 }
             }
 
-            foreach (var filePath in Directory.GetFiles($"{Core.basePath}/{Core.PluginName}/").Where(x => x.Contains(".dll")))
+            var folder = Core.basePath.Replace(@"\Instance", "");
+
+            var plugins = $"{folder}/plugins/CrunchGroupPlugin.zip";
+            using (var zip = ZipFile.OpenRead(plugins))
             {
-                using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                foreach (var entry in zip.Entries)
                 {
-                    metadataReferenceList.Add(MetadataReference.CreateFromStream(fileStream));
+                    try
+                    {
+                        if (entry.Name.Contains("CrunchGroupPlugin.dll", StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            using (var stream = entry.Open())
+                            {
+                                byte[] end = MiscExtensions.ReadToEnd(stream, (int)entry.Length);
+                                metadataReferenceList.Add((MetadataReference)MetadataReference.CreateFromImage(end));
+                            }
+
+                        }
+                    }
+                    catch (Exception exception)
+                    {
+                    }
                 }
             }
 

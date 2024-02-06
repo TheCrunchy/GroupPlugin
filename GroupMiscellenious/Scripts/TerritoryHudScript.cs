@@ -29,6 +29,7 @@ namespace GroupMiscellenious.Scripts
             {
                 if (DateTime.Now > NextSendTerritory)
                 {
+                    NextSendTerritory = DateTime.Now.AddMinutes(5);
                     foreach (var player in MySession.Static.Players.GetOnlinePlayers())
                     {
                         SendPlayerTerritories(player.Id.SteamId);
