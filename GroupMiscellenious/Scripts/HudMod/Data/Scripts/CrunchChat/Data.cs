@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using ProtoBuf;
 using VRageMath;
 
@@ -51,5 +52,29 @@ namespace Crunch
 
         [ProtoMember(2)] 
         public string DataType;
+    }
+
+    [ProtoContract]
+    public class GroupChatEvent
+    {
+        [ProtoMember(1)]
+        public Guid GroupId { get; set; }
+        [ProtoMember(2)]
+        public ulong SenderId { get; set; }
+        [ProtoMember(3)]
+        public string SenderName { get; set; }
+
+        [ProtoMember(4)]
+        public string Message { get; set; }
+    }
+
+    [ProtoContract]
+    public class GroupEvent
+    {
+        [ProtoMember(1)]
+        public byte[] EventObject { get; set; }
+
+        [ProtoMember(2)]
+        public string EventType { get; set; }
     }
 }

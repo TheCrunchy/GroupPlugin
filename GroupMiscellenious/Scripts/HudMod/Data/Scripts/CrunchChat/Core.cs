@@ -1,15 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Sandbox.Definitions;
-using Sandbox.Game;
 using Sandbox.Game.World;
 using Sandbox.ModAPI;
-using SpaceEngineers.Game.ModAPI;
 using VRage.Game;
 using VRage.Game.Components;
-using VRage.Game.ModAPI;
-using VRage.Scripting;
 using VRage.Utils;
 using VRageMath;
 
@@ -20,7 +13,7 @@ namespace Crunch
     [MySessionComponentDescriptor(MyUpdateOrder.BeforeSimulation | MyUpdateOrder.AfterSimulation)]
     public class CrunchChat : MySessionComponentBase
     {
-
+        public static bool InGroupChat = false;
         private bool _isInitialized; // Is this instance is initialized
         public bool _isClientRegistered;
         public bool _isServerRegistered;
@@ -49,28 +42,56 @@ namespace Crunch
             // Set TickCounter always to zero at startup
             TickCounter = 0;
             if (MyAPIGateway.Utilities == null) { MyAPIGateway.Utilities = MyAPIUtilities.Static; }
-            MyAPIGateway.Utilities.MessageEntered += Utilities_MessageEntered;
+            MyAPIGateway.Utilities.MessageEnteredSender += Utilities_MessageEntered;
         }
 
-        static void Utilities_MessageEntered(string messageText, ref bool sendToOthers)
+        static void Utilities_MessageEntered(ulong sender, string messageText, ref bool sendToOthers)
         {
-            if (ProcessClientMessage(messageText))
+            if (ProcessClientMessage(messageText, sender))
                 sendToOthers = false;
         }
 
         protected override void UnloadData()
         {
-            MyAPIGateway.Utilities.MessageEntered -= Utilities_MessageEntered;
+            MyAPIGateway.Utilities.MessageEnteredSender -= Utilities_MessageEntered;
             MyAPIGateway.Multiplayer.UnregisterSecureMessageHandler(8544, MessageHandler);
 
         }
-        public static bool ProcessClientMessage(string messageText)
+        public static bool ProcessClientMessage(string messageText, ulong author)
         {
-            if (messageText.ToLower().StartsWith("/a") || messageText.ToLower().StartsWith("/alliance"))
+            if (messageText.ToLower().StartsWith("!"))
             {
-                MyAPIGateway.Utilities.ShowMessage("Alliances", $"use !a");
+                return false;
             }
-            return false;
+
+            if (messageText.ToLower().StartsWith("/"))
+            {
+                if (messageText.ToLower().Contains("/gc"))
+                {
+                    InGroupChat = !InGroupChat;
+                    MyAPIGateway.Utilities.ShowMessage("Group Chat", $"Toggled group chat to {InGroupChat} use /gc to toggle.");
+                    return true;
+                }
+                return false;
+            }
+
+            if (InGroupChat)
+            {
+                var Event = new GroupEvent();
+                var createdEvent = new GroupChatEvent()
+                {
+                    SenderName = "",
+                    SenderId = (ulong)author,
+                    GroupId = Guid.Empty,
+                    Message = messageText
+                };
+                Event.EventObject = MyAPIGateway.Utilities.SerializeToBinary(createdEvent);
+                Event.EventType = createdEvent.GetType().Name;
+                var message = MyAPIGateway.Utilities.SerializeToBinary<GroupEvent>(Event);
+
+                MyAPIGateway.Multiplayer.SendMessageToServer(4398, message, true);
+            }
+            return InGroupChat;
         }
         /*
 		 * BeforeStart

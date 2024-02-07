@@ -3,6 +3,7 @@ using CrunchGroup.Handlers;
 using CrunchGroup.Models.Events;
 using Sandbox.ModAPI;
 using Torch.API.Managers;
+using VRage.Sync;
 
 namespace CrunchGroup.NexusStuff
 {
@@ -19,14 +20,19 @@ namespace CrunchGroup.NexusStuff
             }
             else
             {
-                Handle(groupEvent);
+                Handle(groupEvent, 0,true);
                // GroupPlugin.Log.Error("Nexus not installed");
             }
           
         }
 
-        public static void Handle(GroupEvent message)
+        public static void Handle(GroupEvent message,ulong steamId, bool fromServer)
         {
+            if (!fromServer && steamId != 0)
+            {
+                NexusMessage?.Invoke(message);
+                return;
+            }
             switch (message.EventType)
             {
                 case "GlobalChatEvent":
@@ -91,18 +97,23 @@ namespace CrunchGroup.NexusStuff
 
         public static void HandleNexusMessage(ushort handlerId, byte[] data, ulong steamID, bool fromServer)
         {
-         //   GroupPlugin.Log.Info("Recieved a nexus event");
+           // Core.Log.Info("Recieved a nexus event");
             try
             {
                 var message = MyAPIGateway.Utilities.SerializeFromBinary<GroupEvent>(data);
-                Handle(message);
+                Handle(message, steamID,fromServer);
+                if (!fromServer && steamID != 0 && Core.NexusInstalled)
+                {
+                    Core.Log.Error($"Relaying event to all servers from player");
+                    NexusHandler.RaiseEvent(message);
+                }
             }
             catch (Exception e)
             {
                 Core.Log.Error($"Errored on nexus event {e}");
                 throw;
             }
-           // GroupPlugin.Log.Info("Handled a nexus event");
+            //Core.Log.Info("Handled a nexus event");
         }
     }
 }

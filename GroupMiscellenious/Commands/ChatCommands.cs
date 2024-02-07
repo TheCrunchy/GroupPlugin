@@ -136,7 +136,13 @@ namespace GroupMiscellenious.Commands
                         var group = GroupHandler.LoadedGroups.FirstOrDefault(x => x.Key == ev.GroupId).Value ?? null;
                         if (group == null)
                         {
-                            return;
+                            group = GroupHandler.GetPlayersGroup((long)ev.SenderId);
+                            ev.SenderName = Core.GetPlayerName(ev.SenderId);
+                            if (group == null)
+                            {
+                                Core.SendChatMessage($"{Core.PluginName}", "You are not in a group, you cannot use group chat. Use /gc to leave group chat.",ev.SenderId, Color.Red);
+                                return;
+                            }
                         }
                         group.SendGroupMessage(ev.SenderId, ev.SenderName, ev.Message);
                         break;

@@ -63,10 +63,6 @@ namespace CrunchGroup.Models
                 if (fac == null) continue;
                 foreach (var member in fac.Members.Values.Select(x => x.PlayerId).Distinct())
                 {
-                    if (MySession.Static.Players.TryGetSteamId(member) == excludeThisPerson)
-                    {
-                        continue;
-                    }
                     Core.SendChatMessage($"{author}", $"{message}", MySession.Static.Players.TryGetSteamId(member), Color.Yellow);
                 }
             }
