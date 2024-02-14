@@ -46,6 +46,10 @@
     <Reference Include="Sandbox.Game">
       <HintPath>..\..\..\4 Torch Server\DedicatedServer64\Sandbox.Game.dll</HintPath>
     </Reference>
+    <Reference Include="SpaceEngineers.ObjectBuilders, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Crunch Space Trucking\CrunchSpaceTrucking\CrunchSpaceTrucking\bin\Debug\SpaceEngineers.ObjectBuilders.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -84,7 +88,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands\ChatCommands.cs" />
+    <Compile Include="Commands\JumpGateCommands.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Scripts\GateScript.cs" />
     <Compile Include="Scripts\HudMod\Data\Scripts\CrunchChat\Core.cs" />
     <Compile Include="Scripts\HudMod\Data\Scripts\CrunchChat\Data.cs" />
     <Compile Include="Scripts\HudMod\Data\Scripts\CrunchChat\HudAPIv2.cs" />
