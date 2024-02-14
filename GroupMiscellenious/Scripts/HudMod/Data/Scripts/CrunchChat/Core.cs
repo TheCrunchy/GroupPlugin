@@ -55,26 +55,25 @@ namespace Crunch
         {
             MyAPIGateway.Utilities.MessageEnteredSender -= Utilities_MessageEntered;
             MyAPIGateway.Multiplayer.UnregisterSecureMessageHandler(8544, MessageHandler);
-
+            InGroupChat = false;
         }
+
         public static bool ProcessClientMessage(string messageText, ulong author)
         {
-            if (messageText.ToLower().StartsWith("!"))
-            {
-                return false;
-            }
+       
 
-            if (messageText.ToLower().StartsWith("/"))
-            {
-                if (messageText.ToLower().Contains("/gc"))
+       
+                if (messageText.ToLower().StartsWith("/gc") || messageText.ToLower().StartsWith("!gc"))
                 {
                     InGroupChat = !InGroupChat;
                     MyAPIGateway.Utilities.ShowMessage("Group Chat", $"Toggled group chat to {InGroupChat} use /gc to toggle.");
                     return true;
                 }
+           
+            if (messageText.ToLower().StartsWith("!") || messageText.ToLower().StartsWith("/"))
+            {
                 return false;
             }
-
             if (InGroupChat)
             {
                 var Event = new GroupEvent();
