@@ -25,6 +25,7 @@ namespace CrunchGroup.Commands
                 GroupName = groupName,
                 GroupId = Guid.NewGuid(),
                 GroupDescription = description,
+                IsPlayerCreatedGroup = false
             };
 
             Storage.StorageHandler.Save(group);

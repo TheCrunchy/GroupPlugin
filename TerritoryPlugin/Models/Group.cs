@@ -13,7 +13,7 @@ namespace CrunchGroup.Models
 {
     public class Group
     {
-        public bool IsPlayerCreatedGroup { get; set; }
+        public bool IsPlayerCreatedGroup { get; set; } = true;
         public string GroupName { get; set; }
         public string GroupTag { get; set; }
         public string GroupDescription { get; set; }

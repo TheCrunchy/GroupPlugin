@@ -77,4 +77,23 @@ namespace Crunch
         [ProtoMember(2)]
         public string EventType { get; set; }
     }
+
+
+    [ProtoContract]
+    public class PrefabInsert
+    {
+        [ProtoMember(1)]
+        public long StoreEntityId { get; set; }
+
+        [ProtoMember(2)]
+        public string PrefabName { get; set; }
+
+
+        [ProtoMember(3)]
+        public long Amount { get; set; }
+
+
+        [ProtoMember(4)]
+        public long Price { get; set; }
+    }
 }
