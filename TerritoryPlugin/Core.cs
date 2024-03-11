@@ -568,7 +568,7 @@ namespace CrunchGroup
                     InitPluginDependencies(Torch.Managers.GetManager<PluginManager>(), Torch.Managers.GetManager<PatchManager>());
                 }
 
-                if (ticks % 20 == 0)
+                if (ticks % 60 == 0)
                 {
                     try
                     {
