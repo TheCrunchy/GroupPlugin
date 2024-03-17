@@ -217,6 +217,7 @@
     <Compile Include="Handlers\GroupEventHandler.cs" />
     <Compile Include="Handlers\GroupHandler.cs" />
     <Compile Include="Handlers\Interfaces\IStorageHandler.cs" />
+    <Compile Include="Handlers\InventoriesHandler.cs" />
     <Compile Include="Handlers\JsonStorageHandler.cs" />
     <Compile Include="Handlers\Storage.cs" />
     <Compile Include="IdentityHelper.cs" />

@@ -19,6 +19,10 @@ namespace CrunchGroup.Models
         public string GroupDescription { get; set; }
         public Guid GroupId = Guid.NewGuid();
 
+        public string GroupOwnedGridsNPCTag { get; set; }
+
+        public Dictionary<string, string> RandomJsonStuff = new Dictionary<string, string>();
+
         public long GroupLeader { get; set; }
         public List<long> GroupAdmins { get; set; }
 

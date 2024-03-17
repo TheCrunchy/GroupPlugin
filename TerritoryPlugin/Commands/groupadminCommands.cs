@@ -199,6 +199,9 @@ namespace CrunchGroup.Commands
                     }
                     group.GroupLeader = (long)MySession.Static.Players.TryGetSteamId(id.IdentityId);
                     break;
+                case "npctag":
+                    group.GroupOwnedGridsNPCTag = newValue;
+                    break;
                 default:
                     Context.Respond("Valid editable fields are Name, Tag, Description, Leader");
                     return;
