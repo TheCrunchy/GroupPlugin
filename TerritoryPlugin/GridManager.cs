@@ -283,7 +283,7 @@ namespace CrunchGroup
             MyObjectBuilder_Definitions builderDefinition = MyObjectBuilderSerializerKeen.CreateNewObject<MyObjectBuilder_Definitions>();
             builderDefinition.ShipBlueprints = new MyObjectBuilder_ShipBlueprintDefinition[] { definition };
 
-            return MyObjectBuilderSerializerKeen.SerializeXML(path, true, builderDefinition);
+            return MyObjectBuilderSerializerKeen.SerializeXML(path, false, builderDefinition);
         }
         public static List<MyObjectBuilder_CubeGrid> GetObjectBuilders(string path)
         {
