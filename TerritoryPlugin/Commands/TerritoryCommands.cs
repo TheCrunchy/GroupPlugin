@@ -180,6 +180,7 @@ namespace CrunchGroup.Commands
             if (MyGravityProviderSystem.IsPositionInNaturalGravity(Context.Player.GetPosition()))
             {
                 Context.Respond("This command cannot add points in natural gravity.");
+                return;
             }
 
             if (configs.Any(x => x.Name == pointtype))
