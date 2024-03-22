@@ -160,7 +160,7 @@ namespace CrunchGroup.Commands
 
         [Command("generatepoints", "generate capture points for a territory")]
         [Permission(MyPromoteLevel.Admin)]
-        public void AddPoint(string name, string pointtype, int amount, int maxDistance)
+        public void AddPoint(string name, string pointtype, int amount, int expectedMaxDistance)
         {
             var configs = new List<Type>();
             var territory = Core.Territories.FirstOrDefault(x => x.Value.Name == name).Value;
@@ -189,12 +189,13 @@ namespace CrunchGroup.Commands
                 for (int i = 0; i < amount; i++)
                 {
                     //add a random position
-                    var position = GetRandomPosition(Context.Player.GetPosition(), maxDistance);
+                    var position = GetRandomPosition(Context.Player.GetPosition(), expectedMaxDistance);
                     while (MyGravityProviderSystem.IsPositionInNaturalGravity(position))
                     {
-                        maxDistance += 25000;
-                        position = GetRandomPosition(Context.Player.GetPosition(), maxDistance);
+                        expectedMaxDistance *= 2;
+                        position = GetRandomPosition(Context.Player.GetPosition(), expectedMaxDistance);
                     }
+
                     ICapLogic instance = (ICapLogic)Activator.CreateInstance(point);
                     instance.SetPosition(position);
                     instance.PointName = $"{i}";
