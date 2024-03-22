@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using CrunchGroup.Handlers;
@@ -12,7 +11,7 @@ using Torch.Commands;
 using Torch.Commands.Permissions;
 using VRage.Game.ModAPI;
 
-namespace CrunchGroup.Territories
+namespace CrunchGroup.Commands
 {
     [Category("territory")]
     public class TerritoryCommands : CommandModule
@@ -37,7 +36,7 @@ namespace CrunchGroup.Territories
 
             territory.Value.Owner = new FactionPointOwner() { FactionId = faction.FactionId };
             Core.Territories[territory.Key] = territory.Value;
-            Core.utils.WriteToXmlFile<Models.Territory>(Core.path + "//Territories//" + territory.Value.Name + ".xml", territory.Value);
+            Core.utils.WriteToXmlFile<Territories.Models.Territory>(Core.path + "//Territories//" + territory.Value.Name + ".xml", territory.Value);
         }
 
         [Command("reload", "reload territories")]
@@ -53,13 +52,13 @@ namespace CrunchGroup.Territories
         [Permission(MyPromoteLevel.Admin)]
         public void Create(string name)
         {
-            Models.Territory territory = new Models.Territory();
+            Territories.Models.Territory territory = new Territories.Models.Territory();
             territory.Position = Context.Player.GetPosition();
             territory.Name = name;
             territory.SecondaryLogics = new List<ISecondaryLogic>();
             territory.CapturePoints = new List<ICapLogic>();
             territory.WorldName = MyMultiplayer.Static.HostName;
-            Core.utils.WriteToJsonFile<Models.Territory>(Core.path + "//Territories//" + territory.Name + ".json", territory);
+            Core.utils.WriteToJsonFile<Territories.Models.Territory>(Core.path + "//Territories//" + territory.Name + ".json", territory);
             Context.Respond("Created");
         }
         [Command("list", "list all valid names from scripts")]
@@ -125,7 +124,7 @@ namespace CrunchGroup.Territories
                 var instance = Activator.CreateInstance(point);
                 territory.CapturePoints.Add((ICapLogic)instance);
                 Context.Respond("Added cap logic?");
-                Core.utils.WriteToJsonFile<Models.Territory>(Core.path + "//Territories//" + territory.Name + ".json", territory);
+                Core.utils.WriteToJsonFile<Territories.Models.Territory>(Core.path + "//Territories//" + territory.Name + ".json", territory);
             }
             else
             {
@@ -245,7 +244,7 @@ namespace CrunchGroup.Territories
                 }
 
                 Context.Respond("Added secondary logic?");
-                Core.utils.WriteToJsonFile<Models.Territory>(Core.path + "//Territories//" + territory.Name + ".json", territory);
+                Core.utils.WriteToJsonFile<Territories.Models.Territory>(Core.path + "//Territories//" + territory.Name + ".json", territory);
             }
             else
             {

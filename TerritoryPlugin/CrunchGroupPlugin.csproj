@@ -241,7 +241,7 @@
     <Compile Include="Territories\SecondaryLogics\ProductionBuffLogic.cs" />
     <Compile Include="Territories\SecondaryLogics\UpkeepLogic.cs" />
     <Compile Include="Territories\SkoTweaksPatch.cs" />
-    <Compile Include="Territories\TerritoryCommands.cs" />
+    <Compile Include="Commands\TerritoryCommands.cs" />
     <Compile Include="Territories\GridRepair.cs" />
     <Compile Include="GPSHelper.cs" />
     <Compile Include="Territories\CapLogics\FactionGridCapLogic.cs" />
