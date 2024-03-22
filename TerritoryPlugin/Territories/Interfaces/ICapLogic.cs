@@ -16,6 +16,7 @@ namespace CrunchGroup.Territories.Interfaces
         IPointOwner PointOwner { get; set; }
         string PointName { get; set; }
         void AddSecondaryLogic(ISecondaryLogic logic);
+        public void SetPosition(Vector3 position);
 
         public Vector3 GetPointsLocationIfSet();
     }

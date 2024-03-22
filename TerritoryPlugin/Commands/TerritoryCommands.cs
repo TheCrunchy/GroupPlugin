@@ -6,10 +6,12 @@ using CrunchGroup.Handlers;
 using CrunchGroup.Territories.Interfaces;
 using CrunchGroup.Territories.PointOwners;
 using Sandbox.Engine.Multiplayer;
+using Sandbox.Game.GameSystems;
 using Sandbox.Game.World;
 using Torch.Commands;
 using Torch.Commands.Permissions;
 using VRage.Game.ModAPI;
+using VRageMath;
 
 namespace CrunchGroup.Commands
 {
@@ -137,6 +139,83 @@ namespace CrunchGroup.Commands
             }
 
         }
+        public static Vector3D GetRandomPosition(Vector3D GPSofPoint, int maxDistance)
+        {
+            // Generate random angles for spherical coordinates
+            double theta = Core.rand.NextDouble() * 2 * Math.PI; // Azimuthal angle
+            double phi = Core.rand.NextDouble() * Math.PI; // Polar angle
+
+            // Generate random direction (positive or negative) for each coordinate
+            int xDirection = Core.rand.Next(0, 2) == 0 ? -1 : 1;
+            int yDirection = Core.rand.Next(0, 2) == 0 ? -1 : 1;
+            int zDirection = Core.rand.Next(0, 2) == 0 ? -1 : 1;
+
+            // Convert spherical coordinates to Cartesian coordinates
+            double x = GPSofPoint.X + xDirection * maxDistance * Math.Sin(phi) * Math.Cos(theta);
+            double y = GPSofPoint.Y + yDirection * maxDistance * Math.Sin(phi) * Math.Sin(theta);
+            double z = GPSofPoint.Z + zDirection * maxDistance * Math.Cos(phi);
+
+            return new Vector3D(x, y, z);
+        }
+
+        [Command("generatepoints", "generate capture points for a territory")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void AddPoint(string name, string pointtype, int amount, int maxDistance)
+        {
+            var configs = new List<Type>();
+            var territory = Core.Territories.FirstOrDefault(x => x.Value.Name == name).Value;
+            if (territory == null)
+            {
+                Context.Respond($"{name} not found");
+                return;
+            }
+            configs.AddRange(from t in Core.myAssemblies.Select(x => x)
+                    .SelectMany(x => x.GetTypes())
+                where t.IsClass && t.GetInterfaces().Contains(typeof(ICapLogic))
+                select t);
+            configs.AddRange(from t in Assembly.GetExecutingAssembly().GetTypes()
+                where t.IsClass && t.GetInterfaces().Contains(typeof(ICapLogic))
+                select t);
+
+            if (MyGravityProviderSystem.IsPositionInNaturalGravity(Context.Player.GetPosition()))
+            {
+                Context.Respond("This command cannot add points in natural gravity.");
+            }
+
+            if (configs.Any(x => x.Name == pointtype))
+            {
+                Type point = configs.FirstOrDefault(x => x.Name == pointtype);
+
+                for (int i = 0; i < amount; i++)
+                {
+                    //add a random position
+                    var position = GetRandomPosition(Context.Player.GetPosition(), maxDistance);
+                    while (MyGravityProviderSystem.IsPositionInNaturalGravity(position))
+                    {
+                        maxDistance += 25000;
+                        position = GetRandomPosition(Context.Player.GetPosition(), maxDistance);
+                    }
+                    ICapLogic instance = (ICapLogic)Activator.CreateInstance(point);
+                    instance.SetPosition(position);
+                    instance.PointName = $"{i}";
+                    territory.CapturePoints.Add(instance);
+                    Context.Respond("Added cap logic?");
+                }
+     
+                Core.utils.WriteToJsonFile<Territories.Models.Territory>(Core.path + "//Territories//" + territory.Name + ".json", territory);
+            }
+            else
+            {
+                Context.Respond("Point type not found, available are");
+                foreach (var type in configs)
+                {
+                    Context.Respond(type.Name);
+                }
+                return;
+            }
+
+        }
+
         [Command("compile", "recompile, do not run on live server")]
         [Permission(MyPromoteLevel.Admin)]
         public void Recompile()

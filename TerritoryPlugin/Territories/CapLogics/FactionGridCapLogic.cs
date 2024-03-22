@@ -24,6 +24,11 @@ namespace CrunchGroup.Territories.CapLogics
             SecondaryLogics.Add(logic);
         }
 
+        public void SetPosition(Vector3 position)
+        {
+            this.GPSofPoint = position;
+        }
+
         public Vector3 GetPointsLocationIfSet()
         {
             return GPSofPoint;
