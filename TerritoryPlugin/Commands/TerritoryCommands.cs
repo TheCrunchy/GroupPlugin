@@ -2,12 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using CrunchGroup.Handlers;
 using CrunchGroup.Territories.Interfaces;
 using CrunchGroup.Territories.PointOwners;
 using Sandbox.Engine.Multiplayer;
 using Sandbox.Game.GameSystems;
+using Sandbox.Game.Multiplayer;
+using Sandbox.Game.Screens.Helpers;
 using Sandbox.Game.World;
+using Sandbox.ModAPI;
 using Torch.Commands;
 using Torch.Commands.Permissions;
 using VRage.Game.ModAPI;
@@ -187,14 +191,19 @@ namespace CrunchGroup.Commands
             {
                 Type point = configs.FirstOrDefault(x => x.Name == pointtype);
 
-                for (int i = 0; i < amount; i++)
+                for (int i = territory.CapturePoints.Count; i < territory.CapturePoints.Count + amount; i++)
                 {
                     //add a random position
                     var position = GetRandomPosition(Context.Player.GetPosition(), expectedMaxDistance);
-                    while (MyGravityProviderSystem.IsPositionInNaturalGravity(position))
+                    //while (MyGravityProviderSystem.IsPositionInNaturalGravity(position))
+                    //{
+                    //    expectedMaxDistance *= 2;
+                    //    position = GetRandomPosition(Context.Player.GetPosition(), expectedMaxDistance);
+                    //}
+                    if (MyGravityProviderSystem.IsPositionInNaturalGravity(position))
                     {
-                        expectedMaxDistance *= 2;
-                        position = GetRandomPosition(Context.Player.GetPosition(), expectedMaxDistance);
+                        Context.Respond("Generated position in natural gravity, skipping.");
+                        continue;
                     }
 
                     ICapLogic instance = (ICapLogic)Activator.CreateInstance(point);
@@ -203,7 +212,20 @@ namespace CrunchGroup.Commands
                     territory.CapturePoints.Add(instance);
                     Context.Respond("Added cap logic?");
                 }
-     
+                MyGpsCollection gpscol = (MyGpsCollection)MyAPIGateway.Session?.GPS;
+
+                foreach (var cap in territory.CapturePoints)
+                {
+                    MyGps gpsRef = new MyGps();
+                    gpsRef.Coords = cap.GetPointsLocationIfSet();
+                    gpsRef.Name = $"{territory.Name} Cap Point: {cap.PointName}";
+                    gpsRef.GPSColor = Color.Lime;
+                    gpsRef.ShowOnHud = true;
+                    gpsRef.AlwaysVisible = true;
+                    gpsRef.DiscardAt = new TimeSpan?();
+                    gpscol.SendAddGpsRequest(Context.Player.IdentityId, ref gpsRef);
+
+                }
                 Core.utils.WriteToJsonFile<Territories.Models.Territory>(Core.path + "//Territories//" + territory.Name + ".json", territory);
             }
             else
@@ -217,6 +239,35 @@ namespace CrunchGroup.Commands
             }
 
         }
+
+        [Command("getpoints", "get capture point gpses for a territory")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void GetPoints(string name)
+        {
+            var configs = new List<Type>();
+            var territory = Core.Territories.FirstOrDefault(x => x.Value.Name == name).Value;
+            if (territory == null)
+            {
+                Context.Respond($"{name} not found");
+                return;
+            }      
+            MyGpsCollection gpscol = (MyGpsCollection)MyAPIGateway.Session?.GPS;
+
+            foreach (var point in territory.CapturePoints)
+            {
+                MyGps gpsRef = new MyGps();
+                gpsRef.Coords = point.GetPointsLocationIfSet();
+                gpsRef.Name = $"{territory.Name} Cap Point: {point.PointName}";
+                gpsRef.GPSColor = Color.Lime;
+                gpsRef.ShowOnHud = true;
+                gpsRef.AlwaysVisible = true;
+                gpsRef.DiscardAt = new TimeSpan?();
+                gpscol.SendAddGpsRequest(Context.Player.IdentityId, ref gpsRef);
+
+            }
+            Context.Respond("Sent GPS");
+        }
+
 
         [Command("compile", "recompile, do not run on live server")]
         [Permission(MyPromoteLevel.Admin)]
