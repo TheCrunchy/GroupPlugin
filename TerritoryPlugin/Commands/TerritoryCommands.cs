@@ -210,7 +210,7 @@ namespace CrunchGroup.Commands
                     instance.SetPosition(position);
                     instance.PointName = $"{i}";
                     territory.CapturePoints.Add(instance);
-                    Context.Respond("Added cap logic?");
+                    Context.Respond($"Added cap logic {i}");
                 }
                 MyGpsCollection gpscol = (MyGpsCollection)MyAPIGateway.Session?.GPS;
 
