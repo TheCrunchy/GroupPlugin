@@ -190,8 +190,8 @@ namespace CrunchGroup.Commands
             if (configs.Any(x => x.Name == pointtype))
             {
                 Type point = configs.FirstOrDefault(x => x.Name == pointtype);
-
-                for (int i = territory.CapturePoints.Count; i < territory.CapturePoints.Count + amount; i++)
+                var count = territory.CapturePoints.Count;
+                for (int i = count; i < count + amount; i++)
                 {
                     //add a random position
                     var position = GetRandomPosition(Context.Player.GetPosition(), expectedMaxDistance);

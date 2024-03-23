@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using CrunchGroup.Models;
 using CrunchGroup.Models.Events;
 using CrunchGroup.NexusStuff;
 using CrunchGroup.Territories.CapLogics;

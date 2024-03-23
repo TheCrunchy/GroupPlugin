@@ -203,7 +203,7 @@ namespace CrunchGroup.Commands
                     group.GroupOwnedGridsNPCTag = newValue;
                     break;
                 default:
-                    Context.Respond("Valid editable fields are Name, Tag, Description, Leader");
+                    Context.Respond("Valid editable fields are Name, Tag, Description, Leader, npctag");
                     return;
             }
 

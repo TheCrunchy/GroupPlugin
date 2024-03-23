@@ -388,7 +388,6 @@ namespace CrunchGroup
                 {
                     gridIds.Add(ent as MyCubeGrid);
                 }
-
                 //if (ent is MyCubeGrid grid)
                 //{
                 //    grid.GridSystems.AiBlockSystem.SetMovementFlightMode(FlightMode.Circle);

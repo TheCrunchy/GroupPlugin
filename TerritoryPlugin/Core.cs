@@ -580,7 +580,7 @@ namespace CrunchGroup
                     }
                     try
                     {
-                        Task.Run(async () => { CaptureHandler.DoCaps(); });
+                        await CaptureHandler.DoCaps();
                     }
                     catch (Exception e)
                     {
