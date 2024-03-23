@@ -181,12 +181,6 @@ namespace CrunchGroup.Commands
                 where t.IsClass && t.GetInterfaces().Contains(typeof(ICapLogic))
                 select t);
 
-            if (MyGravityProviderSystem.IsPositionInNaturalGravity(Context.Player.GetPosition()))
-            {
-                Context.Respond("This command cannot add points in natural gravity.");
-                return;
-            }
-
             if (configs.Any(x => x.Name == pointtype))
             {
                 Type point = configs.FirstOrDefault(x => x.Name == pointtype);
