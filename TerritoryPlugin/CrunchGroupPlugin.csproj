@@ -225,6 +225,7 @@
     <Compile Include="Models\Events\GroupCreatedEvent.cs" />
     <Compile Include="Models\Events\GroupDeletedEvent.cs" />
     <Compile Include="Models\Events\GroupEvent.cs" />
+    <Compile Include="Models\Events\GroupGPSEvent.cs" />
     <Compile Include="Models\Events\InvitedToGroupEvent.cs" />
     <Compile Include="Models\Events\JoinGroupEvent.cs" />
     <Compile Include="Models\Events\LeftGroupEvent.cs" />

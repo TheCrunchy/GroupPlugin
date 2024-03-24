@@ -94,7 +94,28 @@ namespace CrunchGroup.Models
                 }
             }
         }
+        public void SendGroupSignal(Vector3 Position, string name)
+        {
+            MyGpsCollection gpscol = (MyGpsCollection)MyAPIGateway.Session?.GPS;
+            StringBuilder sb = new StringBuilder();
+            MyGps gpsRef = new MyGps();
+            gpsRef.Coords = Position;
+            gpsRef.Name = $"Distress Signal {DateTime.Now:HH-mm-tt}";
+            gpsRef.GPSColor = Color.Yellow;
+            gpsRef.ShowOnHud = true;
+            gpsRef.AlwaysVisible = true;
+            gpsRef.DiscardAt = TimeSpan.FromSeconds(180);
 
+            foreach (var id in GroupMembers)
+            {
+                var fac = MySession.Static.Factions.TryGetFactionById(id);
+                if (fac == null) continue;
+                foreach (var member in fac.Members.Values.Select(x => x.PlayerId).Distinct())
+                {
+                    gpscol.SendAddGpsRequest(member, ref gpsRef);
+                }
+            }
+        }
         public void RemoveMemberFromGroup(long factionId)
         {
             var newfac = MySession.Static.Factions.TryGetFactionById(factionId);

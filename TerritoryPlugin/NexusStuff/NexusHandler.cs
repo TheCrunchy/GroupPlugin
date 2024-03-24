@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using CrunchGroup.Handlers;
 using CrunchGroup.Models.Events;
 using Sandbox.ModAPI;
@@ -20,13 +21,13 @@ namespace CrunchGroup.NexusStuff
             }
             else
             {
-                Handle(groupEvent, 0,true);
-               // GroupPlugin.Log.Error("Nexus not installed");
+                Handle(groupEvent, 0, true);
+                // GroupPlugin.Log.Error("Nexus not installed");
             }
-          
+
         }
 
-        public static void Handle(GroupEvent message,ulong steamId, bool fromServer)
+        public static void Handle(GroupEvent message, ulong steamId, bool fromServer)
         {
             if (!fromServer && steamId != 0)
             {
@@ -36,11 +37,22 @@ namespace CrunchGroup.NexusStuff
             switch (message.EventType)
             {
                 case "GlobalChatEvent":
-                {
-                    var ev = MyAPIGateway.Utilities.SerializeFromBinary<GlobalChatEvent>(message.EventObject);
-                    Core.SendChatMessage(ev.Author, ev.Message, 0l);
-                    break;
-                }
+                    {
+                        var ev = MyAPIGateway.Utilities.SerializeFromBinary<GlobalChatEvent>(message.EventObject);
+                        Core.SendChatMessage(ev.Author, ev.Message, 0l);
+                        break;
+                    }
+                case "GroupGPSEvent":
+                    {
+                        var ev = MyAPIGateway.Utilities.SerializeFromBinary<GroupGPSEvent>(message.EventObject);
+                        var group = GroupHandler.LoadedGroups.FirstOrDefault(x => x.Key == ev.GroupId).Value ?? null;
+                        if (group == null)
+                        {
+                            return;
+                        }
+                        group.SendGroupSignal(ev.Position);
+                        break;
+                    }
                 case "GroupCreatedEvent":
                     {
                         var ev = MyAPIGateway.Utilities.SerializeFromBinary<GroupCreatedEvent>(message.EventObject);
@@ -60,7 +72,7 @@ namespace CrunchGroup.NexusStuff
                         GroupEventHandler.HandleGroupJoin(ev);
                         break;
                     }
-                
+
                 case "LeftGroupEvent":
                     {
                         var ev = MyAPIGateway.Utilities.SerializeFromBinary<LeftGroupEvent>(message.EventObject);
@@ -80,11 +92,11 @@ namespace CrunchGroup.NexusStuff
                         break;
                     }
                 case "GroupChangedEvent":
-                {
-                    var ev = MyAPIGateway.Utilities.SerializeFromBinary<GroupChangedEvent>(message.EventObject);
-                    GroupEventHandler.HandleGroupChange(ev);
-                    break;
-                }
+                    {
+                        var ev = MyAPIGateway.Utilities.SerializeFromBinary<GroupChangedEvent>(message.EventObject);
+                        GroupEventHandler.HandleGroupChange(ev);
+                        break;
+                    }
                 default:
                     NexusMessage?.Invoke(message);
                     if (Core.config.DebugMode)
@@ -97,11 +109,11 @@ namespace CrunchGroup.NexusStuff
 
         public static void HandleNexusMessage(ushort handlerId, byte[] data, ulong steamID, bool fromServer)
         {
-           // Core.Log.Info("Recieved a nexus event");
+            // Core.Log.Info("Recieved a nexus event");
             try
             {
                 var message = MyAPIGateway.Utilities.SerializeFromBinary<GroupEvent>(data);
-                Handle(message, steamID,fromServer);
+                Handle(message, steamID, fromServer);
                 if (!fromServer && steamID != 0 && Core.NexusInstalled)
                 {
                     Core.Log.Error($"Relaying event to all servers from player");
