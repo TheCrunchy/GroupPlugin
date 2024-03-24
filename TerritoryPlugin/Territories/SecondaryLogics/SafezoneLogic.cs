@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using CrunchGroup.NexusStuff;
 using CrunchGroup.Territories.Interfaces;
 using Sandbox.Common.ObjectBuilders;
 using Sandbox.Game.Entities;
@@ -25,7 +26,17 @@ namespace CrunchGroup.Territories.SecondaryLogics
             if (!CanLoop()) return Task.FromResult(true);
 
             NextLoop = DateTime.Now.AddSeconds(SecondsBetweenLoops);
+            if (Core.NexusInstalled)
+            {
+                var thisSector = NexusAPI.GetThisServer();
 
+                var sector = NexusAPI.GetServerIDFromPosition(SafezonePosition);
+
+                if (sector != thisSector.ServerID)
+                {
+                    return Task.FromResult(true);
+                }
+            }
             IPointOwner temp = point.PointOwner ?? territory.Owner;
             BoundingSphereD sphere = new BoundingSphereD(SafezonePosition, 5000);
             var foundzone = MyAPIGateway.Entities.GetEntityById(SafezoneId);

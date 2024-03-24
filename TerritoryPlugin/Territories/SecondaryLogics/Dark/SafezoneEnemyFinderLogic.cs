@@ -47,7 +47,17 @@ namespace CrunchGroup.Territories.SecondaryLogics.Dark
             {
                 return Task.FromResult(true);
             }
+            if (Core.NexusInstalled)
+            {
+                var thisSector = NexusAPI.GetThisServer();
 
+                var sector = NexusAPI.GetServerIDFromPosition(point.GetPointsLocationIfSet());
+
+                if (sector != thisSector.ServerID)
+                {
+                    return Task.FromResult(true);
+                }
+            }
             IPointOwner temp = point.PointOwner;
             BoundingSphereD sphere = new BoundingSphereD(point.GetPointsLocationIfSet(), EnemySearchDistance);
         

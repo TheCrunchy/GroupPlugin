@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CrunchGroup.Handlers;
 using CrunchGroup.Models;
+using CrunchGroup.NexusStuff;
 using CrunchGroup.Territories.Interfaces;
 using CrunchGroup.Territories.PointOwners;
 using Sandbox.Game.Entities;
@@ -57,14 +58,25 @@ namespace CrunchGroup.Territories.CapLogics
             if (CanLoop())
             {
                 NextLoop = DateTime.Now.AddSeconds(SecondsBetweenLoops);
-                //do capture logic for suits in alliances
-
                 var gpspoint = GPSofPoint;
                 if (gpspoint == new Vector3())
                 {
                     Core.Log.Info($"GPS for point {PointName} is not set");
                     return Task.FromResult(Tuple.Create<bool, IPointOwner>(false, null));
                 }
+                //do capture logic for suits in alliances
+                if (Core.NexusInstalled)
+                {
+                    var thisSector = NexusAPI.GetThisServer();
+
+                    var sector = NexusAPI.GetServerIDFromPosition(point.GetPointsLocationIfSet());
+
+                    if (sector != thisSector.ServerID)
+                    {
+                        return Task.FromResult(Tuple.Create<bool, IPointOwner>(false, null));
+                    }
+                }
+       
                 var sphere = new BoundingSphereD(gpspoint, CaptureRadius * 2);
 
                 var foundAlliances = FindAttackers(sphere);

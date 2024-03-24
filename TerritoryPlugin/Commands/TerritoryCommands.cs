@@ -34,7 +34,7 @@ namespace CrunchGroup.Commands
         [Permission(MyPromoteLevel.Admin)]
         public void GiveFac(string territoryName, string factionTag)
         {
-            var territory = Core.Territories.First(x => x.Value.Name == territoryName);
+            var territory = Core.Territories.FirstOrDefault(x => x.Value.Name == territoryName);
             if (territory.Value == null)
             {
                 Context.Respond("Territory Not found.");
@@ -49,13 +49,13 @@ namespace CrunchGroup.Commands
             }
 
             GiveToOwner(territory.Value, new FactionPointOwner() { FactionId = faction.FactionId });
-
+            Context.Respond("Giving ownership.");
         }
         [Command("givegroup", "give territory to faction")]
         [Permission(MyPromoteLevel.Admin)]
         public void GiveGroup(string territoryName, string groupName)
         {
-            var territory = Core.Territories.First(x => x.Value.Name == territoryName);
+            var territory = Core.Territories.FirstOrDefault(x => x.Value.Name == territoryName);
             if (territory.Value == null)
             {
                 Context.Respond("Territory Not found.");
@@ -70,13 +70,18 @@ namespace CrunchGroup.Commands
             }
 
             GiveToOwner(territory.Value, new GroupPointOwner() { GroupId = group.GroupId });
-
+            Context.Respond("Giving ownership.");
         }
 
         public void GiveToOwner(Territory territory, IPointOwner owner)
         {
             territory.Owner = owner;
+            foreach (var cap in territory.CapturePoints)
+            {
+                cap.PointOwner = owner;
+            }
             Core.Territories[territory.Id] = territory;
+            
             Core.utils.WriteToJsonFile<Territories.Models.Territory>(Core.path + "//Territories//" + territory.Name + ".json", territory);
         }
 
