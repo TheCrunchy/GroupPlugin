@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using CrunchGroup.Handlers;
 using CrunchGroup.Territories.Interfaces;
+using CrunchGroup.Territories.Models;
 using CrunchGroup.Territories.PointOwners;
 using Sandbox.Engine.Multiplayer;
 using Sandbox.Game.GameSystems;
@@ -24,7 +25,14 @@ namespace CrunchGroup.Commands
     {
         [Command("give", "give territory to faction")]
         [Permission(MyPromoteLevel.Admin)]
-        public void Give(string territoryName, string factionTag)
+        public void GiveFac()
+        {
+            Context.Respond("Use !territory givefac or !territory givegroup");
+        }
+
+        [Command("givefac", "give territory to faction")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void GiveFac(string territoryName, string factionTag)
         {
             var territory = Core.Territories.First(x => x.Value.Name == territoryName);
             if (territory.Value == null)
@@ -40,9 +48,36 @@ namespace CrunchGroup.Commands
                 return;
             }
 
-            territory.Value.Owner = new FactionPointOwner() { FactionId = faction.FactionId };
-            Core.Territories[territory.Key] = territory.Value;
-            Core.utils.WriteToXmlFile<Territories.Models.Territory>(Core.path + "//Territories//" + territory.Value.Name + ".xml", territory.Value);
+            GiveToOwner(territory.Value, new FactionPointOwner() { FactionId = faction.FactionId });
+
+        }
+        [Command("givegroup", "give territory to faction")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void GiveGroup(string territoryName, string groupName)
+        {
+            var territory = Core.Territories.First(x => x.Value.Name == territoryName);
+            if (territory.Value == null)
+            {
+                Context.Respond("Territory Not found.");
+                return;
+            }
+
+            var group = GroupHandler.GetGroupByTag(groupName);
+            if (group == null)
+            {
+                Context.Respond("Group not found.");
+                return;
+            }
+
+            GiveToOwner(territory.Value, new GroupPointOwner() { GroupId = group.GroupId });
+
+        }
+
+        public void GiveToOwner(Territory territory, IPointOwner owner)
+        {
+            territory.Owner = owner;
+            Core.Territories[territory.Id] = territory;
+            Core.utils.WriteToJsonFile<Territories.Models.Territory>(Core.path + "//Territories//" + territory.Name + ".json", territory);
         }
 
         [Command("reload", "reload territories")]
@@ -175,11 +210,11 @@ namespace CrunchGroup.Commands
             }
             configs.AddRange(from t in Core.myAssemblies.Select(x => x)
                     .SelectMany(x => x.GetTypes())
-                where t.IsClass && t.GetInterfaces().Contains(typeof(ICapLogic))
-                select t);
+                             where t.IsClass && t.GetInterfaces().Contains(typeof(ICapLogic))
+                             select t);
             configs.AddRange(from t in Assembly.GetExecutingAssembly().GetTypes()
-                where t.IsClass && t.GetInterfaces().Contains(typeof(ICapLogic))
-                select t);
+                             where t.IsClass && t.GetInterfaces().Contains(typeof(ICapLogic))
+                             select t);
 
             if (configs.Any(x => x.Name == pointtype))
             {
@@ -244,7 +279,7 @@ namespace CrunchGroup.Commands
             {
                 Context.Respond($"{name} not found");
                 return;
-            }      
+            }
             MyGpsCollection gpscol = (MyGpsCollection)MyAPIGateway.Session?.GPS;
 
             foreach (var point in territory.CapturePoints)
