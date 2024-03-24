@@ -160,7 +160,7 @@ namespace CrunchGroup.Territories
 
         public static void SendMessage(string author, string message, Models.Territory ter, IPointOwner owner)
         {
-            Core.SendChatMessage(author, message,  0l);
+            Core.SendChatMessage(author, message, 0l);
             if (Core.NexusInstalled)
             {
                 var Event = new GroupEvent();
@@ -197,7 +197,7 @@ namespace CrunchGroup.Territories
             var utf8 = Encoding.UTF8.GetBytes(payload);
             try
             {
-                client.UploadData(ter.DiscordWebhook, utf8 );
+                client.UploadData(ter.DiscordWebhook, utf8);
             }
             catch (Exception e)
             {
@@ -206,22 +206,31 @@ namespace CrunchGroup.Territories
 
             if (owner == null) return;
 
-            //try
-            //{
-            //    var alliance = owner.GetOwner();
-            //    if (alliance == null) return;
-            //    var temp = alliance as Alliance;
-            //    if (!string.IsNullOrWhiteSpace(temp.DiscordWebhookCaps))
-            //    {
-            //        var client2 = new WebClient();
-            //        client2.Headers.Add("Content-Type", "application/json");
-            //        client2.UploadData(temp.DiscordWebhookCaps, utf8);
-            //    }
-            //}
-            //catch (Exception e)
-            //{
-            //    GroupPlugin.Log.Error($"Alliance Discord webhook error, {e}");
-            //}
+            try
+            {
+                var ownerobj = owner.GetOwner();
+                if (ownerobj == null) return;
+                switch (ownerobj)
+                {
+                    case Group group:
+                    {
+                        var temp = group;
+                        if (!string.IsNullOrWhiteSpace(temp.DiscordWebhook))
+                        {
+                            var client2 = new WebClient();
+                            client2.Headers.Add("Content-Type", "application/json");
+                            client2.UploadData(temp.DiscordWebhook, utf8);
+                        }
+
+                        break;
+                    }
+                }
+
+            }
+            catch (Exception e)
+            {
+                Core.Log.Error($"Group Discord webhook error, {e}");
+            }
 
         }
 

@@ -15,6 +15,7 @@ namespace CrunchGroup.Models
     {
         public bool IsPlayerCreatedGroup { get; set; } = true;
         public string GroupName { get; set; }
+        public string DiscordWebhook { get; set; }
         public string GroupTag { get; set; }
         public string GroupDescription { get; set; }
         public Guid GroupId = Guid.NewGuid();

@@ -202,8 +202,11 @@ namespace CrunchGroup.Commands
                 case "npctag":
                     group.GroupOwnedGridsNPCTag = newValue;
                     break;
+                case "webhook":
+                    group.DiscordWebhook = newValue;
+                    break;
                 default:
-                    Context.Respond("Valid editable fields are Name, Tag, Description, Leader, npctag");
+                    Context.Respond("Valid editable fields are Name, Tag, Description, Leader, webhook, npctag");
                     return;
             }
 

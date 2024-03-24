@@ -246,8 +246,11 @@ namespace CrunchGroup.Commands
                     }
                     group.GroupLeader = (long)MySession.Static.Players.TryGetSteamId(id.IdentityId);
                     break;
+                case "webhook":
+                    group.DiscordWebhook = newValue;
+                    break;
                 default:
-                    Context.Respond("Valid editable fields are Name, Tag, Description, Leader");
+                    Context.Respond("Valid editable fields are Name, Tag, Description, Leader, Webhook");
                     return;
             }
      
