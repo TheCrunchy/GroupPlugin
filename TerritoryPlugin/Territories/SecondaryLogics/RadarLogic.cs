@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CrunchGroup.Models;
 using CrunchGroup.Territories.Interfaces;
 using Sandbox.Game.Entities;
 using Sandbox.Game.World;
@@ -43,7 +44,7 @@ namespace CrunchGroup.Territories.SecondaryLogics
             foreach (var grid in FoundGrids)
             {
                 if (!ShouldTriggerAlert(owner, grid)) continue;
-              
+
                 var gps = GPSHelper.CreateGps(grid.PositionComp.GetPosition(), Color.Cyan, $"Radar Hit", $"Radar {grid.DisplayName} at {DateTime.Now:HH:mm:ss zz}");
                 if (owner is MyFaction fac)
                 {
@@ -65,18 +66,28 @@ namespace CrunchGroup.Territories.SecondaryLogics
             {
                 return true;
             }
-          //  GroupPlugin.Log.Info("Radar 1");
+            //  GroupPlugin.Log.Info("Radar 1");
             switch (pointOwner)
             {
                 case IMyFaction faction:
                     {
-                   //     GroupPlugin.Log.Info("Radar 3");
+                        //     GroupPlugin.Log.Info("Radar 3");
                         if (fac.FactionId != faction.FactionId)
                         {
                             if (!MySession.Static.Factions.AreFactionsFriends(fac.FactionId, faction.FactionId) || !MySession.Static.Factions.AreFactionsNeutrals(fac.FactionId, faction.FactionId))
                             {
                                 return true;
                             }
+                        }
+                    }
+                    break;
+                case Group group:
+                    {
+                        //     GroupPlugin.Log.Info("Radar 3");
+                        if (!group.GroupMembers.Contains(fac.FactionId))
+                        {
+                            return true;
+
                         }
                     }
                     break;
@@ -98,21 +109,21 @@ namespace CrunchGroup.Territories.SecondaryLogics
         public void FindGrids()
         {
             FoundGrids.Clear();
-          //  GroupPlugin.Log.Info("grid 1");
+            //  GroupPlugin.Log.Info("grid 1");
             var sphere = new BoundingSphereD(RadarCentre, Distance * 2);
             foreach (var grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>().Where(x => x.Projector == null && x.BlocksCount >= MinimumBlocksToHit))
             {
                 //       GroupPlugin.Log.Info("grid 2");
                 var owner = FacUtils.GetOwner(grid);
-           //     GroupPlugin.Log.Info("grid 3");
+                //     GroupPlugin.Log.Info("grid 3");
                 var fac = FacUtils.GetPlayersFaction(owner);
-            //    GroupPlugin.Log.Info("grid 4");
+                //    GroupPlugin.Log.Info("grid 4");
                 if ((fac != null && IgnoredFactionTags.Contains(fac.Tag)))
                 {
-            //        GroupPlugin.Log.Info("grid 5");
+                    //        GroupPlugin.Log.Info("grid 5");
                     continue;
                 }
-           //     GroupPlugin.Log.Info("grid 6");
+                //     GroupPlugin.Log.Info("grid 6");
 
                 FoundGrids.Add(grid);
             }

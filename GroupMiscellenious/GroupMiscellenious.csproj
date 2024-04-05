@@ -96,6 +96,7 @@
     <Compile Include="Scripts\HudMod\Data\Scripts\CrunchChat\Data.cs" />
     <Compile Include="Scripts\HudMod\Data\Scripts\CrunchChat\HudAPIv2.cs" />
     <Compile Include="Scripts\HudMod\Data\Scripts\CrunchChat\TextHudModule.cs" />
+    <Compile Include="Scripts\SargSetAllScripter.cs" />
     <Compile Include="Scripts\ShieldScript.cs" />
     <Compile Include="Scripts\TerritoryHudScript.cs" />
   </ItemGroup>
