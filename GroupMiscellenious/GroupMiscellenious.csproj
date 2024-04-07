@@ -99,6 +99,7 @@
     <Compile Include="Scripts\SargSetAllScripter.cs" />
     <Compile Include="Scripts\ShieldScript.cs" />
     <Compile Include="Scripts\TerritoryHudScript.cs" />
+    <Compile Include="Scripts\WarpCoreStuff.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\TerritoryPlugin\CrunchGroupPlugin.csproj">
