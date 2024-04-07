@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CrunchGroup.Models;
+using CrunchGroup.Models.Events;
+using CrunchGroup.NexusStuff;
 using CrunchGroup.Territories.Interfaces;
 using Sandbox.Game.Entities;
 using Sandbox.Game.World;
@@ -31,16 +33,18 @@ namespace CrunchGroup.Territories.SecondaryLogics
             if (!CanLoop()) return Task.FromResult(true);
 
             NextLoop = DateTime.Now.AddSeconds(SecondsBetweenLoops);
-            if (RequireOwner && point.PointOwner == null)
+            var temp = point.PointOwner ?? territory.Owner;
+
+            if (RequireOwner && temp == null)
             {
                 return Task.FromResult(true);
             }
-            var temp = point.PointOwner ?? territory.Owner;
 
             var owner = temp.GetOwner();
 
             StringBuilder builder = new StringBuilder();
             FindGrids();
+            Core.Log.Info($"{FoundGrids.Count}");
             foreach (var grid in FoundGrids)
             {
                 if (!ShouldTriggerAlert(owner, grid)) continue;
@@ -50,6 +54,26 @@ namespace CrunchGroup.Territories.SecondaryLogics
                 {
                     Core.Log.Error("This isnt setup for factions");
                     //not setup here
+                }
+
+                if (owner is Group group)
+                {
+                    var Event = new GroupEvent();
+                    var createdEvent = new GroupGPSEvent()
+                    {
+                        GroupId = group.GroupId,
+                        Position = grid.PositionComp.GetPosition(),
+                        Name = $"Radar Hit - {grid.DisplayName} at {DateTime.Now:HH:mm:ss zz}",
+                        Color = Color.OrangeRed
+                    };
+
+                    Event.EventObject = MyAPIGateway.Utilities.SerializeToBinary(createdEvent);
+                    Event.EventType = createdEvent.GetType().Name;
+                    NexusHandler.RaiseEvent(Event);
+                    if (Core.NexusInstalled)
+                    {
+                        NexusHandler.Handle(Event, 0l, true);
+                    }
                 }
                 builder.AppendLine(gps.ToString());
             }
@@ -66,7 +90,7 @@ namespace CrunchGroup.Territories.SecondaryLogics
             {
                 return true;
             }
-            //  GroupPlugin.Log.Info("Radar 1");
+
             switch (pointOwner)
             {
                 case IMyFaction faction:
@@ -83,11 +107,9 @@ namespace CrunchGroup.Territories.SecondaryLogics
                     break;
                 case Group group:
                     {
-                        //     GroupPlugin.Log.Info("Radar 3");
                         if (!group.GroupMembers.Contains(fac.FactionId))
                         {
                             return true;
-
                         }
                     }
                     break;
@@ -98,7 +120,7 @@ namespace CrunchGroup.Territories.SecondaryLogics
 
         public int MinimumBlocksToHit = 1;
         public DateTime NextLoop { get; set; }
-        public int SecondsBetweenLoops { get; set; }
+        public int SecondsBetweenLoops { get; set; } = 60;
         public bool CanLoop()
         {
             return DateTime.Now >= NextLoop;

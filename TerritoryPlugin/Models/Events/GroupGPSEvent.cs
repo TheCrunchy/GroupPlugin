@@ -17,5 +17,10 @@ namespace CrunchGroup.Models.Events
         public ulong SenderId { get; set; }
         [ProtoMember(3)]
         public Vector3 Position { get; set; }
+        [ProtoMember(4)]
+        public string Name { get; set; }
+
+        [ProtoMember(5)]
+        public Color Color { get; set; }
     }
 }

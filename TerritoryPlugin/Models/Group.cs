@@ -80,34 +80,17 @@ namespace CrunchGroup.Models
         }
         public void SendGroupSignal(Vector3 Position)
         {
-            MyGpsCollection gpscol = (MyGpsCollection)MyAPIGateway.Session?.GPS;
-            StringBuilder sb = new StringBuilder();
-            MyGps gpsRef = new MyGps();
-            gpsRef.Coords = Position;
-            gpsRef.Name = $"Distress Signal {DateTime.Now:HH-mm-tt}";
-            gpsRef.GPSColor = Color.Yellow;
-            gpsRef.ShowOnHud = true;
-            gpsRef.AlwaysVisible = true;
-            gpsRef.DiscardAt = TimeSpan.FromSeconds(180);
-
-            foreach (var id in GroupMembers.Distinct())
-            {
-                var fac = MySession.Static.Factions.TryGetFactionById(id);
-                if (fac == null) continue;
-                foreach (var member in fac.Members.Values.Select(x => x.PlayerId).Distinct())
-                {
-                    gpscol.SendAddGpsRequest(member, ref gpsRef);
-                }
-            }
+            SendGroupSignal(Position, $"Distress Signal {DateTime.Now:HH-mm-tt}", Color.Yellow);
         }
-        public void SendGroupSignal(Vector3 Position, string name)
+
+        public void SendGroupSignal(Vector3 Position, string name, Color color)
         {
             MyGpsCollection gpscol = (MyGpsCollection)MyAPIGateway.Session?.GPS;
             StringBuilder sb = new StringBuilder();
             MyGps gpsRef = new MyGps();
             gpsRef.Coords = Position;
-            gpsRef.Name = $"Distress Signal {DateTime.Now:HH-mm-tt}";
-            gpsRef.GPSColor = Color.Yellow;
+            gpsRef.Name = $"{name}";
+            gpsRef.GPSColor = color;
             gpsRef.ShowOnHud = true;
             gpsRef.AlwaysVisible = true;
             gpsRef.DiscardAt = TimeSpan.FromSeconds(180);

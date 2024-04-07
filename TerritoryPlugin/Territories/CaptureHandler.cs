@@ -148,13 +148,49 @@ namespace CrunchGroup.Territories
 
         public static void SendRadarMessage(Object owner, String message)
         {
-            switch (owner)
+            var payloadJson = JsonConvert.SerializeObject(new
             {
-                case IMyFaction faction:
+                username = "Radar",
+                embeds = new[]
                     {
-                        Core.Log.Error($"Radar not implemented for factions");
+                        new
+                        {
+                            description = message,
+                            title = "Radar",
+                            color = "15548997",
+                        }
                     }
-                    break;
+            }
+            );
+
+            var payload = payloadJson;
+
+            var utf8 = Encoding.UTF8.GetBytes(payload);
+            try
+            {
+
+                switch (owner)
+                {
+                    case IMyFaction faction:
+                        {
+                            Core.Log.Error($"Radar not implemented for factions");
+                        }
+                        break;
+                    case Group group:
+                        {
+                            if (!string.IsNullOrWhiteSpace(group.DiscordWebhook))
+                            {
+                                var client2 = new WebClient();
+                                client2.Headers.Add("Content-Type", "application/json");
+                                client2.UploadData(group.DiscordWebhook, utf8);
+                            }
+                        }
+                        break;
+                }
+            }
+            catch (Exception e)
+            {
+                Core.Log.Error($"Group Discord webhook error, {e}");
             }
         }
 
@@ -213,17 +249,17 @@ namespace CrunchGroup.Territories
                 switch (ownerobj)
                 {
                     case Group group:
-                    {
-                        var temp = group;
-                        if (!string.IsNullOrWhiteSpace(temp.DiscordWebhook))
                         {
-                            var client2 = new WebClient();
-                            client2.Headers.Add("Content-Type", "application/json");
-                            client2.UploadData(temp.DiscordWebhook, utf8);
-                        }
+                            var temp = group;
+                            if (!string.IsNullOrWhiteSpace(temp.DiscordWebhook))
+                            {
+                                var client2 = new WebClient();
+                                client2.Headers.Add("Content-Type", "application/json");
+                                client2.UploadData(temp.DiscordWebhook, utf8);
+                            }
 
-                        break;
-                    }
+                            break;
+                        }
                 }
 
             }

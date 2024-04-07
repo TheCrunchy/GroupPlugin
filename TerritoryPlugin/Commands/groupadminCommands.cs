@@ -16,6 +16,16 @@ namespace CrunchGroup.Commands
     [Category("groupadmin")]
     public class GroupadminCommands : CommandModule
     {
+        [Command("reload", "reload groups")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void Reload()
+        {
+           Storage.StorageHandler.LoadAll();
+           Core.LoadConfig();
+           Core.LoadAllTerritories();
+           Context.Respond("Reloaded group configs");
+        }
+
         [Command("create", "create a group")]
         [Permission(MyPromoteLevel.Admin)]
         public void Create(string groupName, string description = "Default description")
