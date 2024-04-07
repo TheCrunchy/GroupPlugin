@@ -44,7 +44,6 @@ namespace CrunchGroup.Territories.SecondaryLogics
 
             StringBuilder builder = new StringBuilder();
             FindGrids();
-            Core.Log.Info($"{FoundGrids.Count}");
             foreach (var grid in FoundGrids)
             {
                 if (!ShouldTriggerAlert(owner, grid)) continue;
