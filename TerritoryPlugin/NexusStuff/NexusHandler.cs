@@ -29,11 +29,6 @@ namespace CrunchGroup.NexusStuff
 
         public static void Handle(GroupEvent message, ulong steamId, bool fromServer)
         {
-            if (!fromServer && steamId != 0)
-            {
-                NexusMessage?.Invoke(message);
-                return;
-            }
             switch (message.EventType)
             {
                 case "GlobalChatEvent":
@@ -113,11 +108,16 @@ namespace CrunchGroup.NexusStuff
             try
             {
                 var message = MyAPIGateway.Utilities.SerializeFromBinary<GroupEvent>(data);
-                Handle(message, steamID, fromServer);
+
                 if (!fromServer && steamID != 0 && Core.NexusInstalled)
                 {
+                    NexusMessage?.Invoke(message);
                     Core.Log.Error($"Relaying event to all servers from player");
                     NexusHandler.RaiseEvent(message);
+                }
+                if (fromServer)
+                {
+                    Handle(message, steamID, fromServer);
                 }
             }
             catch (Exception e)
