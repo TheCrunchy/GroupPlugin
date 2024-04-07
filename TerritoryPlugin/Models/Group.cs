@@ -53,7 +53,7 @@ namespace CrunchGroup.Models
 
         public void DeleteGroup()
         {
-            foreach (var member in GroupMembers.ToList())
+            foreach (var member in GroupMembers.Distinct().ToList())
             {
                 RemoveMemberFromGroup(member);
             }
@@ -62,13 +62,19 @@ namespace CrunchGroup.Models
         }
         public void SendGroupMessage(ulong excludeThisPerson, string author, string message)
         {
-            foreach (var id in GroupMembers)
+            foreach (var id in GroupMembers.Distinct())
             {
                 var fac = MySession.Static.Factions.TryGetFactionById(id);
                 if (fac == null) continue;
                 foreach (var member in fac.Members.Values.Select(x => x.PlayerId).Distinct())
                 {
-                    Core.SendChatMessage($"{author}", $"{message}", MySession.Static.Players.TryGetSteamId(member), Color.Yellow);
+                    var steam = MySession.Static.Players.TryGetSteamId(member);
+                    if (steam == 0l)
+                    {
+                        //shit was an NPC
+                        continue;
+                    }
+                    Core.SendChatMessage($"{author}", $"{message}", steam, Color.Yellow);
                 }
             }
         }
@@ -84,7 +90,7 @@ namespace CrunchGroup.Models
             gpsRef.AlwaysVisible = true;
             gpsRef.DiscardAt = TimeSpan.FromSeconds(180);
 
-            foreach (var id in GroupMembers)
+            foreach (var id in GroupMembers.Distinct())
             {
                 var fac = MySession.Static.Factions.TryGetFactionById(id);
                 if (fac == null) continue;
