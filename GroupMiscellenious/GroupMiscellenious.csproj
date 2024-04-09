@@ -89,6 +89,7 @@
   <ItemGroup>
     <Compile Include="Commands\ChatCommands.cs" />
     <Compile Include="Commands\JumpGateCommands.cs" />
+    <Compile Include="HarmonyThing.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Scripts\AutojoinScript.cs" />
     <Compile Include="Scripts\GateScript.cs" />

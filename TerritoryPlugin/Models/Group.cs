@@ -155,7 +155,6 @@ namespace CrunchGroup.Models
                     var fac2 = MySession.Static.Factions.TryGetFactionById(id2);
 
                     if (fac2 == null || fac == fac2) continue;
-                    if (MySession.Static.Factions.AreFactionsFriends(id, id2)) continue;
                     MyAPIGateway.Utilities.InvokeOnGameThread(() =>
                     {
                         MySession.Static.Factions.SetReputationBetweenFactions(id, id2, 1500);
