@@ -157,8 +157,11 @@ namespace CrunchGroup.Models
                         var fac2 = MySession.Static.Factions.TryGetFactionById(id2);
 
                         if (fac2 == null || fac == fac2) continue;
-
-                        MySession.Static.Factions.SetReputationBetweenFactions(id, id2, 1500);
+                        if (!MySession.Static.Factions.AreFactionsFriends(fac2.FactionId, fac.FactionId))
+                        {
+                            MySession.Static.Factions.SetReputationBetweenFactions(id, id2, 1500);
+                        }
+                       
                         DoFriendlyUpdate(id, id2);
                     }
                 }
