@@ -136,32 +136,33 @@ namespace CrunchGroup.Models
         }
         public void ProcessFriendlies()
         {
-            foreach (long id in GroupMembers)
+            MyAPIGateway.Utilities.InvokeOnGameThread(() =>
             {
-                var fac = MySession.Static.Factions.TryGetFactionById(id);
-                if (fac == null) continue;
-                var exclusions = new List<long>();
-                if (FriendlyExclusions.ContainsKey(id))
+                foreach (long id in GroupMembers.Distinct())
                 {
-                    exclusions = FriendlyExclusions[id];
-                }
-
-                foreach (long id2 in GroupMembers)
-                {
-                    if (exclusions.Contains(id2))
+                    var fac = MySession.Static.Factions.TryGetFactionById(id);
+                    if (fac == null) continue;
+                    var exclusions = new List<long>();
+                    if (FriendlyExclusions.ContainsKey(id))
                     {
-                        continue;
+                        exclusions = FriendlyExclusions[id];
                     }
-                    var fac2 = MySession.Static.Factions.TryGetFactionById(id2);
 
-                    if (fac2 == null || fac == fac2) continue;
-                    MyAPIGateway.Utilities.InvokeOnGameThread(() =>
+                    foreach (long id2 in GroupMembers)
                     {
+                        if (exclusions.Contains(id2))
+                        {
+                            continue;
+                        }
+                        var fac2 = MySession.Static.Factions.TryGetFactionById(id2);
+
+                        if (fac2 == null || fac == fac2) continue;
+
                         MySession.Static.Factions.SetReputationBetweenFactions(id, id2, 1500);
                         DoFriendlyUpdate(id, id2);
-                    });
+                    }
                 }
-            }
+            });
         }
 
         public void DoFriendlyUpdate(long firstId, long SecondId)
