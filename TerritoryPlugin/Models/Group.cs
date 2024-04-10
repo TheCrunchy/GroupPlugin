@@ -134,6 +134,8 @@ namespace CrunchGroup.Models
                 Core.SendChatMessage($"{Core.PluginName}", $"You were invited to {GroupName} to accept use !group join {GroupTag} or !group join {GroupName}", MySession.Static.Players.TryGetSteamId(member.Value.PlayerId));
             }
         }
+
+        private List<long> HasDoneFriendly = new List<long>();
         public void ProcessFriendlies()
         {
             MyAPIGateway.Utilities.InvokeOnGameThread(() =>
@@ -160,9 +162,21 @@ namespace CrunchGroup.Models
                         if (!MySession.Static.Factions.AreFactionsFriends(fac2.FactionId, fac.FactionId))
                         {
                             MySession.Static.Factions.SetReputationBetweenFactions(id, id2, 1500);
+                            DoFriendlyUpdate(id, id2);
                         }
-                       
-                        DoFriendlyUpdate(id, id2);
+                        else
+                        {
+                            if (!HasDoneFriendly.Contains(id))
+                            {
+                                DoFriendlyUpdate(id, id2);
+                            }
+                        }
+
+                    }
+
+                    if (!HasDoneFriendly.Contains(id))
+                    {
+                        HasDoneFriendly.Add(id);
                     }
                 }
             });
