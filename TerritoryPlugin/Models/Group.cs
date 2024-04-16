@@ -150,8 +150,13 @@ namespace CrunchGroup.Models
                         exclusions = FriendlyExclusions[id];
                     }
 
-                    foreach (long id2 in GroupMembers)
+                    foreach (long id2 in GroupMembers.Distinct())
                     {
+                        if (id2 == id)
+                        {
+                            continue;
+                        }
+
                         if (exclusions.Contains(id2))
                         {
                             continue;

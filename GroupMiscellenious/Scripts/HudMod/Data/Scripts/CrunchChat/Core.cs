@@ -60,38 +60,46 @@ namespace Crunch
 
         public static bool ProcessClientMessage(string messageText, ulong author)
         {
-       
 
-       
-                if (messageText.ToLower().StartsWith("/gc") || messageText.ToLower().StartsWith("!gc"))
-                {
-                    InGroupChat = !InGroupChat;
-                    MyAPIGateway.Utilities.ShowMessage("Group Chat", $"Toggled group chat to {InGroupChat} use /gc to toggle.");
-                    return true;
-                }
-           
+            if (messageText.ToLower().Trim().Equals("/gc") || messageText.ToLower().Trim().Equals("!gc"))
+            {
+                InGroupChat = !InGroupChat;
+                MyAPIGateway.Utilities.ShowMessage("Group Chat", $"Toggled group chat to {InGroupChat} use /gc to toggle.");
+                return true;
+            }
+
             if (messageText.ToLower().StartsWith("!") || messageText.ToLower().StartsWith("/"))
             {
-                return false;
+                if (!messageText.ToLower().StartsWith("/gc") && !messageText.ToLower().StartsWith("!gc")) return false;
+                SendMessage(messageText, author);
+                return true;
             }
+
             if (InGroupChat)
             {
-                var Event = new GroupEvent();
-                var createdEvent = new GroupChatEvent()
-                {
-                    SenderName = "",
-                    SenderId = (ulong)author,
-                    GroupId = Guid.Empty,
-                    Message = messageText
-                };
-                Event.EventObject = MyAPIGateway.Utilities.SerializeToBinary(createdEvent);
-                Event.EventType = createdEvent.GetType().Name;
-                var message = MyAPIGateway.Utilities.SerializeToBinary<GroupEvent>(Event);
-
-                MyAPIGateway.Multiplayer.SendMessageToServer(4398, message, true);
+                SendMessage(messageText, author);
+                return true;
             }
-            return InGroupChat;
+            return false;
         }
+
+        private static void SendMessage(string messageText, ulong author)
+        {
+            var Event = new GroupEvent();
+            var createdEvent = new GroupChatEvent()
+            {
+                SenderName = "",
+                SenderId = (ulong)author,
+                GroupId = Guid.Empty,
+                Message = messageText
+            };
+            Event.EventObject = MyAPIGateway.Utilities.SerializeToBinary(createdEvent);
+            Event.EventType = createdEvent.GetType().Name;
+            var message = MyAPIGateway.Utilities.SerializeToBinary<GroupEvent>(Event);
+
+            MyAPIGateway.Multiplayer.SendMessageToServer(4398, message, true);
+        }
+
         /*
 		 * BeforeStart
 		 * 
