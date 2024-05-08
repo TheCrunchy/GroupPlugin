@@ -43,11 +43,24 @@ namespace GroupMiscellenious.Scripts
         public static void Patch(PatchContext ctx)
         {
             Core.UpdateCycle += UpdateExample;
+            LoadAllGates();
         }
 
         public static void LoadAllGates()
         {
-
+            var utils = new FileUtils();
+            foreach (var file in Directory.GetFiles($"{Core.path}//JumpGates//"))
+            {
+                try
+                {
+                    var gate = utils.ReadFromXmlFile<JumpGate>(file);
+                    AllGates.Add(gate.GateId, gate);
+                }
+                catch (Exception e)
+                {
+                    Core.Log.Error(e);
+                }
+            }
         }
 
         public static void DoGateLogic()
