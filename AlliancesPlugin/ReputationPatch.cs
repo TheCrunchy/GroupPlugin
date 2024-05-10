@@ -49,42 +49,42 @@ namespace AlliancesPlugin
 
             LogManager.Configuration.Reload();
         }
-        internal static readonly MethodInfo update =
-        typeof(MyFactionCollection).GetMethod("DamageFactionPlayerReputation", BindingFlags.Instance | BindingFlags.Public) ??
-        throw new Exception("Failed to find patch method");
-        internal static readonly MethodInfo updatePatch =
-                typeof(ReputationPatch).GetMethod(nameof(DamageFactionPlayerReputation), BindingFlags.Static | BindingFlags.Public) ??
-                throw new Exception("Failed to find patch method");
-        internal static readonly MethodInfo update2 =
-       typeof(MyFactionCollection).GetMethod("AddFactionPlayerReputation", BindingFlags.Instance | BindingFlags.Public) ??
-       throw new Exception("Failed to find patch method");
-        internal static readonly MethodInfo updatePatch2 =
-                typeof(ReputationPatch).GetMethod(nameof(Log1), BindingFlags.Static | BindingFlags.Public) ??
-                throw new Exception("Failed to find patch method");
+//        internal static readonly MethodInfo update =
+//        typeof(MyFactionCollection).GetMethod("DamageFactionPlayerReputation", BindingFlags.Instance | BindingFlags.Public) ??
+//        throw new Exception("Failed to find patch method");
+//        internal static readonly MethodInfo updatePatch =
+//                typeof(ReputationPatch).GetMethod(nameof(DamageFactionPlayerReputation), BindingFlags.Static | BindingFlags.Public) ??
+//                throw new Exception("Failed to find patch method");
+//        internal static readonly MethodInfo update2 =
+//       typeof(MyFactionCollection).GetMethod("AddFactionPlayerReputation", BindingFlags.Instance | BindingFlags.Public) ??
+//       throw new Exception("Failed to find patch method");
+//        internal static readonly MethodInfo updatePatch2 =
+//                typeof(ReputationPatch).GetMethod(nameof(Log1), BindingFlags.Static | BindingFlags.Public) ??
+//                throw new Exception("Failed to find patch method");
 
-        internal static readonly MethodInfo AddFactionRepSuccess =
-typeof(MyFactionCollection).GetMethod("AddFactionPlayerReputationSuccess", BindingFlags.Static | BindingFlags.NonPublic) ??
-throw new Exception("Failed to find patch method");
-        internal static readonly MethodInfo RepSuccessPatch =
-                typeof(ReputationPatch).GetMethod(nameof(Log3), BindingFlags.Static | BindingFlags.Public) ??
-                throw new Exception("Failed to find patch method");
+//        internal static readonly MethodInfo AddFactionRepSuccess =
+//typeof(MyFactionCollection).GetMethod("AddFactionPlayerReputationSuccess", BindingFlags.Static | BindingFlags.NonPublic) ??
+//throw new Exception("Failed to find patch method");
+//        internal static readonly MethodInfo RepSuccessPatch =
+//                typeof(ReputationPatch).GetMethod(nameof(Log3), BindingFlags.Static | BindingFlags.Public) ??
+//                throw new Exception("Failed to find patch method");
 
 
-        internal static readonly MethodInfo update3 =
-typeof(MyFactionCollection).GetMethod("ChangeReputationWithPlayer", BindingFlags.Instance | BindingFlags.NonPublic) ??
-throw new Exception("Failed to find patch method");
-        internal static readonly MethodInfo updatePatch3 =
-                typeof(ReputationPatch).GetMethod(nameof(Log2), BindingFlags.Static | BindingFlags.Public) ??
-                throw new Exception("Failed to find patch method");
+//        internal static readonly MethodInfo update3 =
+//typeof(MyFactionCollection).GetMethod("ChangeReputationWithPlayer", BindingFlags.Instance | BindingFlags.NonPublic) ??
+//throw new Exception("Failed to find patch method");
+//        internal static readonly MethodInfo updatePatch3 =
+//                typeof(ReputationPatch).GetMethod(nameof(Log2), BindingFlags.Static | BindingFlags.Public) ??
+//                throw new Exception("Failed to find patch method");
 
         public static void Patch(PatchContext ctx)
         {
 
             ApplyLogging();
-            ctx.GetPattern(update).Prefixes.Add(updatePatch);
-            ctx.GetPattern(update2).Prefixes.Add(updatePatch2);
-            ctx.GetPattern(update3).Prefixes.Add(updatePatch3);
-            ctx.GetPattern(AddFactionRepSuccess).Prefixes.Add(RepSuccessPatch);
+            //ctx.GetPattern(update).Prefixes.Add(updatePatch);
+            //ctx.GetPattern(update2).Prefixes.Add(updatePatch2);
+            //ctx.GetPattern(update3).Prefixes.Add(updatePatch3);
+            //ctx.GetPattern(AddFactionRepSuccess).Prefixes.Add(RepSuccessPatch);
         }
         public static void Log1(long playerIdentityId,
       long factionId,
