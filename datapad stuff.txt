@@ -1,0 +1,88 @@
+public static void InitDataPadOnGrid(IMyCubeGrid cubeGrid, string dataPadMessage = "")
+{
+    var gts = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(cubeGrid);
+    if (gts != null)
+    {
+        var cockpits = new List<IMyCockpit>();
+        var containers = new List<IMyCargoContainer>();
+        gts.GetBlocksOfType(cockpits);
+        gts.GetBlocksOfType(containers);
+        List<MyInventory> inventories = new List<MyInventory>();
+
+        foreach (var cockpit in cockpits)
+        {
+            if (cockpit == null) continue;
+
+            var inventory = (MyInventory)cockpit.GetInventory();
+
+            if (inventory == null) continue;
+
+            if (!inventories.Contains(inventory))
+                inventories.Add(inventory);
+        }
+
+        foreach (var container in containers)
+        {
+            if (container == null) continue;
+
+            var inventory = (MyInventory)container.GetInventory();
+
+            if (inventory == null) continue;
+
+            if (!inventories.Contains(inventory))
+                inventories.Add(inventory);
+        }
+
+        foreach (var inventory in inventories)
+        {
+            if (inventory == null) continue;
+
+            var items = inventory.GetItems().ToList();
+
+            foreach (var item in items)
+            {
+                var datapadContent = item.Content as MyObjectBuilder_Datapad;
+
+                if (datapadContent != null && datapadContent.Data == "EMPTYTRADEDATAPAD")
+                {
+                    var closestStationText = "";
+                    var myPosition = cubeGrid.GetPosition();
+
+                    if (dataPadMessage != "")
+                    {
+                        closestStationText = dataPadMessage;
+                    }
+                    else
+                    {
+                        var stationByRange = EconomyConfig.EconomyStations
+                            .OrderBy(s =>
+                                (s.Position - myPosition).LengthSquared())
+                            .FirstOrDefault();
+
+                        if (stationByRange != null)
+                        {
+                            closestStationText += "Trade station near your position: " +
+                                                  stationByRange.StationName;
+                            closestStationText += ". Position: ";
+                            closestStationText += "GPS:" + stationByRange.StationName + ":";
+                            closestStationText += stationByRange.Position.X + ":";
+                            closestStationText += stationByRange.Position.Y + ":";
+                            closestStationText += stationByRange.Position.Z + ":";
+                            closestStationText += "#2AFF00:";
+                        }
+                    }
+
+                    inventory.ModifyDatapad(0, item.ItemId, "Trade Station", closestStationText);
+
+                    return;
+                }
+            }
+        }
+    }
+}
+
+// add single datapad
+var datapadBuilder = new MyObjectBuilder_Datapad() { SubtypeName = "Datapad" };
+datapadBuilder.Data = "EMPTYTRADEDATAPAD";
+block.GetInventory().AddItems(1, datapadBuilder);
+InitDataPadOnGrid(grid);
