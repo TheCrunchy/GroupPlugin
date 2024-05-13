@@ -22,7 +22,7 @@ namespace AlliancesPlugin.KOTH
     public static class SlimBlockPatch
     {
         internal static readonly MethodInfo DamageRequest =
-typeof(MySlimBlock).GetMethod("DoDamage", BindingFlags.Instance | BindingFlags.Public, null, new Type[] { typeof(float), typeof(MyStringHash), typeof(bool), typeof(MyHitInfo?), typeof(long), typeof(long), typeof(bool) }, null) ??
+typeof(MySlimBlock).GetMethod("DoDamage", BindingFlags.Instance | BindingFlags.Public, null, new Type[] { typeof(float), typeof(MyStringHash), typeof(bool), typeof(MyHitInfo?), typeof(long), typeof(long), typeof(bool), typeof(MyStringHash?) }, null) ??
 throw new Exception("Failed to find patch method");
         internal static readonly MethodInfo patchSlimDamage =
         typeof(SlimBlockPatch).GetMethod(nameof(OnDamageRequest), BindingFlags.Static | BindingFlags.Public) ??
@@ -61,7 +61,7 @@ throw new Exception("Failed to find patch method");
       MyStringHash damageType,
       bool sync,
       MyHitInfo? hitInfo,
-      long attackerId, long realHitEntityId = 0, bool shouldDetonateAmmo = true)
+      long attackerId, long realHitEntityId = 0, bool shouldDetonateAmmo = true, MyStringHash? extraInfo = null)
         {
             //  MySlimBlock block = __instance;
             if (AlliancePlugin.config == null) return true;
