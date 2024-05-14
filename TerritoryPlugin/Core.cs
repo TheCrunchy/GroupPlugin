@@ -74,7 +74,8 @@ namespace CrunchGroup
             }
         }
 
-        public static string PluginName = "Groups";
+        public const string PluginName = "Groups";
+        public const string PluginCommandPrefix = "group";
 
         public static Random random = new Random();
 
