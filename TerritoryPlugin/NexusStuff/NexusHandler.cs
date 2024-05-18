@@ -109,10 +109,10 @@ namespace CrunchGroup.NexusStuff
             {
                 var message = MyAPIGateway.Utilities.SerializeFromBinary<GroupEvent>(data);
 
-                if (!fromServer && steamID != 0 && Core.NexusInstalled)
+                if (!fromServer && steamID != 0)
                 {
-                    NexusMessage?.Invoke(message);
-                    Core.Log.Error($"Relaying event to all servers from player");
+                  
+                    Core.Log.Error($"Relaying event to all servers from player {steamID}");
                     NexusHandler.RaiseEvent(message);
                 }
                 if (fromServer)
