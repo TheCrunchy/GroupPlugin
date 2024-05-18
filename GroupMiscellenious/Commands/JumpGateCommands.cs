@@ -69,7 +69,6 @@ namespace GroupMiscellenious.Commands
                 gate.SafeZoneEntityId = ent.EntityId;
             }
             gate.Save();
-            GateScript.AllGates.Add(gate.GateId, gate);
             Context.Respond("Gate created. To link to another gate use !jumpgate link gateName targetName");
             Context.Respond("Entry radius " + gate.RadiusToJump);
         }

@@ -33,7 +33,7 @@ namespace GroupMiscellenious.Scripts
         public static void UpdateExample()
         {
             ticks++;
-            if (ticks % 128 == 0)
+            if (ticks % 32 == 0)
             {
                 DoGateLogic();
             }
@@ -49,6 +49,7 @@ namespace GroupMiscellenious.Scripts
         public static void LoadAllGates()
         {
             var utils = new FileUtils();
+            Directory.CreateDirectory($"{Core.path}//JumpGates//");
             foreach (var file in Directory.GetFiles($"{Core.path}//JumpGates//"))
             {
                 try
@@ -297,8 +298,6 @@ public class JumpGate
     public bool RequirePilot = true;
     public bool CanJumpFrom = true;
     public string WorldName = "";
-    public Boolean RequireDrive = true;
-    public Boolean UseSafeZones = true;
     public long SafeZoneEntityId = 1;
     public Boolean GeneratedZone2 = false;
     public Guid TargetGateId;
@@ -307,33 +306,16 @@ public class JumpGate
     public Boolean Enabled = true;
     public int RadiusToJump = 75;
     private FileUtils utils = new FileUtils();
-    public Guid OwnerAlliance;
-    public string LinkedKoth = "";
     public long fee = 0;
-    public long upkeep = 100000000;
-    public Boolean CanBeRented = false;
-    public int MetaPointRentCost = 100;
-    public DateTime NextRentAvailable = DateTime.Now;
-    public int DaysPerRent = 7;
     public void Save()
     {
         utils.WriteToXmlFile<JumpGate>($"{Core.path}//JumpGates//{GateId}.xml", this);
         GateScript.AllGates[this.GateId] = this;
     }
+
     public void Delete()
     {
         File.Delete($"{Core.path}//JumpGates//{GateId}.xml");
-    }
-
-    public Boolean itemCostsForUse = false;
-    public List<ItemCost> itemCostsList = new List<ItemCost>();
-
-    public class ItemCost
-    {
-        public int BaseItemAmount = 100;
-        public int BlockCountDivision = 1000;
-        public string TypeId = "Ore";
-        public string SubTypeId = "Iron";
     }
 }
 
