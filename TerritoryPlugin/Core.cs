@@ -544,6 +544,11 @@ namespace CrunchGroup
 
         public static Dictionary<Guid, Territories.Models.Territory> Territories = new Dictionary<Guid, Territories.Models.Territory>();
 
+        public static List<Territory> GetAllTerritories()
+        {
+            return Territories.Values.ToList();
+        }
+
 
         public static DateTime chat = DateTime.Now;
 
