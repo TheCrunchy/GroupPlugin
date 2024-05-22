@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using CrunchGroup.Handlers;
 using CrunchGroup.Models.Events;
 using Sandbox.ModAPI;
@@ -11,8 +13,14 @@ namespace CrunchGroup.NexusStuff
     public static class NexusHandler
     {
         public static Action<GroupEvent> NexusMessage { get; set; }
-        public static Action<GroupEvent, bool> FromServerNexusMessage { get; set; }
 
+        public static HashSet<string> RestrictedEvents = new HashSet<string>();
+
+        public static void Setup()
+        {
+            RestrictedEvents = GetClassNamesInNamespace("CrunchGroup.Models.Events");
+            Core.Log.Info($"Restricting {string.Join(",", RestrictedEvents)}");
+        }
         public static void RaiseEvent(GroupEvent groupEvent)
         {
             if (Core.NexusInstalled)
@@ -119,14 +127,18 @@ namespace CrunchGroup.NexusStuff
 
                 if (!fromServer && steamID != 0)
                 {
-                  
+
                     Core.Log.Error($"Relaying event to all servers from player {steamID}");
+                    if (RestrictedEvents.Contains(message.EventType))
+                    {
+                        return;
+                    }
                     NexusHandler.RaiseEvent(message);
                     if (Core.NexusInstalled)
                     {
                         Handle(message, steamID, false);
                     }
-                
+
                 }
                 if (fromServer)
                 {
@@ -139,6 +151,26 @@ namespace CrunchGroup.NexusStuff
                 throw;
             }
             //Core.Log.Info("Handled a nexus event");
+        }
+
+        public static HashSet<string> GetClassNamesInNamespace(string namespaceName)
+        {
+            // Get the assembly containing the namespace
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            // Use a HashSet to store unique class names
+            HashSet<string> classNames = new HashSet<string>();
+
+            // Iterate through all types in the assembly
+            foreach (Type type in assembly.GetTypes())
+            {
+                // Check if the type is a class and belongs to the specified namespace
+                if (type.IsClass && type.Namespace == namespaceName)
+                {
+                    classNames.Add(type.Name);
+                }
+            }
+
+            return classNames;
         }
     }
 }

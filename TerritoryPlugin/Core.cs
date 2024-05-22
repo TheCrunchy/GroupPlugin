@@ -324,6 +324,7 @@ namespace CrunchGroup
             }
 
             if (state != TorchSessionState.Loaded) return;
+            NexusHandler.Setup();
             SetupFriendMethod();
             Storage.SetupStorage();
             Directory.CreateDirectory($"{path}//Territories//");
@@ -559,8 +560,10 @@ namespace CrunchGroup
 
                 if (!InitPlugins)
                 {
+                  
                     InitPlugins = true;
                     InitPluginDependencies(Torch.Managers.GetManager<PluginManager>(), Torch.Managers.GetManager<PatchManager>());
+
                 }
 
                 if (ticks % 60 == 0)
