@@ -11,7 +11,7 @@ namespace CrunchGroup.Territories.Models
         public double PercentOwned = 1;
         public double PercentRequiredToOwn = 0.75;
         public string WorldName = "default";
-        public int RadiusDistance = 10000;
+        public long RadiusDistance = 10000;
         public Guid Id = System.Guid.NewGuid();
         public string Name = "Example";
         public bool Enabled = false;

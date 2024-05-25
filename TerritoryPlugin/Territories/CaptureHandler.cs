@@ -94,6 +94,7 @@ namespace CrunchGroup.Territories
 
             foreach (var ter in Core.Territories.Where(x => TerritoriesToRecalc.Contains(x.Value.Id)).Select(x => x.Value))
             {
+                ter.RandomJsonStuff["OwnershipChanged"] = "true";
                 var temp = new Dictionary<Object, int>();
                 foreach (var point in ter.CapturePoints)
                 {
