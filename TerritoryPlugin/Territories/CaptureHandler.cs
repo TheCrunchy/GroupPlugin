@@ -242,7 +242,10 @@ namespace CrunchGroup.Territories
                 var utf8 = Encoding.UTF8.GetBytes(payload);
                 try
                 {
-                    client.UploadData(ter.DiscordWebhook, utf8);
+                    if (!string.IsNullOrWhiteSpace(ter.DiscordWebhook) && ter.DiscordWebhook != "https://discord.com/api/webhooks/1110180136118132827/DpKhjeIFUxwJqw8r1piKs0fnJ4HZCg4EcHiSCvzlHT0szKptgSoZNVHym7KdN8FjxKbc")
+                    {
+                        client.UploadData(ter.DiscordWebhook, utf8);
+                    }
                 }
                 catch (Exception e)
                 {
