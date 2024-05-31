@@ -17,7 +17,7 @@ namespace CrunchGroup.Territories.Models
         public bool Enabled = false;
         public List<ICapLogic> CapturePoints = new List<ICapLogic>();
         public Vector3D Position;
-        public string DiscordWebhook = "https://discord.com/api/webhooks/1110180136118132827/DpKhjeIFUxwJqw8r1piKs0fnJ4HZCg4EcHiSCvzlHT0szKptgSoZNVHym7KdN8FjxKbc";
+        public string DiscordWebhook = "";
         public string EmbedColorString = "5763719";
         public List<ISecondaryLogic> SecondaryLogics = new List<ISecondaryLogic>();
         public Dictionary<string, string> RandomJsonStuff = new Dictionary<string, string>();

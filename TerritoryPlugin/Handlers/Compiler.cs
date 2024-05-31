@@ -12,6 +12,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Sandbox.ModAPI;
 using Torch.API.Managers;
 using Torch.Commands;
+using Torch.Managers;
 using Torch.Managers.PatchManager;
 using Torch.Utils;
 
@@ -40,9 +41,9 @@ namespace CrunchGroup.Handlers
                 }
             }
 
-            var folder = Core.basePath.Replace(@"\Instance", "");
-
-            var plugins = $"{folder}/plugins/CrunchGroupPlugin.zip";
+            var pluginManager = Core.Session.Managers.GetManager<PluginManager>();
+            var folder = pluginManager.PluginDir;
+            var plugins = $"{folder}/CrunchGroupPlugin.zip";
             using (var zip = ZipFile.OpenRead(plugins))
             {
                 foreach (var entry in zip.Entries)

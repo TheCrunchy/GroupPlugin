@@ -20,7 +20,7 @@ namespace CrunchGroup.Territories
     public static class CaptureHandler
     {
         public static List<long> TrackedSafeZoneIds = new List<long>();
-        public static async Task DoCaps()
+        public static Task DoCaps()
         {
             List<Guid> TerritoriesToRecalc = new List<Guid>();
             foreach (var territory in Core.Territories)
@@ -31,8 +31,8 @@ namespace CrunchGroup.Territories
                     {
                         try
                         {
-                            var result = await item.DoSecondaryLogic(new FactionGridCapLogic(), territory.Value);
-                            if (!result)
+                            var result = item.DoSecondaryLogic(new FactionGridCapLogic(), territory.Value);
+                            if (!result.Result)
                             {
                                 break;
                             }
@@ -51,8 +51,8 @@ namespace CrunchGroup.Territories
 
                     try
                     {
-                        var capResult = await CapLogic.ProcessCap(point, territory.Value);
-                        if (capResult.Item1)
+                        var capResult = CapLogic.ProcessCap(point, territory.Value);
+                        if (capResult.Result.Item1)
                         {
                             if (!TerritoriesToRecalc.Contains(territory.Value.Id))
                             {
@@ -77,8 +77,8 @@ namespace CrunchGroup.Territories
                     {
                         try
                         {
-                            var result = await item.DoSecondaryLogic(CapLogic, territory.Value);
-                            if (!result)
+                            var result = item.DoSecondaryLogic(CapLogic, territory.Value);
+                            if (!result.Result)
                             {
                                 break;
                             }
@@ -123,7 +123,7 @@ namespace CrunchGroup.Territories
                     switch (max.Key)
                     {
                         case long facId:
-                            await TransferOwnershipToFaction(facId, ter);
+                            TransferOwnershipToFaction(facId, ter);
                             break;
                     }
                 }
@@ -134,9 +134,10 @@ namespace CrunchGroup.Territories
 
                 //recalc ownership here
             }
+            return Task.CompletedTask;
         }
 
-        public static async Task TransferOwnershipToFaction(long factionId, Models.Territory ter)
+        public static Task TransferOwnershipToFaction(long factionId, Models.Territory ter)
         {
             var faction = MySession.Static.Factions.TryGetFactionById(factionId);
             SendMessage("Territory has been captured.", $"{ter.Name} captured by the faction {faction.Name}.", ter, ter.Owner);
@@ -144,7 +145,12 @@ namespace CrunchGroup.Territories
             {
                 FactionId = factionId
             };
-            Core.utils.WriteToJsonFile<Models.Territory>(Core.path + "//Territories//" + ter.Name + ".json", ter);
+            Task.Run(() =>
+            {
+                Core.utils.WriteToJsonFile<Models.Territory>(Core.path + "//Territories//" + ter.Name + ".json", ter);
+            });
+
+            return Task.CompletedTask;
         }
 
         public static void SendRadarMessage(Object owner, String message)
@@ -169,25 +175,27 @@ namespace CrunchGroup.Territories
             var utf8 = Encoding.UTF8.GetBytes(payload);
             try
             {
-
-                switch (owner)
+                Task.Run(() =>
                 {
-                    case IMyFaction faction:
-                        {
-                            Core.Log.Error($"Radar not implemented for factions");
-                        }
-                        break;
-                    case Group group:
-                        {
-                            if (!string.IsNullOrWhiteSpace(group.DiscordWebhook))
+                    switch (owner)
+                    {
+                        case IMyFaction faction:
                             {
-                                var client2 = new WebClient();
-                                client2.Headers.Add("Content-Type", "application/json");
-                                client2.UploadData(group.DiscordWebhook, utf8);
+                                Core.Log.Error($"Radar not implemented for factions");
                             }
-                        }
-                        break;
-                }
+                            break;
+                        case Group group:
+                            {
+                                if (!string.IsNullOrWhiteSpace(group.DiscordWebhook))
+                                {
+                                    var client2 = new WebClient();
+                                    client2.Headers.Add("Content-Type", "application/json");
+                                    client2.UploadData(group.DiscordWebhook, utf8);
+                                }
+                            }
+                            break;
+                    }
+                });
             }
             catch (Exception e)
             {
@@ -228,46 +236,47 @@ namespace CrunchGroup.Territories
                     }
             }
             );
-
             var payload = payloadJson;
-
-            var utf8 = Encoding.UTF8.GetBytes(payload);
-            try
+            Task.Run(() =>
             {
-                client.UploadData(ter.DiscordWebhook, utf8);
-            }
-            catch (Exception e)
-            {
-                Core.Log.Error($"Grid Cap Discord webhook error, {e}");
-            }
-
-            if (owner == null) return;
-
-            try
-            {
-                var ownerobj = owner.GetOwner();
-                if (ownerobj == null) return;
-                switch (ownerobj)
+                var utf8 = Encoding.UTF8.GetBytes(payload);
+                try
                 {
-                    case Group group:
-                        {
-                            var temp = group;
-                            if (!string.IsNullOrWhiteSpace(temp.DiscordWebhook))
-                            {
-                                var client2 = new WebClient();
-                                client2.Headers.Add("Content-Type", "application/json");
-                                client2.UploadData(temp.DiscordWebhook, utf8);
-                            }
-
-                            break;
-                        }
+                    client.UploadData(ter.DiscordWebhook, utf8);
+                }
+                catch (Exception e)
+                {
+                    Core.Log.Error($"Grid Cap Discord webhook error, {e}");
                 }
 
-            }
-            catch (Exception e)
-            {
-                Core.Log.Error($"Group Discord webhook error, {e}");
-            }
+                if (owner == null) return;
+
+                try
+                {
+                    var ownerobj = owner.GetOwner();
+                    if (ownerobj == null) return;
+                    switch (ownerobj)
+                    {
+                        case Group group:
+                            {
+                                var temp = group;
+                                if (!string.IsNullOrWhiteSpace(temp.DiscordWebhook))
+                                {
+                                    var client2 = new WebClient();
+                                    client2.Headers.Add("Content-Type", "application/json");
+                                    client2.UploadData(temp.DiscordWebhook, utf8);
+                                }
+
+                                break;
+                            }
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    Core.Log.Error($"Group Discord webhook error, {e}");
+                }
+            });
 
         }
 

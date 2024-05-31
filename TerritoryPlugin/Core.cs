@@ -582,8 +582,8 @@ namespace CrunchGroup
                         Core.Log.Error($"Error in group loop { e.ToString()}");
                     }
                     try
-                    {
-                        await CaptureHandler.DoCaps();
+                    { 
+                        CaptureHandler.DoCaps();
                     }
                     catch (Exception e)
                     {
