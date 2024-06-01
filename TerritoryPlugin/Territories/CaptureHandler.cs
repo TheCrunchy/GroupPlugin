@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using CrunchGroup.Handlers;
 using CrunchGroup.Models;
 using CrunchGroup.Models.Events;
 using CrunchGroup.NexusStuff;
@@ -106,6 +107,13 @@ namespace CrunchGroup.Territories
                         case FactionPointOwner faction:
                             temp.Add(faction.FactionId, 1);
                             break;
+
+                        case GroupPointOwner group when temp.ContainsKey(group.GroupId):
+                            temp[group.GroupId] += 1;
+                            break;
+                        case GroupPointOwner group:
+                            temp.Add(group.GroupId, 1);
+                            break;
                     }
                 }
 
@@ -124,6 +132,9 @@ namespace CrunchGroup.Territories
                     {
                         case long facId:
                             TransferOwnershipToFaction(facId, ter);
+                            break;
+                        case Guid groupId:
+                            TransferOwnershipToGroup(groupId, ter);
                             break;
                     }
                 }
@@ -144,6 +155,22 @@ namespace CrunchGroup.Territories
             ter.Owner = new FactionPointOwner()
             {
                 FactionId = factionId
+            };
+            Task.Run(() =>
+            {
+                Core.utils.WriteToJsonFile<Models.Territory>(Core.path + "//Territories//" + ter.Name + ".json", ter);
+            });
+
+            return Task.CompletedTask;
+        }
+
+        public static Task TransferOwnershipToGroup(Guid groupId, Models.Territory ter)
+        {
+            var group = GroupHandler.GetGroupById(groupId);
+            SendMessage("Territory has been captured.", $"{ter.Name} captured by the {Core.PluginCommandPrefix} {group.GroupName}.", ter, ter.Owner);
+            ter.Owner = new GroupPointOwner()
+            {
+                GroupId = groupId
             };
             Task.Run(() =>
             {
