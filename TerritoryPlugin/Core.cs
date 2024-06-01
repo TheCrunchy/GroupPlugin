@@ -132,7 +132,7 @@ namespace CrunchGroup
                         $"{PluginName}"
                     });
                     API = new NexusAPI(4398);
-                
+
                     NexusInstalled = true;
                 }
             }
@@ -304,7 +304,7 @@ namespace CrunchGroup
         }
         public static Boolean Debug = false;
 
-
+        public static bool CompileFailed = false;
         public static Random rand = new Random();
         private void SessionChanged(ITorchSession session, TorchSessionState state)
         {
@@ -406,6 +406,7 @@ namespace CrunchGroup
             {
                 Core.Log.Error($"compile error {e}");
             }
+
             LoadAllTerritories();
         }
 
@@ -471,6 +472,12 @@ namespace CrunchGroup
 
         public static void LoadAllTerritories()
         {
+            if (CompileFailed)
+            {
+                Core.Log.Info("Compile failed, territories cannot be loaded.");
+                return;
+            }
+
             Territories.Clear();
             var jsonStuff = new FileUtils();
             foreach (var s in Directory.GetFiles(path + "//Territories//"))
@@ -555,7 +562,7 @@ namespace CrunchGroup
 
         private FileUtils jsonStuff = new FileUtils();
         DateTime NextSave = DateTime.Now;
-        public override async void Update()
+        public override void Update()
         {
             ticks++;
 
@@ -565,7 +572,7 @@ namespace CrunchGroup
 
                 if (!InitPlugins)
                 {
-                  
+
                     InitPlugins = true;
                     InitPluginDependencies(Torch.Managers.GetManager<PluginManager>(), Torch.Managers.GetManager<PatchManager>());
 
@@ -582,7 +589,7 @@ namespace CrunchGroup
                         Core.Log.Error($"Error in group loop { e.ToString()}");
                     }
                     try
-                    { 
+                    {
                         CaptureHandler.DoCaps();
                     }
                     catch (Exception e)

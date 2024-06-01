@@ -22,5 +22,8 @@ namespace CrunchGroup.Models.Events
 
         [ProtoMember(5)]
         public Color Color { get; set; }
+
+        [ProtoMember(6)]
+        public int ExpireAfter { get; set; }
     }
 }

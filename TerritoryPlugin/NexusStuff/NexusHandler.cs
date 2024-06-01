@@ -56,7 +56,7 @@ namespace CrunchGroup.NexusStuff
                             {
                                 return;
                             }
-                            group.SendGroupSignal(ev.Position, ev.Name, ev.Color);
+                            group.SendGroupSignal(ev.Position, ev.Name, ev.Color, ev.ExpireAfter);
                             break;
                         }
                     case "GroupCreatedEvent":

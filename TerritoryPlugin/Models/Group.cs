@@ -83,7 +83,7 @@ namespace CrunchGroup.Models
             SendGroupSignal(Position, $"Distress Signal {DateTime.Now:HH-mm-tt}", Color.Yellow);
         }
 
-        public void SendGroupSignal(Vector3 Position, string name, Color color)
+        public void SendGroupSignal(Vector3 Position, string name, Color color, int expireAfter = 180)
         {
             MyGpsCollection gpscol = (MyGpsCollection)MyAPIGateway.Session?.GPS;
             StringBuilder sb = new StringBuilder();
@@ -93,7 +93,7 @@ namespace CrunchGroup.Models
             gpsRef.GPSColor = color;
             gpsRef.ShowOnHud = true;
             gpsRef.AlwaysVisible = true;
-            gpsRef.DiscardAt = TimeSpan.FromSeconds(180);
+            gpsRef.DiscardAt = TimeSpan.FromSeconds(expireAfter);
 
             foreach (var id in GroupMembers)
             {

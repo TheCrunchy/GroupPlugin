@@ -141,6 +141,7 @@ namespace CrunchGroup.Handlers
                         {
                             commands.RegisterCommandModule(obj);
                         }
+                        Core.CompileFailed = false;
                     }
                     catch (Exception e)
                     {
@@ -150,6 +151,7 @@ namespace CrunchGroup.Handlers
                 }
                 else
                 {
+                    Core.CompileFailed = true;
                     Console.WriteLine("Compilation failed:");
                     foreach (var diagnostic in result.Diagnostics)
                     {
