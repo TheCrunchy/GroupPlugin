@@ -5,6 +5,7 @@ using NLog;
 using Sandbox;
 using Sandbox.Common.ObjectBuilders;
 using Sandbox.Game.Entities;
+using Sandbox.Game.Entities.Blocks;
 using Sandbox.Game.Multiplayer;
 using Sandbox.Game.Screens.Helpers;
 using Sandbox.Game.World;
@@ -13,6 +14,7 @@ using Torch.Commands;
 using VRage;
 using VRage.Game;
 using VRage.Game.Entity;
+using VRage.ModAPI;
 using VRage.ObjectBuilders;
 using VRage.ObjectBuilders.Private;
 using VRageMath;
@@ -404,6 +406,41 @@ namespace CrunchGroup
             //    MyEntities.Load(objectBuilderList, out _);
             //}
             return gridIds;
+        }
+
+        public static List<MyCubeGrid> LoadFromProjector(MyProjectorBase projector, ulong steamID)
+        {
+            MyObjectBuilder_CubeGrid projectedGrid = (MyObjectBuilder_CubeGrid)projector.ProjectedGrid.GetObjectBuilder();
+
+            // Make a clone of the object builder to modify before pasting
+            MyObjectBuilder_CubeGrid gridToPaste = projectedGrid.Clone() as MyObjectBuilder_CubeGrid;
+            foreach (MyObjectBuilder_CubeBlock block in gridToPaste.CubeBlocks)
+            {
+                try
+                {
+                    long ownerID = IdentityHelper.GetIdentityByNameOrId(steamID.ToString()).IdentityId;
+                    block.Owner = ownerID;
+                    block.BuiltBy = ownerID;
+                }
+                catch (Exception)
+                {
+                    return new List<MyCubeGrid>();
+                }
+            }
+            // Optionally, modify the gridToPaste as needed, for example, set the position
+            gridToPaste.PositionAndOrientation = projectedGrid.PositionAndOrientation.Value;
+
+            // Convert object builder to entity and add it to the world
+            MyAPIGateway.Entities.RemapObjectBuilder(gridToPaste); // Remap to avoid conflicts
+            MyCubeGrid newEntity = (MyCubeGrid)MyAPIGateway.Entities.CreateFromObjectBuilderAndAdd(gridToPaste);
+
+            if (newEntity != null)
+            {
+                // Successfully added the grid to the world
+                MyAPIGateway.Entities.AddEntity(newEntity);
+            }
+
+            return new List<MyCubeGrid>(){newEntity};
         }
 
         private static MyGps CreateGps(Vector3D Position, Color gpsColor, int seconds, string Name)
