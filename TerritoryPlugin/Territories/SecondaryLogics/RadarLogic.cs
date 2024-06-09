@@ -85,6 +85,11 @@ namespace CrunchGroup.Territories.SecondaryLogics
         {
             var gridOwner = FacUtils.GetOwner(grid);
             var fac = FacUtils.GetPlayersFaction(gridOwner);
+            var distance = Vector3.Distance(this.RadarCentre, grid.PositionComp.GetPosition());
+            if (distance > this.Distance)
+            {
+                return false;
+            }
             if (fac == null)
             {
                 return true;
@@ -131,7 +136,7 @@ namespace CrunchGroup.Territories.SecondaryLogics
         {
             FoundGrids.Clear();
             //  GroupPlugin.Log.Info("grid 1");
-            var sphere = new BoundingSphereD(RadarCentre, Distance * 2);
+            var sphere = new BoundingSphereD(RadarCentre, Distance);
             foreach (var grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>().Where(x => x.Projector == null && x.BlocksCount >= MinimumBlocksToHit))
             {
                 //       GroupPlugin.Log.Info("grid 2");

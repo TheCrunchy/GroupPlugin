@@ -602,7 +602,11 @@ namespace CrunchGroup
                         NextSave = DateTime.Now.AddMinutes(5);
                         foreach (var ter in Territories)
                         {
-                            Core.utils.WriteToJsonFile<Territories.Models.Territory>(Core.path + "//Territories//" + ter.Value.Name + ".json", ter.Value);
+                            Task.Run(() =>
+                            {
+                                Core.utils.WriteToJsonFile<Territories.Models.Territory>(
+                                    Core.path + "//Territories//" + ter.Value.Name + ".json", ter.Value);
+                            });
                         }
                     }
                 }

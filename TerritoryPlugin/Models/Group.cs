@@ -44,6 +44,10 @@ namespace CrunchGroup.Models
             foreach (var fac in GroupMembers)
             {
                 var faction = MySession.Static.Factions.TryGetFactionById(fac);
+                if (faction == null)
+                {
+                    continue;
+                }
                 foreach (var member in faction.Members.Values.Select(x => x.PlayerId).Distinct())
                 {
                     Core.SendChatMessage($"{Core.PluginName}", $"{newfac.Name} {newfac.Tag} Has joined the group!", MySession.Static.Players.TryGetSteamId(member));
@@ -101,7 +105,7 @@ namespace CrunchGroup.Models
                 if (fac == null) continue;
                 foreach (var member in fac.Members.Values.Select(x => x.PlayerId).Distinct())
                 {
-                    gpscol.SendAddGpsRequest(member, ref gpsRef);
+                    gpscol.SendAddGpsRequest(member, ref gpsRef, playSoundOnCreation:false);
                 }
             }
         }
