@@ -275,7 +275,7 @@ namespace CrunchGroup.Commands
         }
 
         [Command("getpoints", "get capture point gpses for a territory")]
-        [Permission(MyPromoteLevel.Admin)]
+        [Permission(MyPromoteLevel.None)]
         public void GetPoints(string name)
         {
             var configs = new List<Type>();
