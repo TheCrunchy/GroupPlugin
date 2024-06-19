@@ -279,7 +279,7 @@ namespace CrunchGroup.Commands
         public void GetPoints(string name)
         {
             var configs = new List<Type>();
-            var territory = Core.Territories.FirstOrDefault(x => x.Value.Name == name).Value;
+            var territory = Core.Territories.FirstOrDefault(x => String.Equals(x.Value.Name, name, StringComparison.CurrentCultureIgnoreCase)).Value;
             if (territory == null)
             {
                 Context.Respond($"{name} not found");
