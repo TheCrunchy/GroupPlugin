@@ -106,6 +106,7 @@ namespace CrunchGroup.Territories
                     {
                         case FactionPointOwner faction when temp.ContainsKey(faction.FactionId):
                             temp[faction.FactionId] += 1;
+
                             break;
                         case FactionPointOwner faction:
                             temp.Add(faction.FactionId, 1);
@@ -123,9 +124,8 @@ namespace CrunchGroup.Territories
                 if (temp.Any())
                 {
                     var max = temp.OrderByDescending(x => x.Value).First();
-
-                    var ownedPercent = max.Value / ter.CapturePoints.Count * 100;
-                    if (ownedPercent < ter.PercentRequiredToOwn)
+                    decimal ownedPercent = max.Value / ter.CapturePoints.Count;
+                    if (ownedPercent < (decimal) ter.PercentRequiredToOwn)
                     {
                         ter.Owner = null;
                         continue;
@@ -166,7 +166,6 @@ namespace CrunchGroup.Territories
 
         public static Task TransferOwnershipToFaction(long factionId, Models.Territory ter)
         {
-            SaveThese.Add(ter.Id);
             var faction = MySession.Static.Factions.TryGetFactionById(factionId);
             SendMessage("Territory has been captured.", $"{ter.Name} captured by the faction {faction.Name}.", ter, ter.Owner);
             ter.Owner = new FactionPointOwner()
@@ -183,7 +182,6 @@ namespace CrunchGroup.Territories
 
         public static Task TransferOwnershipToGroup(Guid groupId, Models.Territory ter)
         {
-            SaveThese.Add(ter.Id);
             var group = GroupHandler.GetGroupById(groupId);
             SendMessage("Territory has been captured.", $"{ter.Name} captured by the {Core.PluginCommandPrefix} {group.GroupName}.", ter, ter.Owner);
             ter.Owner = new GroupPointOwner()
