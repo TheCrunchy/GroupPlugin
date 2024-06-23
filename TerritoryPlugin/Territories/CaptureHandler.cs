@@ -124,7 +124,8 @@ namespace CrunchGroup.Territories
                 if (temp.Any())
                 {
                     var max = temp.OrderByDescending(x => x.Value).First();
-                    decimal ownedPercent = max.Value / ter.CapturePoints.Count;
+                    decimal ownedPercent = (decimal)max.Value / (decimal)ter.CapturePoints.Count;
+              //      Core.Log.Info($"{ownedPercent}");
                     if (ownedPercent < (decimal) ter.PercentRequiredToOwn)
                     {
                         ter.Owner = null;
