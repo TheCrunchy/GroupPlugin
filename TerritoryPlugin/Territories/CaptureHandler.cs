@@ -21,6 +21,9 @@ namespace CrunchGroup.Territories
     public static class CaptureHandler
     {
         public static List<long> TrackedSafeZoneIds = new List<long>();
+
+        public static List<Guid> SaveThese = new List<Guid>();
+
         public static Task DoCaps()
         {
             List<Guid> TerritoriesToRecalc = new List<Guid>();
@@ -145,11 +148,25 @@ namespace CrunchGroup.Territories
 
                 //recalc ownership here
             }
+
+            foreach (var territory in SaveThese.Distinct())
+            {
+                if (Core.Territories.TryGetValue(territory, out var ter))
+                {
+                    Task.Run(() =>
+                    {
+                        Core.utils.WriteToJsonFile<Territories.Models.Territory>(
+                            Core.path + "//Territories//" + ter.Name + ".json", ter);
+                    });
+                }
+            }
+
             return Task.CompletedTask;
         }
 
         public static Task TransferOwnershipToFaction(long factionId, Models.Territory ter)
         {
+            SaveThese.Add(ter.Id);
             var faction = MySession.Static.Factions.TryGetFactionById(factionId);
             SendMessage("Territory has been captured.", $"{ter.Name} captured by the faction {faction.Name}.", ter, ter.Owner);
             ter.Owner = new FactionPointOwner()
@@ -166,6 +183,7 @@ namespace CrunchGroup.Territories
 
         public static Task TransferOwnershipToGroup(Guid groupId, Models.Territory ter)
         {
+            SaveThese.Add(ter.Id);
             var group = GroupHandler.GetGroupById(groupId);
             SendMessage("Territory has been captured.", $"{ter.Name} captured by the {Core.PluginCommandPrefix} {group.GroupName}.", ter, ter.Owner);
             ter.Owner = new GroupPointOwner()
