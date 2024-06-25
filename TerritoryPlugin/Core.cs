@@ -504,7 +504,7 @@ namespace CrunchGroup
                         continue;
                     }
                     Territories.Add(ter.Id, ter);
-
+            
                 }
                 catch (Exception ex)
                 {
@@ -512,8 +512,52 @@ namespace CrunchGroup
                     Log.Info(ex);
                 }
             }
+            AttachFileWatcher(path + "//Territories//");
 
         }
+        private static Dictionary<string, FileSystemWatcher> watchers = new Dictionary<string, FileSystemWatcher>();
+        private static void AttachFileWatcher(string filePath)
+        {
+            if (watchers.ContainsKey(filePath))
+                return;
+
+            var watcher = new FileSystemWatcher(filePath)
+            {
+                Filter = filePath,
+                NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.Size
+            };
+
+            watcher.Changed += (sender, e) => OnFileChanged(filePath);
+            watcher.Created += (sender, e) => OnFileChanged(filePath);
+            watcher.EnableRaisingEvents = true;
+            watchers.Add(filePath, watcher);
+        }
+        private static void OnFileChanged(string filePath)
+        {
+            try
+            {
+                var jsonStuff = new FileUtils();
+                var ter = jsonStuff.ReadFromJsonFile<Territory>(filePath);
+                if (!ter.Enabled)
+                {
+                    if (Territories.ContainsKey(ter.Id))
+                    {
+                        Territories.Remove(ter.Id);
+                        Log.Info($"Territory {ter.Id} disabled and removed.");
+                    }
+                    return;
+                }
+
+                Territories[ter.Id] = ter;
+                Log.Info($"Territory {ter.Id} updated.");
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Error reloading territory " + filePath);
+                Log.Info(ex);
+            }
+        }
+
         public static string WorldName = "";
 
         public static Boolean SendPlayerNotify(MyPlayer player, int milliseconds, string message, string color)
@@ -602,6 +646,13 @@ namespace CrunchGroup
                         NextSave = DateTime.Now.AddMinutes(5);
                         foreach (var ter in Territories)
                         {
+                            if (Core.NexusInstalled)
+                            {
+                                if (NexusAPI.GetServerIDFromPosition(ter.Value.Position) != NexusAPI.GetThisServer().ServerID)
+                                {
+                                    continue;
+                                }
+                            }
                             Task.Run(() =>
                             {
                                 Core.utils.WriteToJsonFile<Territories.Models.Territory>(

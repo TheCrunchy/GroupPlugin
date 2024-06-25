@@ -20,10 +20,10 @@ namespace CrunchGroup.Commands
         [Permission(MyPromoteLevel.Admin)]
         public void Reload()
         {
-           Storage.StorageHandler.LoadAll();
-           Core.LoadConfig();
-           Core.LoadAllTerritories();
-           Context.Respond("Reloaded group configs");
+            Storage.StorageHandler.LoadAll();
+            Core.LoadConfig();
+            Core.LoadAllTerritories();
+            Context.Respond("Reloaded group configs");
         }
 
         [Command("create", "create a group")]
@@ -201,14 +201,38 @@ namespace CrunchGroup.Commands
                     group.GroupDescription = newValue;
                     break;
                 case "leader":
-                    MyIdentity id = Core.TryGetIdentity(newValue);
-                    if (id == null)
                     {
-                        Context.Respond("Could not find that player");
-                        return;
+                        MyIdentity id = Core.TryGetIdentity(newValue);
+                        if (id == null)
+                        {
+                            Context.Respond("Could not find that player");
+                            return;
+                        }
+
+                        group.GroupLeader = (long)MySession.Static.Players.TryGetSteamId(id.IdentityId);
+                        break;
                     }
-                    group.GroupLeader = (long)MySession.Static.Players.TryGetSteamId(id.IdentityId);
-                    break;
+                case "admins":
+                    {
+                        MyIdentity id = Core.TryGetIdentity(newValue);
+                        if (id == null)
+                        {
+                            Context.Respond("Could not find that player");
+                            return;
+                        }
+                        var steam = (long)MySession.Static.Players.TryGetSteamId(id.IdentityId);
+                        if (group.GroupAdmins.Contains(steam))
+                        {
+                            group.GroupAdmins.Remove(steam);
+                            Context.Respond("Player removed from admins.");
+                        }
+                        else
+                        {
+                            group.GroupAdmins.Add(steam);
+                            Context.Respond("Player added to admins.");
+                        }
+                        break;
+                    }
                 case "npctag":
                     group.GroupOwnedGridsNPCTag = newValue;
                     break;
@@ -216,7 +240,7 @@ namespace CrunchGroup.Commands
                     group.DiscordWebhook = newValue;
                     break;
                 default:
-                    Context.Respond("Valid editable fields are Name, Tag, Description, Leader, webhook, npctag");
+                    Context.Respond("Valid editable fields are Name, Tag, Description, Leader, webhook, npctag, admins");
                     return;
             }
 

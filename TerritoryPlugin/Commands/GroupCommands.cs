@@ -238,22 +238,46 @@ namespace CrunchGroup.Commands
                     group.GroupDescription = newValue;
                     break;
                 case "leader":
-                    MyIdentity id = Core.TryGetIdentity(newValue);
-                    if (id == null)
                     {
-                        Context.Respond("Could not find that player");
-                        return;
+                        MyIdentity id = Core.TryGetIdentity(newValue);
+                        if (id == null)
+                        {
+                            Context.Respond("Could not find that player");
+                            return;
+                        }
+
+                        group.GroupLeader = (long)MySession.Static.Players.TryGetSteamId(id.IdentityId);
+                        break;
                     }
-                    group.GroupLeader = (long)MySession.Static.Players.TryGetSteamId(id.IdentityId);
-                    break;
+                case "admins":
+                    {
+                        MyIdentity id = Core.TryGetIdentity(newValue);
+                        if (id == null)
+                        {
+                            Context.Respond("Could not find that player");
+                            return;
+                        }
+                        var steam = (long)MySession.Static.Players.TryGetSteamId(id.IdentityId);
+                        if (group.GroupAdmins.Contains(steam))
+                        {
+                            group.GroupAdmins.Remove(steam);
+                            Context.Respond("Player removed from admins.");
+                        }
+                        else
+                        {
+                            group.GroupAdmins.Add(steam);
+                            Context.Respond("Player added to admins.");
+                        }
+                        break;
+                    }
                 case "webhook":
                     group.DiscordWebhook = newValue;
                     break;
                 default:
-                    Context.Respond("Valid editable fields are Name, Tag, Description, Leader, Webhook");
+                    Context.Respond("Valid editable fields are Name, Tag, Description, Leader, Webhook, admins");
                     return;
             }
-     
+
             Storage.StorageHandler.Save(group);
             GroupHandler.AddGroup(group);
             var Event = new GroupEvent();
