@@ -128,6 +128,7 @@ namespace CrunchGroup.Territories
               //      Core.Log.Info($"{ownedPercent}");
                     if (ownedPercent < (decimal) ter.PercentRequiredToOwn)
                     {
+                        SendMessage("Territory has been lost.", $"Territory {ter.Name} is no longer owned.", ter, ter.Owner);
                         ter.Owner = null;
                         continue;
                         //fail message
@@ -144,6 +145,7 @@ namespace CrunchGroup.Territories
                 }
                 else
                 {
+                    SendMessage("Territory has been lost.", $"Territory {ter.Name} is no longer owned.", ter, ter.Owner);
                     ter.Owner = null;
                 }
 

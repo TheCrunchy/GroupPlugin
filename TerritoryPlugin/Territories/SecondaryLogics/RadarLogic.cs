@@ -77,6 +77,10 @@ namespace CrunchGroup.Territories.SecondaryLogics
                 builder.AppendLine(gps.ToString());
             }
 
+            if (!FoundGrids.Any() || string.IsNullOrWhiteSpace(builder.ToString()))
+            {
+                return Task.FromResult(true);
+            }
             CaptureHandler.SendRadarMessage(owner, builder.ToString());
             return Task.FromResult(true);
         }
