@@ -141,7 +141,7 @@ namespace CrunchGroup.Territories.SecondaryLogics
             FoundGrids.Clear();
             //  GroupPlugin.Log.Info("grid 1");
             var sphere = new BoundingSphereD(RadarCentre, Distance);
-            foreach (var grid in MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>().Where(x => x.Projector == null &&x.BlocksCount > 1 &&  x.BlocksCount >= MinimumBlocksToHit))
+            foreach (var grid in MyAPIGateway.Entities.GetTopMostEntitiesInSphere(ref sphere).OfType<MyCubeGrid>().Where(x => x.Projector == null &&x.BlocksCount > 1 &&  x.BlocksCount >= MinimumBlocksToHit))
             {
                 //       GroupPlugin.Log.Info("grid 2");
                 var owner = FacUtils.GetOwner(grid);

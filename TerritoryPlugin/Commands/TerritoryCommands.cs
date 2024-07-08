@@ -47,7 +47,7 @@ namespace CrunchGroup.Commands
                 Context.Respond("Faction not found.");
                 return;
             }
-
+            territory.Value.RandomJsonStuff.Add("OwnershipChanged", "true");
             GiveToOwner(territory.Value, new FactionPointOwner() { FactionId = faction.FactionId });
             Context.Respond("Giving ownership.");
         }
@@ -68,7 +68,7 @@ namespace CrunchGroup.Commands
                 Context.Respond("Group not found.");
                 return;
             }
-
+            territory.Value.RandomJsonStuff.Add("OwnershipChanged", "true");
             GiveToOwner(territory.Value, new GroupPointOwner() { GroupId = group.GroupId });
             Context.Respond("Giving ownership.");
         }
