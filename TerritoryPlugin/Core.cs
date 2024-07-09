@@ -370,7 +370,6 @@ namespace CrunchGroup
                 craft.CraftableItems.Add(item);
                 logic.SecondaryLogics.Add(loot);
                 logic.SecondaryLogics.Add(craft);
-                logic.SecondaryLogics.Add(new ProductionBuffLogic());
                 logic.SecondaryLogics.Add(new UpkeepLogic()
                 {
                     UpkeepItems = new List<UpkeepItem>()

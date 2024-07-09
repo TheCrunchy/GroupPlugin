@@ -240,7 +240,6 @@
     <Compile Include="Territories\SecondaryLogics\Dark\SafezoneSpawnerLogic2.cs" />
     <Compile Include="Territories\SecondaryLogics\Dark\SafezoneSpawnerLogic.cs" />
     <Compile Include="Territories\SecondaryLogics\GridDamagerLogic.cs" />
-    <Compile Include="Territories\SecondaryLogics\ProductionBuffLogic.cs" />
     <Compile Include="Territories\SecondaryLogics\UpkeepLogic.cs" />
     <Compile Include="Territories\SkoTweaksPatch.cs" />
     <Compile Include="Commands\TerritoryCommands.cs" />
