@@ -248,7 +248,7 @@
     <Compile Include="GPSHelper.cs" />
     <Compile Include="Territories\CapLogics\FactionGridCapLogic.cs" />
     <Compile Include="Territories\CaptureHandler.cs" />
-    <Compile Include="Territories\ProductionBuffs.cs" />
+    <Compile Include="Territories\Statics\AssemblerBuff.cs" />
     <Compile Include="MQPatching.cs" />
     <Compile Include="NexusStuff\NexusAPI.cs" />
     <Compile Include="Territories\FunctionalBlockPatch.cs" />
@@ -272,6 +272,7 @@
     <Compile Include="Territories\SecondaryLogics\LootLogic.cs" />
     <Compile Include="Territories\SecondaryLogics\RadarLogic.cs" />
     <Compile Include="Territories\SecondaryLogics\SafezoneLogic.cs" />
+    <Compile Include="Territories\Statics\RefineryPatch.cs" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Connected Services\" />
