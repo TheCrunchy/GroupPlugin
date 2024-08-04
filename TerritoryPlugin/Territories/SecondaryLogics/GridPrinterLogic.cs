@@ -6,6 +6,7 @@ using CrunchGroup.Territories.Interfaces;
 using Sandbox.Game.Entities;
 using Sandbox.Game.Entities.Blocks;
 using Sandbox.ModAPI;
+using VRage.Game;
 using VRage.Game.ModAPI;
 using VRageMath;
 
@@ -42,7 +43,6 @@ namespace CrunchGroup.Territories.SecondaryLogics
         private bool setup = false;
         public Task<bool> DoSecondaryLogic(ICapLogic point, Models.Territory territory)
         {
-
             if (!Enabled)
             {
                 return Task.FromResult(true);
@@ -55,7 +55,7 @@ namespace CrunchGroup.Territories.SecondaryLogics
             IPointOwner temp = point.PointOwner ?? territory.Owner;
 
             if (RequireOwner && point.PointOwner == null)
-            {
+            { 
                 return Task.FromResult(true);
             }
 

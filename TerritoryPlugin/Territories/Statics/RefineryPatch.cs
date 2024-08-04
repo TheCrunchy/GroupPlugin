@@ -33,7 +33,7 @@ namespace CrunchGroup.Territories.Statics
         public static void Patch(PatchContext ctx)
         {
 
-            ctx.GetPattern(update).Prefixes.Add(patch);
+       //     ctx.GetPattern(update).Prefixes.Add(patch);
         }
 
         public static double GetBuff(long PlayerId, MyRefinery Refinery)
