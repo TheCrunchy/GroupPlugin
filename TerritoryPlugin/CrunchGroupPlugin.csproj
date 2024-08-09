@@ -212,6 +212,7 @@
   <ItemGroup>
     <Compile Include="Commands\groupadminCommands.cs" />
     <Compile Include="Commands\GroupCommands.cs" />
+    <Compile Include="Extensions\GridExtensions.cs" />
     <Compile Include="GridManagerUpdated.cs" />
     <Compile Include="Handlers\Compiler.cs" />
     <Compile Include="Handlers\GroupEventHandler.cs" />
@@ -221,6 +222,7 @@
     <Compile Include="Handlers\JsonStorageHandler.cs" />
     <Compile Include="Handlers\Storage.cs" />
     <Compile Include="IdentityHelper.cs" />
+    <Compile Include="KeenScriptManagerPatch.cs" />
     <Compile Include="Models\Events\GlobalChatEvent.cs" />
     <Compile Include="Models\Events\GroupCreatedEvent.cs" />
     <Compile Include="Models\Events\GroupDeletedEvent.cs" />

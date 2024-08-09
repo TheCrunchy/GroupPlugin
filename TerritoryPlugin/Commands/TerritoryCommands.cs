@@ -51,6 +51,7 @@ namespace CrunchGroup.Commands
             GiveToOwner(territory.Value, new FactionPointOwner() { FactionId = faction.FactionId });
             Context.Respond("Giving ownership.");
         }
+
         [Command("givegroup", "give territory to faction")]
         [Permission(MyPromoteLevel.Admin)]
         public void GiveGroup(string territoryName, string groupName)
