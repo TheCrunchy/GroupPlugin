@@ -36,21 +36,61 @@ throw new Exception("Failed to find patch method");
         throw new Exception("Failed to find patch method");
         public static void Patch(PatchContext ctx)
         {
-
+            MyAPIGateway.Session.DamageSystem.RegisterBeforeDamageHandler(100, DamageHandler);
             ctx.GetPattern(DamageRequest).Prefixes.Add(patchSlimDamage);
         }
 
- 
+        private static void DamageHandler(object target, ref MyDamageInformation info)
+        {
+            //well this was a waste of time but i already made it so fuck it 
+            var attackerId = GetAttacker(info.AttackerId);
+            Core.Log.Info($"{info.Type}");
+            if (!(target is MySlimBlock block))
+            {
+                //handle characters differently
+                return;
+            };
+            Core.Log.Info("2");
+            var attackersFaction = MySession.Static.Factions.GetPlayerFaction(attackerId);
+            if (attackersFaction == null)
+            {
+                return;
+            }
+            Core.Log.Info("3");
+            var attackersGroup = GroupHandler.GetFactionsGroup(attackersFaction.FactionId);
+            if (attackersGroup == null)
+            {
+                return;
+            }
+            Core.Log.Info("4");
+            var owner = block.CubeGrid.GetGridOwnerFaction();
 
-        private static Dictionary<long, DateTime> blockCooldowns = new Dictionary<long, DateTime>();
-        public static Boolean Debug = true;
+            if (owner == null)
+            {
+                return;
+            }
+            Core.Log.Info("5");
+            var groupPartOf = GroupHandler.LoadedGroups.FirstOrDefault(x => x.Value.GroupOwnedGridsNPCTag == owner.Tag);
+            if (groupPartOf.Value == null)
+            {
+
+                return;
+            }
+            if (groupPartOf.Key == attackersGroup.GroupId)
+            {
+                Core.Log.Info("6");
+                info.Amount = 0.0f;
+            }
+
+        }
+
         public static Boolean OnDamageRequest(MySlimBlock __instance, ref float damage,
       MyStringHash damageType,
       bool sync,
       MyHitInfo? hitInfo,
       long attackerId, long realHitEntityId = 0, bool shouldDetonateAmmo = true)
         {
-            long newattackerId = DamageHandlerSessionComponent.GetAttacker(attackerId);
+            long newattackerId = GetAttacker(attackerId);
 
             //  MySlimBlock block = __instance;
             Core.Log.Info("2");
@@ -88,75 +128,6 @@ throw new Exception("Failed to find patch method");
 
             return true;
         }
-    }
-
-    [MySessionComponentDescriptor(MyUpdateOrder.BeforeSimulation)]
-    public class DamageHandlerSessionComponent : MySessionComponentBase
-    {
-        internal static bool Update => _tick % 20 == 0;
-
-        private static int _tick;
-
-        public override void UpdateBeforeSimulation()
-        {
-
-            base.UpdateBeforeSimulation();
-            if (_tick == 0)
-            {
-                MyAPIGateway.Session.DamageSystem.RegisterBeforeDamageHandler(100, DamageHandler);
-            }
-            UpdateTick();
-            
-            if (!Update)
-                return;
-        }
-
-        private static void UpdateTick() => _tick++;
-
-        private void DamageHandler(object target, ref MyDamageInformation info)
-        {
-            //well this was a waste of time but i already made it so fuck it 
-            var attackerId = GetAttacker(info.AttackerId);
-            Core.Log.Info($"{info.Type}");
-            if (!(target is MySlimBlock block))
-            {
-                //handle characters differently
-                return;
-            };
-            Core.Log.Info("2");
-            var attackersFaction = MySession.Static.Factions.GetPlayerFaction(attackerId);
-            if (attackersFaction == null)
-            {
-                return;
-            }
-            Core.Log.Info("3");
-            var attackersGroup = GroupHandler.GetFactionsGroup(attackersFaction.FactionId);
-            if (attackersGroup == null)
-            {
-                return;
-            }
-            Core.Log.Info("4");
-            var owner = block.CubeGrid.GetGridOwnerFaction();
-
-            if (owner == null)
-            {
-                return;
-            }
-            Core.Log.Info("5");
-            var groupPartOf = GroupHandler.LoadedGroups.FirstOrDefault(x => x.Value.GroupOwnedGridsNPCTag == owner.Tag);
-            if (groupPartOf.Value == null)
-            {
-       
-                return;
-            }
-            if (groupPartOf.Key == attackersGroup.GroupId)
-            {
-                Core.Log.Info("6");
-                info.Amount = 0.0f;
-            }
-
-        }
-
         public static long GetAttacker(long attackerId)
         {
 
@@ -164,7 +135,7 @@ throw new Exception("Failed to find patch method");
             Core.Log.Info($"{entity.GetType()}");
             if (entity == null)
                 return 0L;
-            
+
             if (entity is MyPlanet)
             {
 
