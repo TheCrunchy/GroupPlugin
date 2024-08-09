@@ -13,19 +13,19 @@ using VRage.ObjectBuilders;
 namespace CrunchGroup
 {
     //no patchshim because this needs to be ran manually after my scripts are compiled 
-    public static class ScriptMangerPatch
+    public static class KeenScriptManagerPatch
     {
         [ReflectedMethodInfo(typeof(MySession), "RegisterComponentsFromAssemblies")]
         private static MethodInfo _registerComponentsMethod = null!;
 
-        [ReflectedMethodInfo(typeof(ScriptMangerPatch), nameof(ScriptInit))]
+        [ReflectedMethodInfo(typeof(KeenScriptManagerPatch), nameof(ScriptInit))]
         private static MethodInfo _initPostfix = null!;
 
         public static void Patch(PatchContext context) => context.GetPattern(_registerComponentsMethod).Suffixes.Add(_initPostfix);
 
         private static void ScriptInit(MySession __instance)
         {
-            var assembly = typeof(ScriptMangerPatch).Assembly;
+            var assembly = typeof(KeenScriptManagerPatch).Assembly;
 
             foreach (var type in assembly.GetTypes())
             {

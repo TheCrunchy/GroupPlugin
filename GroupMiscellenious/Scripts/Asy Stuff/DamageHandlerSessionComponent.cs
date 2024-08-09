@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CrunchGroup;
 using CrunchGroup.Extensions;
 using CrunchGroup.Handlers;
 using Sandbox.Game.Entities;
@@ -18,11 +19,10 @@ using VRage.Game.ModAPI;
 
 namespace GroupMiscellenious.Scripts.Asy_Stuff
 {
-    [MySessionComponentDescriptor(MyUpdateOrder.BeforeSimulation, SectorUpdatePriority - 1)]
+    [MySessionComponentDescriptor(MyUpdateOrder.BeforeSimulation)]
     public class DamageHandlerSessionComponent : MySessionComponentBase
     {
-        public const int SectorUpdatePriority = 800;
-        internal static bool Update => _tick % 10 == 0;
+        internal static bool Update => _tick % 20 == 0;
 
         private static int _tick;
 
@@ -41,7 +41,8 @@ namespace GroupMiscellenious.Scripts.Asy_Stuff
 
         public override void LoadData()
         {
-            MyAPIGateway.Session.DamageSystem.RegisterBeforeDamageHandler(1, new BeforeDamageApplied(DamageHandler));
+            Core.Log.Info("Adding damage handler");
+            MyAPIGateway.Session.DamageSystem.RegisterBeforeDamageHandler(0, DamageHandler);
         }
 
         private void DamageHandler(object target, ref MyDamageInformation info)
@@ -51,7 +52,6 @@ namespace GroupMiscellenious.Scripts.Asy_Stuff
             {
                 //handle characters differently
                 return;
-
             };
 
             var attackersFaction = MySession.Static.Factions.GetPlayerFaction(attackerId);
@@ -82,17 +82,10 @@ namespace GroupMiscellenious.Scripts.Asy_Stuff
             if (groupPartOf.Key == attackersGroup.GroupId)
             {
                 info.Amount = 0.0f;
-                return;
             }
 
         }
 
-     
-
-        protected override void UnloadData()
-        {
-            base.UnloadData();
-        }
         public static long GetAttacker(long attackerId)
         {
 

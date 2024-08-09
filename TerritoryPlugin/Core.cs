@@ -12,6 +12,7 @@ using CrunchGroup.Territories.CapLogics;
 using CrunchGroup.Territories.Interfaces;
 using CrunchGroup.Territories.Models;
 using CrunchGroup.Territories.SecondaryLogics;
+using HarmonyLib;
 using NLog;
 using Sandbox.Engine.Multiplayer;
 using Sandbox.Game.Entities;
@@ -404,6 +405,14 @@ namespace CrunchGroup
             catch (Exception e)
             {
                 Core.Log.Error($"compile error {e}");
+            }
+
+            if (!CompileFailed)
+            {
+                var patchManager = Session.Managers.GetManager<PatchManager>();
+                var context = patchManager.AcquireContext();
+                KeenScriptManagerPatch.Patch(context);
+                patchManager.Commit();
             }
 
             LoadAllTerritories();
