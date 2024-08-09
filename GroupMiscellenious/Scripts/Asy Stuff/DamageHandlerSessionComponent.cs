@@ -49,32 +49,32 @@ namespace GroupMiscellenious.Scripts.Asy_Stuff
         {
             //well this was a waste of time but i already made it so fuck it 
             var attackerId = GetAttacker(info.AttackerId);
-            Core.Log.Info($"{info.Type}");
+           // Core.Log.Info($"{info.Type}");
             if (!(target is MySlimBlock block))
             {
                 //handle characters differently
                 return;
             };
-            Core.Log.Info("2");
+           // Core.Log.Info("2");
             var attackersFaction = MySession.Static.Factions.GetPlayerFaction(attackerId);
             if (attackersFaction == null)
             {
                 return;
             }
-            Core.Log.Info("3");
+            //Core.Log.Info("3");
             var attackersGroup = GroupHandler.GetFactionsGroup(attackersFaction.FactionId);
             if (attackersGroup == null)
             {
                 return;
             }
-            Core.Log.Info("4");
+          // Core.Log.Info("4");
             var owner = block.CubeGrid.GetGridOwnerFaction();
 
             if (owner == null)
             {
                 return;
             }
-            Core.Log.Info("5");
+           // Core.Log.Info("5");
             var groupPartOf = GroupHandler.LoadedGroups.FirstOrDefault(x => x.Value.GroupOwnedGridsNPCTag == owner.Tag);
             if (groupPartOf.Value == null)
             {
@@ -83,7 +83,7 @@ namespace GroupMiscellenious.Scripts.Asy_Stuff
             }
             if (groupPartOf.Key == attackersGroup.GroupId)
             {
-                Core.Log.Info("6");
+             //   Core.Log.Info("6");
                 info.Amount = 0.0f;
             }
 
@@ -98,26 +98,26 @@ namespace GroupMiscellenious.Scripts.Asy_Stuff
             long newattackerId = GetAttacker(attackerId);
 
 
-            Core.Log.Info("2");
+        //    Core.Log.Info("2");
             var attackersFaction = MySession.Static.Factions.GetPlayerFaction(newattackerId);
             if (attackersFaction == null)
             {
                 return true;
             }
-            Core.Log.Info("3");
+        //    Core.Log.Info("3");
             var attackersGroup = GroupHandler.GetFactionsGroup(attackersFaction.FactionId);
             if (attackersGroup == null)
             {
                 return true;
             }
-            Core.Log.Info("4");
+        //    Core.Log.Info("4");
             var owner = __instance.CubeGrid.GetGridOwnerFaction();
 
             if (owner == null)
             {
                 return true;
             }
-            Core.Log.Info("5");
+         //   Core.Log.Info("5");
             var groupPartOf = GroupHandler.LoadedGroups.FirstOrDefault(x => x.Value.GroupOwnedGridsNPCTag == owner.Tag);
             if (groupPartOf.Value == null)
             {
@@ -126,7 +126,7 @@ namespace GroupMiscellenious.Scripts.Asy_Stuff
             }
             if (groupPartOf.Key == attackersGroup.GroupId)
             {
-                Core.Log.Info("6");
+               Core.Log.Info("blocking damage");
                 damage = 0.0f;
                 return false;
             }
@@ -137,7 +137,7 @@ namespace GroupMiscellenious.Scripts.Asy_Stuff
         {
 
             var entity = MyAPIGateway.Entities.GetEntityById(attackerId);
-            Core.Log.Info($"{entity.GetType()}");
+      //      Core.Log.Info($"{entity.GetType()}");
             if (entity == null)
                 return 0L;
 
