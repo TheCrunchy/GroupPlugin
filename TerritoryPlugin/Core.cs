@@ -400,6 +400,7 @@ namespace CrunchGroup
             try
             {
                 Compiler.Compile($"{Core.path}/Scripts/");
+                Core.Log.Error("Compile happened");
             }
 
             catch (Exception e)
@@ -409,9 +410,10 @@ namespace CrunchGroup
 
             if (!CompileFailed)
             {
+                Core.Log.Error("Apply keen stuff");
                 var patchManager = Session.Managers.GetManager<PatchManager>();
                 var context = patchManager.AcquireContext();
-                KeenScriptManagerPatch.Patch(context);
+                KeenScriptManagerPatch.ScriptInit(MySession.Static);
                 patchManager.Commit();
             }
 

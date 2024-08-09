@@ -46,6 +46,10 @@
     <Reference Include="Sandbox.Game">
       <HintPath>..\..\..\4 Torch Server\DedicatedServer64\Sandbox.Game.dll</HintPath>
     </Reference>
+    <Reference Include="SpaceEngineers.Game, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\4 Torch Server\DedicatedServer64\SpaceEngineers.Game.dll</HintPath>
+    </Reference>
     <Reference Include="SpaceEngineers.ObjectBuilders, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Crunch Space Trucking\CrunchSpaceTrucking\CrunchSpaceTrucking\bin\Debug\SpaceEngineers.ObjectBuilders.dll</HintPath>

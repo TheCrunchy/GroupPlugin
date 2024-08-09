@@ -15,26 +15,26 @@ namespace CrunchGroup
     //no patchshim because this needs to be ran manually after my scripts are compiled 
     public static class KeenScriptManagerPatch
     {
-        [ReflectedMethodInfo(typeof(MySession), "RegisterComponentsFromAssemblies")]
-        private static MethodInfo _registerComponentsMethod = null!;
-
-        [ReflectedMethodInfo(typeof(KeenScriptManagerPatch), nameof(ScriptInit))]
-        private static MethodInfo _initPostfix = null!;
-
-        public static void Patch(PatchContext context) => context.GetPattern(_registerComponentsMethod).Suffixes.Add(_initPostfix);
-
-        private static void ScriptInit(MySession __instance)
+        public static void ScriptInit(MySession __instance)
         {
-            var assembly = typeof(KeenScriptManagerPatch).Assembly;
-
-            foreach (var type in assembly.GetTypes())
+            var assemb = typeof(KeenScriptManagerPatch).Assembly;
+            var assemblies = new List<Assembly>();
+            assemblies.Add(assemb);
+            assemblies.AddRange(Core.myAssemblies);
+            foreach (var assembly in assemblies)
             {
-                if (!type.IsPublic || !typeof(MyGameLogicComponent).IsAssignableFrom(type))
-                    continue;
+                Core.Log.Info($"{assembly.FullName}");
+                foreach (var type in assembly.GetTypes())
+                {
+                    if (!type.IsPublic || !typeof(MyGameLogicComponent).IsAssignableFrom(type))
+                        continue;
 
-                AddEntityScript(__instance.ScriptManager, type);
+                    AddEntityScript(__instance.ScriptManager, type);
+                }
+                __instance.RegisterComponentsFromAssembly(assembly, true);
+
             }
-            __instance.RegisterComponentsFromAssembly(assembly, true);
+ 
         }
 
         //mostly copied from keen code
