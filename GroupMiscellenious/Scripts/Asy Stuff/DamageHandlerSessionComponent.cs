@@ -29,8 +29,13 @@ namespace GroupMiscellenious.Scripts.Asy_Stuff
     public static class SlimBlockPatch
     {
         internal static readonly MethodInfo DamageRequest =
-typeof(MySlimBlock).GetMethod("DoDamage", BindingFlags.Instance | BindingFlags.Public, null, new Type[] { typeof(float), typeof(MyStringHash), typeof(bool), typeof(MyHitInfo?), typeof(long), typeof(long), typeof(bool) }, null) ??
-throw new Exception("Failed to find patch method");
+            typeof(MySlimBlock).GetMethod("DoDamage", BindingFlags.Instance | BindingFlags.Public, null,
+                new Type[]
+                {
+                    typeof(float), typeof(MyStringHash), typeof(bool), typeof(MyHitInfo?), typeof(long), typeof(long),
+                    typeof(bool), typeof(MyStringHash?)
+                }, null) ??
+            throw new Exception("Failed to find patch method 1");
         internal static readonly MethodInfo patchSlimDamage =
         typeof(SlimBlockPatch).GetMethod(nameof(OnDamageRequest), BindingFlags.Static | BindingFlags.Public) ??
         throw new Exception("Failed to find patch method");
@@ -92,7 +97,7 @@ throw new Exception("Failed to find patch method");
         {
             long newattackerId = GetAttacker(attackerId);
 
-            //  MySlimBlock block = __instance;
+
             Core.Log.Info("2");
             var attackersFaction = MySession.Static.Factions.GetPlayerFaction(newattackerId);
             if (attackersFaction == null)
