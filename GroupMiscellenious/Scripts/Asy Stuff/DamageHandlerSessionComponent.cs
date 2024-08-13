@@ -162,6 +162,12 @@ namespace GroupMiscellenious.Scripts.Asy_Stuff
                     Core.Log.Info("ship tool");
                     return shipTool.OwnerId;
                 case IMyGunBaseUser gunUser:
+                    if (gunUser.OwnerId == null)
+                    {
+                        Core.Log.Info("null gun");
+                        var blockGun = gunUser.Owner as MyCubeBlock;
+                        return blockGun.OwnerId;
+                    }
                     Core.Log.Info("gun");
                     return gunUser.OwnerId;
                 case MyFunctionalBlock block:
