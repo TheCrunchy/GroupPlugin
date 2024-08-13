@@ -136,48 +136,56 @@ namespace GroupMiscellenious.Scripts.Asy_Stuff
         public static long GetAttacker(long attackerId)
         {
 
-            var entity = MyAPIGateway.Entities.GetEntityById(attackerId);
-      //      Core.Log.Info($"{entity.GetType()}");
-            if (entity == null)
-                return 0L;
-
-            if (entity is MyPlanet)
+            try
             {
-
-                return 0L;
-            }
-
-            switch (entity)
-            {
-                case MyCharacter character:
-                    Core.Log.Info("character");
-                    return character.GetPlayerIdentityId();
-                case IMyEngineerToolBase toolbase:
-                    Core.Log.Info("tool");
-                    return toolbase.OwnerIdentityId;
-                case MyLargeTurretBase turret:
-                    Core.Log.Info("turret");
-                    return turret.OwnerId;
-                case MyShipToolBase shipTool:
-                    Core.Log.Info("ship tool");
-                    return shipTool.OwnerId;
-                case IMyGunBaseUser gunUser:
-                    if (gunUser.OwnerId == null)
-                    {
-                        Core.Log.Info("null gun");
-                        var blockGun = gunUser.Owner as MyCubeBlock;
-                        return blockGun.OwnerId;
-                    }
-                    Core.Log.Info("gun");
-                    return gunUser.OwnerId;
-                case MyFunctionalBlock block:
-                    Core.Log.Info("block");
-                    return block.OwnerId;
-                case MyCubeGrid grid:
-                    Core.Log.Info("grid");
-                    return grid.GetGridOwner();
-                default:
+                var entity = MyAPIGateway.Entities.GetEntityById(attackerId);
+                //      Core.Log.Info($"{entity.GetType()}");
+                if (entity == null)
                     return 0L;
+
+                if (entity is MyPlanet)
+                {
+
+                    return 0L;
+                }
+
+                switch (entity)
+                {
+                    case MyCharacter character:
+                        Core.Log.Info("character");
+                        return character.GetPlayerIdentityId();
+                    case IMyEngineerToolBase toolbase:
+                        Core.Log.Info("tool");
+                        return toolbase.OwnerIdentityId;
+                    case MyLargeTurretBase turret:
+                        Core.Log.Info("turret");
+                        return turret.OwnerId;
+                    case MyShipToolBase shipTool:
+                        Core.Log.Info("ship tool");
+                        return shipTool.OwnerId;
+                    case IMyGunBaseUser gunUser:
+                        if (gunUser.OwnerId == null)
+                        {
+                            Core.Log.Info("null gun");
+                            var blockGun = gunUser.Owner as MyCubeBlock;
+                            return blockGun.OwnerId;
+                        }
+                        Core.Log.Info("gun");
+                        return gunUser.OwnerId;
+                    case MyFunctionalBlock block:
+                        Core.Log.Info("block");
+                        return block.OwnerId;
+                    case MyCubeGrid grid:
+                        Core.Log.Info("grid");
+                        return grid.GetGridOwner();
+                    default:
+                        return 0L;
+                }
+            }
+            catch (Exception e)
+            {
+                Core.Log.Info($"Damage Handler Error {e}");
+                return attackerId;
             }
         }
     }
