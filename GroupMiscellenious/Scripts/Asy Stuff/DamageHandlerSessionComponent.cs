@@ -126,7 +126,7 @@ namespace GroupMiscellenious.Scripts.Asy_Stuff
             }
             if (groupPartOf.Key == attackersGroup.GroupId)
             {
-               Core.Log.Info("blocking damage");
+           //    Core.Log.Info("blocking damage");
                 damage = 0.0f;
                 return false;
             }
@@ -135,14 +135,12 @@ namespace GroupMiscellenious.Scripts.Asy_Stuff
         }
         public static long GetAttacker(long attackerId)
         {
-
+            var entity = MyAPIGateway.Entities.GetEntityById(attackerId);
+            if (entity == null)
+                return 0L;
             try
             {
-                var entity = MyAPIGateway.Entities.GetEntityById(attackerId);
                 //      Core.Log.Info($"{entity.GetType()}");
-                if (entity == null)
-                    return 0L;
-
                 if (entity is MyPlanet)
                 {
 
@@ -152,16 +150,16 @@ namespace GroupMiscellenious.Scripts.Asy_Stuff
                 switch (entity)
                 {
                     case MyCharacter character:
-                        Core.Log.Info("character");
+                  //      Core.Log.Info("character");
                         return character.GetPlayerIdentityId();
                     case IMyEngineerToolBase toolbase:
-                        Core.Log.Info("tool");
+                   //     Core.Log.Info("tool");
                         return toolbase.OwnerIdentityId;
                     case MyLargeTurretBase turret:
-                        Core.Log.Info("turret");
+                    //    Core.Log.Info("turret");
                         return turret.OwnerId;
                     case MyShipToolBase shipTool:
-                        Core.Log.Info("ship tool");
+                     //   Core.Log.Info("ship tool");
                         return shipTool.OwnerId;
                     case IMyGunBaseUser gunUser:
                         if (gunUser.OwnerId == null)
@@ -170,13 +168,13 @@ namespace GroupMiscellenious.Scripts.Asy_Stuff
                             var blockGun = gunUser.Owner as MyCubeBlock;
                             return blockGun.OwnerId;
                         }
-                        Core.Log.Info("gun");
+                     //   Core.Log.Info("gun");
                         return gunUser.OwnerId;
                     case MyFunctionalBlock block:
-                        Core.Log.Info("block");
+                    //    Core.Log.Info("block");
                         return block.OwnerId;
                     case MyCubeGrid grid:
-                        Core.Log.Info("grid");
+                      //  Core.Log.Info("grid");
                         return grid.GetGridOwner();
                     default:
                         return 0L;
@@ -184,6 +182,7 @@ namespace GroupMiscellenious.Scripts.Asy_Stuff
             }
             catch (Exception e)
             {
+                Core.Log.Info($"{entity.GetType()}");
                 Core.Log.Info($"Damage Handler Error {e}");
                 return attackerId;
             }
