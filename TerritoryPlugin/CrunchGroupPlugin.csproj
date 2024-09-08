@@ -236,6 +236,7 @@
     <Compile Include="NexusStuff\NexusHandler.cs" />
     <Compile Include="Core.cs" />
     <Compile Include="NexusStuff\V3\NexusGlobalAPI.cs" />
+    <Compile Include="Patches\SessionLoadPatch.cs" />
     <Compile Include="Territories\CapLogics\GroupGridCapLogic.cs" />
     <Compile Include="Territories\Models\ComponentCost.cs" />
     <Compile Include="Territories\PointOwners\GroupPointOwner.cs" />

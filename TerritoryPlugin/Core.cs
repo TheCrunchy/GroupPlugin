@@ -50,7 +50,7 @@ namespace CrunchGroup
         public static MethodInfo sendChange;
         public static ITorchSession Session;
         public static Action UpdateCycle;
-        public static NexusGlobalAPI NexusGlobalAPI = new NexusGlobalAPI();
+        public static NexusGlobalAPI NexusGlobalAPI;// = new NexusGlobalAPI();
 
         public void AddComponentCost(string subtype, long cost, bool banned)
         {
