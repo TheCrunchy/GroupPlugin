@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using CrunchGroup.Handlers;
 using CrunchGroup.Models.Events;
+using CrunchGroup.NexusStuff.V3;
 using Sandbox.ModAPI;
 using Torch.API.Managers;
 using VRage.Sync;
@@ -23,9 +24,15 @@ namespace CrunchGroup.NexusStuff
         }
         public static void RaiseEvent(GroupEvent groupEvent)
         {
-            if (Core.NexusInstalled)
+            var message = MyAPIGateway.Utilities.SerializeToBinary<GroupEvent>(groupEvent);
+            if (Core.NexusGlobalAPI.Enabled)
             {
-                var message = MyAPIGateway.Utilities.SerializeToBinary<GroupEvent>(groupEvent);
+                Core.Log.Error($"Sending a nexus v3 message");
+                Core.NexusGlobalAPI.SendModMsgToAllServers(message, 4398);
+            }
+            else if (Core.NexusInstalled)
+            {
+         
                 Core.API.SendMessageToAllServers(message);
             }
             else
@@ -123,7 +130,25 @@ namespace CrunchGroup.NexusStuff
             // Core.Log.Info("Recieved a nexus event");
             try
             {
-                var message = MyAPIGateway.Utilities.SerializeFromBinary<GroupEvent>(data);
+                GroupEvent message;
+                if (Core.NexusGlobalAPI.Enabled)
+                {
+                    Core.Log.Error($"Recieved a nexus v3 message");
+                    try
+                    {
+                        NexusGlobalAPI.ModAPIMsg incomingMsg = MyAPIGateway.Utilities.SerializeFromBinary<NexusGlobalAPI.ModAPIMsg>((byte[])data);
+                        message = MyAPIGateway.Utilities.SerializeFromBinary<GroupEvent>(incomingMsg.msgData);
+                    }
+                    catch (Exception e)
+                    {
+                        Core.Log.Error($"e");
+                        return;
+                    }
+                }
+                else
+                {
+                    message = MyAPIGateway.Utilities.SerializeFromBinary<GroupEvent>(data);
+                }
 
                 if (!fromServer && steamID != 0)
                 {
@@ -134,7 +159,7 @@ namespace CrunchGroup.NexusStuff
                         return;
                     }
                     NexusHandler.RaiseEvent(message);
-                    if (Core.NexusInstalled)
+                    if (Core.NexusInstalled || Core.NexusGlobalAPI.Enabled)
                     {
                         Handle(message, steamID, false);
                     }

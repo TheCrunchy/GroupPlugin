@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using CrunchGroup.Handlers;
 using CrunchGroup.NexusStuff;
+using CrunchGroup.NexusStuff.V3;
 using CrunchGroup.Territories;
 using CrunchGroup.Territories.CapLogics;
 using CrunchGroup.Territories.Interfaces;
@@ -49,6 +50,7 @@ namespace CrunchGroup
         public static MethodInfo sendChange;
         public static ITorchSession Session;
         public static Action UpdateCycle;
+        public static NexusGlobalAPI NexusGlobalAPI = new NexusGlobalAPI();
 
         public void AddComponentCost(string subtype, long cost, bool banned)
         {
