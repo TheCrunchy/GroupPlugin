@@ -76,7 +76,17 @@ namespace CrunchGroup.Territories.CapLogics
                         return Task.FromResult(Tuple.Create<bool, IPointOwner>(false, null));
                     }
                 }
-       
+                if (Core.NexusGlobalAPI.Enabled)
+                {
+                    int thisSector = Core.NexusGlobalAPI.CurrentServerID;
+
+                    var sector = Core.NexusGlobalAPI.GetTargetSector(point.GetPointsLocationIfSet());
+
+                    if (sector != thisSector)
+                    {
+                        return Task.FromResult(Tuple.Create<bool, IPointOwner>(false, null));
+                    }
+                }
                 var sphere = new BoundingSphereD(gpspoint, CaptureRadius * 2);
 
                 var foundAlliances = FindAttackers(sphere);

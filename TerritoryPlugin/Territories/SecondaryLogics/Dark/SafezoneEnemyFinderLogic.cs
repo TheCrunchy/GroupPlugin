@@ -91,6 +91,25 @@ namespace CrunchGroup.Territories.SecondaryLogics.Dark
                                 && MySession.Static.Factions.TryGetPlayerFaction(x.IdentityID).FactionId ==
                                 faction.FactionId).Select(x => x.IdentityID));
             }
+            else if (Core.NexusGlobalAPI.Enabled)
+            {
+                var members = Core.NexusGlobalAPI.GetAllOnlinePlayers();
+
+                var identities = new List<long>();
+
+                foreach (var member in members)
+                {
+                    var identity = MySession.Static.Players.TryGetPlayerIdentity(member);
+                    if (identity != null)
+                    {
+                        identities.Add(identity.IdentityId);
+                    }
+                }
+                defenders.AddRange(identities
+                    .Where(x => MySession.Static.Factions.TryGetPlayerFaction(x) != null
+                                && MySession.Static.Factions.TryGetPlayerFaction(x).FactionId ==
+                                faction.FactionId).Select(x => x));
+            }
             else
             {
                 defenders.AddRange(MySession.Static.Players.GetOnlinePlayers()
