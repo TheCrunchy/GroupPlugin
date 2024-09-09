@@ -4,8 +4,10 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using CrunchGroup.NexusStuff;
 using CrunchGroup.NexusStuff.V3;
 using Sandbox.Game.SessionComponents;
+using Sandbox.ModAPI;
 using Torch.Managers.PatchManager;
 using VRage.Game.Components;
 
@@ -35,9 +37,19 @@ namespace CrunchGroup.Patches
             if (!Loaded)
             {
                 Core.Log.Info("Registering MES API");
-                Core.NexusGlobalAPI = new NexusGlobalAPI();
+                Core.NexusGlobalAPI = new NexusGlobalAPI(SetupNetworking);
                 Loaded = true;
             }
+        }
+
+        public static void SetupNetworking()
+        {
+            MyAPIGateway.Utilities.RegisterMessageHandler(4398, ReceiveData);
+        }
+
+        private static void ReceiveData(object obj)
+        {
+           NexusHandler.HandleNexusMessage(4398, (byte[])obj, 0, true);
         }
     }
 }
