@@ -44,6 +44,7 @@ namespace CrunchGroup.Patches
 
         public static void SetupNetworking()
         {
+            Core.Log.Info("Registering Nexus Global");
             MyAPIGateway.Utilities.RegisterMessageHandler(4398, ReceiveData);
         }
 

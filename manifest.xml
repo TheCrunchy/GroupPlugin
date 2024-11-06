@@ -2,5 +2,5 @@
 <PluginManifest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <Name>CrunchGroupPlugin</Name>
   <Guid>24dbf2df-7728-4a7b-a4b8-f2fe9fadd1cd</Guid>
-  <Version>v1.85</Version>
+  <Version>v1.86</Version>
 </PluginManifest>

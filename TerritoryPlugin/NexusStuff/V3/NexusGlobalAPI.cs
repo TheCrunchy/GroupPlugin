@@ -88,8 +88,10 @@ namespace CrunchGroup.NexusStuff.V3
                 Enabled = true;
                 onEnabled?.Invoke();
             }
-            catch
-            { }
+            catch (Exception e)
+            {
+                Core.Log.Error(e.ToString());
+            }
         }
 
         /// <summary>
