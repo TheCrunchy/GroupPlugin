@@ -31,6 +31,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="NGPlugin">
+      <HintPath>..\..\Nexus Global\NGPlugin.dll</HintPath>
+    </Reference>
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\FixPlayerCommand\FixPlayerCommand\bin\Debug\NLog.dll</HintPath>
@@ -101,6 +104,7 @@
     <Compile Include="Scripts\HudMod\Data\Scripts\CrunchChat\Data.cs" />
     <Compile Include="Scripts\HudMod\Data\Scripts\CrunchChat\HudAPIv2.cs" />
     <Compile Include="Scripts\HudMod\Data\Scripts\CrunchChat\TextHudModule.cs" />
+    <Compile Include="Scripts\NexusDirectReference.cs" />
     <Compile Include="Scripts\SargSetAllScripter.cs" />
     <Compile Include="Scripts\ShieldScript.cs" />
     <Compile Include="Scripts\TerritoryHudScript.cs" />
