@@ -88,10 +88,8 @@ namespace CrunchGroup.NexusStuff.V3
                 Enabled = true;
                 onEnabled?.Invoke();
             }
-            catch (Exception e)
-            {
-                Core.Log.Error(e.ToString());
-            }
+            catch
+            { }
         }
 
         /// <summary>
@@ -342,8 +340,7 @@ namespace CrunchGroup.NexusStuff.V3
             [ProtoMember(6), DefaultValue(ServerType.SyncedSectored)] public ServerType SectorType { get; set; } = ServerType.SyncedSectored;
             [ProtoMember(7)] public ushort SelectedConfigGroup { get; set; }
             [ProtoMember(8), DefaultValue("XYZ")] public string ServerAbbreviation { get; set; } = "XYZ";
-            [ProtoMember(9), DefaultValue("127.0.0.1")] public string NexusBoxIP { get; set; } = "127.0.0.1";
-            [ProtoMember(10), DefaultValue((ushort)5000)] public ushort DirectCommsPort { get; set; } = 5000;
+            [ProtoMember(9), DefaultValue(0)] public byte LobbyServerID { get; set; } = 0;
         }
 
         public enum SectorShape
