@@ -141,8 +141,17 @@ namespace CrunchGroup.NexusStuff
                     }
                     catch (Exception e)
                     {
-                        Core.Log.Error($"e");
-                        return;
+                        try
+                        {
+                            message = MyAPIGateway.Utilities.SerializeFromBinary<GroupEvent>(data);
+                        }
+                        catch (Exception e2)
+                        {
+                            Core.Log.Error($"{e2}");
+
+                            return;
+                        }
+
                     }
                 }
                 else
