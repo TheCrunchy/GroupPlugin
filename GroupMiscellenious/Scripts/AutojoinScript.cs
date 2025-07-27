@@ -1,58 +1,51 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq;
 using CrunchGroup;
 using CrunchGroup.Handlers;
 using CrunchGroup.Models.Events;
 using CrunchGroup.NexusStuff;
-using GroupMiscellenious.Commands;
 using Sandbox.Game.World;
 using Sandbox.ModAPI;
 using Torch.Commands;
 using Torch.Commands.Permissions;
-using Torch.Managers.PatchManager;
 using VRage.Game.ModAPI;
-using VRage.Utils;
 
 namespace GroupMiscellenious.Scripts
 {
     public static class AutojoinScript
     {
-        public static List<string> GroupNamesToAutoJoin = new List<string>() { "GroupTag1", "GroupTag2" };
-        public static void Patch(PatchContext ctx)
-        {
-            MySession.Static.Factions.FactionCreated += FactionsOnFactionCreated;
+        //public static List<string> GroupNamesToAutoJoin = new List<string>() { "GroupTag1", "GroupTag2" };
+        //public static void Patch(PatchContext ctx)
+        //{
+        //    MySession.Static.Factions.FactionCreated += FactionsOnFactionCreated;
 
-            foreach (var faction in MySession.Static.Factions)
-            {
-                if (faction.Value.IsEveryoneNpc())
-                {
-                    continue;
-                }
-                ProcessFaction(faction.Value);
-            }
-        }
+        //    foreach (var faction in MySession.Static.Factions)
+        //    {
+        //        if (faction.Value.IsEveryoneNpc())
+        //        {
+        //            continue;
+        //        }
+        //        ProcessFaction(faction.Value);
+        //    }
+        //}
 
-        private static void FactionsOnFactionCreated(long Obj)
-        {
-            var faction = MySession.Static.Factions.TryGetFactionById(Obj);
-            if (faction != null)
-            {
-                ProcessFaction(faction);
-            }
-        }
+        //private static void FactionsOnFactionCreated(long Obj)
+        //{
+        //    var faction = MySession.Static.Factions.TryGetFactionById(Obj);
+        //    if (faction != null)
+        //    {
+        //        ProcessFaction(faction);
+        //    }
+        //}
 
-        private static void ProcessFaction(IMyFaction faction)
-        {
-            var groupTag = GroupNamesToAutoJoin.GetRandomItemFromList();
-            var group = GroupHandler.GetGroupByTag(groupTag);
-            if (group != null)
-            {
-                group.AddMemberToGroup(faction.FactionId);
-            }
-        }
+        //private static void ProcessFaction(IMyFaction faction)
+        //{
+        //    var groupTag = GroupNamesToAutoJoin.GetRandomItemFromList();
+        //    var group = GroupHandler.GetGroupByTag(groupTag);
+        //    if (group != null)
+        //    {
+        //        group.AddMemberToGroup(faction.FactionId);
+        //    }
+        //}
 
         public class AutoJoinCommands : CommandModule
         {

@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using CrunchGroup;
 using CrunchGroup.Territories.Interfaces;
+using HarmonyLib;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game;
+using VRage.Sync;
 using VRageMath;
 
 namespace CrunchGroup.Territories.SecondaryLogics
@@ -56,6 +60,17 @@ namespace CrunchGroup.Territories.SecondaryLogics
                                                                          TargetedSubtypes.Contains(block.BlockDefinition.Id.SubtypeId.ToString())))
                 {
                     FunctionalBlockPatch.AddBlockToDisable(block.EntityId, this.SecondsBetweenLoops);
+
+                    FieldInfo fieldInfo = block.GetType().GetField("m_enabled", BindingFlags.NonPublic | BindingFlags.Instance);
+                    if (fieldInfo != null)
+                    {
+                        // Access the value of the field
+                        VRage.Sync.Sync<bool, SyncDirection.BothWays> fieldValue =
+                            (VRage.Sync.Sync<bool, SyncDirection.BothWays>)fieldInfo.GetValue(true);
+                        fieldValue.ValidateAndSet(false);
+
+                    }
+
                 }
             }
             return Task.FromResult(true);

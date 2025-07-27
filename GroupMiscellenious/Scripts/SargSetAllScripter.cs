@@ -8,6 +8,7 @@ using Sandbox.Game.World;
 using Torch.API.Managers;
 using Torch.Commands;
 using Torch.Commands.Permissions;
+using VRage.Game.Components;
 using VRage.Game.ModAPI;
 
 namespace GroupMiscellenious.Scripts
@@ -19,7 +20,6 @@ namespace GroupMiscellenious.Scripts
         public void JoinGroup(int rankNum)
         {
             var manager = Core.Session.Managers.GetManager<CommandManager>();
-
             foreach (var player in MySession.Static.Players.GetAllPlayers())
             {
                 manager?.HandleCommandFromServer($"admin setrank {player.SteamId} {rankNum}");
