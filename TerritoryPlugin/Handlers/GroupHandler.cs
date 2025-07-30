@@ -75,7 +75,7 @@ namespace CrunchGroup.Handlers
             {
                 foreach (var factionId in group.GroupMembers)
                 {
-                    var faction = MySession.Static.Factions.TryGetPlayerFaction(factionId);
+                    var faction = MySession.Static.Factions.TryGetFactionById(factionId);
                     if (faction == null) continue;
 
                     foreach (var member in faction.Members.Values.Select(x => x.PlayerId).Distinct())
@@ -85,7 +85,7 @@ namespace CrunchGroup.Handlers
                         {
                             continue;
                         }
-
+                       
                         PlayersGroups[(long)steam] = group.GroupId;
                     }
                 }
