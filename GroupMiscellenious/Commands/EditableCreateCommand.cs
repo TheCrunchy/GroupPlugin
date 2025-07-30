@@ -20,7 +20,9 @@ namespace GroupMiscellenious.Commands
    public class EditableCreateCommand : CommandModule
     {
 
-        [Command("alphacreategroup", "create")]
+        private const long CreationPrice = 20_000_000;
+
+        [Command("creategroup", "create")]
         [Permission(MyPromoteLevel.None)]
         public void Create(string groupName, string description = "Default description")
         {
@@ -34,12 +36,22 @@ namespace GroupMiscellenious.Commands
                 Context.Respond($"Only the founder can create a {Core.PluginCommandPrefix}", $"{Core.PluginName}");
                 return;
             }
+
+
             if (GroupHandler.LoadedGroups.Any(x =>
                     x.Value.GroupName != null && x.Value.GroupName.ToLower() == groupName.ToLower()))
             {
                 Context.Respond($"{Core.PluginCommandPrefix} with that name already exists");
                 return;
             }
+
+            var playersBalance = EconUtils.getBalance(Context.Player.IdentityId);
+            if (playersBalance < CreationPrice)
+            {
+                Context.Respond($"You cannot afford the creation price of {CreationPrice:C} SC");
+                return;
+            }
+
             var group = new Group()
             {
                 GroupName = groupName,
@@ -60,7 +72,9 @@ namespace GroupMiscellenious.Commands
             Event.EventObject = MyAPIGateway.Utilities.SerializeToBinary(createdEvent);
             Event.EventType = createdEvent.GetType().Name;
             NexusHandler.RaiseEvent(Event);
+            EconUtils.takeMoney(Context.Player.IdentityId, CreationPrice);
             Context.Respond($"{Core.PluginCommandPrefix} created.", $"{Core.PluginName}");
+
             GroupHandler.MapPlayers();
         }
 

@@ -25,7 +25,7 @@ namespace CrunchGroup.Models
         public Dictionary<string, string> RandomJsonStuff = new Dictionary<string, string>();
 
         public long GroupLeader { get; set; }
-        public List<long> GroupAdmins { get; set; }
+        public List<ulong> GroupAdmins { get; set; } = new List<ulong>();
 
         public List<long> GroupMembers { get; set; } = new List<long>();
         //civil war stuff, let the players opt in to being excluded

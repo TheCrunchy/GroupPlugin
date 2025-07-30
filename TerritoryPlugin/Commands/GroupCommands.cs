@@ -195,11 +195,6 @@ namespace CrunchGroup.Commands
         [Permission(MyPromoteLevel.None)]
         public void Edit(string fieldType, string newValue)
         {
-            if (!Core.config.PlayerGroupsEnabled)
-            {
-                Context.Respond($"Player made {Core.PluginCommandPrefix}s are not enabled.", $"{Core.PluginName}");
-                return;
-            }
 
             var group = IsInGroup();
 
@@ -257,7 +252,7 @@ namespace CrunchGroup.Commands
                             Context.Respond("Could not find that player");
                             return;
                         }
-                        var steam = (long)MySession.Static.Players.TryGetSteamId(id.IdentityId);
+                        var steam = MySession.Static.Players.TryGetSteamId(id.IdentityId);
                         if (group.GroupAdmins.Contains(steam))
                         {
                             group.GroupAdmins.Remove(steam);
@@ -332,11 +327,6 @@ namespace CrunchGroup.Commands
         [Permission(MyPromoteLevel.None)]
         public void invite(string targetTag)
         {
-            if (!Core.config.PlayerGroupsEnabled)
-            {
-                Context.Respond($"Player made {Core.PluginCommandPrefix}s are not enabled.", $"{Core.PluginName}");
-                return;
-            }
 
             var group = IsInGroup();
 
@@ -344,7 +334,7 @@ namespace CrunchGroup.Commands
             {
                 return;
             }
-            if (group.GroupLeader != (long)Context.Player.SteamUserId && group.GroupAdmins.Contains((long)Context.Player.SteamUserId))
+            if (group.GroupLeader != (long)Context.Player.SteamUserId && !group.GroupAdmins.Contains(Context.Player.SteamUserId))
             {
                 Context.Respond($"You are not the {Core.PluginCommandPrefix} leader or a {Core.PluginCommandPrefix} admin.", $"{Core.PluginName}");
                 return;
@@ -377,11 +367,6 @@ namespace CrunchGroup.Commands
         [Permission(MyPromoteLevel.None)]
         public void join(string groupTag)
         {
-            if (!Core.config.PlayerGroupsEnabled)
-            {
-                Context.Respond($"Player made {Core.PluginCommandPrefix}s are not enabled.", $"{Core.PluginName}");
-                return;
-            }
             var faction = MySession.Static.Factions.TryGetPlayerFaction(Context.Player.IdentityId);
             if (faction == null)
             {
@@ -429,11 +414,7 @@ namespace CrunchGroup.Commands
         [Permission(MyPromoteLevel.None)]
         public void leave()
         {
-            if (!Core.config.PlayerGroupsEnabled)
-            {
-                Context.Respond($"Player made {Core.PluginCommandPrefix}s are not enabled.", $"{Core.PluginName}");
-                return;
-            }
+
             var faction = MySession.Static.Factions.TryGetPlayerFaction(Context.Player.IdentityId);
             if (faction == null)
             {
@@ -475,11 +456,7 @@ namespace CrunchGroup.Commands
         [Permission(MyPromoteLevel.None)]
         public void kick(string targetTag)
         {
-            if (!Core.config.PlayerGroupsEnabled)
-            {
-                Context.Respond($"Player made {Core.PluginCommandPrefix}s are not enabled.", $"{Core.PluginName}");
-                return;
-            }
+
             var faction = MySession.Static.Factions.TryGetFactionByTag(targetTag);
             if (faction == null)
             {
@@ -499,7 +476,7 @@ namespace CrunchGroup.Commands
                 Context.Respond($"You are not the {Core.PluginCommandPrefix} leader.", $"{Core.PluginName}");
                 return;
             }
-
+            
             if (group.GroupMembers.Contains(faction.FactionId))
             {
                 group.RemoveMemberFromGroup(faction.FactionId);

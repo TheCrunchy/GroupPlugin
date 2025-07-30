@@ -220,7 +220,7 @@ namespace CrunchGroup.Commands
                             Context.Respond("Could not find that player");
                             return;
                         }
-                        var steam = (long)MySession.Static.Players.TryGetSteamId(id.IdentityId);
+                        var steam = MySession.Static.Players.TryGetSteamId(id.IdentityId);
                         if (group.GroupAdmins.Contains(steam))
                         {
                             group.GroupAdmins.Remove(steam);

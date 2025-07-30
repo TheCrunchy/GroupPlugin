@@ -161,8 +161,7 @@ namespace CrunchGroup.NexusStuff
 
                 if (!fromServer && steamID != 0)
                 {
-
-                    Core.Log.Error($"Relaying event to all servers from player {steamID}");
+                    Core.Log.Error($"Relaying event to all servers from player {steamID} {message.EventType}");
                     if (RestrictedEvents.Contains(message.EventType))
                     {
                         return;
@@ -172,10 +171,13 @@ namespace CrunchGroup.NexusStuff
                     {
                         Handle(message, steamID, false);
                     }
-
                 }
                 if (fromServer)
                 {
+                    if (Core.Debug)
+                    {
+                        Core.Log.Info($"Handling server event {message.EventType}");
+                    }
                     Handle(message, steamID, fromServer);
                 }
             }
