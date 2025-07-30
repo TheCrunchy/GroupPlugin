@@ -420,6 +420,7 @@ namespace CrunchGroup
             }
 
             LoadAllTerritories();
+
         }
 
         public static DateTime nextRegister = DateTime.Now.AddSeconds(60);
@@ -632,6 +633,18 @@ namespace CrunchGroup
                     InitPlugins = true;
                     InitPluginDependencies(Torch.Managers.GetManager<PluginManager>(), Torch.Managers.GetManager<PatchManager>());
 
+                }
+
+                if (ticks % 600 == 0)
+                {
+                    try
+                    {
+                        GroupHandler.MapPlayers();
+                    }
+                    catch (Exception e)
+                    {
+                        Core.Log.Error($"Error in mapping loop { e.ToString()}");
+                    }
                 }
 
                 if (ticks % 60 == 0)

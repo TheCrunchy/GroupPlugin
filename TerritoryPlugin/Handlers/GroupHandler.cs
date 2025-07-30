@@ -13,7 +13,7 @@ namespace CrunchGroup.Handlers
         public static void DoGroupLoop()
         {
             ProcessFriendlies();
-            MapPlayers();
+          
         }
 
         public static Group GetGroupByTag(string tag)
@@ -69,19 +69,25 @@ namespace CrunchGroup.Handlers
 
         public static void MapPlayers()
         {
-            foreach (var player in MySession.Static.Players.GetOnlinePlayers())
+            PlayersGroups.Clear();
+
+            foreach (var group in LoadedGroups.Values)
             {
-                var faction = MySession.Static.Factions.TryGetPlayerFaction(player.Identity.IdentityId);
-                if (faction == null) continue;
-                var group = LoadedGroups.FirstOrDefault(x => x.Value.GroupMembers.Contains(faction.FactionId)).Value ?? null;
-                if (group != null)
+                foreach (var factionId in group.GroupMembers)
                 {
-                    PlayersGroups.Remove((long)player.Id.SteamId);
-                    PlayersGroups.Add((long)player.Id.SteamId, group.GroupId);
-                }
-                else
-                {
-                    PlayersGroups.Remove((long)player.Id.SteamId);
+                    var faction = MySession.Static.Factions.TryGetPlayerFaction(factionId);
+                    if (faction == null) continue;
+
+                    foreach (var member in faction.Members.Values.Select(x => x.PlayerId).Distinct())
+                    {
+                        var steam = MySession.Static.Players.TryGetSteamId(member);
+                        if (steam == 0l)
+                        {
+                            continue;
+                        }
+
+                        PlayersGroups[(long)steam] = group.GroupId;
+                    }
                 }
             }
         }
