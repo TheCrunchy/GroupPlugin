@@ -86,6 +86,20 @@ namespace Crunch
         private static void SendMessage(string messageText, ulong author)
         {
             var Event = new GroupEvent();
+            if (messageText.StartsWith("/gc") || messageText.StartsWith("!gc"))
+            {
+               
+                string trimmed = messageText.Substring(3);
+
+               
+                if (trimmed.Length > 0 && char.IsWhiteSpace(trimmed[0]))
+                {
+                    trimmed = trimmed.Substring(1);
+                }
+
+                messageText = trimmed;
+            }
+
             var createdEvent = new GroupChatEvent()
             {
                 SenderName = "",

@@ -698,13 +698,19 @@ namespace CrunchGroup
             {
                 color = Color.OrangeRed;
             }
-            var _chatLog = LogManager.GetLogger("Chat");
+            var identity = Sync.Players.TryGetIdentityId(steamID);
+            var gps = GPSHelper.ScanChat(message);
+            if (gps != null)
+            {
+                MyGpsCollection gpscol = (MyGpsCollection)MyAPIGateway.Session?.GPS;
+                gpscol.SendAddGpsRequest(identity, ref gps, playSoundOnCreation:false);
+            }
             var scriptedChatMsg1 = new ScriptedChatMsg();
             scriptedChatMsg1.Author = prefix;
             scriptedChatMsg1.Text = message;
             scriptedChatMsg1.Font = "White";
             scriptedChatMsg1.Color = color;
-            scriptedChatMsg1.Target = Sync.Players.TryGetIdentityId(steamID);
+            scriptedChatMsg1.Target = identity;
             var scriptedChatMsg2 = scriptedChatMsg1;
             MyMultiplayerBase.SendScriptedChatMessage(ref scriptedChatMsg2);
         }
