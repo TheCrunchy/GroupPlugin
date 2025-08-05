@@ -133,7 +133,7 @@ namespace CrunchGroup.NexusStuff
                 GroupEvent message;
                 if (Core.NexusGlobalAPI.Enabled)
                 {
-                    Core.Log.Error($"Recieved a nexus v3 message");
+                  //  Core.Log.Error($"Recieved a nexus v3 message");
                     try
                     {
                         NexusGlobalAPI.ModAPIMsg incomingMsg = MyAPIGateway.Utilities.SerializeFromBinary<NexusGlobalAPI.ModAPIMsg>((byte[])data);
@@ -161,7 +161,7 @@ namespace CrunchGroup.NexusStuff
 
                 if (!fromServer && steamID != 0)
                 {
-                    Core.Log.Error($"Relaying event to all servers from player {steamID} {message.EventType}");
+                    Core.Log.Info($"Relaying event to all servers from player {steamID} {message.EventType}");
                     if (RestrictedEvents.Contains(message.EventType))
                     {
                         return;
