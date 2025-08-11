@@ -409,7 +409,7 @@ namespace CrunchGroup.Commands
             Event.EventType = createdEvent.GetType().Name;
             NexusHandler.RaiseEvent(Event);
 
-            Context.Respond("Invite sent.", $"{Core.PluginName}");
+            Context.Respond("War status raised.", $"{Core.PluginName}");
         }
 
 
