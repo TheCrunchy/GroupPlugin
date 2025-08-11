@@ -13,7 +13,7 @@ namespace CrunchGroup.Handlers
         public static void DoGroupLoop()
         {
             ProcessFriendlies();
-          
+            ProcessEnemies();
         }
 
         public static Group GetGroupByTag(string tag)
@@ -60,7 +60,13 @@ namespace CrunchGroup.Handlers
                 item.ProcessFriendlies();
             }
         }
-
+        public static void ProcessEnemies()
+        {
+            foreach (var item in LoadedGroups.Values)
+            {
+                item.ProcessEnemies();
+            }
+        }
 
         public static Group GetPlayersGroup(long steamId)
         {

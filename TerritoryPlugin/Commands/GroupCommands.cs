@@ -363,6 +363,56 @@ namespace CrunchGroup.Commands
             Context.Respond("Invite sent.", $"{Core.PluginName}");
         }
 
+        [Command("war", "war dec another group, or remove from the enemy list")]
+        [Permission(MyPromoteLevel.None)]
+        public void war(string targetTag)
+        {
+
+            var group = IsInGroup();
+
+            if (group == null)
+            {
+                return;
+            }
+            if (group.GroupLeader != (long)Context.Player.SteamUserId && !group.GroupAdmins.Contains(Context.Player.SteamUserId))
+            {
+                Context.Respond($"You are not the {Core.PluginCommandPrefix} leader or a {Core.PluginCommandPrefix} admin.", $"{Core.PluginName}");
+                return;
+            }
+
+            var target = GroupHandler.GetGroupByTag(targetTag);
+            if (target == null)
+            {
+                Context.Respond($"{Core.PluginCommandPrefix} not found.", $"{Core.PluginName}");
+                return;
+            }
+
+            if (!group.GroupEnemies.Remove(target.GroupId))
+            {
+                Context.Respond("Added to enemies");
+                group.GroupEnemies.Add(target.GroupId);
+            }
+            else
+            {
+                Context.Respond("Removed from enemies");
+            }
+       
+
+            Storage.StorageHandler.Save(group);
+            GroupHandler.AddGroup(group);
+            var Event = new GroupEvent();
+            var createdEvent = new GroupChangedEvent()
+            {
+                Group = JsonConvert.SerializeObject(group)
+            };
+            Event.EventObject = MyAPIGateway.Utilities.SerializeToBinary(createdEvent);
+            Event.EventType = createdEvent.GetType().Name;
+            NexusHandler.RaiseEvent(Event);
+
+            Context.Respond("Invite sent.", $"{Core.PluginName}");
+        }
+
+
         [Command("join", "join")]
         [Permission(MyPromoteLevel.None)]
         public void join(string groupTag)
@@ -476,7 +526,7 @@ namespace CrunchGroup.Commands
                 Context.Respond($"You are not the {Core.PluginCommandPrefix} leader.", $"{Core.PluginName}");
                 return;
             }
-            
+
             if (group.GroupMembers.Contains(faction.FactionId))
             {
                 group.RemoveMemberFromGroup(faction.FactionId);

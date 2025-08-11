@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using CrunchGroup.Handlers;
 using Sandbox.Game.Multiplayer;
 using Sandbox.Game.Screens.Helpers;
 using Sandbox.Game.World;
@@ -26,6 +27,8 @@ namespace CrunchGroup.Models
 
         public long GroupLeader { get; set; }
         public List<ulong> GroupAdmins { get; set; } = new List<ulong>();
+
+        public List<Guid> GroupEnemies { get; set; } = new List<Guid>();
 
         public List<long> GroupMembers { get; set; } = new List<long>();
         //civil war stuff, let the players opt in to being excluded
@@ -105,7 +108,7 @@ namespace CrunchGroup.Models
                 if (fac == null) continue;
                 foreach (var member in fac.Members.Values.Select(x => x.PlayerId).Distinct())
                 {
-                    gpscol.SendAddGpsRequest(member, ref gpsRef, playSoundOnCreation:false);
+                    gpscol.SendAddGpsRequest(member, ref gpsRef, playSoundOnCreation: false);
                 }
             }
         }
@@ -190,7 +193,35 @@ namespace CrunchGroup.Models
                 }
             });
         }
+        public void ProcessEnemies()
+        {
+            MyAPIGateway.Utilities.InvokeOnGameThread(() =>
+            {
+                foreach (var id in GroupEnemies.Distinct())
+                {
+                    var group = GroupHandler.GetGroupById(id);
+                    if (group != null)
+                    {
+                        foreach (var enemyFactionId in group.GroupMembers.Distinct())
+                        {
+                            var foundFaction = MySession.Static.Factions.TryGetFactionById(enemyFactionId);
+                            if (foundFaction != null)
+                            {
+                                foreach (long ourFactionId in GroupMembers.Distinct())
+                                {
+                                    var fac = MySession.Static.Factions.TryGetFactionById(ourFactionId);
+                                    if (fac == null) continue;
 
+                                    MyFactionCollection.DeclareWar(ourFactionId, enemyFactionId);
+
+                                }
+                            }
+                        }
+                    }
+
+                }
+            });
+        }
         public void DoFriendlyUpdate(long firstId, long SecondId)
         {
             MyFactionStateChange change = MyFactionStateChange.SendFriendRequest;
