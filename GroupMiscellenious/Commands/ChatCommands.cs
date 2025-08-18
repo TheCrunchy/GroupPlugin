@@ -255,7 +255,7 @@ namespace GroupMiscellenious.Commands
             Event.EventType = createdEvent.GetType().Name;
             NexusHandler.RaiseEvent(Event);
 
-            if (Core.NexusInstalled)
+            if (Core.NexusInstalled || Core.NexusGlobalAPI.Enabled)
             {
                 NexusHandler.NexusMessage?.Invoke(Event);
             }

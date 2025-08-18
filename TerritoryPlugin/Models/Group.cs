@@ -108,7 +108,7 @@ namespace CrunchGroup.Models
                 if (fac == null) continue;
                 foreach (var member in fac.Members.Values.Select(x => x.PlayerId).Distinct())
                 {
-                    gpscol.SendAddGpsRequest(member, ref gpsRef, playSoundOnCreation: false);
+                    gpscol.SendAddGpsRequest(member, ref gpsRef, playSoundOnCreation: true);
                 }
             }
         }
@@ -204,21 +204,15 @@ namespace CrunchGroup.Models
                     {
                         foreach (var enemyFactionId in group.GroupMembers.Distinct())
                         {
-                            var foundFaction = MySession.Static.Factions.TryGetFactionById(enemyFactionId);
-                            if (foundFaction != null)
-                            {
-                                foreach (long ourFactionId in GroupMembers.Distinct())
+                            foreach (long ourFactionId in GroupMembers.Distinct())
+                                if (!MySession.Static.Factions.AreFactionsEnemies(ourFactionId, enemyFactionId))
                                 {
-                                    var fac = MySession.Static.Factions.TryGetFactionById(ourFactionId);
-                                    if (fac == null) continue;
-
                                     MyFactionCollection.DeclareWar(ourFactionId, enemyFactionId);
-
                                 }
-                            }
+                        
                         }
-                    }
 
+                    }
                 }
             });
         }

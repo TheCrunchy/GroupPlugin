@@ -27,7 +27,7 @@ namespace CrunchGroup.NexusStuff
             var message = MyAPIGateway.Utilities.SerializeToBinary<GroupEvent>(groupEvent);
             if (Core.NexusGlobalAPI.Enabled)
             {
-                Core.Log.Error($"Sending a nexus v3 message");
+              //  Core.Log.Error($"Sending a nexus v3 message");
                 Core.NexusGlobalAPI.SendModMsgToAllServers(message, 4398);
             }
             else if (Core.NexusInstalled)
