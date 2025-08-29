@@ -11,43 +11,43 @@ namespace CrunchGroup
     {
         public static MyGps ScanChat(string input, string desc = null)
         {
-            var num = 0;
-            var flag = true;
-            var matchCollection = Regex.Matches(input, "GPS:([^:]{0,32}):([\\d\\.-]*):([\\d\\.-]*):([\\d\\.-]*):");
+            var matchCollection = Regex.Matches(
+                input,
+                @"GPS:([^:]{0,32}):([\d\.-]*):([\d\.-]*):([\d\.-]*):(#?[0-9A-Fa-f]{8})?:"
+            );
 
             var color = new Color(117, 201, 241);
             foreach (Match match in matchCollection)
             {
                 var str = match.Groups[1].Value;
-                double x;
-                double y;
-                double z;
                 try
                 {
-                    x = Math.Round(double.Parse(match.Groups[2].Value, (IFormatProvider)CultureInfo.InvariantCulture), 2);
-                    y = Math.Round(double.Parse(match.Groups[3].Value, (IFormatProvider)CultureInfo.InvariantCulture), 2);
-                    z = Math.Round(double.Parse(match.Groups[4].Value, (IFormatProvider)CultureInfo.InvariantCulture), 2);
-                    if (flag)
-                        color = (Color)new ColorDefinitionRGBA(match.Groups[5].Value);
+                    double x = Math.Round(double.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture), 2);
+                    double y = Math.Round(double.Parse(match.Groups[3].Value, CultureInfo.InvariantCulture), 2);
+                    double z = Math.Round(double.Parse(match.Groups[4].Value, CultureInfo.InvariantCulture), 2);
+
+                    if (!string.IsNullOrEmpty(match.Groups[5].Value))
+                        color = new ColorDefinitionRGBA(match.Groups[5].Value);
+
+                    var gps = new MyGps()
+                    {
+                        Name = str,
+                        Description = desc,
+                        Coords = new Vector3D(x, y, z),
+                        GPSColor = color,
+                        ShowOnHud = false
+                    };
+                    gps.UpdateHash();
+                    return gps;
                 }
-                catch (SystemException ex)
+                catch
                 {
                     continue;
                 }
-                var gps = new MyGps()
-                {
-                    Name = str,
-                    Description = desc,
-                    Coords = new Vector3D(x, y, z),
-                    GPSColor = color,
-                    ShowOnHud = false
-                };
-                gps.UpdateHash();
-
-                return gps;
             }
             return null;
         }
+
 
         public static MyGps CreateGps(Vector3D Position, Color gpsColor, String Name, String Reason)
         {
