@@ -14,7 +14,6 @@ using Sandbox.Game.Weapons;
 using Sandbox.Game.World;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Weapons;
-using SpaceEngineers.Game.Weapons.Guns;
 using Torch.Managers.PatchManager;
 using Torch.Mod;
 using Torch.Mod.Messages;

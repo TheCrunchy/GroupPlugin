@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using CrunchGroup.Handlers.Interfaces;
@@ -41,6 +42,10 @@ namespace CrunchGroup.Handlers
             {
                 var group = utils.ReadFromJsonFile<Group>(path);
                 group.GroupMembers = group.GroupMembers.Distinct().ToList();
+                if (group.GroupAdmins == null)
+                {
+                    group.GroupAdmins = new List<ulong>();
+                }
                 GroupHandler.AddGroup(group);
             }
             catch (Exception e)
