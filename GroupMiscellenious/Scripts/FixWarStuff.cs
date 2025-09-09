@@ -73,7 +73,7 @@ namespace GroupMiscellenious.Scripts
                 {
                     return;
                 }
-
+                var founder = firstFaction.FounderId;
                 facsProcessed++;
                 ProcessAgain[firstFaction.FactionId] = DateTime.Now.AddMinutes(MinutesBeforeRecheck);
 
@@ -82,13 +82,10 @@ namespace GroupMiscellenious.Scripts
                     if (firstFaction.FactionId == secondFaction.FactionId)
                         continue;
 
-                    if (!MySession.Static.Factions.AreFactionsNeutrals(firstFaction.FactionId, secondFaction.FactionId))
-                        continue;
+                    var foundersRelation =
+                        MySession.Static.Factions.GetRelationBetweenPlayerAndFaction(founder, secondFaction.FactionId);
 
-                    var relation = MySession.Static.Factions
-                        .GetRelationBetweenFactions(firstFaction.FactionId, secondFaction.FactionId);
-
-                    if (relation.Item2 > repThreshold)
+                    if (foundersRelation.Item2 > repThreshold)
                         continue;
 
                     MyAPIGateway.Utilities.InvokeOnGameThread(() =>
