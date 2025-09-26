@@ -103,6 +103,11 @@ namespace CrunchGroup.Commands
         public void info(string groupNameOrTag = "")
         {
             var group = GroupHandler.GetGroupByTag(groupNameOrTag);
+            if (group == null && !string.IsNullOrEmpty(groupNameOrTag))
+            {
+                Context.Respond($"{Core.PluginCommandPrefix} not found.", $"{Core.PluginName}");
+                return;
+            }
             if (group == null)
             {
                 group = GroupHandler.GetPlayersGroup((long)Context.Player.SteamUserId);

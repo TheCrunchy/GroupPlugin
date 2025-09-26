@@ -127,7 +127,8 @@ namespace CrunchGroup.Territories.CapLogics
                 var hasPoints = Points[owner];
                 if (hasPoints < PointsToTake)
                 {
-                    CaptureHandler.SendMessage($"Territory Capture {PointName}", $"{owner} Cap Progress {hasPoints}/{PointsToTake}", territory, point.PointOwner);
+                    Group groupOwner = (Group) pointOwner.GetOwner();
+                    CaptureHandler.SendMessage($"Territory Capture {PointName}", $"{groupOwner.GroupName} Cap Progress {hasPoints}/{PointsToTake}", territory, point.PointOwner);
                     return Task.FromResult(Tuple.Create<bool, IPointOwner>(false, null));
                 }
 
