@@ -83,6 +83,7 @@ namespace CrunchGroup.NexusStuff
                         {
                             var ev = MyAPIGateway.Utilities.SerializeFromBinary<JoinGroupEvent>(message.EventObject);
                             GroupEventHandler.HandleGroupJoin(ev);
+                            GroupHandler.MapPlayers();
                             break;
                         }
 
@@ -90,6 +91,7 @@ namespace CrunchGroup.NexusStuff
                         {
                             var ev = MyAPIGateway.Utilities.SerializeFromBinary<LeftGroupEvent>(message.EventObject);
                             GroupEventHandler.HandleGroupLeave(ev);
+                            GroupHandler.MapPlayers();
                             break;
                         }
                     case "InvitedToGroupEvent":

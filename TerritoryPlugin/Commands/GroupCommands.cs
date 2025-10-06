@@ -451,6 +451,11 @@ namespace CrunchGroup.Commands
             {
                 group.AddMemberToGroup(faction.FactionId);
             }
+            else
+            {
+                Context.Respond($"You have not been invoted to this {Core.PluginCommandPrefix}", $"{Core.PluginName}");
+                return;
+            }
             Storage.StorageHandler.Save(group);
             GroupHandler.AddGroup(group);
             var Event = new GroupEvent();
@@ -535,6 +540,11 @@ namespace CrunchGroup.Commands
             if (group.GroupMembers.Contains(faction.FactionId))
             {
                 group.RemoveMemberFromGroup(faction.FactionId);
+            }
+            else
+            {
+                Context.Respond($"Faction is not a member of the {Core.PluginCommandPrefix}.", $"{Core.PluginName}");
+                return;
             }
             Storage.StorageHandler.Save(group);
             GroupHandler.AddGroup(group);
