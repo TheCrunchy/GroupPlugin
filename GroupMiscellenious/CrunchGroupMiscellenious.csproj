@@ -133,8 +133,5 @@
   <ItemGroup>
     <Content Include="Scripts\HudMod\metadata.mod" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="Scripts\HudMod\modinfo.sbmi" />
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

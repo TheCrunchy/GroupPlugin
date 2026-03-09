@@ -63,13 +63,14 @@ namespace CrunchGroup.Territories.SecondaryLogics
                         GroupId = group.GroupId,
                         Position = grid.PositionComp.GetPosition(),
                         Name = $"Radar Hit - {grid.DisplayName} at {DateTime.Now:HH:mm:ss zz}",
-                        Color = Color.OrangeRed
+                        Color = Color.OrangeRed,
+                        ExpireAfter = SecondsBetweenLoops,
                     };
 
                     Event.EventObject = MyAPIGateway.Utilities.SerializeToBinary(createdEvent);
                     Event.EventType = createdEvent.GetType().Name;
                     NexusHandler.RaiseEvent(Event);
-                    if (Core.NexusInstalled)
+                    if (Core.NexusInstalled || Core.NexusGlobalAPI.Enabled)
                     {
                         NexusHandler.Handle(Event, 0l, true);
                     }
