@@ -80,7 +80,7 @@ namespace CrunchGroup.Territories.CapLogics
                 {
                     int thisSector = Core.NexusGlobalAPI.CurrentServerID;
 
-                    var sector = Core.NexusGlobalAPI.GetTargetSector(point.GetPointsLocationIfSet());
+                    var sector = Core.NexusGlobalAPI.GetTargetServer(point.GetPointsLocationIfSet());
 
                     if (sector != thisSector)
                     {
