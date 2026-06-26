@@ -37,7 +37,7 @@ namespace CrunchGroup.Territories.CapLogics
 
         public Vector3 GPSofPoint;
         public string GridOwnerTag = "SPRT";
-
+        private List<string> SplitTags = new List<string>();
         public int CaptureRadius = 5000;
         public List<ISecondaryLogic> SecondaryLogics { get; set; }
         public DateTime NextLoop { get; set; }
@@ -53,7 +53,17 @@ namespace CrunchGroup.Territories.CapLogics
 
         public Task<Tuple<bool, IPointOwner>> ProcessCap(ICapLogic point, Models.Territory territory)
         {
-
+            if (!SplitTags.Any())
+            {
+                if (GridOwnerTag.Contains(","))
+                {
+                    SplitTags = GridOwnerTag.Split(',').ToList();
+                }
+                else
+                {
+                    SplitTags = new List<string>() { GridOwnerTag };
+                }
+            }
             if (CanLoop())
             {
                 NextLoop = DateTime.Now.AddSeconds(SecondsBetweenLoops);
@@ -162,7 +172,7 @@ namespace CrunchGroup.Territories.CapLogics
                 }
 
                 var fac = FacUtils.GetPlayersFaction(FacUtils.GetOwner(grid));
-                if ((fac != null && fac.Tag.Equals(GridOwnerTag)) || fac == null)
+                if ((fac != null && SplitTags.Contains(fac.Tag)) || fac == null)
                 {
                     continue;
                 }

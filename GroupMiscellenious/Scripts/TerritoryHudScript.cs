@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using CrunchGroup;
 using CrunchGroup.Models;
 using CrunchGroup.Territories.CapLogics;
@@ -20,164 +18,150 @@ namespace GroupMiscellenious.Scripts
     [PatchShim]
     public class TerritoryHudScript
     {
-        private static int ticks;
+        private static int _ticks;
         public static DateTime NextSendTerritory = DateTime.Now.AddMinutes(5);
-        public static void UpdateExample()
-        {
-            ticks++;
-            if (ticks % 128 == 0)
-            {
-                if (DateTime.Now > NextSendTerritory)
-                {
-                    NextSendTerritory = DateTime.Now.AddMinutes(5);
-                    foreach (var player in MySession.Static.Players.GetOnlinePlayers())
-                    {
-                        SendPlayerTerritories(player.Id.SteamId);
-                    }
-                }
-            }
-
-        }
-
+        private static bool hasTerritories = false;
         public static void Patch(PatchContext ctx)
         {
             Core.UpdateCycle += UpdateExample;
             MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(8544, ReceiveModMessage);
         }
 
+        public static void UpdateExample()
+        {
+            _ticks++;
+
+            if (_ticks % 128 != 0)
+                return;
+
+            if (DateTime.Now <= NextSendTerritory)
+                return;
+
+            NextSendTerritory = DateTime.Now.AddMinutes(5);
+
+            // Build the packet ONCE
+            var packet = BuildTerritoryPacket();
+
+            foreach (var player in MySession.Static.Players.GetOnlinePlayers())
+                MyAPIGateway.Multiplayer.SendMessageTo(8544, packet, player.Id.SteamId);
+        }
+
         public static void SendPlayerHudStatus(ulong steamPlayerId)
         {
-
-            var message = new BoolStatus
+            SendMessage(steamPlayerId, "HudStatus", new BoolStatus
             {
                 Enabled = true
-            };
-
-
-            var statusM = MyAPIGateway.Utilities.SerializeToBinary(message);
-            var modmessage = new ModMessage()
-            {
-                Type = "HudStatus",
-                Member = statusM
-            };
-
-            var bytes = MyAPIGateway.Utilities.SerializeToBinary(modmessage);
-
-            var binaryData = MyAPIGateway.Utilities.SerializeToBinary(modmessage);
-            MyAPIGateway.Multiplayer.SendMessageTo(8544, binaryData, steamPlayerId);
+            });
         }
 
         public static void SendPlayerTerritories(ulong steamPlayerId)
         {
-            var id = Core.GetIdentityByNameOrId(steamPlayerId.ToString());
-            if (id == null)
+            MyAPIGateway.Multiplayer.SendMessageTo(
+                8544,
+                BuildTerritoryPacket(),
+                steamPlayerId);
+            if (hasTerritories)
             {
-                return;
+                SendPlayerHudStatus(steamPlayerId);
             }
-            IMyFaction playerFac = MySession.Static.Factions.GetPlayerFaction(id.IdentityId);
+        }
 
+        private static byte[] BuildTerritoryPacket()
+        {
             var message = new PlayerDataPvP
             {
                 PvPAreas = new List<PvPArea>()
             };
-
-
-
+            hasTerritories = Core.Territories.Any();
             foreach (var territory in Core.Territories)
             {
-                var owner = "Unowned";
-                switch (territory.Value.Owner)
-                {
-                    case FactionPointOwner faction:
-                        MyFaction fac = (MyFaction)faction.GetOwner();
-                        owner = fac.Tag;
-                        break;
-                    case GroupPointOwner group:
-                        var groupT = (Group)group.GetOwner();
-                        owner = groupT.GroupName;
-                        break;
-                }
-
-                message.PvPAreas.Add(new PvPArea()
+                message.PvPAreas.Add(new PvPArea
                 {
                     Name = territory.Value.Name ?? "PvP Area",
                     Position = territory.Value.Position,
                     Distance = territory.Value.RadiusDistance,
-                    OwnerName = owner
+                    OwnerName = GetOwnerName(territory.Value.Owner)
                 });
 
                 foreach (var capture in territory.Value.CapturePoints)
                 {
-                    owner = "Unowned";
-                    switch (capture.PointOwner)
+                    var area = new PvPArea
                     {
-                        case FactionPointOwner faction:
-                            MyFaction fac = (MyFaction)faction.GetOwner();
-                            owner = fac.Tag;
-                            break;
-                        case GroupPointOwner group:
-                            var groupT = (Group)group.GetOwner();
-                            owner = groupT.GroupName;
-                            break;
-                    }
-                    if (capture is FactionGridCapLogic gridcap)
+                        Name = capture.PointName,
+                        OwnerName = GetOwnerName(capture.PointOwner)
+                    };
+
+                    if (capture is FactionGridCapLogic gridCap)
                     {
-                        message.PvPAreas.Add(new PvPArea()
-                        {
-                            Name = gridcap.PointName,
-                            Position = gridcap.GPSofPoint,
-                            Distance = gridcap.CaptureRadius,
-                            OwnerName = owner
-                        });
+                        area.Position = gridCap.GPSofPoint;
+                        area.Distance = gridCap.CaptureRadius;
                     }
                     else
                     {
-                        message.PvPAreas.Add(new PvPArea()
-                        {
-                            Name = capture.PointName,
-                            Position = capture.GetPointsLocationIfSet(),
-                            Distance = 10000,
-                            OwnerName = owner
-                        });
+                        area.Position = capture.GetPointsLocationIfSet();
+                        area.Distance = 10000;
                     }
+
+                    message.PvPAreas.Add(area);
                 }
             }
 
-            var statusM = MyAPIGateway.Utilities.SerializeToBinary(message);
-            var modmessage = new ModMessage()
-            {
-                Type = "PvPAreas",
-                Member = statusM
-            };
-
-            var bytes = MyAPIGateway.Utilities.SerializeToBinary(modmessage);
-
-            var binaryData = MyAPIGateway.Utilities.SerializeToBinary(modmessage);
-            MyAPIGateway.Multiplayer.SendMessageTo(8544, binaryData, steamPlayerId);
+            return MyAPIGateway.Utilities.SerializeToBinary(
+                new ModMessage
+                {
+                    Type = "PvPAreas",
+                    Member = MyAPIGateway.Utilities.SerializeToBinary(message)
+                });
         }
+
+        private static void SendMessage<T>(ulong steamPlayerId, string type, T payload)
+        {
+            var packet = MyAPIGateway.Utilities.SerializeToBinary(
+                new ModMessage
+                {
+                    Type = type,
+                    Member = MyAPIGateway.Utilities.SerializeToBinary(payload)
+                });
+
+            MyAPIGateway.Multiplayer.SendMessageTo(8544, packet, steamPlayerId);
+        }
+
+        private static string GetOwnerName(object owner)
+        {
+            switch (owner)
+            {
+                case FactionPointOwner faction:
+                    return ((MyFaction)faction.GetOwner()).Tag;
+
+                case GroupPointOwner group:
+                    return ((Group)group.GetOwner()).GroupName;
+
+                default:
+                    return "Unowned";
+            }
+        }
+
         public static void ReceiveModMessage(ushort handlerId, byte[] data, ulong steamID, bool fromServer)
         {
-            var Data = MyAPIGateway.Utilities.SerializeFromBinary<ModMessage>(data);
+            var message = MyAPIGateway.Utilities.SerializeFromBinary<ModMessage>(data);
 
-            switch (Data.Type)
+            if (message.Type != "DataRequest")
+                return;
+
+            var request = MyAPIGateway.Utilities.SerializeFromBinary<DataRequest>(message.Member);
+
+            switch (request.DataType)
             {
-                case "DataRequest":
-                    var request = MyAPIGateway.Utilities.SerializeFromBinary<DataRequest>(Data.Member);
-                    switch (request.DataType)
-                    {
-                        case "Territory":
-                            SendPlayerTerritories(request.SteamId);
-                            //  AlliancePlugin.Log.Info($"Sending territories to {request.SteamId}");
-                            break;
-                        case "Hud":
-                            //    AlliancePlugin.Log.Info($"Sending war status to {request.SteamId}");
-                            SendPlayerHudStatus(request.SteamId);
-                            break;
-                        case "Chat":
-                            //    AlliancePlugin.Log.Info($"Sending war status to {request.SteamId}");
-                            //  AllianceChat.AddOrRemoveToChat(request.SteamId);
-                            break;
-                    }
+                case "Territory":
+                    SendPlayerTerritories(request.SteamId);
+                    break;
+
+                case "Hud":
+                    SendPlayerHudStatus(request.SteamId);
+                    break;
+
+                case "Chat":
+                    // AllianceChat.AddOrRemoveToChat(request.SteamId);
                     break;
             }
         }
@@ -209,6 +193,7 @@ namespace GroupMiscellenious.Scripts
         [ProtoMember(2)]
         public byte[] Member;
     }
+
     [ProtoContract]
     public class PlayerDataPvP
     {
